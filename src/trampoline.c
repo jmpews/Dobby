@@ -35,89 +35,92 @@
 #if defined(__x86_64__)
 #elif defined(__arm64__)
 #include "platforms/arm64/relocator.h"
+#include "platforms/arm64/thunker.h"
 #endif
 
-void relocator_build_invoke_trampoline(zpointer target_addr, ZZWriter *backup_writer, ZZWriter *relocate_writer) {
-    bool finished = false;
-    zpointer code_addr = target_addr;
-    Instruction *ins;
-    
-    do {
-        ins = relocator_read_one(code_addr, backup_writer, relocate_writer);
-        code_addr += ins->size;
-        free(ins);
-        if((code_addr - target_addr) >= JMP_METHOD_SIZE) {
-            finished = true;
-        }
-    } while(!finished);
+ZZSTATUS ZZBuildInvokeTrampoline(ZZHookFunctionEntry *entry) {
+  zsize codeslice_size = 256;
+  ZZCodeSlice *p = ZZAllocatorNewCodeSlice(codeslice_size);
+  if (!p) {
+    Serror("alloc codeslice error!");
+    return ZZ_UNKOWN;
+  }
+  entry->on_invoke_trampoline = p->data;
+  ZZWriter *backup_writer, *relocate_writer;
 
-    // zpointer target_back_addr;
-    // target_back_addr = target_addr + backup_writer->pc - backup_writer->base
+  backup_writer = ZZNewWriter(entry->old_prologue.data);
+  relocate_writer = ZZNewWriter(entry->on_invoke_trampoline);
 
-    // writer_put_ldr_reg_imm(relocate_writer, ARM64_REG_X16, (zuint)0x8);
-    // writer_put_br_reg(relocate_writer, ARM64_REG_X16);
-    // writer_put_bytes(relocate_writer, (zpointer)&target_back_addr, sizeof(zpointer));
+  relocator_build_invoke_trampoline(entry->target_ptr, backup_writer,
+                                    relocate_writer);
+
+  WriterPutAbsJmp(relocate_writer,
+                  entry->target_ptr +
+                      (zuint)(backup_writer->pc - backup_writer->base));
+
+  make_page_executable(relocate_writer->base,
+                       relocate_writer->pc - relocate_writer->base);
+
+  entry->old_prologue.size = backup_writer->pc - backup_writer->base;
+  assert(entry->old_prologue.size == backup_writer->size);
+  free(backup_writer);
+  free(relocate_writer);
+  return ZZ_DONE;
 }
 
+ZZSTATUS ZZBuildEnterTrampoline(ZZHookFunctionEntry *entry) {
+  zsize codeslice_size = 256;
+  ZZCodeSlice *p = ZZAllocatorNewCodeSlice(codeslice_size);
+  ZZInterceptor *interceptor = entry->interceptor;
+  if (!p) {
+    Serror("alloc codeslice error!");
+    return ZZ_UNKOWN;
+  }
 
-// ZZTrampoline *ZZBuildInovkeTrampoline(zpointer target_ptr, uint8_t *read_size, zpointer read_backup)
-// {
-//     zsize codeslice_size = 256;
-//     ZZTrampoline *trampoline = (ZZTrampoline *)malloc(sizeof(ZZTrampoline));
-//     ZZCodeSlice *p = ZZAllocatorNewCodeSlice(codeslice_size);
+  entry->on_enter_trampoline = p->data;
 
-//     if(!p) {
-//         Serror("alloc codeslice error!");
-//         return NULL;
-//     }
+  ZZWriter *writer;
 
-//     trampoline->codeslice = p;
-//     ZZWriter backup_writer, relocate_writer;
-    
-//     backup_writer.codedata = read_backup;
-//     backup_writer.base = read_backup;
-//     backup_writer.pc = read_backup;
-//     backup_writer.size = 0;
+  writer = ZZNewWriter(p->data);
 
-//     relocate_writer.codedata  = p->data;
-//     relocate_writer.base = p->data;
-//     relocate_writer.pc = p->data;
-//     relocate_writer.size = 0;
+  thunker_build_enter_trapoline(writer, (zpointer)entry,
+                                (zpointer)interceptor->enter_thunk);
 
+  make_page_executable(writer->base, writer->pc - writer->base);
 
-//     *read_size = backup_writer.pc - backup_writer.base;
-//     assert(*read_size == backup_writer.size);
+  free(writer);
+  return ZZ_DONE;
+}
 
-//     return trampoline;
-// }
+ZZSTATUS ZZBuildLeaveTrampoline(ZZHookFunctionEntry *entry) {
+  zsize codeslice_size = 256;
+  ZZCodeSlice *p = ZZAllocatorNewCodeSlice(codeslice_size);
+  ZZInterceptor *interceptor = entry->interceptor;
+  if (!p) {
+    Serror("alloc codeslice error!");
+    return ZZ_UNKOWN;
+  }
 
-ZZSTATUS ZZBuildInvokeTrampoline(ZZHookFunctionEntry *entry) {
-    zsize codeslice_size = 256;
-    ZZCodeSlice *p = ZZAllocatorNewCodeSlice(codeslice_size);
-    if(!p) {
-        Serror("alloc codeslice error!");
-        return ZZ_UNKOWN;
-    }
-    entry->on_invoke_trampoline = p->data;
-    ZZWriter *backup_writer, *relocate_writer;
-    
-    backup_writer = ZZNewWriter(entry->old_prologue.data);
-    relocate_writer = ZZNewWriter(entry->on_invoke_trampoline);
+  entry->on_leave_trampoline = p->data;
 
-    relocator_build_invoke_trampoline(entry->target_ptr, backup_writer, relocate_writer);
+  ZZWriter *writer;
 
-    WriterPutAbsJmp(relocate_writer, entry->target_ptr + (zuint)(backup_writer->pc - backup_writer->base));
+  writer = ZZNewWriter(p->data);
 
-    make_page_executable(relocate_writer->base, relocate_writer->pc - relocate_writer->base);
+  thunker_build_leave_trapoline(writer, (zpointer)entry,
+                                (zpointer)interceptor->leave_thunk);
 
-    entry->old_prologue.size = backup_writer->pc - backup_writer->base;
-    assert(entry->old_prologue.size  == backup_writer->size);
-    return ZZ_DONE;
+  make_page_executable(writer->base, writer->pc - writer->base);
+
+  free(writer);
+  return ZZ_DONE;
 }
 
 ZZSTATUS ZZBuildTrampoline(ZZHookFunctionEntry *entry) {
-    ZZBuildInvokeTrampoline(entry);
-    return ZZ_DONE;
+  ZZBuildEnterTrampoline(entry);
+  ZZBuildInvokeTrampoline(entry);
+  ZZBuildLeaveTrampoline(entry);
+  return ZZ_DONE;
 }
 
 // void ZZActiveTrampoline()

@@ -32,19 +32,47 @@ void WriterPutAbsJmp(ZZWriter *self, zpointer target_addr) {
     writer_put_bytes(self, (zpointer)&target_addr, sizeof(target_addr));
 }
 
+void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
+  writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
+  writer_put_br_reg(self, reg);
+  writer_put_b_imm(self, (zaddr)0xc);
+  writer_put_bytes(self, (zpointer)&address,
+                   sizeof(address));
+  
+}
+
 void writer_put_ldr_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
-    writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    writer_put_br_reg(self, reg);
-    writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
+  writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+  writer_put_b_imm(self, (zaddr)0xc);
+  writer_put_bytes(self, (zpointer)&address,
+                   sizeof(address));
+  
 }
 
 void writer_put_ldr_reg_imm(ZZWriter *self, arm64_reg reg, zuint imm) {
-    writer_put_instruction(self, 0x58000010 | ((imm >> 2) << 5));
+    if(reg == ARM64_REG_X16)
+        writer_put_instruction(self, 0x58000010 | ((imm >> 2) << 5));
+    else if(reg == ARM64_REG_X17)
+        writer_put_instruction(self, 0x58000011 | ((imm >> 2) << 5));
 }
 
+void writer_put_b_cond_imm(ZZWriter *self, arm64_cc cc, zuint imm) {
+    uint32_t ins_bytes = 0;
+    ins_bytes = ins_bytes | 0x54000000 | (cc - 1);
+    ins_bytes = ins_bytes | (imm >> 2) << 5;
+    writer_put_instruction(self, ins_bytes);
+}
+
+// TODO:
+// br x16;
 void writer_put_br_reg(ZZWriter *self, arm64_reg reg) {
-    // br x16;
     writer_put_instruction(self, 0xd61f0200);
+}
+
+//TODO:
+// blr x16
+void writer_put_blr_reg(ZZWriter *self, arm64_reg reg) {
+    writer_put_instruction(self, 0xD63F0200);
 }
 
 void writer_put_b_imm(ZZWriter *self, zuint imm) {
@@ -56,7 +84,7 @@ void writer_put_bytes(ZZWriter *self, zbyte *data, zuint data_size) {
     memcpy(self->codedata, data, data_size);
     self->codedata = (zpointer)self->codedata + data_size;
     self->pc += data_size;
-    self->size += 4;
+    self->size += data_size;
     
 }
 

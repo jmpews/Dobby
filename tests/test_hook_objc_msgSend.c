@@ -21,7 +21,7 @@
 __attribute__((constructor)) void hook_objc_msgSend()
 {
     ZZInitialize();
-    ZZBuildHook((void *)objc_msgSend, (void *)objc_msgSend, NULL);
+    ZZBuildHook((void *)objc_msgSend, (void *)objc_msgSend, NULL, NULL, NULL);
     ZZEnableHook((void *)objc_msgSend);
 }
 

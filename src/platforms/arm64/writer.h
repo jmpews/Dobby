@@ -36,9 +36,12 @@ ZZWriter *ZZNewWriter(zpointer addr);
 void WriterPutAbsJmp(ZZWriter *self, zpointer target_addr);
 
 void writer_put_ldr_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
-// void writer_put_ldr_reg_address_and_b(ZZWriter *self, arm64_reg reg, zaddr address);
+void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
+// void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
+void writer_put_b_cond_imm(ZZWriter *self, arm64_cc cc, zuint imm);
 void writer_put_ldr_reg_imm(ZZWriter *self, arm64_reg reg, zuint imm);
 void writer_put_br_reg(ZZWriter *self, arm64_reg reg);
+void writer_put_blr_reg(ZZWriter *self, arm64_reg reg);
 void writer_put_bytes(ZZWriter *self, zbyte *data, zuint data_size);
 void writer_put_instruction(ZZWriter *self, uint32_t insn);
 void writer_describe_reg(arm64_reg reg, ZZArm64RegInfo *ri);

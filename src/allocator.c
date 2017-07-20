@@ -51,7 +51,7 @@ void alloc_codeslice(ZZCodeSlice *codeslice, zsize codeslice_size)
 {
     zpointer page_ptr;
     zsize page_size = codeslice_size;
-    page_ptr = alloc_page(page_size);
+    page_ptr = zz_alloc_memory(codeslice_size);
 
     codeslice->data = page_ptr;
     codeslice->size = page_size;
@@ -77,7 +77,7 @@ ZZCodeSlice *ZZAllocatorNewCodeSlice(zsize codeslice_size) {
     }
 
     ZZCodeSlice *pp = &(g_allocator->codeslices[g_allocator->size++]);
-    zpointer page_ptr = alloc_page(codeslice_size);
+    zpointer page_ptr = zz_alloc_pages(1);
     pp->data = page_ptr;
     pp->size = codeslice_size;
     pp->is_used = true;

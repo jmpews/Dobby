@@ -34,6 +34,7 @@ typedef struct _ZZHookEntry
     uint8_t isEnabled;
 
     zpointer target_ptr;
+    zpointer caller_ret_addr;
 
     zpointer pre_call;
     zpointer post_call;
@@ -66,9 +67,12 @@ typedef struct _ZZInterceptor
     uint8_t isEnableCenterThunk;
     ZZHookFunctionEntrySet *func_entries;
     ZZInterceptorCenter *intercepter_center;
+    zpointer enter_thunk;
+    zpointer leave_thunk;
 } ZZInterceptor;
 
 ZZSTATUS ZZInitialize(void);
+ZZSTATUS ZZInitializeThunk(void);
 ZZHookFunctionEntry *ZZNewHookFunctionEntry(zpointer target);
 ZZSTATUS ZZActiveEnterTrampoline(ZZHookFunctionEntry *entry);
 

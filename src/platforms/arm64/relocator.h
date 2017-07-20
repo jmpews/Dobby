@@ -25,7 +25,12 @@
 #include "writer.h"
 #include "reader.h"
 
+bool branch_is_unconditional(Instruction *ins);
 Instruction *relocator_read_one(zpointer address, ZZWriter *backup_writer, ZZWriter *relocate_writer);
-void relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer);
+void relocator_build_invoke_trampoline(zpointer target_addr, ZZWriter *backup_writer, ZZWriter *relocate_writer);
+bool relocator_rewrite_ldr(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer);
 
 #endif

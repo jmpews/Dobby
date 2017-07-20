@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "zzdefs.h"
 
 typedef enum _ZZSTATUS {
     ZZ_UNKOWN = -1,
@@ -46,10 +47,10 @@ typedef unsigned char zbyte;
 #define false 0
 #define true 1
 
+typedef void (*PRECALL)(struct RegState_ *rs);   
+typedef void (*POSTCALL)(struct RegState_ *rs);   
 ZZSTATUS ZZInitialize(void);
-ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr);
-ZZSTATUS ZZBuildTrace();
+ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr);
 ZZSTATUS ZZEnableHook(zpointer target_ptr);
-ZZSTATUS ZZEnableTrace();
 
 #endif

@@ -19,15 +19,6 @@
 #include "../../zz.h"
 #include "../../../include/hookzz.h"
 
-__attribute__((__naked__)) static void instruction_set()
-{
-    // backup registers
-    __asm__ volatile(
-        "ldr x16, #8\n"
-        "br x16\n"
-    );
-}
-
 typedef struct _Instruction
 {
     zpointer address;
