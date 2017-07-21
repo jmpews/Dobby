@@ -53,9 +53,9 @@ test : $(SOURCES_O)
 	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func $(LDFLAGS) $(SOURCES_O) tests/test_hook.o -o tests/test_hook.dylib
 
 	@# test for parse self, but it's dylib with `constructor`
-	@$(ZZ_GCC) -c tests/test_hook_objc_msgSend.c -o tests/test_hook_objc_msgSend.o
+	@#$(ZZ_GCC) -c tests/test_hook_objc_msgSend.c -o tests/test_hook_objc_msgSend.o
 	@# -undefined dynamic_lookup
-	@$(ZZ_GCC) $(LDFLAGS) -Wl,-U,_objc_msgSend $(SOURCES_O) tests/test_hook_objc_msgSend.o -o tests/test_hook_objc_msgSend
+	@#$(ZZ_GCC) $(LDFLAGS) -Wl,-U,_objc_msgSend $(SOURCES_O) tests/test_hook_objc_msgSend.o -o tests/test_hook_objc_msgSend
 
 	@$(ZZ_GCC) -framework Foundation -dynamiclib $(LDFLAGS) tests/test_ios.m -o tests/test_ios.dylib
 

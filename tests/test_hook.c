@@ -31,10 +31,6 @@ int newfunc(int x1, int x2, int x3, int x4) {
   return 0;
 }
 
-
-
-
-
 int *orig_open;
 void open_pre_call(struct RegState_ *rs) {
   zpointer openPath = (zpointer)(rs->general.regs.x0);

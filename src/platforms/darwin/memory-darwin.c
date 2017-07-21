@@ -30,6 +30,23 @@
 
 zint zz_query_page_size() { return getpagesize(); }
 
+static kern_return_t get_page_info(uintptr_t ptr, vm_prot_t *prot_p,
+                                   vm_inherit_t *inherit_p) {
+
+  vm_address_t region = (vm_address_t)ptr;
+  vm_size_t region_len = 0;
+  struct vm_region_submap_short_info_64 info;
+  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  natural_t max_depth = 99999;
+  kern_return_t kr =
+      vm_region_recurse_64(mach_task_self(), &region, &region_len, &max_depth,
+                           (vm_region_recurse_info_t)&info, &info_count);
+  *prot_p = info.protection & (PROT_READ | PROT_WRITE | PROT_EXEC);
+  *inherit_p = info.inheritance;
+  return kr;
+}
+
+
 ZZSTATUS zz_mprotect(zpointer addr, zsize size, vm_prot_t page_prot) {
   kern_return_t kr;
 
@@ -73,8 +90,9 @@ zpointer zz_alloc_pages(zsize n_pages) {
     Serror("zz_alloc_pages error!");
     return NULL;
   }
-  zz_mprotect((zpointer)result, page_size * n_pages,
-              (VM_PROT_DEFAULT | VM_PROT_COPY));
+
+  zz_mprotect((zpointer)result, page_size * n_pages, (VM_PROT_DEFAULT | VM_PROT_COPY));
+
   return (zpointer)result;
 }
 
@@ -107,25 +125,12 @@ void make_page_writable(zpointer addr, zuint size) {
   }
 }
 
-static kern_return_t get_page_info(uintptr_t ptr, vm_prot_t *prot_p,
-                                   vm_inherit_t *inherit_p) {
-
-  vm_address_t region = (vm_address_t)ptr;
-  vm_size_t region_len = 0;
-  struct vm_region_submap_short_info_64 info;
-  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
-  natural_t max_depth = 99999;
-  kern_return_t kr =
-      vm_region_recurse_64(mach_task_self(), &region, &region_len, &max_depth,
-                           (vm_region_recurse_info_t)&info, &info_count);
-  *prot_p = info.protection & (PROT_READ | PROT_WRITE | PROT_EXEC);
-  *inherit_p = info.inheritance;
-  return kr;
-}
 
 /*
   ref:
-  substitute/lib/darwin/execmem.c:gum_alloc_n_pages
+  substitute/lib/darwin/execmem.c:execmem_foreign_write_with_pc_patch
+  frida-gum-master/gum/gummemory.c:gum_memory_patch_code
+
   frida-gum-master/gum/backend-darwin/gummemory-darwin.c:gum_alloc_n_pages
 
   mach mmap use __vm_allocate and __vm_map

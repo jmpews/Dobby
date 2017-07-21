@@ -17,7 +17,7 @@ hook framwork. ref with: [frida-gum](https://github.com/frida/frida-gum) and [mi
 
 需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行`
 
-这一部分与具体的操作系统有关.
+这一部分与具体的操作系统有关. 比如 `darwin` 使用 `mach_vm_allocate`
 
 在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
 
@@ -56,6 +56,70 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 
 ```
 
+其实有另外一个小思路, 唯一不足的就是属于部分 hardcode.
+
+先使用内联汇编写一个函数.
+
+```
+
+__attribute__((__naked__)) static void ctx_save() {
+  __asm__ volatile(
+
+      /* reserve space for next_hop */
+      "sub sp, sp, #(2*8)\n"
+
+      /* save {q0-q7} */
+      "sub sp, sp, #(8*16)\n"
+      "stp q6, q7, [sp, #(6*16)]\n"
+      "stp q4, q5, [sp, #(4*16)]\n"
+      "stp q2, q3, [sp, #(2*16)]\n"
+      "stp q0, q1, [sp, #(0*16)]\n"
+
+      /* save {x1-x30} */
+      "sub sp, sp, #(30*8)\n"
+      "stp fp, lr, [sp, #(28*8)]\n"
+      "stp x27, x28, [sp, #(26*8)]\n"
+      "stp x25, x26, [sp, #(24*8)]\n"
+      "stp x23, x24, [sp, #(22*8)]\n"
+      "stp x21, x22, [sp, #(20*8)]\n"
+      "stp x19, x20, [sp, #(18*8)]\n"
+      "stp x17, x18, [sp, #(16*8)]\n"
+      "stp x15, x16, [sp, #(14*8)]\n"
+      "stp x13, x14, [sp, #(12*8)]\n"
+      "stp x11, x12, [sp, #(10*8)]\n"
+      "stp x9, x10, [sp, #(8*8)]\n"
+      "stp x7, x8, [sp, #(6*8)]\n"
+      "stp x5, x6, [sp, #(4*8)]\n"
+      "stp x3, x4, [sp, #(2*8)]\n"
+      "stp x1, x2, [sp, #(0*8)]\n"
+
+      /* save sp, x0 */
+      "sub sp, sp, #(2*8)\n"
+      "add x1, sp, #(2*8 + 8*16 + 30*8 + 2*8)\n"
+      "stp x1, x0, [sp, #(0*8)]\n"
+
+      /* alignment padding + dummy PC */
+      "sub sp, sp, #(2*8)\n");
+}
+
+```
+
+之后直接复制这块函数内存数据即可, 这一般适合那种指令片段堆.
+
+```
+void zz_build_enter_thunk(ZZWriter *writer) {
+    writer_put_bytes(writer, (void *)ctx_save, 26*4);
+
+    // call `function_context_begin_invocation`
+    writer_put_bytes(writer, (void *)pass_enter_func_args, 4*4);
+    writer_put_ldr_reg_address(writer, ARM64_REG_X16, (zaddr)(zpointer)function_context_begin_invocation);
+    writer_put_blr_reg(writer, ARM64_REG_X16);
+
+    writer_put_bytes(writer, (void *)ctx_restore, 23*4);
+
+}
+```
+
 ##### 指令读 模块
 
 这一部分实际上就是 `disassembler`, 这一部分可以直接使用 `capstone`, 这里需要把 `capstone` 编译成多种架构.
@@ -87,16 +151,33 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 #### 跳板 模块
 
-跳板模块的设计是希望各个模块的实现更浅的耦合, 跳板模块本意只实现跳转指令.
+跳板模块的设计是希望各个模块的实现更浅的耦合, 跳板函数主要作用就是进行跳转, 并准备 `跳转目标` 需要的参数. 举个例子, 被 hook 的函数经过入口跳板(`enter_trampoline`), 跳转到调度函数(`enter_chunk`), 需要被 hook 的函数相关信息等, 这个就需要在构造跳板是完成
 
-#### 中心调度 模块
+#### 调度 模块
 
-这一步其实有无即可, 都不影响基本功能, 但为之后的其他工作打下基础.
+可以理解为所有被 hook 的函数都必须经过的函数, 类似于 `objc_msgSend`, 在这里通过栈来函数(`pre_call`, `replace_call`, `post_call`)调用顺序.
 
 本质有些类似于 `objc_msgSend` 所有的被 hook 的函数都在经过 `enter_trampoline` 跳板后, 跳转到 `enter_thunk`, 在此进行下一步的跳转判断决定, 并不是直接跳转到 `replace_call`.
 
-#### 逻辑上
+## 编译 & 使用
 
-同时逻辑上, 应该具有以下:
 
-hook结构描述, hook结构记录
+#### arm64 & ios 架构
+
+```
+jmpews at localhost in ~/Desktop/SpiderZz/project/evilHOOK/HookZz (master●) (normal)
+λ : >>> make -f darwin.ios.mk test
+generate [src/allocator.o]!
+generate [src/interceptor.o]!
+generate [src/trampoline.o]!
+generate [src/platforms/darwin/memory-darwin.o]!
+generate [src/platforms/arm64/reader.o]!
+generate [src/platforms/arm64/relocator.o]!
+generate [src/platforms/arm64/thunker.o]!
+generate [src/platforms/arm64/writer.o]!
+build [test] success for arm64(IOS)!
+```
+
+#### 测试
+
+已经生成编译测试的 `test_hook.dylib` 与 `test_ios.dylib` 请自行测试
