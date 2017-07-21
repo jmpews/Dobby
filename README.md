@@ -2,7 +2,7 @@
 
 hook framwork. ref with: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate)
 
-**still developing**
+**still developing, for arm64 now!**
 
 ## 通用Hook结构设计
 
