@@ -162,7 +162,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 ## 编译 & 使用
 
-export 3 func:
+#### export 3 func:
 
 ```
 // initialize the interceptor and so on.
@@ -173,6 +173,13 @@ ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin
 
 // enable hook, with `code patch`
 ZZSTATUS ZZEnableHook(zpointer target_ptr);
+```
+
+#### export 1 datastruct:
+
+```
+// current all cpu register state, read `zzdefs.h` for detail.
+struct RegState_
 ```
 
 #### arm64 & ios 架构
