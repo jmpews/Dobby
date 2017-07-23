@@ -18,9 +18,8 @@
 #include "../include/hookzz.h"
 
 
-__attribute__((constructor)) void hook_objc_msgSend()
-{
+__attribute__((constructor)) void hook_objc_msgSend() {
     ZZInitialize();
-    ZZBuildHook((void *)objc_msgSend, (void *)objc_msgSend, NULL);
-    ZZEnableHook((void *)objc_msgSend);
+    ZZBuildHook((void *) objc_msgSend, (void *) objc_msgSend, NULL);
+    ZZEnableHook((void *) objc_msgSend);
 }

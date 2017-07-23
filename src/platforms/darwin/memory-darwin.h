@@ -19,8 +19,13 @@
 #include <mach/vm_prot.h>
 
 zpointer zz_alloc_memory(zsize size);
+
 zpointer zz_alloc_pages(zsize n_pages);
+
 ZZSTATUS zz_mprotect(zpointer addr, zsize size, vm_prot_t page_prot);
+
 void make_page_executable(zpointer page_ptr, zuint page_size);
+
 void make_page_writable(zpointer page_ptr, zuint page_size);
+
 void memory_patch_code(zpointer addr, zpointer code_ptr, zuint code_size);

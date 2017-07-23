@@ -35,22 +35,24 @@ typedef enum _ZZSTATUS {
 } ZZSTATUS;
 
 typedef void *zpointer;
-
 typedef unsigned long zsize;
-
 typedef unsigned long zaddr;
 typedef unsigned long zuint;
 typedef long zint;
-
 typedef unsigned char zbyte;
 
 #define false 0
 #define true 1
 
-typedef void (*PRECALL)(struct RegState_ *rs);   
-typedef void (*POSTCALL)(struct RegState_ *rs);   
+typedef void (*PRECALL)(struct RegState_ *rs);
+
+typedef void (*POSTCALL)(struct RegState_ *rs);
+
 ZZSTATUS ZZInitialize(void);
-ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr);
+
+ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,
+                     zpointer post_call_ptr);
+
 ZZSTATUS ZZEnableHook(zpointer target_ptr);
 
 #endif

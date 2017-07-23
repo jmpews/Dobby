@@ -25,6 +25,7 @@ typedef unsigned char bool;
 #else
 // not MSVC -> C99 is supported
 #include <stdbool.h>
+
 #endif
 
 
@@ -105,6 +106,7 @@ typedef unsigned long long uint64_t;
 #else
 // this system has inttypes.h by default
 #include <inttypes.h>
+
 #endif
 
 #endif

@@ -18,13 +18,12 @@
 #include "../include/hookzz.h"
 #include <stdio.h>
 
-__attribute__((constructor)) void hook_objc_msgSend()
-{
+__attribute__((constructor)) void hook_objc_msgSend() {
     ZZInitialize();
-    ZZBuildHook((void *)objc_msgSend, (void *)objc_msgSend, NULL, NULL, NULL);
-    ZZEnableHook((void *)objc_msgSend);
+    ZZBuildHook((void *) objc_msgSend, (void *) objc_msgSend, NULL, NULL, NULL);
+    ZZEnableHook((void *) objc_msgSend);
 }
 
-int main( int argc, const char* argv[]){
+int main(int argc, const char *argv[]) {
     printf("hello world.\n");
 }

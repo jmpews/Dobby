@@ -15,7 +15,7 @@
 #ifndef trampoline_h
 #define trampoline_h
 
-#include "zz.h"
+#include "zzdeps/zz.h"
 #include "../include/hookzz.h"
 
 #include "allocator.h"
@@ -34,8 +34,7 @@
         1. 跳转到 `leave_thunk`
  */
 
-typedef struct _ZZTrampoline
-{
+typedef struct _ZZTrampoline {
     ZZCodeSlice *codeslice;
 } ZZTrampoline;
 

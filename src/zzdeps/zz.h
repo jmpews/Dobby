@@ -1,17 +1,34 @@
 #ifndef machoparser_zz_h
 #define machoparser_zz_h
-//
+
 // Created by jmpews on 2017/5/3.
 //
-#define PROGRAM_NAME "HookZz"
+#define PROGRAM_NAME "MachoParser"
 #define PROGRAM_VER "1.0.0"
 #define PROGRAM_AUTHOR "jmpews@gmail.com"
 
-// --------------------------------------------------------------------------
+static char zzdata[256];
 
-#define GLOBAL_DEBUG false
-#define GLOBAL_INFO true
-#define SYSLOG false
+#include <stdint.h>
+#include <mach/vm_types.h>
+
+typedef void *zpointer;
+typedef unsigned long zsize;
+typedef unsigned long zaddr;
+typedef unsigned long zuint;
+typedef long zint;
+typedef unsigned char zbyte;
+
+#define false 0
+#define true 1
+
+// #define GLOBAL_DEBUG false
+// #define GLOBAL_INFO true
+// #define SYSLOG true
+
+#define GLOBAL_DEBUG 0
+#define GLOBAL_INFO 1
+#define SYSLOG 0
 
 #define RED "\x1B[31m"
 #define GRN "\x1B[32m"

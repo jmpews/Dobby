@@ -15,13 +15,14 @@
 #ifndef reader_h
 #define reader_h
 
-#include "../../zz.h"
+#include "../../zzdeps/zz.h"
 #include "../../../include/hookzz.h"
 #include "instructions.h"
 
 #include "../../trampoline.h"
 
 void relocator_read_one(Instruction *old_ins, Instruction *new_ins);
+
 void relocator_invoke_trampoline(ZZTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup);
 
 

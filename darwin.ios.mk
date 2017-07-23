@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
+SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c) $(wildcard src/zzdeps/darwin/*.c)
 SOURCES_O = $(patsubst %.c,%.o, $(SOURCES))
 
 OUTPUT_DIR = build

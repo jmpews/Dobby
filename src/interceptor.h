@@ -15,12 +15,11 @@
 #ifndef interceptor_h
 #define interceptor_h
 
-#include "zz.h"
+#include "zzdeps/zz.h"
 #include "../include/hookzz.h"
 #include "allocator.h"
 
-typedef struct _FunctionBackup
-{
+typedef struct _FunctionBackup {
     zpointer address;
     uint8_t size;
     zbyte data[32];
@@ -28,8 +27,7 @@ typedef struct _FunctionBackup
 
 struct _ZZInterceptor;
 
-typedef struct _ZZHookEntry
-{
+typedef struct _ZZHookEntry {
     unsigned long id;
     uint8_t isEnabled;
 
@@ -49,21 +47,18 @@ typedef struct _ZZHookEntry
     struct _ZZInterceptor *interceptor;
 } ZZHookFunctionEntry;
 
-typedef struct
-{
+typedef struct {
     ZZHookFunctionEntry **entries;
     zuint size;
     zuint capacity;
 } ZZHookFunctionEntrySet;
 
-typedef struct _ZZInterceptorCenter
-{
+typedef struct _ZZInterceptorCenter {
     ZZCodeSlice enter_thunk;
     ZZCodeSlice leave_thunk;
 } ZZInterceptorCenter;
 
-typedef struct _ZZInterceptor
-{
+typedef struct _ZZInterceptor {
     uint8_t isEnableCenterThunk;
     ZZHookFunctionEntrySet *func_entries;
     ZZInterceptorCenter *intercepter_center;
@@ -72,8 +67,11 @@ typedef struct _ZZInterceptor
 } ZZInterceptor;
 
 ZZSTATUS ZZInitialize(void);
+
 ZZSTATUS ZZInitializeThunk(void);
+
 ZZHookFunctionEntry *ZZNewHookFunctionEntry(zpointer target);
+
 ZZSTATUS ZZActiveEnterTrampoline(ZZHookFunctionEntry *entry);
 
 #endif

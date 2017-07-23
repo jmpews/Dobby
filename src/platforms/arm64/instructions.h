@@ -16,11 +16,10 @@
 #define instructions_h
 
 #include "capstone.h"
-#include "../../zz.h"
+#include "../../zzdeps/zz.h"
 #include "../../../include/hookzz.h"
 
-typedef struct _Instruction
-{
+typedef struct _Instruction {
     zpointer address;
     cs_insn *ins_cs;
     uint8_t size;

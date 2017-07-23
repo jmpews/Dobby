@@ -16,8 +16,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <mach/vm_statistics.h>
-#include <sys/mman.h>
 #include "allocator.h"
 
 ZZAllocator *g_allocator;
@@ -34,9 +32,9 @@ ZZAllocator *g_allocator;
 
  */
 void ZZAllocatorInitialize() {
-    if(!g_allocator) {
-        g_allocator = (ZZAllocator *)malloc(sizeof(ZZAllocator));
-        g_allocator->codeslices = (ZZCodeSlice *)malloc(sizeof(ZZCodeSlice) * DEFAULT_ALLOCATOR_CAPACITY);
+    if (!g_allocator) {
+        g_allocator = (ZZAllocator *) malloc(sizeof(ZZAllocator));
+        g_allocator->codeslices = (ZZCodeSlice *) malloc(sizeof(ZZCodeSlice) * DEFAULT_ALLOCATOR_CAPACITY);
         g_allocator->size = 0;
         g_allocator->capacity = DEFAULT_ALLOCATOR_CAPACITY;
     }
@@ -47,8 +45,7 @@ void ZZAllocatorInitialize() {
     NO USED!!!
     change to `alloc_codeslice(ZZCodeSlice *codeslice)` ?
  */
-void alloc_codeslice(ZZCodeSlice *codeslice, zsize codeslice_size)
-{
+void alloc_codeslice(ZZCodeSlice *codeslice, zsize codeslice_size) {
     zpointer page_ptr;
     zsize page_size = codeslice_size;
     page_ptr = zz_alloc_memory(codeslice_size);
@@ -63,13 +60,12 @@ void alloc_codeslice(ZZCodeSlice *codeslice, zsize codeslice_size)
     different from `AddHookEntry`:
  */
 ZZCodeSlice *ZZAllocatorNewCodeSlice(zsize codeslice_size) {
-    if(!g_allocator)
+    if (!g_allocator)
         ZZAllocatorInitialize();
 
-    if(g_allocator->size >= g_allocator->capacity) {
+    if (g_allocator->size >= g_allocator->capacity) {
         ZZCodeSlice *p = realloc(g_allocator->codeslices, sizeof(ZZCodeSlice) * (g_allocator->capacity) * 2);
-        if(NULL == p)
-        {
+        if (NULL == p) {
             return NULL;
         }
         g_allocator->capacity = g_allocator->capacity * 2;
@@ -81,7 +77,7 @@ ZZCodeSlice *ZZAllocatorNewCodeSlice(zsize codeslice_size) {
     pp->data = page_ptr;
     pp->size = codeslice_size;
     pp->is_used = true;
-    
+
     return pp;
 }
 

@@ -18,7 +18,7 @@
 #include <string.h>
 
 ZZWriter *ZZNewWriter(zpointer addr) {
-    ZZWriter *writer = (ZZWriter *)malloc(sizeof(ZZWriter));
+    ZZWriter *writer = (ZZWriter *) malloc(sizeof(ZZWriter));
     writer->codedata = addr;
     writer->base = addr;
     writer->pc = addr;
@@ -27,32 +27,32 @@ ZZWriter *ZZNewWriter(zpointer addr) {
 }
 
 void WriterPutAbsJmp(ZZWriter *self, zpointer target_addr) {
-    writer_put_ldr_reg_imm(self, ARM64_REG_X16, (zuint)0x8);
+    writer_put_ldr_reg_imm(self, ARM64_REG_X16, (zuint) 0x8);
     writer_put_br_reg(self, ARM64_REG_X16);
-    writer_put_bytes(self, (zpointer)&target_addr, sizeof(target_addr));
+    writer_put_bytes(self, (zpointer) &target_addr, sizeof(target_addr));
 }
 
 void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
-  writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
-  writer_put_br_reg(self, reg);
-  writer_put_b_imm(self, (zaddr)0xc);
-  writer_put_bytes(self, (zpointer)&address,
-                   sizeof(address));
-  
+    writer_put_ldr_reg_imm(self, reg, (zuint) 0xc);
+    writer_put_br_reg(self, reg);
+    writer_put_b_imm(self, (zaddr) 0xc);
+    writer_put_bytes(self, (zpointer) &address,
+                     sizeof(address));
+
 }
 
 void writer_put_ldr_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
-  writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-  writer_put_b_imm(self, (zaddr)0xc);
-  writer_put_bytes(self, (zpointer)&address,
-                   sizeof(address));
-  
+    writer_put_ldr_reg_imm(self, reg, (zuint) 0x8);
+    writer_put_b_imm(self, (zaddr) 0xc);
+    writer_put_bytes(self, (zpointer) &address,
+                     sizeof(address));
+
 }
 
 void writer_put_ldr_reg_imm(ZZWriter *self, arm64_reg reg, zuint imm) {
-    if(reg == ARM64_REG_X16)
+    if (reg == ARM64_REG_X16)
         writer_put_instruction(self, 0x58000010 | ((imm >> 2) << 5));
-    else if(reg == ARM64_REG_X17)
+    else if (reg == ARM64_REG_X17)
         writer_put_instruction(self, 0x58000011 | ((imm >> 2) << 5));
 }
 
@@ -82,15 +82,15 @@ void writer_put_b_imm(ZZWriter *self, zuint imm) {
 
 void writer_put_bytes(ZZWriter *self, zbyte *data, zuint data_size) {
     memcpy(self->codedata, data, data_size);
-    self->codedata = (zpointer)self->codedata + data_size;
+    self->codedata = (zpointer) self->codedata + data_size;
     self->pc += data_size;
     self->size += data_size;
-    
+
 }
 
 void writer_put_instruction(ZZWriter *self, uint32_t insn) {
-    *(uint32_t *)(self->codedata) = insn;
-    self->codedata = (zpointer)self->codedata + sizeof(uint32_t);
+    *(uint32_t *) (self->codedata) = insn;
+    self->codedata = (zpointer) self->codedata + sizeof(uint32_t);
     self->pc += 4;
     self->size += 4;
 }

@@ -15,29 +15,28 @@
 // 0x58000050
 #define CODE "\x50\x00\x00\x58"
 
-int main(void)
-{
-	csh handle;
-	cs_insn *insn;
-	size_t count;
+int main(void) {
+    csh handle;
+    cs_insn *insn;
+    size_t count;
 
-	if (cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle) != CS_ERR_OK)
-	return -1;
+    if (cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle) != CS_ERR_OK)
+        return -1;
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
-	count = cs_disasm(handle, CODE, sizeof(CODE)-1, 0, 1, &insn);
-	if (count > 0) {
-		size_t j;
-		for (j = 0; j < count; j++) {
-	     printf("0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic,
-	             insn[j].op_str);
-         //printf("0x%x\n", X86_REL_ADDR(insn[j]));
-	 	}
+    count = cs_disasm(handle, CODE, sizeof(CODE) - 1, 0, 1, &insn);
+    if (count > 0) {
+        size_t j;
+        for (j = 0; j < count; j++) {
+            printf("0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic,
+                   insn[j].op_str);
+            //printf("0x%x\n", X86_REL_ADDR(insn[j]));
+        }
 
-	cs_free(insn, count);
-	} else
-	printf("ERROR: Failed to disassemble given code!\n");
+        cs_free(insn, count);
+    } else
+        printf("ERROR: Failed to disassemble given code!\n");
 
-	cs_close(&handle);
+    cs_close(&handle);
 
-	return 0;
+    return 0;
 }
