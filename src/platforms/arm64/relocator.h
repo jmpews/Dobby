@@ -37,6 +37,8 @@ bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer);
 
 bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer);
 
+bool relocator_rewrite_adr(Instruction *ins, ZZWriter *relocate_writer);
+
 bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer);
 
 #endif

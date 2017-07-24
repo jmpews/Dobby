@@ -57,7 +57,7 @@ test : $(SOURCES_O)
 	@# -undefined dynamic_lookup
 	@#$(ZZ_GCC) $(LDFLAGS) -Wl,-U,_objc_msgSend $(SOURCES_O) tests/test_hook_objc_msgSend.o -o tests/test_hook_objc_msgSend
 
-	@$(ZZ_GCC) -framework Foundation -dynamiclib $(LDFLAGS) tests/test_ios.m -o tests/test_ios.dylib
+	@$(ZZ_GCC) -Wl,-undefined,dynamic_lookup -framework Foundation -dynamiclib $(LDFLAGS) tests/test_ios.m -o tests/test_ios.dylib
 
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 

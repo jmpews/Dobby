@@ -32,6 +32,7 @@ void WriterPutAbsJmp(ZZWriter *self, zpointer target_addr) {
     writer_put_bytes(self, (zpointer) &target_addr, sizeof(target_addr));
 }
 
+// NOUSE:
 void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
     writer_put_ldr_reg_imm(self, reg, (zuint) 0xc);
     writer_put_br_reg(self, reg);
@@ -50,10 +51,14 @@ void writer_put_ldr_reg_address(ZZWriter *self, arm64_reg reg, zaddr address) {
 }
 
 void writer_put_ldr_reg_imm(ZZWriter *self, arm64_reg reg, zuint imm) {
-    if (reg == ARM64_REG_X16)
-        writer_put_instruction(self, 0x58000010 | ((imm >> 2) << 5));
-    else if (reg == ARM64_REG_X17)
-        writer_put_instruction(self, 0x58000011 | ((imm >> 2) << 5));
+    ZZArm64RegInfo ri;
+    uint32_t ins_bytes = 0;
+
+    writer_describe_reg(reg, &ri);
+    
+    ins_bytes = 0x58000000 | ri.index;
+    
+    writer_put_instruction(self, ins_bytes | ((imm >> 2) << 5));
 }
 
 void writer_put_b_cond_imm(ZZWriter *self, arm64_cc cc, zuint imm) {
@@ -97,5 +102,11 @@ void writer_put_instruction(ZZWriter *self, uint32_t insn) {
 
 // TODO:
 void writer_describe_reg(arm64_reg reg, ZZArm64RegInfo *ri) {
-    ri->index = 0;
+  if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28)
+  {
+    ri->index = reg - ARM64_REG_X0;
+  } else {
+      Serror("error at writer_describe_reg");
+      ri->index = 0;
+  }
 }

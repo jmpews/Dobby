@@ -49,6 +49,10 @@ Instruction *relocator_read_one(zpointer address, ZZWriter *backup_writer,
         case ARM64_INS_LDR:
             flag = relocator_rewrite_ldr(ins, relocate_writer);
             break;
+        case ARM64_INS_ADR:
+        case ARM64_INS_ADRP:
+            flag = relocator_rewrite_adr(ins, relocate_writer);
+            break;
         case ARM64_INS_BL:
             flag = relocator_rewrite_bl(ins, relocate_writer);
             break;
@@ -149,5 +153,14 @@ bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer) {
     // writer_put_ldr_br_b_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
     writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
     writer_put_br_reg(relocate_writer, ARM64_REG_X16);
+    return true;
+}
+
+bool relocator_rewrite_adr(Instruction *ins, ZZWriter *relocate_writer) {
+    cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
+    
+    const cs_arm64_op dst = ins_csd.operands[0];
+    const cs_arm64_op label = ins_csd.operands[1];
+    writer_put_ldr_reg_address(relocate_writer, dst.reg, label.imm);
     return true;
 }
