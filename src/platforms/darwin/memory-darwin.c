@@ -171,8 +171,17 @@ void memory_patch_code(zpointer addr, zpointer code_ptr, zuint code_size) {
 
     memcpy(code_mmap + page_offset, code_ptr, code_size);
 
-    /* mprotect(code_mmap, range_size, prot); */
+    /* SAME: mprotect(code_mmap, range_size, prot); */
     zz_mprotect(code_mmap, range_size, prot);
+    
+    // TODO: need check `memory region` again.
+    /*
+        TODO:
+        // if only this, `memory region` is `r-x`
+        vm_protect((vm_map_t)mach_task_self(), 0x00000001816b2030, 16, false, 0x13);
+        // and with this, `memory region` is `rwx`
+        *(char *)0x00000001816b01a8 = 'a';
+     */
 
     mach_vm_address_t target = (zaddr) start_page;
     vm_prot_t c, m;
