@@ -4,6 +4,12 @@ hook framwork. ref with: [frida-gum](https://github.com/frida/frida-gum) and [mi
 
 **still developing, for arm64 now!**
 
+```
+SAME: 效果相同的另一种写法
+TODO: 有些没有考虑到, 或需要改进的.
+NOUSE: 没有使用
+```
+
 ## 通用Hook结构设计
 
 1. 内存分配 模块
