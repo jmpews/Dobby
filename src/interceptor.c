@@ -150,9 +150,9 @@ ZZSTATUS ZZActiveHookEnterTrampoline(ZZHookFunctionEntry *entry) {
     zpointer code_data = (void *) malloc(256);
     ZZWriter *writer = ZZNewWriter(code_data);
     WriterPutAbsJmp(writer, entry->on_enter_trampoline);
-    free(writer);
     // make_page_executable(target_ptr, entry->old_prologue.size);
     memory_patch_code(target_ptr, code_data, writer->size);
+    free(writer);
     return ZZ_DONE_HOOK;
 }
 

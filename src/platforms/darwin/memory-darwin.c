@@ -171,7 +171,8 @@ void memory_patch_code(zpointer addr, zpointer code_ptr, zuint code_size) {
 
     memcpy(code_mmap + page_offset, code_ptr, code_size);
 
-    mprotect(code_mmap, range_size, prot);
+    /* mprotect(code_mmap, range_size, prot); */
+    zz_mprotect(code_mmap, range_size, prot);
 
     mach_vm_address_t target = (zaddr) start_page;
     vm_prot_t c, m;
