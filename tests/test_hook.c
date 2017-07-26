@@ -80,7 +80,7 @@ __attribute__((constructor)) void test_hook_recvmsg() {
     ZZInitialize();
     ZZBuildHook((void *) recvmsg, NULL, (void **) (&orig_recvmsg),
                 (zpointer) recvmsg_pre_call, (zpointer) recvmsg_post_call);
-    ZZEnableHook((void *) recvmsg);
+    // ZZEnableHook((void *) recvmsg);
 }
 
 int *orig_socket;
@@ -97,7 +97,7 @@ __attribute__((constructor)) void test_hook_socket() {
     void *socket_ptr = (void *) socket;
     ZZBuildHook(socket_ptr, NULL, (void **) (&orig_socket),
                 NULL, (zpointer) socket_post_call);
-    ZZEnableHook((void *) socket_ptr);
+    // ZZEnableHook((void *) socket_ptr);
 }
 
 
@@ -121,7 +121,7 @@ __attribute__((constructor)) void test_hook_read() {
     void *read_ptr = (void *) read;
     ZZBuildHook(read_ptr, NULL, (void **) (&orig_read),
                 (zpointer) read_pre_call, (zpointer) read_post_call);
-    ZZEnableHook((void *) read_ptr);
+    // ZZEnableHook((void *) read_ptr);
 }
 
 

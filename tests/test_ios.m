@@ -16,7 +16,10 @@
 
 
 #import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 #import <dlfcn.h>
+
+#include "../include/hookzz.h"
 
 @interface SpiderZz: NSObject
 
@@ -31,7 +34,24 @@ NSString *mainPath;
 {
     [self zzPrintDirInfo];
     NSString *dylibPath = [mainPath stringByAppendingPathComponent:@"Dylibs/test_hook.dylib"];
-    [self dlopenLoadDylibWithPath: dylibPath];
+    // [self dlopenLoadDylibWithPath: dylibPath];
+    [self zzMethodSwizzlingHook];
+}
+
+void objcMethod_pre_call(struct RegState_ *rs) {
+    printf("call -[ViewController %s]", (zpointer) (rs->general.regs.x1));
+}
+
+void *oriObjcMethod;
++(void)zzMethodSwizzlingHook {
+    Class hookClass = objc_getClass("UIViewController");
+    SEL oriSEL = @selector(viewWillAppear:);
+    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+    IMP oriImp = method_getImplementation(oriMethod);
+
+    ZZBuildHook((void *)oriImp, NULL, (void **) (&oriObjcMethod),
+                (zpointer) objcMethod_pre_call, NULL);
+    ZZEnableHook((void *) oriImp);
 }
 
 +(void)zzPrintDirInfo {
