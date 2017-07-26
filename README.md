@@ -243,3 +243,160 @@ __attribute__((constructor)) void test_hook_recvmsg() {
   ZZEnableHook((void *)func);
 }
 ```
+
+#### 对于 Objective-C 方法呢 ?
+
+这里需要对 `<objc/runtime.h>` 里的函数比较了解. 也需要对 objc 的内存有一些了解.
+
+```
++ (void)load
+{
+    [self zzMethodSwizzlingHook];
+}
+
+void objcMethod_pre_call(struct RegState_ *rs) {
+    printf("call -[ViewController %s]", (zpointer) (rs->general.regs.x1));
+}
+
+void *oriObjcMethod;
++(void)zzMethodSwizzlingHook {
+    Class hookClass = objc_getClass("UIViewController");
+    SEL oriSEL = @selector(viewWillAppear:);
+    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+    IMP oriImp = method_getImplementation(oriMethod);
+
+    ZZBuildHook((void *)oriImp, NULL, (void **) (&oriObjcMethod),
+                (zpointer) objcMethod_pre_call, NULL);
+    ZZEnableHook((void *) oriImp);
+}
+```
+
+#### rwx 与 codesigning
+对于非越狱, 不能分配可执行内存, 不能进行 `code patch`.
+
+两篇原理讲解 codesign 的原理
+
+```
+https://papers.put.as/papers/ios/2011/syscan11_breaking_ios_code_signing.pdf
+http://www.newosxbook.com/articles/CodeSigning.pdf
+```
+
+以及源码分析如下:
+
+crash 异常如下, 其中 `0x0000000100714000` 是 mmap 分配的页.
+
+```
+Exception Type:  EXC_BAD_ACCESS (SIGKILL - CODESIGNING)
+Exception Subtype: unknown at 0x0000000100714000
+Termination Reason: Namespace CODESIGNING, Code 0x2
+Triggered by Thread:  0
+```
+
+寻找对应的错误码
+
+```
+xnu-3789.41.3/bsd/sys/reason.h
+/*
+ * codesigning exit reasons
+ */
+#define CODESIGNING_EXIT_REASON_TASKGATED_INVALID_SIG 1
+#define CODESIGNING_EXIT_REASON_INVALID_PAGE          2
+#define CODESIGNING_EXIT_REASON_TASK_ACCESS_PORT      3
+```
+
+找到对应处理函数, 请仔细阅读注释里内容
+
+```
+# xnu-3789.41.3/osfmk/vm/vm_fault.c:2632
+
+	/* If the map is switched, and is switch-protected, we must protect
+	 * some pages from being write-faulted: immutable pages because by 
+	 * definition they may not be written, and executable pages because that
+	 * would provide a way to inject unsigned code.
+	 * If the page is immutable, we can simply return. However, we can't
+	 * immediately determine whether a page is executable anywhere. But,
+	 * we can disconnect it everywhere and remove the executable protection
+	 * from the current map. We do that below right before we do the 
+	 * PMAP_ENTER.
+	 */
+	cs_enforcement_enabled = cs_enforcement(NULL);
+
+	if(cs_enforcement_enabled && map_is_switched && 
+	   map_is_switch_protected && page_immutable(m, prot) && 
+	   (prot & VM_PROT_WRITE))
+	{
+		return KERN_CODESIGN_ERROR;
+	}
+
+	if (cs_enforcement_enabled && page_nx(m) && (prot & VM_PROT_EXECUTE)) {
+		if (cs_debug)
+			printf("page marked to be NX, not letting it be mapped EXEC\n");
+		return KERN_CODESIGN_ERROR;
+	}
+
+	if (cs_enforcement_enabled &&
+	    !m->cs_validated &&
+	    (prot & VM_PROT_EXECUTE) &&
+	    !(caller_prot & VM_PROT_EXECUTE)) {
+		/*
+		 * FOURK PAGER:
+		 * This page has not been validated and will not be
+		 * allowed to be mapped for "execute".
+		 * But the caller did not request "execute" access for this
+		 * fault, so we should not raise a code-signing violation
+		 * (and possibly kill the process) below.
+		 * Instead, let's just remove the "execute" access request.
+		 * 
+		 * This can happen on devices with a 4K page size if a 16K
+		 * page contains a mix of signed&executable and
+		 * unsigned&non-executable 4K pages, making the whole 16K
+		 * mapping "executable".
+		 */
+		prot &= ~VM_PROT_EXECUTE;
+	}
+
+	/* A page could be tainted, or pose a risk of being tainted later.
+	 * Check whether the receiving process wants it, and make it feel
+	 * the consequences (that hapens in cs_invalid_page()).
+	 * For CS Enforcement, two other conditions will 
+	 * cause that page to be tainted as well: 
+	 * - pmapping an unsigned page executable - this means unsigned code;
+	 * - writeable mapping of a validated page - the content of that page
+	 *   can be changed without the kernel noticing, therefore unsigned
+	 *   code can be created
+	 */
+	if (!cs_bypass &&
+	    (m->cs_tainted ||
+	     (cs_enforcement_enabled &&
+	      (/* The page is unsigned and wants to be executable */
+	       (!m->cs_validated && (prot & VM_PROT_EXECUTE))  ||
+	       /* The page should be immutable, but is in danger of being modified
+		* This is the case where we want policy from the code directory -
+		* is the page immutable or not? For now we have to assume that 
+		* code pages will be immutable, data pages not.
+		* We'll assume a page is a code page if it has a code directory 
+		* and we fault for execution.
+		* That is good enough since if we faulted the code page for
+		* writing in another map before, it is wpmapped; if we fault
+		* it for writing in this map later it will also be faulted for executing 
+		* at the same time; and if we fault for writing in another map
+		* later, we will disconnect it from this pmap so we'll notice
+		* the change.
+		*/
+	      (page_immutable(m, prot) && ((prot & VM_PROT_WRITE) || m->wpmapped))
+	      ))
+		    )) 
+	{
+```
+
+#### 其他文章:
+
+http://ddeville.me/2014/04/dynamic-linking
+
+> Later on, whenever a page fault occurs the vm_fault function in `vm_fault.c` is called. During the page fault the signature is validated if necessary. The signature will need to be validated if the page is mapped in user space, if the page belongs to a code-signed object, if the page will be writable or simply if it has not previously been validated. Validation happens in the `vm_page_validate_cs` function inside vm_fault.c (the validation process and how it is enforced continually and not only at load time is interesting, see Charlie Miller’s book for more details).
+
+> If for some reason the page cannot be validated, the kernel checks whether the `CS_KILL` flag has been set and kills the process if necessary. There is a major distinction between iOS and OS X regarding this flag. All iOS processes have this flag set whereas on OS X, although code signing is checked it is not set and thus not enforced.
+
+> In our case we can safely assume that the (missing) code signature couldn’t be verified leading to the kernel killing the process.
+
+---
