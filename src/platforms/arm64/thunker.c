@@ -16,6 +16,17 @@
 
 #include "thunker.h"
 
+
+/*
+    Programmer’s Guide for ARMv8-A:
+        Page: (6-15)
+        Page: (6-16)
+
+    STP X9, X8, [X4]
+        Stores the doubleword in X9 to address X4 and stores the doubleword in X8 to address X4 + 8.
+    LDP X8, X2, [X0, #0x10]!
+        Loads doubleword at address X0 + 0x10 into X8 and the doubleword at address X0 + 0x10 + 8 into X2 and add 0x10 to X0. See Figure 6-7.
+ */
 __attribute__((__naked__)) static void ctx_save() {
     __asm__ volatile(
 
@@ -58,21 +69,17 @@ __attribute__((__naked__)) static void ctx_save() {
 
 __attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
-    __asm__ volatile(
-    "mov x0, x17\n"
+    __asm__ volatile("mov x0, x17\n"
             "add x1, sp, #8\n"
             "add x2, sp, #(2*8 + 2*8 + 28*8 + 8)\n"
-            "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n"
-    );
+            "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
 }
 
 __attribute__((__naked__)) static void pass_leave_func_args() {
     /* transfer args */
-    __asm__ volatile(
-    "mov x0, x17\n"
+    __asm__ volatile("mov x0, x17\n"
             "add x1, sp, #8\n"
-            "add x2, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n"
-    );
+            "add x2, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
 }
 
 __attribute__((__naked__)) static void ctx_restore() {
@@ -106,14 +113,22 @@ __attribute__((__naked__)) static void ctx_restore() {
             "ldp q4, q5, [sp], #32\n"
             "ldp q6, q7, [sp], #32\n"
 
-            /* next hop*/
-            "ldp x16, x17, [sp], #16\n"
-            "br x16\n");
+
+            // //  next hop
+            // //  ATTENTION: svc #x80, use x16 to transfer syscall number.
+            // //  use x17 replace x16.
+            // "ldp x16, x17, [sp], #16\n"
+            // "br x16\n");
+
+            /* next hop */
+            "ldr x17, [sp], #16\n"
+            "br x17\n");
 }
 
-
 // just like pre_call, wow!
-void function_context_begin_invocation(ZZHookFunctionEntry *entry, struct RegState_ *rs, zpointer caller_ret_addr,
+void function_context_begin_invocation(ZZHookFunctionEntry *entry,
+                                       struct RegState_ *rs,
+                                       zpointer caller_ret_addr,
                                        zpointer next_hop) {
 
     entry->caller_ret_addr = *(zpointer *) caller_ret_addr;
@@ -134,7 +149,8 @@ void function_context_begin_invocation(ZZHookFunctionEntry *entry, struct RegSta
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZZHookFunctionEntry *entry, struct RegState_ *rs, zpointer next_hop) {
+void function_context_end_invocation(ZZHookFunctionEntry *entry,
+                                     struct RegState_ *rs, zpointer next_hop) {
     if (entry->post_call) {
         POSTCALL post_call;
         post_call = entry->post_call;
@@ -144,41 +160,70 @@ void function_context_end_invocation(ZZHookFunctionEntry *entry, struct RegState
 }
 
 void zz_build_enter_thunk(ZZWriter *writer) {
+
+    // pop x17
+    writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+
     // TODO:  is bad code ?
     writer_put_bytes(writer, (void *) ctx_save, 26 * 4);
 
     // call `function_context_begin_invocation`
     writer_put_bytes(writer, (void *) pass_enter_func_args, 4 * 4);
-    writer_put_ldr_reg_address(writer, ARM64_REG_X16, (zaddr) (zpointer) function_context_begin_invocation);
-    writer_put_blr_reg(writer, ARM64_REG_X16);
+    writer_put_ldr_reg_address(
+            writer, ARM64_REG_X17,
+            (zaddr) (zpointer) function_context_begin_invocation);
+    writer_put_blr_reg(writer, ARM64_REG_X17);
 
     // TOOD: is bad code ?
     writer_put_bytes(writer, (void *) ctx_restore, 23 * 4);
-
 }
 
 void zz_build_leave_thunk(ZZWriter *writer) {
+
+    // pop x17
+    writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+
     // TODO:  is bad code ?
     writer_put_bytes(writer, (void *) ctx_save, 26 * 4);
 
     // call `function_context_end_invocation`
     writer_put_bytes(writer, (void *) pass_leave_func_args, 3 * 4);
-    writer_put_ldr_reg_address(writer, ARM64_REG_X16, (zaddr) (zpointer) function_context_end_invocation);
-    writer_put_blr_reg(writer, ARM64_REG_X16);
+    writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+                               (zaddr) (zpointer) function_context_end_invocation);
+    writer_put_blr_reg(writer, ARM64_REG_X17);
 
     // TOOD: is bad code ?
     writer_put_bytes(writer, (void *) ctx_restore, 23 * 4);
-
 }
 
-void thunker_build_enter_trapoline(ZZWriter *writer, zpointer hookentry_ptr, zpointer enter_thunk_ptr) {
+/*
+    作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数, 但是特么一下污染了两个寄存器.
+    所以有个技巧: 利用栈实现只有一个寄存器就可以完成工作
+ */
+void thunker_build_enter_trapoline(ZZWriter *writer, zpointer hookentry_ptr,
+                                   zpointer enter_thunk_ptr) {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) hookentry_ptr);
-    writer_put_ldr_reg_address(writer, ARM64_REG_X16, (zaddr) enter_thunk_ptr);
-    writer_put_br_reg(writer, ARM64_REG_X16);
+
+    // push x17
+    writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+    writer_put_str_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+
+    // jump to `dest`
+    writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) enter_thunk_ptr);
+    writer_put_br_reg(writer, ARM64_REG_X17);
 }
 
-void thunker_build_leave_trapoline(ZZWriter *writer, zpointer hookentry_ptr, zpointer leave_thunk_ptr) {
+void thunker_build_leave_trapoline(ZZWriter *writer, zpointer hookentry_ptr,
+                                   zpointer leave_thunk_ptr) {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) hookentry_ptr);
-    writer_put_ldr_reg_address(writer, ARM64_REG_X16, (zaddr) leave_thunk_ptr);
-    writer_put_br_reg(writer, ARM64_REG_X16);
+
+    // push x17
+    writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+    writer_put_str_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+
+    // jump to `dest`
+    writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) leave_thunk_ptr);
+    writer_put_br_reg(writer, ARM64_REG_X17);
 }

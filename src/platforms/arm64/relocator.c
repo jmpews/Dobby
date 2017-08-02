@@ -81,8 +81,8 @@ void relocator_build_invoke_trampoline(zpointer target_addr, ZZWriter *backup_wr
     // zpointer target_back_addr;
     // target_back_addr = target_addr + backup_writer->pc - backup_writer->base
 
-    // writer_put_ldr_reg_imm(relocate_writer, ARM64_REG_X16, (zuint)0x8);
-    // writer_put_br_reg(relocate_writer, ARM64_REG_X16);
+    // writer_put_ldr_reg_imm(relocate_writer, ARM64_REG_X17, (zuint)0x8);
+    // writer_put_br_reg(relocate_writer, ARM64_REG_X17);
     // writer_put_bytes(relocate_writer, (zpointer)&target_back_addr, sizeof(zpointer));
 }
 
@@ -113,9 +113,9 @@ bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
-    // writer_put_ldr_br_b_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
-    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
-    writer_put_br_reg(relocate_writer, ARM64_REG_X16);
+    // writer_put_ldr_br_b_reg_address(relocate_writer, ARM64_REG_X17, target_addr);
+    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);
+    writer_put_br_reg(relocate_writer, ARM64_REG_X17);
     return true;
 }
 
@@ -123,8 +123,8 @@ bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
-    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
-    writer_put_blr_reg(relocate_writer, ARM64_REG_X16);
+    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);
+    writer_put_blr_reg(relocate_writer, ARM64_REG_X17);
     return true;
 }
 
@@ -150,15 +150,15 @@ bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer) {
     writer_put_b_cond_imm(relocate_writer, ins_csd.cc, 0x8);
     writer_put_b_imm(relocate_writer, 0x4 + 0x14);
 
-    // writer_put_ldr_br_b_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
-    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X16, target_addr);
-    writer_put_br_reg(relocate_writer, ARM64_REG_X16);
+    // writer_put_ldr_br_b_reg_address(relocate_writer, ARM64_REG_X17, target_addr);
+    writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);
+    writer_put_br_reg(relocate_writer, ARM64_REG_X17);
     return true;
 }
 
 bool relocator_rewrite_adr(Instruction *ins, ZZWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
-    
+
     const cs_arm64_op dst = ins_csd.operands[0];
     const cs_arm64_op label = ins_csd.operands[1];
     writer_put_ldr_reg_address(relocate_writer, dst.reg, label.imm);

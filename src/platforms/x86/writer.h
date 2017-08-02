@@ -15,7 +15,7 @@
 #ifndef platforms_x86_writer_h
 #define platforms_x86_writer_h
 
-#include "../../zzdeps/zz.h"
+#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 #include "instructions.h"
 

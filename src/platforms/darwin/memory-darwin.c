@@ -173,7 +173,7 @@ void memory_patch_code(zpointer addr, zpointer code_ptr, zuint code_size) {
 
     /* SAME: mprotect(code_mmap, range_size, prot); */
     zz_mprotect(code_mmap, range_size, prot);
-    
+
     // TODO: need check `memory region` again.
     /*
         TODO:

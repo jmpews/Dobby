@@ -17,7 +17,7 @@
 #ifndef platforms_x86_relocator_h
 #define platforms_x86_relocator_h
 
-#include "../../zzdeps/zz.h"
+#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 
 #include "instructions.h"

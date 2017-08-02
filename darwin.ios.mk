@@ -19,16 +19,19 @@ OUTPUT_DIR = build
 
 INCLUDE_DIR = -I$(abspath deps) -I$(abspath deps/capstone/include)
 LIBS = -lcapstone.arm64
-LIB_DIR = -L$(abspath deps/capstone)
+LIB_DIR = -L$(abspath deps/capstone) 
 
 CFLAGS = -O0 -g
+CXXFLAGS = $(CFLAGS) -stdlib=libc++ -std=c++11 -gmodules
 LDFLAGS =  $(LIB_DIR) $(LIBS)
 
 # OSX macOS
 # http://hanjianwei.com/2013/01/27/abi-compatibility-between-c-plus-plus-11-and-c-plus-plus-98/
+ZZ_GXX_BIN = `xcrun --sdk iphoneos --find clang++`
 ZZ_GCC_BIN = `xcrun --sdk iphoneos --find clang`
 ZZ_SDK = `xcrun --sdk iphoneos --show-sdk-path`
-ZZ_GCC=$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) $(INCLUDE_DIR)  -arch arm64 
+ZZ_GCC=$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) $(INCLUDE_DIR) -arch arm64 
+ZZ_GXX=$(ZZ_GXX_BIN) -isysroot $(ZZ_SDK) $(CXXFLAGS) $(INCLUDE_DIR) -arch arm64 
 
 NO_COLOR=\x1b[0m
 OK_COLOR=\x1b[32;01m
@@ -48,9 +51,9 @@ $(SOURCES_O): %.o : %.c
 test : $(SOURCES_O)
 
 	@# test for parse self.
-	@$(ZZ_GCC) -c tests/test_hook.c -o tests/test_hook.o
+	@$(ZZ_GXX) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/deps/MachoParser/include -c tests/test_hook.cpp -o tests/test_hook.o
 	@# -undefined dynamic_lookup
-	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func $(LDFLAGS) $(SOURCES_O) tests/test_hook.o -o tests/test_hook.dylib
+	$(ZZ_GXX) -dynamiclib -Wl,-U,_func $(LDFLAGS) -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/deps/MachoParser -lmachoparser $(SOURCES_O) tests/test_hook.o -o tests/test_hook.dylib
 
 	@# test for parse self, but it's dylib with `constructor`
 	@#$(ZZ_GCC) -c tests/test_hook_objc_msgSend.c -o tests/test_hook_objc_msgSend.o

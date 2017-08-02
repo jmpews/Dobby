@@ -15,7 +15,7 @@
 #ifndef reader_h
 #define reader_h
 
-#include "../../zzdeps/zz.h"
+#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 #include "instructions.h"
 

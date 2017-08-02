@@ -15,7 +15,7 @@
 #ifndef trampoline_h
 #define trampoline_h
 
-#include "zzdeps/zz.h"
+#include "../include/zz.h"
 #include "../include/hookzz.h"
 
 #include "allocator.h"

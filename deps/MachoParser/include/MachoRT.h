@@ -12,18 +12,32 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef reader_h
-#define reader_h
+#ifndef machort_h
+#define machort_h
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
-#include "instructions.h"
+#include "macho.h"
 
-#include "../../trampoline.h"
+#define MACHO_LOAD_ADDRESS 0x100000000
 
-void relocator_read_one(Instruction *old_ins, Instruction *new_ins);
+class MachoRT : public Macho {
+public:
+    MachoRT();
 
-void relocator_invoke_trampoline(ZZTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup);
+    MachoRT(input_t input);
 
+    zaddr m_dyld_load_addr; //where is dyld load
 
-#endif
+    bool setPid(pid_t pid);
+
+    bool searchBinLoadAddress();
+
+    bool search_dyld_load_address(zaddr dyld_vm_addr);
+
+    bool check_dyld_arch(zaddr addr);
+
+    bool parse_dyld();
+};
+
+static MachoRT *mrt;
+
+#endif //MACHOPARSER_MACHORT_H

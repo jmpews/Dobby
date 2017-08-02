@@ -13,7 +13,7 @@
 //    limitations under the License.
 
 
-#include "../../zzdeps/zz.h"
+#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 #include "writer.h"
 

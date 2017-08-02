@@ -15,11 +15,11 @@
 #ifndef platforms_x86_writer_h
 #define platforms_x86_writer_h
 
-#include "../../zzdeps/zz.h"
 #include "../../../include/hookzz.h"
+#include "../../../include/zz.h"
 
-#include "instructions.h"
 #include "../../trampoline.h"
+#include "instructions.h"
 
 typedef struct _ZZWriter {
     zpointer *codedata;
@@ -30,6 +30,9 @@ typedef struct _ZZWriter {
 
 typedef struct _ZZArm64RegInfo {
     zuint index;
+    zuint meta;
+    zuint width;
+    bool is_integer;
 } ZZArm64RegInfo;
 
 ZZWriter *ZZNewWriter(zpointer addr);
@@ -38,10 +41,22 @@ void WriterPutAbsJmp(ZZWriter *self, zpointer target_addr);
 
 void writer_put_ldr_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
 
-void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
+void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg,
+                                     zaddr address);
 
-// void writer_put_ldr_br_b_reg_address(ZZWriter *self, arm64_reg reg, zaddr address);
 void writer_put_b_cond_imm(ZZWriter *self, arm64_cc cc, zuint imm);
+
+void writer_put_ldr_reg_reg_offset(ZZWriter *self, arm64_reg dst_reg,
+                                   arm64_reg src_reg, zsize src_offset);
+
+void writer_put_str_reg_reg_offset(ZZWriter *self, arm64_reg src_reg,
+                                   arm64_reg dst_reg, zsize dst_offset);
+
+void writer_put_sub_reg_reg_imm(ZZWriter *self, arm64_reg dst_reg,
+                                arm64_reg left_reg, zsize right_value);
+
+void writer_put_add_reg_reg_imm(ZZWriter *self, arm64_reg dst_reg,
+                                arm64_reg left_reg, zsize right_value);
 
 void writer_put_ldr_reg_imm(ZZWriter *self, arm64_reg reg, zuint imm);
 

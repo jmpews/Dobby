@@ -12,18 +12,18 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef reader_h
-#define reader_h
+#ifndef machoparser_machofd_h
+#define machoparser_machofd_h
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
-#include "instructions.h"
+#include "macho.h"
 
-#include "../../trampoline.h"
+class MachoFD : public Macho {
+public:
+    MachoFD();
 
-void relocator_read_one(Instruction *old_ins, Instruction *new_ins);
+    MachoFD(input_t input);
 
-void relocator_invoke_trampoline(ZZTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup);
+    bool setPath(char *path);
+};
 
-
-#endif
+#endif // MACHOPARSER_MACHOFD_H

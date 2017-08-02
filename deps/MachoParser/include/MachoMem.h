@@ -12,18 +12,30 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef reader_h
-#define reader_h
+#ifndef machoparser_machomem_h
+#define machoparser_machomem_h
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
-#include "instructions.h"
+#include "macho.h"
+#include "MachoFD.h"
 
-#include "../../trampoline.h"
+#define MACHO_LOAD_ADDRESS 0x100000000
 
-void relocator_read_one(Instruction *old_ins, Instruction *new_ins);
+class MachoMem : public Macho {
+public:
+    MachoMem();
 
-void relocator_invoke_trampoline(ZZTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup);
+    MachoMem(input_t input);
 
+    //where is dyld load
+    zaddr m_dyld_load_addr;
 
-#endif
+    bool searchBinLoadAddress();
+
+    bool search_dyld_load_address(zaddr dyld_vm_addr);
+
+    bool check_dyld_arch(zaddr addr);
+
+    bool parse_dyld();
+};
+
+#endif //MACHOPARSER_MACHOMEM_H

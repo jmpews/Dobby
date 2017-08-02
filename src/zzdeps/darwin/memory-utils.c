@@ -35,7 +35,7 @@ bool zz_check_address_valid_by_task(task_t t, zaddr addr) {
 #define CHECK_LEN 1
     char n_read_bytes[1];
     unsigned int len;
-    kern_return_t kr = vm_read_overwrite(t, addr, CHECK_LEN, (zaddr) & n_read_bytes, (vm_size_t *) &len);
+    kern_return_t kr = vm_read_overwrite(t, addr, CHECK_LEN, (zaddr) &n_read_bytes, (vm_size_t *) &len);
 
     if (kr != KERN_SUCCESS || len != CHECK_LEN)
         return false;
@@ -63,7 +63,7 @@ char *zz_read_task_string(task_t t, zaddr addr) {
     char *str = NULL;
 
     //string upper limit 0x1000
-    end = zz_memory_search_by_task(t, addr, addr + 0x1000, (zbyte * ) & x, 1);
+    end = zz_memory_search_by_task(t, addr, addr + 0x1000, (zbyte *) &x, 1);
     if (!end) {
         return NULL;
     }
@@ -124,7 +124,7 @@ zaddr zz_get_dyld_load_address_by_task(task_t task) {
     struct dyld_all_image_infos *allImageInfos = (struct dyld_all_image_infos *) infoData.all_image_info_addr;
     allImageInfos = (struct dyld_all_image_infos *) malloc(sizeof(struct dyld_all_image_infos));
     if (zz_read_task_memory(task, infoData.all_image_info_addr, allImageInfos, sizeof(struct dyld_all_image_infos))) {
-        return (zaddr)(allImageInfos->dyldImageLoadAddress);
+        return (zaddr) (allImageInfos->dyldImageLoadAddress);
     } else {
         Serror("zz_get_dyld_load_address_by_task:zz_read_task_memory error");
         return 0;
