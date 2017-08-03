@@ -119,9 +119,9 @@ void zz_build_enter_thunk(ZZWriter *writer) {
   // call `function_context_begin_invocation`
   writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
   writer_put_ldr_reg_address(
-      writer, ARM64_REG_X16,
+      writer, ARM64_REG_X17,
       (zaddr)(zpointer)function_context_begin_invocation);
-  writer_put_blr_reg(writer, ARM64_REG_X16);
+  writer_put_blr_reg(writer, ARM64_REG_X17);
 
   writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 
@@ -149,8 +149,8 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
   (void)self;
 
-  gum_arm64_writer_put_ldr_reg_address(ctx->output, ARM64_REG_X16, target->imm);
-  gum_arm64_writer_put_br_reg(ctx->output, ARM64_REG_X16);
+  gum_arm64_writer_put_ldr_reg_address(ctx->output, ARM64_REG_X17, target->imm);
+  gum_arm64_writer_put_br_reg(ctx->output, ARM64_REG_X17);
 
   return TRUE;
 }
