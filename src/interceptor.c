@@ -162,7 +162,7 @@ ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer fake_ptr,
     ZZSTATUS status = ZZ_DONE_HOOK;
     // check g_intercepter is initialize ?
     if (NULL == g_interceptor) {
-        Sinfo("interpeptor need to be initialize !");
+        Serror("interpeptor need to be initialize !"); exit(1);
         status = ZZ_NEED_INIT;
         return status;
     }

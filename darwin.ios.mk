@@ -17,9 +17,14 @@ SOURCES_O = $(patsubst %.c,%.o, $(SOURCES))
 
 OUTPUT_DIR = build
 
-INCLUDE_DIR = -I$(abspath deps) -I$(abspath deps/capstone/include)
-LIBS = -lcapstone.arm64
-LIB_DIR = -L$(abspath deps/capstone) 
+# capstone framework
+CAPSTONE_INCLUDE = $(abspath deps/capstone/include)
+CAPSTONE_LIB_DIR = $(abspath deps/capstone)
+CAPSTONE_LIB = capstone.arm64
+
+INCLUDE_DIR = -I$(CAPSTONE_INCLUDE)
+LIB_DIR = -L$(CAPSTONE_LIB_DIR)
+LIBS = -l$(CAPSTONE_LIB)
 
 CFLAGS = -O0 -g
 CXXFLAGS = $(CFLAGS) -stdlib=libc++ -std=c++11 -gmodules
@@ -38,15 +43,17 @@ OK_COLOR=\x1b[32;01m
 ERROR_COLOR=\x1b[31;01m
 WARN_COLOR=\x1b[33;01m
 
+# simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
 
 darwin.ios : $(SOURCES_O)
-	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(SOURCES_O) -o hookzz.dylib
+	@mkdir -p $(OUTPUT_DIR)
+	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
 	@echo "$(OK_COLOR)build success for arm64(IOS)! $(NO_COLOR)"
 
 $(SOURCES_O): %.o : %.c
 	@$(ZZ_GCC) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
-
 
 test : $(SOURCES_O)
 

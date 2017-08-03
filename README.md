@@ -270,8 +270,40 @@ void *oriObjcMethod;
     ZZEnableHook((void *) oriImp);
 }
 ```
+#### 坑
+
+#### 寄存器污染
+
+在进行 inlinehook 需要进行各种跳转, 通常会以以下模板进行跳转.
+
+```
+0:  ldr x16, 8;
+4:  br x16;
+8:  0x12345678
+12: 0x00000000
+```
+
+问题在于这会造成 x16 寄存器被污染. 所以这里有两种思路解决这个问题.
+
+思路一:
+
+在使用寄存器之前进行 `push`, 跳转后 `pop`, 这里存在一个问题就是在原地址的几条指令进行 `patch code` 时一定会污染一个寄存器(也不能说一定, 如果这时进行压栈, 在之后的 `invoke_trampline` 会导致函数栈发生改变, 此时有个解决方法可以 pop 出来, 由 hookentry 或者其他变量暂时保存, 但这时需要处理锁的问题. )
+
+思路二:
+
+挑选合适的寄存器, 不考虑污染问题. 这时可以参考, 下面的资料, 选择 x16 or x17, 或者自己做一个实验 `otool -tv ~/Downloads/DiSpecialDriver64 > ~/Downloads/DiSpecialDriver64.txt` 通过 dump 一个 arm64 程序的指令, 来判断哪个寄存器用的最少, 但是不要使用 x18 寄存器, 你对该寄存器的修改是无效的.
+
+```
+PAGE: 9-3
+Programmer’s Guide for ARMv8-A
+9.1 Register use in the AArch64 Procedure Call Standard 
+9.1.1 Parameters in general-purpose registers
+```
+
+这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 svc 类系统调用, 系统调用号(syscall number)的传递是利用 x16 寄存器进行传递的, 所以本框架使用 x17 寄存器, 并且在传递参数时使用, `push` & `pop`, 在跳转后恢复 x17.
 
 #### rwx 与 codesigning
+
 对于非越狱, 不能分配可执行内存, 不能进行 `code patch`.
 
 两篇原理讲解 codesign 的原理
