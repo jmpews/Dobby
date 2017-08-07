@@ -19,13 +19,27 @@ static void AntiDebug_ptrace() {
 // ------------------------------------------------------------------
 
 static __attribute__((always_inline)) void AntiDebug_svc() {
+#if 1
 #ifdef __arm64__
+  // syscall(SYS_ptrace, PT_DENY_ATTACH, 0, 0, 0)
   __asm__("mov X0, #31\n"
           "mov X1, #0\n"
           "mov X2, #0\n"
           "mov X3, #0\n"
           "mov w16, #26\n"
           "svc #0x80");
+#endif
+#else
+#ifdef __arm64__
+  // syscall(SYS_syscall, SYS_ptrace, PT_DENY_ATTACH, 0, 0, 0)
+  __asm__("mov X0, #31\n"
+          "mov X1, #26\n"
+          "mov X2, #0\n"
+          "mov X3, #0\n"
+          "mov X4, #0\n"
+          "mov w16, #0\n"
+          "svc #0x80");
+#endif
 #endif
   return;
 }
@@ -36,7 +50,7 @@ static __attribute__((always_inline)) void AntiDebug_svc() {
 #if !defined(SYS_ptrace)
 #define SYS_ptrace 26
 #endif
-void AntiDebug_syscall() { syscall(SYS_ptrace, PT_DENY_ATTACH, 0, 0); }
+void AntiDebug_syscall() { syscall(SYS_ptrace, PT_DENY_ATTACH, 0, 0, 0); }
 
 // ------------------------------------------------------------------
 

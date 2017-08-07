@@ -51,11 +51,11 @@ WARN_COLOR=\x1b[33;01m
 #-Wl,-undefined,dynamic_lookup 
 
 darwin.ios : $(SOURCES_O)
-	$(ZZ_GXX_BIN) $(CXXFLAGS) $(INCLUDE_DIR) $(LDFLAGS) -arch arm64 -framework Foundation -dynamiclib $(SOURCES_O) -o AntiDebugBypass.dylib
+	$(ZZ_GXX_BIN) $(CXXFLAGS) $(INCLUDE_DIR) $(LDFLAGS) -arch arm64 -framework Foundation -dynamiclib -Wl,-undefined,dynamic_lookup $(SOURCES_O) -o AntiDebugBypass.dylib
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 
 $(SOURCES_O): %.o : %.mm
-	$(ZZ_GXX_BIN) $(CXXFLAGS) $(INCLUDE_DIR) -arch arm64 -c $< -o $@
+	$(ZZ_GXX_BIN) -Wl,-undefined,dynamic_lookup  $(CXXFLAGS) $(INCLUDE_DIR) -arch arm64 -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 clean:
