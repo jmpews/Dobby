@@ -43,8 +43,8 @@ OK_COLOR=\x1b[32;01m
 ERROR_COLOR=\x1b[31;01m
 WARN_COLOR=\x1b[33;01m
 
+# ATTENTION !!!
 # simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
-
 darwin.ios : $(SOURCES_O)
 	@mkdir -p $(OUTPUT_DIR)
 	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib

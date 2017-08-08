@@ -53,15 +53,14 @@ int fake_syscall(int number, ...) {
   caddr_t addr;
   int data;
 
-  va_list args;
-  va_start(args, number);
-  request = va_arg(args, int);
-  pid = va_arg(args, pid_t);
-  addr = va_arg(args, caddr_t);
-  data = va_arg(args, int);
-  va_end(args);
-
   if (number == SYS_ptrace) {
+    va_list args;
+    va_start(args, number);
+    request = va_arg(args, int);
+    pid = va_arg(args, pid_t);
+    addr = va_arg(args, caddr_t);
+    data = va_arg(args, int);
+    va_end(args);
     if (request == PT_DENY_ATTACH) {
       NSLog(@"[AntiDebugBypass] catch 'syscall(SYS_ptrace, PT_DENY_ATTACH, 0, "
             @"0, 0)' and bypass.");
@@ -157,7 +156,8 @@ __attribute__((constructor)) void patch_svc_x80() {
         sect64->sect_addr, sect64->sect_addr + sect64->sect_64->size,
         (const zbyte *)&svc_x80_byte, 4);
     if (svc_x80_addr) {
-      NSLog(@"find svc #0x80 at %p with aslr (%p without aslr)", (void *)svc_x80_addr, (void *)(svc_x80_addr - mem->m_aslr_slide));
+      NSLog(@"find svc #0x80 at %p with aslr (%p without aslr)",
+            (void *)svc_x80_addr, (void *)(svc_x80_addr - mem->m_aslr_slide));
       ZZBuildHook((void *)svc_x80_addr, NULL, NULL,
                   (zpointer)patch_svc_pre_call, NULL);
       ZZEnableHook((void *)svc_x80_addr);
@@ -197,7 +197,8 @@ NSString *mainPath;
 }
 
 void objcMethod_pre_call(struct RegState_ *rs) {
-  NSLog(@"hookzz OC-Method: -[ViewController %s]", (zpointer)(rs->general.regs.x1));
+  NSLog(@"hookzz OC-Method: -[ViewController %s]",
+        (zpointer)(rs->general.regs.x1));
 }
 
 + (void)zzMethodSwizzlingHook {
