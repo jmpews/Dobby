@@ -22,7 +22,7 @@
 #include <mach/task_info.h>
 #include <mach/task.h>
 #include <mach-o/dyld_images.h>
-#include "../zz.h"
+#include "zz.h"
 
 //#ifdef __arm64__
 //#else
@@ -30,7 +30,6 @@
 //#endif
 
 zint zz_query_page_size();
-
 task_t zz_get_pid_by_task(unsigned int pid);
 
 bool zz_read_task_memory(task_t t, zaddr addr, zpointer buf, zsize len);
@@ -45,6 +44,7 @@ zaddr zz_memory_search_by_task(task_t task, zaddr start, zaddr end, zbyte *data,
 
 
 bool zz_check_address_valid_by_task(task_t t, zaddr addr);
+bool zz_check_address_valid_by_signal(void *p);
 
 bool zz_check_address_valid_by_mem(void *p);
 
