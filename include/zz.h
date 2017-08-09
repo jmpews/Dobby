@@ -1,5 +1,5 @@
-#ifndef machoparser_zz_h
-#define machoparser_zz_h
+#ifndef zz_h
+#define zz_h
 
 // Created by jmpews on 2017/5/3.
 //

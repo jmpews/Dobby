@@ -1,10 +1,9 @@
 #include "memory-utils.h"
-#include "zz.h"
 #include <errno.h>
 #include <mach-o/dyld_images.h>
 #include <sys/mman.h>
 
-zint zz_query_page_size() { return getpagesize(); }
+zsize zz_query_page_size() { return getpagesize(); }
 
 bool zz_read_task_memory(task_t t, zaddr addr, zpointer buf, zsize len) {
   vm_size_t dataCnt;

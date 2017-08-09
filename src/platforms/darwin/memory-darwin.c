@@ -20,8 +20,8 @@
 
 #include <mach/mach.h>
 
-#include "../../zzdeps/darwin/mach_vm.h"
 #include "memory-darwin.h"
+#include "../../zzdeps/darwin/mach_vm.h"
 #include "../../zzdeps/darwin/memory-utils.h"
 
 static kern_return_t get_page_info(uintptr_t ptr, vm_prot_t *prot_p,

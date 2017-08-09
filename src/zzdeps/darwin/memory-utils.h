@@ -22,14 +22,15 @@
 #include <mach/task_info.h>
 #include <mach/task.h>
 #include <mach-o/dyld_images.h>
-#include "zz.h"
+#include "../zz.h"
 
 //#ifdef __arm64__
 //#else
 //#include <mach/mach_vm.h>
 //#endif
 
-zint zz_query_page_size();
+zsize zz_query_page_size();
+
 task_t zz_get_pid_by_task(unsigned int pid);
 
 bool zz_read_task_memory(task_t t, zaddr addr, zpointer buf, zsize len);
