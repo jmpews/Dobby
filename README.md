@@ -1,10 +1,10 @@
 ## HookZz
 
-> [Move to HookZz Getting Started](https://github.com/jmpews/HookZz)
+> [Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/)
 
 > [Move to HookZzModules](https://github.com/jmpews/HookZzModules)
 
-> [Move to HookZzWebsite](https://github.com/jmpews/HookZzModules)
+> [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
 ## What is HookZz?
 
