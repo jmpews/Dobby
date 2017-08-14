@@ -14,7 +14,8 @@
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
-special thanks to `frida-gum's` perfect code and modular architecture.
+**special thanks to `frida-gum's` perfect code and modular architecture.**
+
 
 ## How it work ?
 
@@ -81,42 +82,6 @@ and the `pre_call` and `post_call` type is blow.
 ```
 typedef void (*PRECALL)(struct RegState_ *rs);
 typedef void (*POSTCALL)(struct RegState_ *rs);
-```
-
-
-#### use `pre_call` and `post_call`
-
-```
-#include <sys/socket.h>
-void *orig_recvmsg;
-// bad code, should be `thread-local variable` and `lock`
-zpointer recvmsg_data;
-void recvmsg_pre_call(struct RegState_ *rs) {
-  zpointer t = *((zpointer *)(rs->general.regs.x1) + 2);
-  recvmsg_data = *(zpointer *)t;
-}
-void recvmsg_post_call(struct RegState_ *rs) {
-  printf("@recvmsg@: %s\n", recvmsg_data);
-}
-__attribute__((constructor)) void test_hook_recvmsg() {
-  ZzInitialize();
-  ZzBuildHook((void *)recvmsg, NULL, (void **)(&orig_recvmsg),
-              (zpointer)recvmsg_pre_call, (zpointer)recvmsg_post_call);
-  ZzEnableHook((void *)recvmsg);
-}
-```
-
-#### use `replace_call`
-
-```
-#include <sys/socket.h>
-void *orig_func;
-__attribute__((constructor)) void test_hook_recvmsg() {
-  ZzInitialize();
-  ZzBuildHook((void *)func, (void *)fake_func, (void **)(&orig_func), NULL,
-              NULL);
-  ZzEnableHook((void *)func);
-}
 ```
 
 ## Example
