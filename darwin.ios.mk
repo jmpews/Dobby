@@ -12,8 +12,13 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c) $(wildcard src/zzdeps/darwin/*.c)  $(wildcard src/zzdeps/common/*.c)  $(wildcard src/zzdeps/posix/*.c)
-SOURCES_O = $(patsubst %.c,%.o, $(SOURCES))
+SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
+ZZDEPS_SOURCES = $(wildcard src/zzdeps/darwin/*.c) $(wildcard src/zzdeps/common/*.c) $(wildcard src/zzdeps/posix/*.c) 
+ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES)
+
+SRC_SOURCES_O = $(patsubst %.c,%.o, $(SRC_SOURCES))
+ZZDEPS_SOURCES_O = $(patsubst %.c,%.o, $(ZZDEPS_SOURCES))
+ALL_SOURCES_O = $(SRC_SOURCES_O) $(ZZDEPS_SOURCES_O)
 
 OUTPUT_DIR = build
 
@@ -45,26 +50,28 @@ WARN_COLOR=\x1b[33;01m
 
 # ATTENTION !!!
 # simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
-darwin.ios : $(SOURCES_O)
+darwin.ios : $(ALL_SOURCES_O)
 	@mkdir -p $(OUTPUT_DIR)
-	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
-	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
+	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(SRC_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
 	@echo "$(OK_COLOR)build success for arm64(IOS)! $(NO_COLOR)"
 
-$(SOURCES_O): %.o : %.c
+$(SRC_SOURCES_O): %.o : %.c
 	@$(ZZ_GCC) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
+$(ZZDEPS_SOURCES_O): %.o : %.c
+	@$(ZZ_GCC) -c $< -o $@
+	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 test : darwin.ios
-
 	@# test for hook oc-method
 	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_oc.m -o tests/test_hook_oc.o
 	@# -undefined dynamic_lookup
-	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static $(SOURCES_O) tests/test_hook_oc.o -o tests/test_hook_oc.dylib
+	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static tests/test_hook_oc.o -o tests/test_hook_oc.dylib
 
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 
 clean:
-	@rm -rf $(SOURCES_O)
+	@rm -rf $(ALL_SOURCES_O)
 	@echo "$(OK_COLOR)clean all *.o success!$(NO_COLOR)"

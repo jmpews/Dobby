@@ -9,8 +9,6 @@
 #include "../common/memory-utils-common.h"
 
 zsize zz_vm_get_page_size();
-
-char *zz_vm_read_string(const zpointer address);
-zpointer zz_vm_search_data(const zpointer start_addr, const zpointer end_addr,
-                        zbyte *data, zsize data_len);
+bool zz_vm_check_address_valid_via_msync(const zpointer p);
+bool zz_vm_check_address_valid_via_signal(zpointer p);
 #endif

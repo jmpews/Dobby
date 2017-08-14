@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../zz.h"
 #include <mach/task.h>
 #include <mach/mach_error.h>
 
@@ -31,6 +30,7 @@
 #include <mach/mach_vm.h>
 #endif
 
+#include "../zz.h"
 #include "../posix/memory-utils-posix.h"
 
 #define KR_ERROR(kr) Xerror("kr = %d, reason: %s!", kr, mach_error_string(kr))
@@ -44,6 +44,7 @@ char *zz_vm_read_string_via_task(task_t task, const zaddr address);
 zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr,
                                  const zaddr end_addr, zbyte *data,
                                  zsize data_len);
+bool zz_vm_check_address_valid_via_task(task_t task, const zaddr address);
 bool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
                             vm_prot_t page_prot);
 

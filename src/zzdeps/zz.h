@@ -7,8 +7,6 @@
 #define PROGRAM_VER "1.0.0"
 #define PROGRAM_AUTHOR "jmpews@gmail.com"
 
-static char zzdata[256];
-
 #include <stdint.h>
 
 // zz's type

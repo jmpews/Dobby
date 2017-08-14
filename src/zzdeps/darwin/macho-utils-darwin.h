@@ -18,13 +18,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
-
-
 #include <mach/task.h>
 
 #include "../zz.h"
 
-zpointer zz_get_dyld_load_address_via_task(task_t task);
-task_t zz_get_pid_via_task(int pid);
+zpointer zz_macho_get_dyld_load_address_via_task(task_t task);
+task_t zz_darwin_get_task_via_pid(int pid);
 
 #endif

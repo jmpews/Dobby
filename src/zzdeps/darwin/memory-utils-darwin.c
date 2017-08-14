@@ -152,7 +152,7 @@ bool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address, zsize 
 }
 
 zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages) {
-    zaddr result;
+    mach_vm_address_t result;
     kern_return_t kr;
     zsize page_size;
     page_size = zz_vm_get_page_size();
@@ -169,7 +169,7 @@ zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages) {
         return NULL;
     }
 
-    if(!zz_vm_protect_via_task(task, result, page_size * n_pages, (VM_PROT_DEFAULT | VM_PROT_COPY)))
+    if(!zz_vm_protect_via_task(task, (zaddr)result, page_size * n_pages, (VM_PROT_DEFAULT | VM_PROT_COPY)))
         return NULL;
 
     return (zpointer)result;
