@@ -15,7 +15,7 @@
  */
 
 #include "relocator.h"
-#include "../../debugbreak.h"
+#include "../../zzdeps/common/debugbreak.h"
 #include <string.h>
 
 /*
@@ -24,8 +24,8 @@
     C1.2.4 Condition code
  */
 
-Instruction *relocator_read_one(zpointer address, ZZWriter *backup_writer,
-                                ZZWriter *relocate_writer) {
+Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer,
+                                ZzWriter *relocate_writer) {
     Instruction *ins = (Instruction *) malloc(sizeof(Instruction));
     cs_insn *ins_cs = disassemble_instruction_at(address);
 
@@ -64,7 +64,7 @@ Instruction *relocator_read_one(zpointer address, ZZWriter *backup_writer,
     return ins;
 }
 
-void relocator_build_invoke_trampoline(zpointer target_addr, ZZWriter *backup_writer, ZZWriter *relocate_writer) {
+void relocator_build_invoke_trampoline(zpointer target_addr, ZzWriter *backup_writer, ZzWriter *relocate_writer) {
     bool finished = false;
     zpointer code_addr = target_addr;
     Instruction *ins;
@@ -100,7 +100,7 @@ bool branch_is_unconditional(Instruction *ins) {
     }
 }
 
-bool relocator_rewrite_ldr(Instruction *ins, ZZWriter *relocate_writer) {
+bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     const cs_arm64_op *dst = &ins_csd.operands[0];
     const cs_arm64_op *src = &ins_csd.operands[1];
@@ -109,7 +109,7 @@ bool relocator_rewrite_ldr(Instruction *ins, ZZWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer) {
+bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -119,7 +119,7 @@ bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer) {
+bool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -143,7 +143,7 @@ bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer) {
         2. [...]
         3. [...]
  */
-bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer) {
+bool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -156,7 +156,7 @@ bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_adr(Instruction *ins, ZZWriter *relocate_writer) {
+bool relocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer) {
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
 
     const cs_arm64_op dst = ins_csd.operands[0];

@@ -12,32 +12,19 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef trampoline_h
-#define trampoline_h
+#ifndef zzdeps_darwin_macho_utils_h
+#define zzdeps_darwin_macho_utils_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <err.h>
 
-#include "allocator.h"
 
-#include "interceptor.h"
+#include <mach/task.h>
 
-/*
-    enter_trampoline:
-        1. 跳转到 `enter_thunk`
+#include "../zz.h"
 
-    invoke_trampoline:
-        1. 之前保存的指令(涉及到指令修复)
-        2. 跳转到剩余的指令
-
-    leave_trampoline
-        1. 跳转到 `leave_thunk`
- */
-
-typedef struct _ZzTrampoline {
-    ZzCodeSlice *codeslice;
-} ZzTrampoline;
-
-ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry);
+zpointer zz_get_dyld_load_address_via_task(task_t task);
+task_t zz_get_pid_via_task(int pid);
 
 #endif

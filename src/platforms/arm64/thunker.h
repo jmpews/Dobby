@@ -19,10 +19,10 @@
 
 #include "../../interceptor.h"
 
-void zz_build_enter_thunk(ZZWriter *writer);
+void zz_build_enter_thunk(ZzWriter *writer);
 
-void zz_build_leave_thunk(ZZWriter *writer);
+void zz_build_leave_thunk(ZzWriter *writer);
 
-void thunker_build_enter_trapoline(ZZWriter *writer, zpointer entry_ptr, zpointer enter_thunk_ptr);
+void thunker_build_enter_trapoline(ZzWriter *writer, zpointer entry_ptr, zpointer enter_thunk_ptr);
 
-void thunker_build_leave_trapoline(ZZWriter *writer, zpointer entry_ptr, zpointer enter_thunk_ptr);
+void thunker_build_leave_trapoline(ZzWriter *writer, zpointer entry_ptr, zpointer enter_thunk_ptr);

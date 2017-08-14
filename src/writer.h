@@ -15,9 +15,7 @@
  */
 
 #if defined(__x86_64__)
-
 #include "platforms/x86/writer.h"
-
 #elif defined(__arm64__)
 #include "platforms/arm64/writer.h"
 #endif

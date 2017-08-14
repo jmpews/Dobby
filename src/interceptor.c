@@ -18,149 +18,138 @@
 
 #include "interceptor.h"
 
-// for: ZZEnableHook
+// for: ZzEnableHook
 #include "writer.h"
 
+// or like `writer.h`
 #if defined(__x86_64__)
 #elif defined(__arm64__)
 #include "platforms/arm64/thunker.h"
 #endif
 
-#define ZZHOOKENTRIES_DEFAULT 100
-ZZInterceptor *g_interceptor;
-ZZHookFunctionEntrySet *g_func_entries;
-ZZInterceptorCenter *g_intercepter_center;
+#define ZzHOOKENTRIES_DEFAULT 100
+ZzInterceptor *g_interceptor;
+ZzHookFunctionEntrySet *g_hook_func_entries;
+ZzInterceptorCenter *g_intercepter_center;
 
-ZZSTATUS ZZInitialize(void) {
+ZZSTATUS ZzInitialize(void) {
     if (NULL == g_interceptor) {
-        g_interceptor = (ZZInterceptor *) malloc(sizeof(ZZInterceptor));
-        g_func_entries =
-                (ZZHookFunctionEntrySet *) malloc(sizeof(ZZHookFunctionEntrySet));
+        g_interceptor = (ZzInterceptor *) malloc(sizeof(ZzInterceptor));
+        g_hook_func_entries =
+                (ZzHookFunctionEntrySet *) malloc(sizeof(ZzHookFunctionEntrySet));
         g_intercepter_center =
-                (ZZInterceptorCenter *) malloc(sizeof(ZZInterceptorCenter));
+                (ZzInterceptorCenter *) malloc(sizeof(ZzInterceptorCenter));
 
-        g_interceptor->func_entries = g_func_entries;
+        g_interceptor->hook_func_entries = g_hook_func_entries;
         g_interceptor->intercepter_center = g_intercepter_center;
 
-        g_func_entries->capacity = ZZHOOKENTRIES_DEFAULT;
-        g_func_entries->entries = (ZZHookFunctionEntry **) malloc(
-                sizeof(ZZHookFunctionEntry *) * g_func_entries->capacity);
-        g_func_entries->size = 0;
+        g_hook_func_entries->capacity = ZzHOOKENTRIES_DEFAULT;
+        g_hook_func_entries->entries = (ZzHookFunctionEntry **) malloc(
+                sizeof(ZzHookFunctionEntry *) * g_hook_func_entries->capacity);
+        g_hook_func_entries->size = 0;
 
-        ZZInitializeThunk();
+        ZzBuildThunk();
         return ZZ_DONE_INIT;
     }
     return ZZ_ALREADY_INIT;
 }
 
-/*
-  TODO:
-  bad code?
-  not use the struct `ZZCodeSlice`.
- */
-ZZSTATUS ZZInitializeThunk(void) {
-    ZZInterceptor *interceptor = g_interceptor;
-    zsize codeslice_size = 256;
-    ZZWriter *writer;
-    ZZCodeSlice *p;
+ZZSTATUS ZzBuildThunk(void) {
+    ZzInterceptor *interceptor = g_interceptor;
+    zbyte temp_codeslice_data[256];
+    ZzWriter *writer;
+    ZzCodeSlice *p;
+    ZZSTATUS status;
 
-    /*
-      must be first!!!!
-      build leave thunk
-    */
-    p = ZZAllocatorNewCodeSlice(codeslice_size);
-    if (!p) {
-        Serror("alloc codeslice error!");
-        return ZZ_UNKOWN;
-    }
-    writer = ZZNewWriter(p->data);
-    zz_build_leave_thunk(writer);
-    make_page_executable(writer->base, writer->pc - writer->base);
-    interceptor->leave_thunk = p->data;
-    free(writer);
+    status = ZZ_FAILED;
+    do {
+        writer = ZzNewWriter(temp_codeslice_data); // @common-function
+        zz_build_leave_thunk(writer); // @common-function
 
-    /* build enter thunk */
-    p = ZZAllocatorNewCodeSlice(codeslice_size);
-    if (!p) {
-        Serror("alloc codeslice error!");
-        return ZZ_UNKOWN;
-    }
-    writer = ZZNewWriter(p->data);
-    zz_build_enter_thunk(writer);
-    make_page_executable(writer->base, writer->pc - writer->base);
-    interceptor->enter_thunk = p->data;
-    free(writer);
-    return ZZ_DONE;
+        // bad code ! lost `ZzCodeSlice` pointer.
+        p = ZzAllocatorNewCodeSlice(writer->size); // @common-function
+        if(!p->data || !p->size)
+            break;
+        if(!zz_vm_patch_code((zaddr)p->data, temp_codeslice_data, writer->size)) // @common-function
+            break;
+        interceptor->leave_thunk = p->data;
+        free(writer);
+
+        writer = ZzNewWriter(temp_codeslice_data);
+        zz_build_enter_thunk(writer); // @common-function
+
+        // bad code ! lost `ZzCodeSlice` pointer.
+        p = ZzAllocatorNewCodeSlice(writer->size);
+        if(!p->data || !p->size)
+            break;
+        if(!zz_vm_patch_code((zaddr)p->data, temp_codeslice_data, writer->size))
+            break;
+        interceptor->enter_thunk = p->data;
+        free(writer);
+        status = ZZ_SUCCESS;
+    } while(0);
+    return status;
 }
 
-ZZHookFunctionEntry *FindHookEntry(zpointer target_ptr) {
+ZzHookFunctionEntry *ZzFindHookEntry(zpointer target_ptr) {
     int i;
-    for (i = 0; i < g_func_entries->size; ++i) {
-        if ((g_func_entries->entries)[i] &&
-            target_ptr == (g_func_entries->entries)[i]->target_ptr) {
-            return (g_func_entries->entries)[i];
+    for (i = 0; i < g_hook_func_entries->size; ++i) {
+        if ((g_hook_func_entries->entries)[i] &&
+            target_ptr == (g_hook_func_entries->entries)[i]->target_ptr) {
+            return (g_hook_func_entries->entries)[i];
         }
     }
     return NULL;
 }
 
-static ZZHookFunctionEntry *AddHookEntry(ZZHookFunctionEntry *entry) {
-    if (g_func_entries->size >= g_func_entries->capacity) {
-        zpointer p = (ZZHookFunctionEntry *) realloc(
-                g_func_entries->entries,
-                sizeof(ZZHookFunctionEntry) * (g_func_entries->capacity) * 2);
+static ZzHookFunctionEntry *ZzAddHookEntry(ZzHookFunctionEntry *entry) {
+    if (g_hook_func_entries->size >= g_hook_func_entries->capacity) {
+        zpointer p = (ZzHookFunctionEntry *) realloc(
+                g_hook_func_entries->entries,
+                sizeof(ZzHookFunctionEntry) * (g_hook_func_entries->capacity) * 2);
         if (NULL == p) {
             return NULL;
         }
-        g_func_entries->capacity = g_func_entries->capacity * 2;
-        g_func_entries->entries = p;
+        g_hook_func_entries->capacity = g_hook_func_entries->capacity * 2;
+        g_hook_func_entries->entries = p;
     }
-    g_func_entries->entries[g_func_entries->size++] = entry;
+    g_hook_func_entries->entries[g_hook_func_entries->size++] = entry;
     return entry;
 }
 
-ZZHookFunctionEntry *ZZNewHookFunctionEntry(zpointer target_ptr) {
-    ZZHookFunctionEntry *entry;
-    ZZTrampoline *on_invoke_trampoline;
-    entry = (ZZHookFunctionEntry *) malloc(sizeof(ZZHookFunctionEntry));
+ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr) {
+    ZzHookFunctionEntry *entry;
+    ZzTrampoline *on_invoke_trampoline;
+    entry = (ZzHookFunctionEntry *) malloc(sizeof(ZzHookFunctionEntry));
 
-    entry->id = g_func_entries->size;
+    entry->id = g_hook_func_entries->size;
     entry->isEnabled = 0;
     entry->target_ptr = target_ptr;
     entry->interceptor = g_interceptor;
-    entry->old_prologue.address = target_ptr;
+    entry->origin_prologue.address = target_ptr;
 
-    /*
-        key function.
-     */
-    // entry->on_invoke_trampoline = ZZBuildTrampoline(target_ptr,
-    // &(entry->old_prologue.size), &(entry->old_prologue.data));
-    ZZBuildTrampoline(entry);
-
-    AddHookEntry(entry);
     return entry;
 }
 
-ZZSTATUS ZZActiveHookEnterTrampoline(ZZHookFunctionEntry *entry) {
+ZZSTATUS ZzActiveHookEnterTrampoline(ZzHookFunctionEntry *entry) {
     zpointer target_ptr = entry->target_ptr;
-    ZZInterceptor *interceptor = entry->interceptor;
+    ZzInterceptor *interceptor = entry->interceptor;
+    zbyte temp_codeslice_data[256];
 
-    // make_page_writable(target_ptr, entry->old_prologue.size);
-
-    zpointer code_data = (void *) malloc(256);
-    ZZWriter *writer = ZZNewWriter(code_data);
-    WriterPutAbsJmp(writer, entry->on_enter_trampoline);
-    // make_page_executable(target_ptr, entry->old_prologue.size);
-    memory_patch_code(target_ptr, code_data, writer->size);
+    ZzWriter *writer = ZzNewWriter(temp_codeslice_data);
+    WriterPutAbsJmp(writer, entry->on_enter_trampoline); // @common-function
+    zz_vm_patch_code((zaddr)target_ptr, temp_codeslice_data, writer->size);
     free(writer);
+
     return ZZ_DONE_HOOK;
 }
 
-ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer fake_ptr,
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
                      zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr) {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
-    // check g_intercepter is initialize ?
+
+    // check g_intercepter initialize
     if (NULL == g_interceptor) {
         Serror("interpeptor need to be initialize !"); exit(1);
         status = ZZ_NEED_INIT;
@@ -168,13 +157,13 @@ ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer fake_ptr,
     }
     do {
 
-        // check is already hooked ?
-        zpointer p = FindHookEntry(target_ptr);
+        // check is already hooked
+        zpointer p = ZzFindHookEntry(target_ptr);
         if (NULL != p) {
             status = ZZ_ALREADY_HOOK;
             break;
         }
-        ZZHookFunctionEntry *entry = ZZNewHookFunctionEntry(target_ptr);
+        ZzHookFunctionEntry *entry = ZzNewHookFunctionEntry(target_ptr);
         if (NULL == entry) {
             Xerror("build func-entry faild at %p", target_ptr);
             break;
@@ -184,6 +173,14 @@ ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer fake_ptr,
         entry->pre_call = pre_call_ptr;
         entry->post_call = post_call_ptr;
 
+        /*
+            key function.
+            build trampoline for jump to thunk.
+        */
+        ZzBuildTrampoline(entry);
+
+        ZzAddHookEntry(entry);
+
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
 
@@ -191,10 +188,10 @@ ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer fake_ptr,
     return status;
 }
 
-ZZSTATUS ZZEnableHook(zpointer target_ptr) {
+ZZSTATUS ZzEnableHook(zpointer target_ptr) {
     ZZSTATUS status = ZZ_DONE_ENABLE;
     // check is already hooked ?
-    ZZHookFunctionEntry *entry = FindHookEntry(target_ptr);
+    ZzHookFunctionEntry *entry = ZzFindHookEntry(target_ptr);
 
     if (NULL == entry) {
         status = ZZ_NO_BUILD_HOOK;
@@ -208,6 +205,5 @@ ZZSTATUS ZZEnableHook(zpointer target_ptr) {
         return status;
     }
 
-    ZZActiveHookEnterTrampoline(entry);
-    return ZZ_DONE_HOOK;
+    return ZzActiveHookEnterTrampoline(entry);
 }

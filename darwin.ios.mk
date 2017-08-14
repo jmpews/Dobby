@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c) $(wildcard src/zzdeps/darwin/*.c)
+SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c) $(wildcard src/zzdeps/darwin/*.c)  $(wildcard src/zzdeps/common/*.c)  $(wildcard src/zzdeps/posix/*.c)
 SOURCES_O = $(patsubst %.c,%.o, $(SOURCES))
 
 OUTPUT_DIR = build
@@ -35,8 +35,8 @@ LDFLAGS =  $(LIB_DIR) $(LIBS)
 ZZ_GXX_BIN = `xcrun --sdk iphoneos --find clang++`
 ZZ_GCC_BIN = `xcrun --sdk iphoneos --find clang`
 ZZ_SDK = `xcrun --sdk iphoneos --show-sdk-path`
-ZZ_GCC=$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) $(INCLUDE_DIR) -arch arm64 
-ZZ_GXX=$(ZZ_GXX_BIN) -isysroot $(ZZ_SDK) $(CXXFLAGS) $(INCLUDE_DIR) -arch arm64 
+ZZ_GCC=$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) $(INCLUDE_DIR) -arch arm64
+ZZ_GXX=$(ZZ_GXX_BIN) -isysroot $(ZZ_SDK) $(CXXFLAGS) $(INCLUDE_DIR) -arch arm64
 
 NO_COLOR=\x1b[0m
 OK_COLOR=\x1b[32;01m
@@ -55,19 +55,13 @@ $(SOURCES_O): %.o : %.c
 	@$(ZZ_GCC) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
-test : $(SOURCES_O)
 
-	@# test for parse self.
-	@$(ZZ_GXX) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/deps/MachoParser/include -c tests/test_hook.cpp -o tests/test_hook.o
+test : darwin.ios
+
+	@# test for hook oc-method
+	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_oc.m -o tests/test_hook_oc.o
 	@# -undefined dynamic_lookup
-	$(ZZ_GXX) -dynamiclib -Wl,-U,_func $(LDFLAGS) -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/deps/MachoParser -lmachoparser $(SOURCES_O) tests/test_hook.o -o tests/test_hook.dylib
-
-	@# test for parse self, but it's dylib with `constructor`
-	@#$(ZZ_GCC) -c tests/test_hook_objc_msgSend.c -o tests/test_hook_objc_msgSend.o
-	@# -undefined dynamic_lookup
-	@#$(ZZ_GCC) $(LDFLAGS) -Wl,-U,_objc_msgSend $(SOURCES_O) tests/test_hook_objc_msgSend.o -o tests/test_hook_objc_msgSend
-
-	@$(ZZ_GCC) -Wl,-undefined,dynamic_lookup -framework Foundation -dynamiclib $(LDFLAGS) tests/test_ios.m -o tests/test_ios.dylib
+	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static $(SOURCES_O) tests/test_hook_oc.o -o tests/test_hook_oc.dylib
 
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 

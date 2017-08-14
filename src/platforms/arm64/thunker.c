@@ -126,7 +126,7 @@ __attribute__((__naked__)) static void ctx_restore() {
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZZHookFunctionEntry *entry,
+void function_context_begin_invocation(ZzHookFunctionEntry *entry,
                                        struct RegState_ *rs,
                                        zpointer caller_ret_addr,
                                        zpointer next_hop) {
@@ -149,7 +149,7 @@ void function_context_begin_invocation(ZZHookFunctionEntry *entry,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZZHookFunctionEntry *entry,
+void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      struct RegState_ *rs, zpointer next_hop) {
     if (entry->post_call) {
         POSTCALL post_call;
@@ -159,7 +159,7 @@ void function_context_end_invocation(ZZHookFunctionEntry *entry,
     *(zpointer *) next_hop = entry->caller_ret_addr;
 }
 
-void zz_build_enter_thunk(ZZWriter *writer) {
+void zz_build_enter_thunk(ZzWriter *writer) {
 
     // pop x17
     writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
@@ -179,7 +179,7 @@ void zz_build_enter_thunk(ZZWriter *writer) {
     writer_put_bytes(writer, (void *) ctx_restore, 23 * 4);
 }
 
-void zz_build_leave_thunk(ZZWriter *writer) {
+void zz_build_leave_thunk(ZzWriter *writer) {
 
     // pop x17
     writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
@@ -202,7 +202,7 @@ void zz_build_leave_thunk(ZZWriter *writer) {
     作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数, 但是特么一下污染了两个寄存器.
     所以有个技巧: 利用栈实现只有一个寄存器就可以完成工作
  */
-void thunker_build_enter_trapoline(ZZWriter *writer, zpointer hookentry_ptr,
+void thunker_build_enter_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
                                    zpointer enter_thunk_ptr) {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) hookentry_ptr);
 
@@ -215,7 +215,7 @@ void thunker_build_enter_trapoline(ZZWriter *writer, zpointer hookentry_ptr,
     writer_put_br_reg(writer, ARM64_REG_X17);
 }
 
-void thunker_build_leave_trapoline(ZZWriter *writer, zpointer hookentry_ptr,
+void thunker_build_leave_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
                                    zpointer leave_thunk_ptr) {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr) hookentry_ptr);
 

@@ -27,18 +27,18 @@
 
 bool branch_is_unconditional(Instruction *ins);
 
-Instruction *relocator_read_one(zpointer address, ZZWriter *backup_writer, ZZWriter *relocate_writer);
+Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer, ZzWriter *relocate_writer);
 
-void relocator_build_invoke_trampoline(zpointer target_addr, ZZWriter *backup_writer, ZZWriter *relocate_writer);
+void relocator_build_invoke_trampoline(zpointer target_addr, ZzWriter *backup_writer, ZzWriter *relocate_writer);
 
-bool relocator_rewrite_ldr(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer);
 
-bool relocator_rewrite_b(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer);
 
-bool relocator_rewrite_bl(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer);
 
-bool relocator_rewrite_adr(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer);
 
-bool relocator_rewrite_b_cond(Instruction *ins, ZZWriter *relocate_writer);
+bool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer);
 
 #endif

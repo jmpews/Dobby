@@ -17,19 +17,23 @@
 
 #include "../include/zz.h"
 #include "../include/hookzz.h"
+
 #include "allocator.h"
 
 typedef struct _FunctionBackup {
     zpointer address;
-    uint8_t size;
+    zsize size;
     zbyte data[32];
 } FunctionBackup;
 
-struct _ZZInterceptor;
+struct _ZzInterceptor;
 
-typedef struct _ZZHookEntry {
+/*
+ * hook entry
+ */
+typedef struct _ZzHookFunctionEntry {
     unsigned long id;
-    uint8_t isEnabled;
+    bool isEnabled;
 
     zpointer target_ptr;
     zpointer caller_ret_addr;
@@ -38,40 +42,40 @@ typedef struct _ZZHookEntry {
     zpointer post_call;
     zpointer replace_call;
 
-    FunctionBackup old_prologue;
+    FunctionBackup origin_prologue;
 
     zpointer on_enter_trampoline;
     zpointer on_invoke_trampoline;
     zpointer on_leave_trampoline;
 
-    struct _ZZInterceptor *interceptor;
-} ZZHookFunctionEntry;
+    struct _ZzInterceptor *interceptor;
+} ZzHookFunctionEntry;
 
 typedef struct {
-    ZZHookFunctionEntry **entries;
-    zuint size;
-    zuint capacity;
-} ZZHookFunctionEntrySet;
+    ZzHookFunctionEntry **entries;
+    zsize size;
+    zsize capacity;
+} ZzHookFunctionEntrySet;
 
-typedef struct _ZZInterceptorCenter {
-    ZZCodeSlice enter_thunk;
-    ZZCodeSlice leave_thunk;
-} ZZInterceptorCenter;
+// NOUSE!
+typedef struct _ZzInterceptorCenter {
+    ZzCodeSlice enter_thunk;
+    ZzCodeSlice leave_thunk;
+} ZzInterceptorCenter;
 
-typedef struct _ZZInterceptor {
-    uint8_t isEnableCenterThunk;
-    ZZHookFunctionEntrySet *func_entries;
-    ZZInterceptorCenter *intercepter_center;
+typedef struct _ZzInterceptor {
+    ZzHookFunctionEntrySet *hook_func_entries;
+    ZzInterceptorCenter *intercepter_center;
     zpointer enter_thunk;
     zpointer leave_thunk;
-} ZZInterceptor;
+} ZzInterceptor;
 
-ZZSTATUS ZZInitialize(void);
+ZZSTATUS ZzInitialize(void);
 
-ZZSTATUS ZZInitializeThunk(void);
+ZZSTATUS ZzBuildThunk(void);
 
-ZZHookFunctionEntry *ZZNewHookFunctionEntry(zpointer target);
+ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr);
 
-ZZSTATUS ZZActiveEnterTrampoline(ZZHookFunctionEntry *entry);
+ZZSTATUS ZzActiveEnterTrampoline(ZzHookFunctionEntry *entry);
 
 #endif

@@ -15,30 +15,33 @@
 #ifndef allocator_h
 #define allocator_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
 #include <stdint.h>
 
-#if defined(__x86_64__)
+#include "../include/zz.h"
+#include "../include/hookzz.h"
 
-#include "platforms/darwin/memory-darwin.h"
-
-#elif defined(__arm64__)
-#include "platforms/darwin/memory-darwin.h"
-#endif
+#include "memory.h"
 
 typedef struct _codeslice {
     zpointer data;
     zsize size;
     bool is_used;
-} ZZCodeSlice;
+} ZzCodeSlice;
+
+typedef struct _ZzMemoryPage{
+    zpointer base;
+    zpointer curr_pos;
+    zsize size;
+    zsize used_size;
+} ZzMemoryPage;
 
 typedef struct _allocator {
-    ZZCodeSlice *codeslices;
+    ZzMemoryPage *memory_pages;
+    ZzMemoryPage *curr_memory_page;
     zsize size;
     zsize capacity;
-} ZZAllocator;
+} ZzAllocator;
 
-ZZCodeSlice *ZZAllocatorNewCodeSlice(zsize codeslice_size);
+ZzCodeSlice *ZzAllocatorNewCodeSlice(zsize codeslice_size);
 
 #endif

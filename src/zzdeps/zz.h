@@ -11,12 +11,19 @@ static char zzdata[256];
 
 #include <stdint.h>
 
+// zz's type
+// 1. zpointer and zaddr is different
+
 typedef void *zpointer;
 typedef unsigned long zsize;
 typedef unsigned long zaddr;
 typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
+
+#ifndef bool
+typedef uint8_t bool;
+#endif
 
 #define false 0
 #define true 1

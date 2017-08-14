@@ -13,7 +13,7 @@
 //    limitations under the License.
 
 
-#include <stdint.h> // uint64_t
+#include <stdint.h> // for: uint64_t
 /*
     -ARM64
     http://infocenter.arm.com/help/topic/com.arm.doc.den0024a/DEN0024A_v8_architecture_PG.pdf (7.2.1 Floating-point) (4.6.1 Floating-point register organization in AArch64)

@@ -1,16 +1,14 @@
 ## HookZz
 
-hook framwork. ref with: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate)
+**hook framework**. 
 
-**still developing, for arm64 now!**
+**ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate). special thanks to `frida-gum's` perfect code and modular architecture**.
 
-```
-SAME: 效果相同的另一种写法
-TODO: 有些没有考虑到, 或需要改进的.
-NOUSE: 没有使用
-```
+**still developing, for arm64/IOS now!**
 
-## 通用Hook结构设计
+## Hook架构设计
+
+一般来说可以分为以下几个模块
 
 1. 内存分配 模块
 2. 指令写 模块
@@ -19,7 +17,7 @@ NOUSE: 没有使用
 5. 跳板 模块
 6. 调度器 模块
 
-#### 内存分配 模块
+#### 1. 内存分配 模块
 
 需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行`
 
@@ -27,11 +25,15 @@ NOUSE: 没有使用
 
 在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
 
-#### 指令写 模块
+当然这里也存在一个巨大的坑, IOS 下无法分配 `rwx` 属性的内存页. 这导致 inlinehook 无法在非越狱系统上使用, 并且只有 `MobileSafari` 才有 `VM_FLAGS_MAP_JIT` 权限. 具体解释请参下方 [坑-rwx 与 codesigning].
 
-由于现在大部分的 `assembler` 需要 llvm 的支持. 所以并没有现成的框架支持. 其实这里的指令写有种简单的方法, 就是在本地生成指令的16进制串, 之后直接写即可. 但这种应该是属于 hardcode.
+#### 2. 指令写 模块
 
-这里使用 `frida` 和 `CydiaSubstrace` 都用的方法, 把需要用到的指令都写成一个小函数.
+先说坑,  非越狱状态下不允许设置 `rw-` 为 `r-x`, 或者  设置 `r-x` 为 `rx-`. 具体解释请参考下方坑 [坑-rwx 与 codesigning].
+
+其实这里的指令写有种简单的方法, 就是在本地生成指令的16进制串, 之后直接写即可. 但这种应该是属于 hardcode.
+
+这里使用 `frida-gum` 和 `CydiaSubstrace` 都用的方法, 把需要用到的指令都写成一个小函数.
 
 例如:
 
@@ -113,26 +115,32 @@ __attribute__((__naked__)) static void ctx_save() {
 之后直接复制这块函数内存数据即可, 这一般适合那种指令片段堆.
 
 ```
-void zz_build_enter_thunk(ZZWriter *writer) {
-  writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+void zz_build_enter_thunk(ZzWriter *writer) {
 
-  // call `function_context_begin_invocation`
-  writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
-  writer_put_ldr_reg_address(
-      writer, ARM64_REG_X17,
-      (zaddr)(zpointer)function_context_begin_invocation);
-  writer_put_blr_reg(writer, ARM64_REG_X17);
+    // pop x17
+    writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
-  writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+    // TODO:  is bad code ?
+    writer_put_bytes(writer, (void *) ctx_save, 26 * 4);
 
+    // call `function_context_begin_invocation`
+    writer_put_bytes(writer, (void *) pass_enter_func_args, 4 * 4);
+    writer_put_ldr_reg_address(
+            writer, ARM64_REG_X17,
+            (zaddr) (zpointer) function_context_begin_invocation);
+    writer_put_blr_reg(writer, ARM64_REG_X17);
+
+    // TOOD: is bad code ?
+    writer_put_bytes(writer, (void *) ctx_restore, 23 * 4);
 }
 ```
 
-#### 指令读 模块
+#### 3. 指令读 模块
 
 这一部分实际上就是 `disassembler`, 这一部分可以直接使用 `capstone`, 这里需要把 `capstone` 编译成多种架构.
 
-#### 指令修复 模块
+#### 4. 指令修复 模块
 
 这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复.
 
@@ -152,62 +160,78 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
   gum_arm64_writer_put_ldr_reg_address(ctx->output, ARM64_REG_X17, target->imm);
   gum_arm64_writer_put_br_reg(ctx->output, ARM64_REG_X17);
 
-  return TRUE;
+  return true;
 }
 ```
 
-#### 跳板 模块
+#### 5. 跳板 模块
 
 跳板模块的设计是希望各个模块的实现更浅的耦合, 跳板函数主要作用就是进行跳转, 并准备 `跳转目标` 需要的参数. 举个例子, 被 hook 的函数经过入口跳板(`enter_trampoline`), 跳转到调度函数(`enter_chunk`), 需要被 hook 的函数相关信息等, 这个就需要在构造跳板是完成
 
-#### 调度 模块
+#### 6. 调度 模块
 
 可以理解为所有被 hook 的函数都必须经过的函数, 类似于 `objc_msgSend`, 在这里通过栈来函数(`pre_call`, `replace_call`, `post_call`)调用顺序.
 
 本质有些类似于 `objc_msgSend` 所有的被 hook 的函数都在经过 `enter_trampoline` 跳板后, 跳转到 `enter_thunk`, 在此进行下一步的跳转判断决定, 并不是直接跳转到 `replace_call`.
 
-## 编译 & 使用
+## 使用
 
-#### export 3 func:
+**export 3 func**:
 
 ```
 // initialize the interceptor and so on.
-ZZSTATUS ZZInitialize(void);
+ZZSTATUS ZzInitialize(void);
 
 // build hook with `replace_call`, `pre_call`, `post_call`, but not enable.
-ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr);
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr);
 
 // enable hook, with `code patch`
-ZZSTATUS ZZEnableHook(zpointer target_ptr);
+ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ```
 
-#### export 1 datastruct:
+**export 1 variable:
+
 
 ```
 // current all cpu register state, read `zzdefs.h` for detail.
-struct RegState_
+#if defined (__aarch64__)
+typedef union FPReg_ {
+    __int128_t q;
+    struct {
+        double d1; // Holds the double (LSB).
+        double d2;
+    } d;
+    struct {
+        float f1; // Holds the float (LSB).
+        float f2;
+        float f3;
+        float f4;
+    } f;
+} FPReg;
+
+// just ref how to backup/restore registers
+struct RegState_ {
+    uint64_t pc;
+    uint64_t sp;
+
+    union {
+        uint64_t x[29];
+        struct {
+            uint64_t x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28;
+        } regs;
+    } general;
+
+    uint64_t fp;
+    uint64_t lr;
+
+    union {
+        FPReg q[8];
+        FPReg q0,q1,q2,q3,q4,q5,q6,q7;
+    } floating;
+};
 ```
 
-#### arm64 & ios 架构
-
-```
-jmpews at localhost in ~/Desktop/SpiderZz/project/evilHOOK/HookZz (master●) (normal)
-λ : >>> make -f darwin.ios.mk test
-generate [src/allocator.o]!
-generate [src/interceptor.o]!
-generate [src/trampoline.o]!
-generate [src/platforms/darwin/memory-darwin.o]!
-generate [src/platforms/arm64/reader.o]!
-generate [src/platforms/arm64/relocator.o]!
-generate [src/platforms/arm64/thunker.o]!
-generate [src/platforms/arm64/writer.o]!
-build [test] success for arm64(IOS)!
-```
-
-#### 测试
-
-已经生成编译测试的 `test_hook.dylib` 与 `test_ios.dylib` 请自行测试
-
+在 `pre_call` 和 `post_call` 传递该变量.
 
 #### 使用 `pre_call` 和 `post_call`
 
@@ -224,10 +248,10 @@ void recvmsg_post_call(struct RegState_ *rs) {
   printf("@recvmsg@: %s\n", recvmsg_data);
 }
 __attribute__((constructor)) void test_hook_recvmsg() {
-  ZZInitialize();
-  ZZBuildHook((void *)recvmsg, NULL, (void **)(&orig_recvmsg),
+  ZzInitialize();
+  ZzBuildHook((void *)recvmsg, NULL, (void **)(&orig_recvmsg),
               (zpointer)recvmsg_pre_call, (zpointer)recvmsg_post_call);
-  ZZEnableHook((void *)recvmsg);
+  ZzEnableHook((void *)recvmsg);
 }
 ```
 
@@ -237,10 +261,10 @@ __attribute__((constructor)) void test_hook_recvmsg() {
 #include <sys/socket.h>
 void *orig_func;
 __attribute__((constructor)) void test_hook_recvmsg() {
-  ZZInitialize();
-  ZZBuildHook((void *)func, (void *)fake_func, (void **)(&orig_func), NULL,
+  ZzInitialize();
+  ZzBuildHook((void *)func, (void *)fake_func, (void **)(&orig_func), NULL,
               NULL);
-  ZZEnableHook((void *)func);
+  ZzEnableHook((void *)func);
 }
 ```
 
@@ -255,22 +279,44 @@ __attribute__((constructor)) void test_hook_recvmsg() {
 }
 
 void objcMethod_pre_call(struct RegState_ *rs) {
-    printf("call -[ViewController %s]", (zpointer) (rs->general.regs.x1));
+  NSLog(@"hookzz OC-Method: -[ViewController %s]",
+        (zpointer)(rs->general.regs.x1));
 }
 
-void *oriObjcMethod;
-+(void)zzMethodSwizzlingHook {
-    Class hookClass = objc_getClass("UIViewController");
-    SEL oriSEL = @selector(viewWillAppear:);
-    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-    IMP oriImp = method_getImplementation(oriMethod);
++ (void)zzMethodSwizzlingHook {
+  Class hookClass = objc_getClass("UIViewController");
+  SEL oriSEL = @selector(viewWillAppear:);
+  Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+  IMP oriImp = method_getImplementation(oriMethod);
 
-    ZZBuildHook((void *)oriImp, NULL, (void **) (&oriObjcMethod),
-                (zpointer) objcMethod_pre_call, NULL);
-    ZZEnableHook((void *) oriImp);
+  ZzInitialize();
+  ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, NULL);
+  ZzEnableHook((void *)oriImp);
 }
 ```
-#### 坑
+
+## 编译 & 测试
+#### arm64 & ios 架构
+
+```
+λ : >>> make -f darwin.ios.mk darwin.ios
+generate [src/allocator.o]!
+generate [src/interceptor.o]!
+generate [src/trampoline.o]!
+generate [src/platforms/darwin/memory-darwin.o]!
+generate [src/platforms/arm64/reader.o]!
+generate [src/platforms/arm64/relocator.o]!
+generate [src/platforms/arm64/thunker.o]!
+generate [src/platforms/arm64/writer.o]!
+generate [src/zzdeps/darwin/memory-utils.o]!
+build success for arm64(IOS)!
+```
+
+#### 测试
+
+已经生成编译测试的 `test_hook.dylib` 与 `test_ios.dylib` 请自行测试
+
+## 坑
 
 #### 寄存器污染
 

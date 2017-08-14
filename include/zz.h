@@ -3,14 +3,12 @@
 
 // Created by jmpews on 2017/5/3.
 //
-#define PROGRAM_NAME "MachoParser"
+#define PROGRAM_NAME "HookZz"
 #define PROGRAM_VER "1.0.0"
 #define PROGRAM_AUTHOR "jmpews@gmail.com"
 
-static char zzdata[256];
 
 #include <stdint.h>
-#include <mach/vm_types.h>
 
 typedef void *zpointer;
 typedef unsigned long zsize;

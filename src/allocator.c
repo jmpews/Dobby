@@ -18,66 +18,79 @@
 #include <stdlib.h>
 #include "allocator.h"
 
-ZZAllocator *g_allocator;
+ZzAllocator *g_allocator;
 
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 
-/*
-    TODO:
-    different from ZZHookFunctionEntry. 
-    ZZHookFunctionEntry:
-        (ZZHookFunctionEntry **)malloc(...)
-    ZZCodeSlice:
-        (ZZCodeSlice *)malloc(...)
+// bad code-style ?
+void ZzAllocatorInitializeMemoryPage(ZzMemoryPage *memory_page) {
+    zsize page_size = zz_vm_get_page_size();
+    zpointer page_ptr = zz_vm_allocate(page_size);
+    if(!zz_vm_protect_as_executable((zaddr)page_ptr, page_size)) {
+        Xerror("zz_vm_protect_as_executable error at %p", page_ptr);
+        exit(1);
+    }
+    memory_page->base = page_ptr;
+    memory_page->curr_pos = page_ptr;
+    memory_page->size = page_size;
+    memory_page->used_size = 0;
+}
 
- */
-void ZZAllocatorInitialize() {
+void ZzAllocatorInitialize() {
     if (!g_allocator) {
-        g_allocator = (ZZAllocator *) malloc(sizeof(ZZAllocator));
-        g_allocator->codeslices = (ZZCodeSlice *) malloc(sizeof(ZZCodeSlice) * DEFAULT_ALLOCATOR_CAPACITY);
+        g_allocator = (ZzAllocator *) malloc(sizeof(ZzAllocator));
+        g_allocator->memory_pages = (ZzMemoryPage *) malloc(sizeof(ZzMemoryPage) * DEFAULT_ALLOCATOR_CAPACITY);
         g_allocator->size = 0;
         g_allocator->capacity = DEFAULT_ALLOCATOR_CAPACITY;
+        g_allocator->curr_memory_page = &g_allocator->memory_pages[0];
+        for(int i = 0; i < g_allocator->capacity; i++) {
+            if (!g_allocator->memory_pages[i].base) {
+                ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
+            }
+        }
     }
 }
 
 /*
-    TODO:
-    NO USED!!!
-    change to `alloc_codeslice(ZZCodeSlice *codeslice)` ?
+    codeslice manager.
  */
-void alloc_codeslice(ZZCodeSlice *codeslice, zsize codeslice_size) {
-    zpointer page_ptr;
-    zsize page_size = codeslice_size;
-    page_ptr = zz_alloc_memory(codeslice_size);
-
-    codeslice->data = page_ptr;
-    codeslice->size = page_size;
-    codeslice->is_used = true;
-}
-
-/*
-    TODO:
-    different from `AddHookEntry`:
- */
-ZZCodeSlice *ZZAllocatorNewCodeSlice(zsize codeslice_size) {
+ZzCodeSlice *ZzAllocatorNewCodeSlice(zsize codeslice_size) {
+    ZzCodeSlice *codeslice;
+    ZzMemoryPage *curr_memory_page;
     if (!g_allocator)
-        ZZAllocatorInitialize();
+        ZzAllocatorInitialize();
+
+    curr_memory_page = g_allocator->curr_memory_page;
+
 
     if (g_allocator->size >= g_allocator->capacity) {
-        ZZCodeSlice *p = realloc(g_allocator->codeslices, sizeof(ZZCodeSlice) * (g_allocator->capacity) * 2);
+        ZzMemoryPage *p = realloc(g_allocator->memory_pages, sizeof(ZzMemoryPage) * (g_allocator->capacity) * 2);
         if (NULL == p) {
             return NULL;
         }
         g_allocator->capacity = g_allocator->capacity * 2;
-        g_allocator->codeslices = p;
+        g_allocator->memory_pages = p;
+        for(int i = 0; i < g_allocator->capacity; i++) {
+            if (!g_allocator->memory_pages[i].base) {
+                ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
+            }
+        }
     }
 
-    ZZCodeSlice *pp = &(g_allocator->codeslices[g_allocator->size++]);
-    zpointer page_ptr = zz_alloc_pages(1);
-    pp->data = page_ptr;
-    pp->size = codeslice_size;
-    pp->is_used = true;
+    // check the memory-page remain.
+    if(curr_memory_page->size-curr_memory_page->used_size < codeslice_size) {
+        g_allocator->size++;
+        g_allocator->curr_memory_page = &g_allocator->memory_pages[g_allocator->size];
+        curr_memory_page =  g_allocator->curr_memory_page;
+    }
 
-    return pp;
+    codeslice = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+    codeslice->data =  curr_memory_page->curr_pos;
+    codeslice->size = codeslice_size;
+
+    curr_memory_page->curr_pos += codeslice_size;
+    curr_memory_page->used_size += codeslice_size;
+
+    return codeslice;
 }
 

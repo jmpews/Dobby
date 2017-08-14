@@ -24,6 +24,8 @@
 typedef enum _ZZSTATUS {
     ZZ_UNKOWN = -1,
     ZZ_DONE = 0,
+    ZZ_SUCCESS,
+    ZZ_FAILED,
     ZZ_DONE_HOOK,
     ZZ_DONE_INIT,
     ZZ_DONE_ENABLE,
@@ -48,11 +50,11 @@ typedef void (*PRECALL)(struct RegState_ *rs);
 
 typedef void (*POSTCALL)(struct RegState_ *rs);
 
-ZZSTATUS ZZInitialize(void);
+ZZSTATUS ZzInitialize(void);
 
-ZZSTATUS ZZBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,
                      zpointer post_call_ptr);
 
-ZZSTATUS ZZEnableHook(zpointer target_ptr);
+ZZSTATUS ZzEnableHook(zpointer target_ptr);
 
 #endif

@@ -15,17 +15,13 @@
 #include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 
-
 #include <mach/vm_prot.h>
+#include <mach/mach_types.h>
 
-zpointer zz_alloc_memory(zsize size);
+bool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size);
 
-zpointer zz_alloc_pages(zsize n_pages);
-
-ZZSTATUS zz_mprotect(zpointer addr, zsize size, vm_prot_t page_prot);
-
-void make_page_executable(zpointer page_ptr, zuint page_size);
-
-void make_page_writable(zpointer page_ptr, zuint page_size);
-
-void memory_patch_code(zpointer addr, zpointer code_ptr, zuint code_size);
+zpointer zz_vm_allocate_pages(zsize n_pages);
+zpointer zz_vm_allocate(zsize size);
+bool zz_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size);
+bool zz_vm_protect_as_executable(const zaddr address, zsize size);
+bool zz_vm_protect_as_writable(const zaddr address, zsize size);

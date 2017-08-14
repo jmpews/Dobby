@@ -124,6 +124,6 @@ void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
     memcpy(old_ins->bytes, old_ins->address, old_ins->size);
 }
 
-void relocator_invoke_trampoline(ZZTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup) {
+void relocator_invoke_trampoline(ZzTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup) {
 
 }
