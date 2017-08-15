@@ -57,4 +57,7 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin
 
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 
+ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size); 
+
+
 #endif

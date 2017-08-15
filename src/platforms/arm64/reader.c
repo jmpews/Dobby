@@ -13,7 +13,7 @@
 //    limitations under the License.
 
 #include "reader.h"
-
+#include "../../zzdeps/common/debugbreak.h"
 static csh handle;
 
 void capstone_init(void) {
@@ -38,5 +38,7 @@ cs_insn *disassemble_instruction_at(zpointer address) {
     cs_insn *insn;
     size_t count;
     count = cs_disasm(handle, address, 16, (unsigned long) address, 0, &insn);
+    if(!insn)
+        debug_break();
     return insn;
 }

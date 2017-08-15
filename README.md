@@ -17,7 +17,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 **special thanks to `frida-gum's` perfect code and modular architecture.**
 
 
-## How it work ?
+## How it works ?
 
 [Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/HookFrameworkDesign.md)
 
