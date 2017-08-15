@@ -93,10 +93,11 @@ typedef void (*HALFCALL)(struct RegState_ *rs);
 
 ## Simple Example
 
-#### use `ZzBuildHookAddress`
+#### 1.use `ZzBuildHookAddress`
+
+hook at address, and specify the hook length. (i.e. hook a piece of code.)
 
 ```
-
 #include "hookzz.h"
 #include <stdio.h>
 static void hack_this_function()
@@ -132,13 +133,13 @@ __attribute__((constructor)) void test_hook_address()
     ZzInitialize();
     void *hack_this_function_ptr = (void *)hack_this_function;
     // hook address with only `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, 0, (void *)hook_pre_call, NULL);
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, 0, (void *)hook_pre_call, NULL);
 
     // hook address with only `half_call`
-    // ZzBuildHookAddress(hack_this_function_ptr + 8, 0, NULL, (void *)hook_half_call);
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, NULL, (void *)hook_half_call);
 
     // hook address with both `half_call` and `pre_call`
-    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
+    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
     ZzEnableHook((void *)hack_this_function_ptr + 8);
 
     hack_this_function();
@@ -169,7 +170,7 @@ getpid() return 27675
 hack success -.0
 ```
 
-#### use `ZzBuildHook`
+#### 2.use `ZzBuildHook`
 
 ```
 #include "hookzz.h"
@@ -209,6 +210,41 @@ void objcMethod_pre_call(struct RegState_ *rs) {
 
 ```
 2017-08-16 02:53:48.237242+0800 T007[27678:6820897] hookzz OC-Method: -[ViewController viewWillAppear:]
+```
+
+#### 3.use `ZzRuntimeCodePatch`
+
+`ZzRuntimeCodePatch` usually works with [MachoParser](https://github.com/jmpews/MachoParser)
+
+```
+__attribute__((constructor)) void patch_svc_x80() {
+  const section_64_info_t *sect64;
+  zaddr svc_x80_addr;
+  zaddr curr_addr, end_addr;
+  uint32_t svc_x80_byte = 0xd4001001;
+  MachoMem *mem = new MachoMem();
+  mem->parse_macho();
+  // mem->parse_dyld();
+  sect64 = mem->get_sect_by_name("__text");
+  curr_addr = sect64->sect_addr;
+  end_addr = curr_addr + sect64->sect_64->size;
+
+  ZzInitialize();
+  while (curr_addr < end_addr) {
+    svc_x80_addr = mem->macho_search_data(
+        sect64->sect_addr, sect64->sect_addr + sect64->sect_64->size,
+        (const zbyte *)&svc_x80_byte, 4);
+    if (svc_x80_addr) {
+      NSLog(@"patch svc #0x80 with 'nop' at %p with aslr (%p without aslr)",
+            (void *)svc_x80_addr, (void *)(svc_x80_addr - mem->m_aslr_slide));
+      unsigned long nop_bytes = 0xD503201F;
+      ZzRuntimeCodePatch(svc_x80_addr, (zpointer)&nop_bytes, 4);
+      curr_addr = svc_x80_addr + 4;
+    } else {
+      break;
+    }
+  }
+}
 ```
 
 ## Advanced Example
