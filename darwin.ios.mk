@@ -64,11 +64,15 @@ $(ZZDEPS_SOURCES_O): %.o : %.c
 	@$(ZZ_GCC) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
+# -undefined dynamic_lookup
 test : darwin.ios
-	@# test for hook oc-method
 	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_oc.m -o tests/test_hook_oc.o
-	@# -undefined dynamic_lookup
 	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static tests/test_hook_oc.o -o tests/test_hook_oc.dylib
+	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
+
+	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_address.c -o tests/test_hook_address.o
+	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static tests/test_hook_address.o -o tests/test_hook_address.dylib
+	@echo "$(OK_COLOR)build [test_hook_address.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 

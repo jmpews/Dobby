@@ -38,6 +38,7 @@ typedef struct _ZzArm64RegInfo {
 ZzWriter *ZzNewWriter(zpointer address);
 
 void WriterPutAbsJmp(ZzWriter *self, zpointer target_addr);
+void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
 
 void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
 
@@ -61,6 +62,7 @@ void writer_put_add_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
 void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm);
 
 void writer_put_br_reg(ZzWriter *self, arm64_reg reg);
+    
 
 void writer_put_blr_reg(ZzWriter *self, arm64_reg reg);
 

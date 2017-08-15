@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
+#include <string.h>
 #include "relocator.h"
 #include "../../zzdeps/common/debugbreak.h"
-#include <string.h>
 
 /*
     C6.2.19 B.cond
@@ -25,8 +25,9 @@
  */
 
 Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer,
-                                ZzWriter *relocate_writer) {
-    Instruction *ins = (Instruction *) malloc(sizeof(Instruction));
+                                ZzWriter *relocate_writer)
+{
+    Instruction *ins = (Instruction *)malloc(sizeof(Instruction));
     cs_insn *ins_cs = disassemble_instruction_at(address);
 
     if ((ins_cs->size) % 4)
@@ -39,42 +40,55 @@ Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer,
     writer_put_bytes(backup_writer, address, ins_cs->size);
 
     bool flag = true;
-    switch (ins_cs->id) {
-        case ARM64_INS_B:
-            if (branch_is_unconditional(ins))
-                flag = relocator_rewrite_b(ins, relocate_writer);
-            else
-                flag = relocator_rewrite_b_cond(ins, relocate_writer);
-            break;
-        case ARM64_INS_LDR:
-            flag = relocator_rewrite_ldr(ins, relocate_writer);
-            break;
-        case ARM64_INS_ADR:
-        case ARM64_INS_ADRP:
-            flag = relocator_rewrite_adr(ins, relocate_writer);
-            break;
-        case ARM64_INS_BL:
-            flag = relocator_rewrite_bl(ins, relocate_writer);
-            break;
-        default:
-            writer_put_bytes(relocate_writer, address, ins_cs->size);
+    switch (ins_cs->id)
+    {
+    case ARM64_INS_B:
+        if (branch_is_unconditional(ins))
+            flag = relocator_rewrite_b(ins, relocate_writer);
+        else
+            flag = relocator_rewrite_b_cond(ins, relocate_writer);
+        break;
+    case ARM64_INS_LDR:
+        flag = relocator_rewrite_ldr(ins, relocate_writer);
+        break;
+    case ARM64_INS_ADR:
+    case ARM64_INS_ADRP:
+        flag = relocator_rewrite_adr(ins, relocate_writer);
+        break;
+    case ARM64_INS_BL:
+        flag = relocator_rewrite_bl(ins, relocate_writer);
+        break;
+    default:
+        writer_put_bytes(relocate_writer, address, ins_cs->size);
     }
     if (!flag)
         writer_put_bytes(relocate_writer, address, ins_cs->size);
     return ins;
 }
 
-void relocator_build_invoke_trampoline(zpointer target_addr, ZzWriter *backup_writer, ZzWriter *relocate_writer) {
+void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer)
+{
     bool finished = false;
-    zpointer code_addr = target_addr;
+    zpointer code_addr = entry->target_ptr;
     Instruction *ins;
 
-    do {
+    do
+    {
         ins = relocator_read_one(code_addr, backup_writer, relocate_writer);
         code_addr += ins->size;
         free(ins);
-        if ((code_addr - target_addr) >= JMP_METHOD_SIZE) {
-            finished = true;
+        if (entry->target_end_ptr && code_addr == entry->target_end_ptr)
+        {
+            WriterPutAbsJmp(relocate_writer, entry->on_half_trampoline);
+            entry->caller_half_ret_addr = (zpointer)relocate_writer->size;
+        }
+        // hook at half way.
+        if ((code_addr - entry->target_ptr) >= JMP_METHOD_SIZE)
+        {
+            if (!entry->target_end_ptr || code_addr >= entry->target_end_ptr)
+            {
+                finished = true;
+            }
         }
     } while (!finished);
 
@@ -86,21 +100,23 @@ void relocator_build_invoke_trampoline(zpointer target_addr, ZzWriter *backup_wr
     // writer_put_bytes(relocate_writer, (zpointer)&target_back_addr, sizeof(zpointer));
 }
 
-
-bool branch_is_unconditional(Instruction *ins) {
+bool branch_is_unconditional(Instruction *ins)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
 
-    switch (ins_csd.cc) {
-        case ARM64_CC_INVALID:
-        case ARM64_CC_AL:
-        case ARM64_CC_NV:
-            return true;
-        default:
-            return false;
+    switch (ins_csd.cc)
+    {
+    case ARM64_CC_INVALID:
+    case ARM64_CC_AL:
+    case ARM64_CC_NV:
+        return true;
+    default:
+        return false;
     }
 }
 
-bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer) {
+bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     const cs_arm64_op *dst = &ins_csd.operands[0];
     const cs_arm64_op *src = &ins_csd.operands[1];
@@ -109,7 +125,8 @@ bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer) {
+bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -119,7 +136,8 @@ bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer) {
+bool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -143,7 +161,8 @@ bool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer) {
         2. [...]
         3. [...]
  */
-bool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer) {
+bool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -156,7 +175,8 @@ bool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer) {
     return true;
 }
 
-bool relocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer) {
+bool relocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer)
+{
     cs_arm64 ins_csd = ins->ins_cs->detail->arm64;
 
     const cs_arm64_op dst = ins_csd.operands[0];

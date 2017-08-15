@@ -33,10 +33,8 @@
 #include "../zz.h"
 #include "../posix/memory-utils-posix.h"
 
-#define KR_ERROR(kr) Xerror("kr = %d, reason: %s!", kr, mach_error_string(kr))
-#define KR_ERROR_AT(kr, address)                                               \
-  Xerror("kr = %d, at %p, reason: %s!", kr, (zpointer)address,                 \
-         mach_error_string(kr))
+#define KR_ERROR(kr) {Xerror("kr = %d, reason: %s!", kr, mach_error_string(kr)); debug_break();}
+#define KR_ERROR_AT(kr, address) {Xerror("kr = %d, at %p, reason: %s!", kr, (zpointer)address, mach_error_string(kr)); debug_break();}
 
 bool zz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer,
                               zsize length);

@@ -17,7 +17,6 @@
 
 #include "../include/zz.h"
 #include "../include/hookzz.h"
-
 #include "allocator.h"
 
 typedef struct _FunctionBackup {
@@ -36,15 +35,19 @@ typedef struct _ZzHookFunctionEntry {
     bool isEnabled;
 
     zpointer target_ptr;
+    zpointer target_end_ptr;
     zpointer caller_ret_addr;
+    zpointer caller_half_ret_addr;
 
     zpointer pre_call;
+    zpointer half_call;
     zpointer post_call;
     zpointer replace_call;
 
     FunctionBackup origin_prologue;
 
     zpointer on_enter_trampoline;
+    zpointer on_half_trampoline;
     zpointer on_invoke_trampoline;
     zpointer on_leave_trampoline;
 
@@ -60,6 +63,7 @@ typedef struct {
 // NOUSE!
 typedef struct _ZzInterceptorCenter {
     ZzCodeSlice enter_thunk;
+    ZzCodeSlice half_thunk;
     ZzCodeSlice leave_thunk;
 } ZzInterceptorCenter;
 
@@ -67,6 +71,7 @@ typedef struct _ZzInterceptor {
     ZzHookFunctionEntrySet *hook_func_entries;
     ZzInterceptorCenter *intercepter_center;
     zpointer enter_thunk;
+    zpointer half_thunk;
     zpointer leave_thunk;
 } ZzInterceptor;
 
@@ -74,7 +79,7 @@ ZZSTATUS ZzInitialize(void);
 
 ZZSTATUS ZzBuildThunk(void);
 
-ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr);
+ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
 
 ZZSTATUS ZzActiveEnterTrampoline(ZzHookFunctionEntry *entry);
 

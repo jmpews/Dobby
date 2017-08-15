@@ -1,12 +1,12 @@
 /**
  *    Copyright 2017 jmpews
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,12 @@
  *    limitations under the License.
  */
 
-// `xcrun --sdk iphoneos --find clang` -isysroot `xcrun --sdk iphoneos --show-sdk-path` -g -gmodules -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include  -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static -framework Foundation -dynamiclib -arch arm64 test_hook_oc.m -o test_hook_oc.dylib
+// `xcrun --sdk iphoneos --find clang` -isysroot `xcrun --sdk iphoneos
+// --show-sdk-path` -g -gmodules
+// -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include
+// -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static
+// -framework Foundation -dynamiclib -arch arm64 test_hook_oc.m -o
+// test_hook_oc.dylib
 #include "hookzz.h"
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
@@ -26,7 +31,7 @@
 @implementation HookZz
 
 + (void)load {
-  [self zzMethodSwizzlingHook];
+    [self zzMethodSwizzlingHook];
 }
 
 void objcMethod_pre_call(struct RegState_ *rs) {
@@ -35,14 +40,14 @@ void objcMethod_pre_call(struct RegState_ *rs) {
 }
 
 + (void)zzMethodSwizzlingHook {
-  Class hookClass = objc_getClass("UIViewController");
-  SEL oriSEL = @selector(viewWillAppear:);
-  Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-  IMP oriImp = method_getImplementation(oriMethod);
+    Class hookClass = objc_getClass("UIViewController");
+    SEL oriSEL = @selector(viewWillAppear:);
+    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+    IMP oriImp = method_getImplementation(oriMethod);
 
-  ZzInitialize();
-  ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, NULL);
-  ZzEnableHook((void *)oriImp);
+    ZzInitialize();
+    ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, NULL);
+    ZzEnableHook((void *)oriImp);
 }
 
 @end
