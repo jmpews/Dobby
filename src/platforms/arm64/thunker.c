@@ -173,7 +173,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
 {
     if (entry->half_call)
     {
-        POSTCALL half_call;
+        HALFCALL half_call;
         half_call = entry->half_call;
         (*half_call)(rs);
     }

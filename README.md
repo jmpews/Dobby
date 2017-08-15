@@ -23,7 +23,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 ## How use it ?
 
-**export 3 func**:
+**export 5 func**:
 
 ```
 // initialize the interceptor and so on.
@@ -32,8 +32,14 @@ ZzSTATUS ZzInitialize(void);
 // build hook with `replace_call`, `pre_call`, `post_call`, but not enable.
 ZzSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr);
 
+// build hook address with `pre_call`, `half_call`
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, zpointer pre_call_ptr, zpointer half_call_ptr);
+
 // enable hook, with `code patch`
 ZzSTATUS ZzEnableHook(zpointer target_ptr);
+
+// runtime code patch
+ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
 ```
 
 **export 1 variable**:
@@ -77,14 +83,135 @@ struct RegState_ {
 };
 ```
 
-and the `pre_call` and `post_call` type is blow.
+and the `pre_call`, `post_call` and `half_call` type is blow.
 
 ```
 typedef void (*PRECALL)(struct RegState_ *rs);
 typedef void (*POSTCALL)(struct RegState_ *rs);
+typedef void (*HALFCALL)(struct RegState_ *rs);
 ```
 
-## Example
+## Simple Example
+
+#### use `ZzBuildHookAddress`
+
+```
+
+#include "hookzz.h"
+#include <stdio.h>
+static void hack_this_function()
+{
+#ifdef __arm64__
+    __asm__("mov X0, #0\n"
+            "mov w16, #20\n"
+            "svc #0x80\n"
+            "mov x9, #1\n"
+            "mov x9, #2\n"
+            "mov x9, #3\n"
+            "mov x9, #4\n"
+            "mov x9, #5\n"
+            "mov x9, #6\n"
+            "mov x9, #7");
+#endif
+}
+
+void hook_pre_call(struct RegState_ *rs)
+{
+    unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
+    printf("request is: %ld\n", request);
+}
+
+void hook_half_call(struct RegState_ *rs)
+{
+    unsigned long x0 = (unsigned long)(rs->general.regs.x0);
+    printf("getpid() return %ld\n", x0);
+}
+
+__attribute__((constructor)) void test_hook_address()
+{
+    ZzInitialize();
+    void *hack_this_function_ptr = (void *)hack_this_function;
+    // hook address with only `pre_call`
+    ZzBuildHookAddress(hack_this_function_ptr + 8, 0, (void *)hook_pre_call, NULL);
+
+    // hook address with only `half_call`
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, 0, NULL, (void *)hook_half_call);
+
+    // hook address with both `half_call` and `pre_call`
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
+    ZzEnableHook((void *)hack_this_function_ptr + 8);
+
+    hack_this_function();
+
+    printf("hack success -.0\n");
+}
+```
+
+**hook address with only `pre_call` output:**
+
+```
+request is: 20
+hack success -.0
+```
+
+**hook address with only `half_call` output:**
+
+```
+getpid() return 27672
+hack success -.0
+```
+
+**hook address with both `half_call` and `pre_call` output:**
+
+```
+request is: 20
+getpid() return 27675
+hack success -.0
+```
+
+#### use `ZzBuildHook`
+
+```
+#include "hookzz.h"
+#import <Foundation/Foundation.h>
+#import <objc/runtime.h>
+
+@interface HookZz : NSObject
+
+@end
+
+@implementation HookZz
+
++ (void)load {
+    [self zzMethodSwizzlingHook];
+}
+
+void objcMethod_pre_call(struct RegState_ *rs) {
+  NSLog(@"hookzz OC-Method: -[ViewController %s]",
+        (zpointer)(rs->general.regs.x1));
+}
+
++ (void)zzMethodSwizzlingHook {
+    Class hookClass = objc_getClass("UIViewController");
+    SEL oriSEL = @selector(viewWillAppear:);
+    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+    IMP oriImp = method_getImplementation(oriMethod);
+
+    ZzInitialize();
+    ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, NULL);
+    ZzEnableHook((void *)oriImp);
+}
+
+@end
+```
+
+**hook oc method output:**
+
+```
+2017-08-16 02:53:48.237242+0800 T007[27678:6820897] hookzz OC-Method: -[ViewController viewWillAppear:]
+```
+
+## Advanced Example
 
 #### use `replace_call` bypass syscall-antidebug
 

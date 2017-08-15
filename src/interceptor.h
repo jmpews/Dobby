@@ -30,7 +30,13 @@ struct _ZzInterceptor;
 /*
  * hook entry
  */
+
+ #define HOOK_FUNCTION_TYPE 1
+ #define HOOK_ADDRESS_TYPE 2
+
 typedef struct _ZzHookFunctionEntry {
+    int hook_type;
+
     unsigned long id;
     bool isEnabled;
 

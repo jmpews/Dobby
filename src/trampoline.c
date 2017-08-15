@@ -66,7 +66,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
         if (!p->data || !p->size)
             break;
 
-        if (entry->half_call && entry->target_end_ptr)
+        if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr)
         {
             // update caller_half_ret_addr
             entry->caller_half_ret_addr += (zaddr)p->data;
@@ -179,7 +179,8 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry)
 ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry)
 {
     ZzBuildEnterTrampoline(entry);
-    if (entry->target_end_ptr)
+
+    if (entry->hook_type == HOOK_ADDRESS_TYPE)
     {
         ZzBuildHalfTrampoline(entry);
         ZzBuildInvokeTrampoline(entry);

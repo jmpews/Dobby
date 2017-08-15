@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-// `xcrun --sdk iphoneos --find clang` -isysroot `xcrun --sdk iphoneos --show-sdk-path` -g -gmodules -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include  -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static -framework Foundation -dynamiclib -arch arm64 test_hook_oc.m -o test_hook_oc.dylib
 #include "hookzz.h"
 #include <stdio.h>
 static void hack_this_function()
@@ -41,13 +40,21 @@ void hook_pre_call(struct RegState_ *rs)
 
 void hook_half_call(struct RegState_ *rs)
 {
-    unsigned long x0 = (unsigned long)(rs->general.regs.x1);
+    unsigned long x0 = (unsigned long)(rs->general.regs.x0);
+    printf("getpid() return %ld\n", x0);
 }
 
 __attribute__((constructor)) void test_hook_address()
 {
     ZzInitialize();
     void *hack_this_function_ptr = (void *)hack_this_function;
+    // hook address with only `pre_call`
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, 0, (void *)hook_pre_call, NULL);
+
+    // hook address with only `half_call`
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, NULL, (void *)hook_half_call);
+
+    // hook address with both `half_call` and `pre_call`
     ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
     ZzEnableHook((void *)hack_this_function_ptr + 8);
 

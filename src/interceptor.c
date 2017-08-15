@@ -211,6 +211,7 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
             break;
         }
 
+        entry->hook_type = HOOK_FUNCTION_TYPE;
         entry->replace_call = fake_ptr;
         entry->pre_call = pre_call_ptr;
         entry->post_call = post_call_ptr;
@@ -235,6 +236,10 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
 
     ZZSTATUS status = ZZ_DONE_HOOK;
 
+    if(!target_end_ptr && half_call_ptr) {
+        Sinfo("2th arg is none, default set as next instruction.");
+        target_end_ptr = target_start_ptr + 4;
+    }
     // check g_intercepter initialize
     if (NULL == g_interceptor)
     {
@@ -260,6 +265,7 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
             break;
         }
 
+        entry->hook_type = HOOK_ADDRESS_TYPE;
         entry->pre_call = pre_call_ptr;
         entry->half_call = half_call_ptr;
 

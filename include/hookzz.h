@@ -47,8 +47,8 @@ typedef unsigned char zbyte;
 #define true 1
 
 typedef void (*PRECALL)(struct RegState_ *rs);
-
 typedef void (*POSTCALL)(struct RegState_ *rs);
+typedef void (*HALFCALL)(struct RegState_ *rs);
 
 ZZSTATUS ZzInitialize(void);
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,

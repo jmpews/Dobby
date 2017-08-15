@@ -77,7 +77,7 @@ void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *bac
         ins = relocator_read_one(code_addr, backup_writer, relocate_writer);
         code_addr += ins->size;
         free(ins);
-        if (entry->target_end_ptr && code_addr == entry->target_end_ptr)
+        if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr && code_addr == entry->target_end_ptr)
         {
             WriterPutAbsJmp(relocate_writer, entry->on_half_trampoline);
             entry->caller_half_ret_addr = (zpointer)relocate_writer->size;
@@ -85,7 +85,11 @@ void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *bac
         // hook at half way.
         if ((code_addr - entry->target_ptr) >= JMP_METHOD_SIZE)
         {
-            if (!entry->target_end_ptr || code_addr >= entry->target_end_ptr)
+            if (entry->hook_type == HOOK_ADDRESS_TYPE && (!entry->target_end_ptr || code_addr >= entry->target_end_ptr))
+            {
+                finished = true;
+            }
+            else if (entry->hook_type == HOOK_FUNCTION_TYPE)
             {
                 finished = true;
             }
