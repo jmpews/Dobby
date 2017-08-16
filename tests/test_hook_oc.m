@@ -31,23 +31,32 @@
 @implementation HookZz
 
 + (void)load {
-    [self zzMethodSwizzlingHook];
+  [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(struct RegState_ *rs) {
+void objcMethod_pre_call(struct RegState_ *rs, ZzCallerStack *stack) {
+  zpointer t = 0x1234; 
+  ZzCallerStackSet(stack ,"key_x", t);
+  ZzCallerStackSet(stack ,"key_y", t);
   NSLog(@"hookzz OC-Method: -[ViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
 
+void objcMethod_post_call(struct RegState_ *rs, ZzCallerStack *stack) {
+  zpointer x = ZzCallerStackGet(stack ,"key_x");
+  zpointer y = ZzCallerStackGet(stack ,"key_y");
+  NSLog(@"function over, and get 'key_x' is: %p", x);
+  NSLog(@"function over, and get 'key_y' is: %p", y);
+}
 + (void)zzMethodSwizzlingHook {
-    Class hookClass = objc_getClass("UIViewController");
-    SEL oriSEL = @selector(viewWillAppear:);
-    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-    IMP oriImp = method_getImplementation(oriMethod);
+  Class hookClass = objc_getClass("UIViewController");
+  SEL oriSEL = @selector(viewWillAppear:);
+  Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+  IMP oriImp = method_getImplementation(oriMethod);
 
-    ZzInitialize();
-    ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, NULL);
-    ZzEnableHook((void *)oriImp);
+  ZzInitialize();
+  ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, (zpointer)objcMethod_post_call);
+  ZzEnableHook((void *)oriImp);
 }
 
 @end

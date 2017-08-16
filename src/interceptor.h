@@ -40,6 +40,8 @@ typedef struct _ZzHookFunctionEntry {
     unsigned long id;
     bool isEnabled;
 
+    zpointer thread_local_key;
+
     zpointer target_ptr;
     zpointer target_end_ptr;
     zpointer caller_ret_addr;

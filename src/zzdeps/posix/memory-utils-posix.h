@@ -1,5 +1,5 @@
-#ifndef zzdeps_posix_memory_utils_h
-#define zzdeps_posix_memory_utils_h
+#ifndef zzdeps_posix_memory_utils_posix_h
+#define zzdeps_posix_memory_utils_posix_h
 
 #include <err.h>
 #include <stdio.h>

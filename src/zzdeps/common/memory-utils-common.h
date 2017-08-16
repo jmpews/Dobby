@@ -1,5 +1,5 @@
-#ifndef zzdeps_common_memory_utils_h
-#define zzdeps_common_memory_utils_h
+#ifndef zzdeps_common_memory_utils_common_h
+#define zzdeps_common_memory_utils_common_h
 
 #include <err.h>
 #include <stdio.h>

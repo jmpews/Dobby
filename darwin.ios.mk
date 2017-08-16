@@ -14,11 +14,11 @@
 
 SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
 ZZDEPS_SOURCES = $(wildcard src/zzdeps/darwin/*.c) $(wildcard src/zzdeps/common/*.c) $(wildcard src/zzdeps/posix/*.c) 
-ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES)
+ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES) 
 
 SRC_SOURCES_O = $(patsubst %.c,%.o, $(SRC_SOURCES))
 ZZDEPS_SOURCES_O = $(patsubst %.c,%.o, $(ZZDEPS_SOURCES))
-ALL_SOURCES_O = $(SRC_SOURCES_O) $(ZZDEPS_SOURCES_O)
+ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
 OUTPUT_DIR = build
 
@@ -49,11 +49,13 @@ ERROR_COLOR=\x1b[31;01m
 WARN_COLOR=\x1b[33;01m
 
 # ATTENTION !!!
-# simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
+# 1. simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
+# 2. must `rm -rf  $(OUTPUT_DIR)/libhookzz.static.a`, very important!!!
 darwin.ios : $(ALL_SOURCES_O)
 	@mkdir -p $(OUTPUT_DIR)
 	@$(ZZ_GCC) -dynamiclib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
-	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(SRC_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
+	@rm -rf $(OUTPUT_DIR)/libhookzz.static.a
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
 	@echo "$(OK_COLOR)build success for arm64(IOS)! $(NO_COLOR)"
 
 $(SRC_SOURCES_O): %.o : %.c

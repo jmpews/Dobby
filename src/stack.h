@@ -12,17 +12,26 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef memory_h
-#define memory_h
+#ifndef stack_h
+#define stack_h
 
 #include "../include/zz.h"
 #include "../include/hookzz.h"
-// #include "platforms/darwin/memory-darwin.h"
-// #include "zzdeps/darwin/memory-utils-darwin.h"
 
-extern zsize zz_vm_get_page_size(); // @common-function
-extern zpointer zz_vm_allocate(zsize size); // @common-function
-extern bool zz_vm_protect_as_executable(const zaddr address, zsize size); // @common-function
-extern bool zz_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size); // @common-function
+typedef struct _ZzStack
+{
+	zsize size;
+    zsize capacity;
+    ZzCallerStack **caller_stacks;
+} ZzStack;
+
+
+void ZzInitializeThreadLocalKey();
+zpointer ZzNewThreadLocalKey();
+ZzStack *ZzCurrentThreadStack(zpointer thread_local_key_ptr);
+ZzStack * ZzNewStack();
+ZzCallerStack *ZzNewCallerStack();
+ZzCallerStack *ZzStackPOP(ZzStack *stack);
+ZZSTATUS ZzStackPUSH(ZzStack *stack, ZzCallerStack *caller_stack);
 
 #endif

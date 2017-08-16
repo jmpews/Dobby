@@ -15,6 +15,7 @@
  */
 
 #include "thunker.h"
+#include "../../stack.h"
 
 /*
     Programmer’s Guide for ARMv8-A:
@@ -144,13 +145,18 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 {
 
     Xdebug("%p call begin-invocation", entry->target_ptr);
+
+    ZzCallerStack *caller_stack = ZzNewCallerStack();
+    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
+    ZzStackPUSH(stack, caller_stack);
+
     entry->caller_ret_addr = *(zpointer *)caller_ret_addr;
 
     if (entry->pre_call)
     {
         PRECALL pre_call;
         pre_call = entry->pre_call;
-        (*pre_call)(rs);
+        (*pre_call)(rs, caller_stack);
     }
     if (entry->replace_call)
     {
@@ -173,11 +179,15 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer next_hop)
 {
     Xdebug("%p call half-invocation", entry->target_ptr );
+
+    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
+    ZzCallerStack *caller_stack =  ZzStackPOP(stack);
+
     if (entry->half_call)
     {
         HALFCALL half_call;
         half_call = entry->half_call;
-        (*half_call)(rs);
+        (*half_call)(rs, caller_stack);
     }
     *(zpointer *)next_hop = (zpointer)entry->caller_half_ret_addr;
 }
@@ -187,11 +197,15 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      struct RegState_ *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
+
+    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
+    ZzCallerStack *caller_stack =  ZzStackPOP(stack);
+
     if (entry->post_call)
     {
         POSTCALL post_call;
         post_call = entry->post_call;
-        (*post_call)(rs);
+        (*post_call)(rs, caller_stack);
     }
     *(zpointer *)next_hop = entry->caller_ret_addr;
 }

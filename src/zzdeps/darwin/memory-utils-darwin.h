@@ -12,8 +12,8 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef zzdeps_darwin_memory_utils_h
-#define zzdeps_darwin_memory_utils_h
+#ifndef zzdeps_darwin_memory_utils_darwin_h
+#define zzdeps_darwin_memory_utils_darwin_h
 
 #include <err.h>
 #include <stdio.h>

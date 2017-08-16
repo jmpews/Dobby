@@ -21,6 +21,8 @@
 // for: ZzEnableHook
 #include "writer.h"
 
+#include "stack.h"
+
 // or like `writer.h`
 #if defined(__x86_64__)
 #elif defined(__arm64__)
@@ -224,6 +226,10 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
 
         ZzAddHookEntry(entry);
 
+        entry->thread_local_key = ZzNewThreadLocalKey();
+
+
+        
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
 
@@ -276,6 +282,8 @@ build trampoline for jump to thunk.
         ZzBuildTrampoline(entry);
 
         ZzAddHookEntry(entry);
+
+        entry->thread_local_key = ZzNewThreadLocalKey();
 
     } while (0);
     return status;

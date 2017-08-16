@@ -46,9 +46,21 @@ typedef unsigned char zbyte;
 #define false 0
 #define true 1
 
-typedef void (*PRECALL)(struct RegState_ *rs);
-typedef void (*POSTCALL)(struct RegState_ *rs);
-typedef void (*HALFCALL)(struct RegState_ *rs);
+typedef struct _ZzCallerStack
+{
+	zpointer sp;
+	zsize size;
+    zsize capacity;	
+	char **keys;
+	zpointer *values;
+} ZzCallerStack;
+
+typedef void (*PRECALL)(struct RegState_ *rs, ZzCallerStack *stack);
+typedef void (*POSTCALL)(struct RegState_ *rs, ZzCallerStack *stack);
+typedef void (*HALFCALL)(struct RegState_ *rs, ZzCallerStack *stack);
+
+zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key);
+ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr);
 
 ZZSTATUS ZzInitialize(void);
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,
@@ -56,5 +68,6 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, zpointer pre_call_ptr, zpointer half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
+
 
 #endif
