@@ -143,6 +143,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
                                        zpointer next_hop)
 {
 
+    Xdebug("%p call begin-invocation", entry->target_ptr);
     entry->caller_ret_addr = *(zpointer *)caller_ret_addr;
 
     if (entry->pre_call)
@@ -171,6 +172,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer caller_ret_addr,
                                       zpointer next_hop)
 {
+    Xdebug("%p call half-invocation", entry->target_ptr );
     if (entry->half_call)
     {
         HALFCALL half_call;
@@ -184,6 +186,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
 void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      struct RegState_ *rs, zpointer next_hop)
 {
+    Xdebug("%p call end-invocation", entry->target_ptr);
     if (entry->post_call)
     {
         POSTCALL post_call;

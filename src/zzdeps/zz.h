@@ -30,9 +30,9 @@ typedef uint8_t bool;
 // #define GLOBAL_INFO true
 // #define SYSLOG true
 
-#define GLOBAL_DEBUG 0
+#define GLOBAL_DEBUG 1
 #define GLOBAL_INFO 1
-#define SYSLOG 0
+#define SYSLOG 1
 
 #define RED "\x1B[31m"
 #define GRN "\x1B[32m"
