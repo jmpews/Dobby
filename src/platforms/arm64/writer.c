@@ -83,7 +83,7 @@ void writer_put_str_reg_reg_offset(ZzWriter *self, arm64_reg src_reg,
                                    arm64_reg dst_reg, zsize dst_offset)
 {
     ZzArm64RegInfo rs, rd;
-    zuint size, v, opc;
+    zuint size = 0, v, opc;
 
     writer_describe_reg(src_reg, &rs);
     writer_describe_reg(dst_reg, &rd);

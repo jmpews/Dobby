@@ -36,14 +36,14 @@
 
 void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
   zpointer t = 0x1234; 
-  STACK_SET(stack ,"key_x", t, zpointer);
+  STACK_SET(stack ,"key_x", t, void *);
   STACK_SET(stack ,"key_y", t, zpointer);
   NSLog(@"hookzz OC-Method: -[ViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
 
 void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
-  zpointer x = STACK_GET(stack, "key_x", zpointer);
+  zpointer x = STACK_GET(stack, "key_x", void *);
   zpointer y = STACK_GET(stack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);
   NSLog(@"function over, and get 'key_y' is: %p", y);
@@ -55,7 +55,7 @@ void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
   IMP oriImp = method_getImplementation(oriMethod);
 
   ZzInitialize();
-  ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, (zpointer)objcMethod_post_call);
+  ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
   ZzEnableHook((void *)oriImp);
 }
 

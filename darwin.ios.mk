@@ -12,6 +12,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+HOOKZZ_DIR = $(abspath .)
+
 SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
 ZZDEPS_SOURCES = $(wildcard src/zzdeps/darwin/*.c) $(wildcard src/zzdeps/common/*.c) $(wildcard src/zzdeps/posix/*.c) 
 ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES) 
@@ -21,6 +23,7 @@ ZZDEPS_SOURCES_O = $(patsubst %.c,%.o, $(ZZDEPS_SOURCES))
 ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
 OUTPUT_DIR = build
+
 
 # capstone framework
 CAPSTONE_INCLUDE = $(abspath deps/capstone/include)
@@ -68,12 +71,12 @@ $(ZZDEPS_SOURCES_O): %.o : %.c
 
 # -undefined dynamic_lookup
 test : darwin.ios
-	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_oc.m -o tests/test_hook_oc.o
-	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static tests/test_hook_oc.o -o tests/test_hook_oc.dylib
+	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_oc.m -o tests/test_hook_oc.o
+	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_oc.o -o tests/test_hook_oc.dylib
 	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
 
-	@$(ZZ_GCC) -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include -c tests/test_hook_address.c -o tests/test_hook_address.o
-	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static tests/test_hook_address.o -o tests/test_hook_address.dylib
+	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_address.c -o tests/test_hook_address.o
+	@$(ZZ_GCC) -dynamiclib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_address.o -o tests/test_hook_address.dylib
 	@echo "$(OK_COLOR)build [test_hook_address.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"

@@ -49,13 +49,13 @@ __attribute__((constructor)) void test_hook_address()
     ZzInitialize();
     void *hack_this_function_ptr = (void *)hack_this_function;
     // hook address with only `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, NULL);
+    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, NULL);
 
     // hook address with only `half_call`
     // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, NULL, (void *)hook_half_call);
 
     // hook address with both `half_call` and `pre_call`
-    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
+    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, (void *)hook_half_call);
     ZzEnableHook((void *)hack_this_function_ptr + 8);
 
     hack_this_function();

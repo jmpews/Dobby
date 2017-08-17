@@ -19,7 +19,7 @@
 static csh handle;
 
 void capstone_init(void) {
-    cs_err err;
+    cs_err err = 0;
 
 #if defined(__x86_64__)
     err = cs_open(CS_ARCH_X86, CS_MODE_64, &handle);

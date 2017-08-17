@@ -9,7 +9,9 @@
 
 #include <stdint.h>
 
-// zz's type
+
+// --- custom type ---
+
 // 1. zpointer and zaddr is different
 
 typedef void *zpointer;
@@ -26,9 +28,7 @@ typedef uint8_t bool;
 #define false 0
 #define true 1
 
-// #define GLOBAL_DEBUG false
-// #define GLOBAL_INFO true
-// #define SYSLOG true
+// --- log configuration ---
 
 #define GLOBAL_DEBUG 1
 #define GLOBAL_INFO 1
@@ -71,7 +71,7 @@ typedef uint8_t bool;
 #define Xdebug(fmt, ...)                                                       \
   do {                                                                         \
     if (GLOBAL_DEBUG)                                                          \
-      syslog(LOG_DEBUG, RESET fmt, __VA_ARGS__);                               \
+      syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                               \
   } while (0)
 #define Sdebug(MSG) Xdebug("%s", MSG)
 #define Xerror(fmt, ...)                                                       \

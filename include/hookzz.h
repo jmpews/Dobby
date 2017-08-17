@@ -66,9 +66,9 @@ ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, z
 #define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &value, sizeof(type))
 
 ZZSTATUS ZzInitialize(void);
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,
-                     zpointer post_call_ptr);
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, zpointer pre_call_ptr, zpointer half_call_ptr);
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+    POSTCALL post_call_ptr);
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
 
