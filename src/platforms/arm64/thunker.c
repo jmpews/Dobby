@@ -139,7 +139,7 @@ __attribute__((__naked__)) static void ctx_restore()
 
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry,
-                                       struct RegState_ *rs,
+                                       RegState *rs,
                                        zpointer caller_ret_addr,
                                        zpointer next_hop)
 {
@@ -174,7 +174,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 
 // just like post_call, wow!
 void function_context_half_invocation(ZzHookFunctionEntry *entry,
-                                      struct RegState_ *rs,
+                                      RegState *rs,
                                       zpointer caller_ret_addr,
                                       zpointer next_hop)
 {
@@ -194,7 +194,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
 
 // just like post_call, wow!
 void function_context_end_invocation(ZzHookFunctionEntry *entry,
-                                     struct RegState_ *rs, zpointer next_hop)
+                                     RegState *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
 

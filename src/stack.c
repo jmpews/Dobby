@@ -88,7 +88,7 @@ zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key) {
 	return NULL;
 }
 
-ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr) {
+ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, zsize value_size) {
 	if (stack->size >= stack->capacity)
 	{
 		char **keys = (char **)realloc(stack->keys, sizeof(char *) * (stack->capacity) * 2);
@@ -105,9 +105,11 @@ ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr) {
 	}
 
 	char *key_tmp = (char *)malloc(strlen(key));
+	zpointer value_tmp = (zpointer)malloc(value_size);
+	memcpy(value_tmp, value_ptr, value_size);
     strncpy(key_tmp, key, strlen(key));
 	stack->keys[stack->size] = key_tmp;
-	stack->values[stack->size] = value_ptr;
+	stack->values[stack->size] = value_tmp;
 	stack->size++;
 	return true;
 }

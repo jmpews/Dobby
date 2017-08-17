@@ -55,12 +55,15 @@ typedef struct _ZzCallerStack
 	zpointer *values;
 } ZzCallerStack;
 
-typedef void (*PRECALL)(struct RegState_ *rs, ZzCallerStack *stack);
-typedef void (*POSTCALL)(struct RegState_ *rs, ZzCallerStack *stack);
-typedef void (*HALFCALL)(struct RegState_ *rs, ZzCallerStack *stack);
+typedef void (*PRECALL)(RegState *rs, ZzCallerStack *stack);
+typedef void (*POSTCALL)(RegState *rs, ZzCallerStack *stack);
+typedef void (*HALFCALL)(RegState *rs, ZzCallerStack *stack);
 
 zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key);
-ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr);
+ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, zsize value_size);
+
+#define STACK_GET(stack, key, type) *(type *)ZzCallerStackGet(stack, key)
+#define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &value, sizeof(type))
 
 ZZSTATUS ZzInitialize(void);
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, zpointer pre_call_ptr,

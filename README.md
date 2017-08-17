@@ -62,7 +62,7 @@ typedef union FPReg_ {
 } FPReg;
 
 // just ref how to backup/restore registers
-struct RegState_ {
+RegState {
     uint64_t pc;
     uint64_t sp;
 
@@ -86,9 +86,9 @@ struct RegState_ {
 and the `pre_call`, `post_call` and `half_call` type is blow.
 
 ```
-typedef void (*PRECALL)(struct RegState_ *rs);
-typedef void (*POSTCALL)(struct RegState_ *rs);
-typedef void (*HALFCALL)(struct RegState_ *rs);
+typedef void (*PRECALL)(RegState *rs);
+typedef void (*POSTCALL)(RegState *rs);
+typedef void (*HALFCALL)(RegState *rs);
 ```
 
 ## Simple Example
@@ -116,13 +116,13 @@ static void hack_this_function()
 #endif
 }
 
-void hook_pre_call(struct RegState_ *rs)
+void hook_pre_call(RegState *rs)
 {
     unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
     printf("request is: %ld\n", request);
 }
 
-void hook_half_call(struct RegState_ *rs)
+void hook_half_call(RegState *rs)
 {
     unsigned long x0 = (unsigned long)(rs->general.regs.x0);
     printf("getpid() return %ld\n", x0);
@@ -187,7 +187,7 @@ hack success -.0
     [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(struct RegState_ *rs) {
+void objcMethod_pre_call(RegState *rs) {
   NSLog(@"hookzz OC-Method: -[ViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
@@ -308,7 +308,7 @@ __attribute__((constructor)) void patch_ptrace_sysctl_syscall() {
 
 ```
 // --- syscall bypass use `pre_call`
-void syscall_pre_call(struct RegState_ *rs) {
+void syscall_pre_call(RegState *rs) {
   int num_syscall;
   int request;
   zpointer sp;
@@ -342,7 +342,7 @@ read `<objc/runtime.h>` funciton.
     [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(struct RegState_ *rs) {
+void objcMethod_pre_call(RegState *rs) {
   NSLog(@"hookzz OC-Method: -[ViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }

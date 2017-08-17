@@ -34,17 +34,17 @@
   [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(struct RegState_ *rs, ZzCallerStack *stack) {
+void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
   zpointer t = 0x1234; 
-  ZzCallerStackSet(stack ,"key_x", t);
-  ZzCallerStackSet(stack ,"key_y", t);
+  STACK_SET(stack ,"key_x", t, zpointer);
+  STACK_SET(stack ,"key_y", t, zpointer);
   NSLog(@"hookzz OC-Method: -[ViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(struct RegState_ *rs, ZzCallerStack *stack) {
-  zpointer x = ZzCallerStackGet(stack ,"key_x");
-  zpointer y = ZzCallerStackGet(stack ,"key_y");
+void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
+  zpointer x = STACK_GET(stack, "key_x", zpointer);
+  zpointer y = STACK_GET(stack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);
   NSLog(@"function over, and get 'key_y' is: %p", y);
 }

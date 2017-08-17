@@ -3,7 +3,7 @@
 
 // Created by jmpews on 2017/5/3.
 //
-#define PROGRAM_NAME "zzdeps"
+#define PROGRAM_NAME "zz"
 #define PROGRAM_VER "1.0.0"
 #define PROGRAM_AUTHOR "jmpews@gmail.com"
 
@@ -33,7 +33,9 @@ typedef uint8_t bool;
 #define GLOBAL_DEBUG 1
 #define GLOBAL_INFO 1
 #define SYSLOG 1
+#define COLOR_LOG 0
 
+#if (COLOR_LOG)
 #define RED "\x1B[31m"
 #define GRN "\x1B[32m"
 #define YEL "\x1B[33m"
@@ -42,6 +44,16 @@ typedef uint8_t bool;
 #define CYN "\x1B[36m"
 #define WHT "\x1B[37m"
 #define RESET "\x1B[0m"
+#else
+#define RED ""
+#define GRN ""
+#define YEL ""
+#define BLU ""
+#define MAG ""
+#define CYN ""
+#define WHT ""
+#define RESET ""
+#endif
 
 #include <stdio.h>
 #include <sys/syslog.h>

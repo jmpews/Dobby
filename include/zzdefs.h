@@ -39,7 +39,7 @@ typedef union FPReg_ {
 } FPReg;
 
 // just ref how to backup/restore registers
-struct RegState_ {
+typedef struct _RegState {
     uint64_t pc;
     uint64_t sp;
 
@@ -57,6 +57,6 @@ struct RegState_ {
         FPReg q[8];
         FPReg q0,q1,q2,q3,q4,q5,q6,q7;
     } floating;
-};
+} RegState;
 #elif defined(__x86_64__)
 #endif

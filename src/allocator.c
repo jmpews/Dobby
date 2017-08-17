@@ -16,9 +16,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "allocator.h"
 
-ZzAllocator *g_allocator;
+static ZzAllocator *g_allocator = NULL;
 
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 
@@ -43,16 +44,17 @@ void ZzAllocatorInitialize()
     if (!g_allocator)
     {
         g_allocator = (ZzAllocator *)malloc(sizeof(ZzAllocator));
+        memset(g_allocator, 0, sizeof(ZzAllocator));
+
         g_allocator->memory_pages = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage) * DEFAULT_ALLOCATOR_CAPACITY);
+        memset(g_allocator->memory_pages, 0, sizeof(ZzMemoryPage) * DEFAULT_ALLOCATOR_CAPACITY);
+
         g_allocator->size = 0;
         g_allocator->capacity = DEFAULT_ALLOCATOR_CAPACITY;
         g_allocator->curr_memory_page = &g_allocator->memory_pages[0];
         for (int i = 0; i < g_allocator->capacity; i++)
         {
-            if (!g_allocator->memory_pages[i].base)
-            {
-                ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
-            }
+            ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
         }
     }
 }
@@ -68,6 +70,12 @@ ZzCodeSlice *ZzAllocatorNewCodeSlice(zsize codeslice_size)
         ZzAllocatorInitialize();
 
     curr_memory_page = g_allocator->curr_memory_page;
+    // check the memory-page remain.
+    if (curr_memory_page->size - curr_memory_page->used_size < codeslice_size)
+    {
+        g_allocator->size++;
+
+    }
 
     if (g_allocator->size >= g_allocator->capacity)
     {
@@ -78,22 +86,15 @@ ZzCodeSlice *ZzAllocatorNewCodeSlice(zsize codeslice_size)
         }
         g_allocator->capacity = g_allocator->capacity * 2;
         g_allocator->memory_pages = p;
-        for (int i = 0; i < g_allocator->capacity; i++)
+        for (int i = g_allocator->size; i < g_allocator->capacity; i++)
         {
-            if (!g_allocator->memory_pages[i].base)
-            {
-                ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
-            }
+            // if (!g_allocator->memory_pages[i].base)
+            ZzAllocatorInitializeMemoryPage(&g_allocator->memory_pages[i]);
         }
     }
 
-    // check the memory-page remain.
-    if (curr_memory_page->size - curr_memory_page->used_size < codeslice_size)
-    {
-        g_allocator->size++;
-        g_allocator->curr_memory_page = &g_allocator->memory_pages[g_allocator->size];
-        curr_memory_page = g_allocator->curr_memory_page;
-    }
+    g_allocator->curr_memory_page = &g_allocator->memory_pages[g_allocator->size];
+    curr_memory_page = g_allocator->curr_memory_page;
 
     codeslice = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
     codeslice->data = curr_memory_page->curr_pos;
