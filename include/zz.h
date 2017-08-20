@@ -32,7 +32,7 @@ typedef uint8_t bool;
 
 #define GLOBAL_DEBUG 1
 #define GLOBAL_INFO 1
-#define SYSLOG 1
+#define SYSLOG 0
 #define COLOR_LOG 0
 
 #if (COLOR_LOG)

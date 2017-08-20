@@ -21,8 +21,12 @@
 // #include "zzdeps/darwin/memory-utils-darwin.h"
 
 extern zsize zz_vm_get_page_size(); // @common-function
-extern zpointer zz_vm_allocate(zsize size); // @common-function
-extern bool zz_vm_protect_as_executable(const zaddr address, zsize size); // @common-function
-extern bool zz_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size); // @common-function
 
+extern zpointer zz_vm_allocate_pages(zsize n_pages); // @common-function
+extern zpointer zz_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages); // @common-function
+extern zpointer zz_vm_allocate(zsize size); // @common-function
+extern bool zz_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size); // @common-function
+extern bool zz_vm_protect_as_executable(const zaddr address, zsize size); // @common-function
+extern bool zz_vm_protect_as_writable(const zaddr address, zsize size); // @common-function
+extern zpointer zz_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size);
 #endif

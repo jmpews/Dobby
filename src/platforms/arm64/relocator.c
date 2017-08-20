@@ -71,6 +71,13 @@ void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *bac
     bool finished = false;
     zpointer code_addr = entry->target_ptr;
     Instruction *ins;
+    zuint jump_instruction_length = 0;
+    if(entry->isNearJump) {
+        jump_instruction_length = WriterNearJumpInstructionLength();
+
+    } else {
+        jump_instruction_length = WriterAbsJumpInstructionLength();
+    }
 
     do
     {
@@ -79,11 +86,11 @@ void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *bac
         free(ins);
         if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr && code_addr == entry->target_end_ptr)
         {
-            WriterPutAbsJmp(relocate_writer, entry->on_half_trampoline);
+            WriterPutAbsJump(relocate_writer, entry->on_half_trampoline);
             entry->caller_half_ret_addr = (zpointer)relocate_writer->size;
         }
         // hook at half way.
-        if ((code_addr - entry->target_ptr) >= JMP_METHOD_SIZE)
+        if ((code_addr - entry->target_ptr) >= jump_instruction_length)
         {
             if (entry->hook_type == HOOK_ADDRESS_TYPE && (!entry->target_end_ptr || code_addr >= entry->target_end_ptr))
             {

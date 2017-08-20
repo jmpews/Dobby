@@ -33,17 +33,33 @@ ZzWriter *ZzNewWriter(zpointer address)
 
 // ATTENTION!!!
 // the instructions size must equal to `JMP_METHOD_SIZE`
-void WriterPutAbsJmp(ZzWriter *self, zpointer target_addr)
+void WriterPutAbsJump(ZzWriter *self, zpointer target_addr) // @common-function
 {
     writer_put_ldr_reg_imm(self, ARM64_REG_X17, (zuint)0x8);
     writer_put_br_reg(self, ARM64_REG_X17);
     writer_put_bytes(self, (zpointer)&target_addr, sizeof(target_addr));
 }
 
-void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr)
+void WriterPutNearJump(ZzWriter *self, zsize offset) {
+    writer_put_b_imm(self, offset);
+}
+
+void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr) // @common-function
 {
     writer_put_ldr_reg_address(self, ARM64_REG_X17, (zaddr)target_addr);
     writer_put_blr_reg(self, ARM64_REG_X17);
+}
+
+zsize WriterNearJumpRangeSize() {
+    return ((1 << 25) << 2);
+}
+
+zsize WriterAbsJumpInstructionLength() {
+    return 16;
+}
+
+zsize WriterNearJumpInstructionLength() {
+    return 4;
 }
 
 // NOUSE:
@@ -147,7 +163,7 @@ void writer_put_blr_reg(ZzWriter *self, arm64_reg reg)
     writer_put_instruction(self, 0xd63f0000 | (ri.index << 5));
 }
 
-void writer_put_b_imm(ZzWriter *self, zuint imm)
+void writer_put_b_imm(ZzWriter *self, zsize imm)
 {
     // zaddr offset = address - (zaddr)self->pc;
     writer_put_instruction(self, 0x14000000 | ((imm / 4) & 0x03ffffff));

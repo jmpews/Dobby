@@ -37,15 +37,20 @@ typedef struct _ZzArm64RegInfo {
 
 ZzWriter *ZzNewWriter(zpointer address);
 
-void WriterPutAbsJmp(ZzWriter *self, zpointer target_addr);
+void WriterPutAbsJump(ZzWriter *self, zpointer target_addr);
+void WriterPutNearJump(ZzWriter *self, zsize offset);
 void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
+zsize WriterNearJumpRangeSize();
+zsize WriterAbsJumpInstructionLength();
+zsize WriterNearJumpInstructionLength();
+    
 
 void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
 
 void writer_put_ldr_br_b_reg_address(ZzWriter *self, arm64_reg reg,
                                      zaddr address);
 
-void writer_put_b_cond_imm(ZzWriter *self, arm64_cc cc, zuint imm);
+void writer_put_b_cond_imm(ZzWriter *self, arm64_cc cc, zsize imm);
 
 void writer_put_ldr_reg_reg_offset(ZzWriter *self, arm64_reg dst_reg,
                                    arm64_reg src_reg, zsize src_offset);
@@ -59,7 +64,7 @@ void writer_put_sub_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
 void writer_put_add_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
                                 arm64_reg left_reg, zsize right_value);
 
-void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm);
+void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zsize imm);
 
 void writer_put_br_reg(ZzWriter *self, arm64_reg reg);
     
@@ -72,6 +77,6 @@ void writer_put_instruction(ZzWriter *self, uint32_t insn);
 
 void writer_describe_reg(arm64_reg reg, ZzArm64RegInfo *ri);
 
-void writer_put_b_imm(ZzWriter *self, zuint imm);
+void writer_put_b_imm(ZzWriter *self, zsize imm);
 
 #endif

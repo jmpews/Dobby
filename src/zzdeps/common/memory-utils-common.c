@@ -50,3 +50,15 @@ zpointer zz_vm_search_data(const zpointer start_addr, zpointer end_addr, zbyte *
     }
     return 0;
 }
+
+zaddr zz_vm_align_floor(zaddr address, zsize range_size) {
+    zaddr result;
+    result = address & ~(range_size - 1);
+    return result;
+}
+
+zaddr zz_vm_align_ceil(zaddr address, zsize range_size) {
+    zaddr result;
+    result = (address + range_size -1) & ~(range_size - 1);
+    return result;
+}

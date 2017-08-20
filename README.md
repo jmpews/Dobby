@@ -18,7 +18,7 @@
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
-**special thanks to `frida-gum's` perfect code and modular architecture.**
+**special thanks to `frida-gum's` perfect code and modular architecture, and hookzz just like a toy in front of frida**
 
 # Features
 

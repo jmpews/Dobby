@@ -18,10 +18,11 @@
 #include <mach/vm_prot.h>
 #include <mach/mach_types.h>
 
-bool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size);
 
 zpointer zz_vm_allocate_pages(zsize n_pages);
+zpointer zz_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages);
 zpointer zz_vm_allocate(zsize size);
 bool zz_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size);
 bool zz_vm_protect_as_executable(const zaddr address, zsize size);
 bool zz_vm_protect_as_writable(const zaddr address, zsize size);
+zpointer zz_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size);

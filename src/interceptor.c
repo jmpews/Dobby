@@ -175,7 +175,11 @@ ZZSTATUS ZzActiveHookEnterTrampoline(ZzHookFunctionEntry *entry)
     zbyte temp_codeslice_data[256];
 
     ZzWriter *writer = ZzNewWriter(temp_codeslice_data);
-    WriterPutAbsJmp(writer, entry->on_enter_trampoline); // @common-function
+    if(entry->isNearJump) {
+        WriterPutNearJump(writer, (zsize)(entry->on_enter_trampoline-entry->target_ptr));
+    } else {
+        WriterPutAbsJump(writer, entry->on_enter_trampoline); // @common-function
+    }
     zz_vm_patch_code((zaddr)target_ptr, temp_codeslice_data, writer->size);
     free(writer);
 
@@ -183,7 +187,7 @@ ZZSTATUS ZzActiveHookEnterTrampoline(ZzHookFunctionEntry *entry)
 }
 
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
-                     zpointer *origin_ptr, zpointer pre_call_ptr, zpointer post_call_ptr)
+                     zpointer *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr)
 {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
@@ -237,7 +241,7 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
     return status;
 }
 
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, zpointer pre_call_ptr, zpointer half_call_ptr)
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr)
 {
 
     ZZSTATUS status = ZZ_DONE_HOOK;

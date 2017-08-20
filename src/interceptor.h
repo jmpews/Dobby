@@ -36,6 +36,7 @@ struct _ZzInterceptor;
 
 typedef struct _ZzHookFunctionEntry {
     int hook_type;
+    bool isNearJump;
 
     unsigned long id;
     bool isEnabled;

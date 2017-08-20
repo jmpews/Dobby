@@ -55,7 +55,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
     relocator_build_invoke_trampoline(entry, backup_writer,
                                       relocate_writer);
 
-    WriterPutAbsJmp(relocate_writer,
+    WriterPutAbsJump(relocate_writer,
                     entry->target_ptr +
                         (zuint)(backup_writer->pc - backup_writer->base));
 
@@ -103,7 +103,14 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
     status = ZZ_FAILED;
     do
     {
-        p = ZzAllocatorNewCodeSlice(writer->size); // @common-function
+        p = ZzAllocatorNewNearCodeSlice((zaddr)entry->target_ptr, WriterNearJumpRangeSize(), writer->size); // @common-function
+        if(!p) {
+            p = ZzAllocatorNewCodeSlice(writer->size); // @common-funciton
+            entry->isNearJump = false;
+        } else {
+            Xinfo("entry %p use near jump.", (zpointer)entry);
+            entry->isNearJump = true;
+        }
         if (!p->data || !p->size)
             break;
         if (!zz_vm_patch_code((zaddr)p->data, temp_codeslice_data, writer->size))
