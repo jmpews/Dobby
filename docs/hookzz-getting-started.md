@@ -12,7 +12,7 @@
 
 # 1. build hookzz dylib
 
-clone the repo `git clone https://github.com/jmpews/HookZz` and build for `darwin.ios`
+clone the repo `git clone https://github.com/jmpews/HookZz` and build for `darwin.ios`. btw, you can set the log infomation level in `src/zz.h`.
 
 ```
 λ : >>> make -f darwin.ios.mk darwin.ios
@@ -119,12 +119,13 @@ cp /path/HookZz/tests/test_hook_oc.dylib ./
 /Users/jmpews/Desktop/SpiderZz/Pwntools/Darwin/bin/optool install -c load -p "@executable_path/test_hook_oc.dylib" -t ${EXECUTABLE_NAME}
 ```
 
-last thing, run the app ,you will get the such output.
+last thing, run the app ,you will get the such output(with open `GLOBAL_DEBUG`, `GLOBAL_INFO`)
 
 ```
-2017-08-10 17:24:10.320124+0800 T007[21070:5375470] docPath: /var/mobile/Containers/Data/Application/9C5D8100-92E6-4722-B491-BC79C9B04FA5/Documents
-2017-08-10 17:24:10.320616+0800 T007[21070:5375470] tmpPath: /private/var/mobile/Containers/Data/Application/9C5D8100-92E6-4722-B491-BC79C9B04FA5/tmp/
-2017-08-10 17:24:10.320706+0800 T007[21070:5375470] libPath: /var/mobile/Containers/Data/Application/9C5D8100-92E6-4722-B491-BC79C9B04FA5/Library
-2017-08-10 17:24:10.320754+0800 T007[21070:5375470] mainPath: /var/containers/Bundle/Application/FBCBF68E-495C-4B62-9A50-001053F452C0/T007.app
-2017-08-10 17:24:10.772400+0800 T007[21070:5375470] hookzz OC-Method: -[ViewController viewWillAppear:]
+target 0x188525804 near jump to 0x183c9141c
+target 0x188525804 call begin-invocation
+2017-08-20 16:41:26.155 T007[409:129805] hookzz OC-Method: -[ViewController viewWillAppear:]
+0x188525804 call end-invocation
+2017-08-20 16:41:26.157 T007[409:129805] function over, and get 'key_x' is: 0x1234
+2017-08-20 16:41:26.157 T007[409:129805] function over, and get 'key_y' is: 0x1234
 ```

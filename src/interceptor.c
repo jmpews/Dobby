@@ -176,6 +176,7 @@ ZZSTATUS ZzActiveHookEnterTrampoline(ZzHookFunctionEntry *entry)
 
     ZzWriter *writer = ZzNewWriter(temp_codeslice_data);
     if(entry->isNearJump) {
+        Xdebug("target %p near jump to %p", entry->target_ptr, entry->on_enter_trampoline);
         WriterPutNearJump(writer, (zsize)(entry->on_enter_trampoline-entry->target_ptr));
     } else {
         WriterPutAbsJump(writer, entry->on_enter_trampoline); // @common-function

@@ -30,6 +30,8 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - hook **address(a piece of code)** with `pre_call` and `half_call`
 
+- almost only **one instruction** to hook(i.e.hook **short funciton, even only one instruction**)
+
 - runtime code patch work with [MachoParser](https://github.com/jmpews/MachoParser),without codesign limit
 
 - it's cute

@@ -16,16 +16,23 @@
 4. 指令修复 模块
 5. 跳板 模块
 6. 调度器 模块
+7. 栈 模块
 
 #### 1. 内存分配 模块
 
-需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行`
+需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行` 3. 如何分配相近的内存来达到 `near jump`
 
 这一部分与具体的操作系统有关. 比如 `darwin` 使用 `mach_vm_allocate`
 
 在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
 
 当然这里也存在一个巨大的坑, IOS 下无法分配 `rwx` 属性的内存页. 这导致 inlinehook 无法在非越狱系统上使用, 并且只有 `MobileSafari` 才有 `VM_FLAGS_MAP_JIT` 权限. 具体解释请参下方 **[坑 - rwx 与 codesigning]**.
+
+另一个坑就是如何在 hook 目标周围分配内存, 如果可以分配到周围的内存, 可以直接使用 `b` 指令进行相对地址跳(`near jump`), 从而可以可以实现单指令的 hook.
+
+举个例子比如 `b label`, 在 armv8 中的可以想在 `+-128MB` 范围内进行 `near jump`, 具体可以参考 `ARM Architecture Reference Manual ARMv8, for ARMv8-A architecture profile Page: C6-550`.
+
+这里可以有两个尝试. 1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小. 2.尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
 
 #### 2. 指令写 模块
 
@@ -173,6 +180,10 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 可以理解为所有被 hook 的函数都必须经过的函数, 类似于 `objc_msgSend`, 在这里通过栈来函数(`pre_call`, `replace_call`, `post_call`)调用顺序.
 
 本质有些类似于 `objc_msgSend` 所有的被 hook 的函数都在经过 `enter_trampoline` 跳板后, 跳转到 `enter_thunk`, 在此进行下一步的跳转判断决定, 并不是直接跳转到 `replace_call`.
+
+#### 7. 栈模块
+
+如果希望在 `pre_call` 和 `post_call` 只用局部变量, 就想在同一个函数内一样. 在 frida 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加一个函数栈.
 
 ## 坑
 

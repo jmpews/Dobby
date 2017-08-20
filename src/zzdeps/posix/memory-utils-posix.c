@@ -179,7 +179,7 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
     target_search_start = aligned_addr - range_size;
     target_search_end = aligned_addr + range_size;
 
-    Xinfo("searching for %p cave, use 0x1000 interval.", (zpointer)address);
+    Xdebug("searching for %p cave, use 0x1000 interval.", (zpointer)address);
     for(tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if(zz_vm_check_address_valid_via_signal((zpointer)tmp_addr))
             if(memcpy(readZeroArray, (zpointer)tmp_addr, 128)) {

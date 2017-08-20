@@ -23,6 +23,7 @@
 #include "hookzz.h"
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
+#import <mach-o/dyld.h>
 
 @interface HookZz : NSObject
 
@@ -57,6 +58,7 @@ void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
   ZzInitialize();
   ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
   ZzEnableHook((void *)oriImp);
+
 }
 
 @end

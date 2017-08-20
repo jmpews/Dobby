@@ -262,7 +262,7 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize 
         if(zz_vm_read_data_via_task(task, tmp_addr, readZeroArray, 128)) {
             if(!memcmp(readZeroArray, zeroArray, 128)) {
                 *size_ptr = 0x1000;
-                Xinfo("found a cave at %p, size %d", (zpointer)tmp_addr, 0x1000);
+                Xdebug("found a cave at %p, size %d", (zpointer)tmp_addr, 0x1000);
                 return (void *)tmp_addr;
             }
         }
@@ -323,8 +323,9 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
         }
 
         result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end, (zbyte *)zeroArray, size);
-        if(result_ptr)
+        if(result_ptr) {
             return result_ptr;
+        }
 
     }
     return NULL;

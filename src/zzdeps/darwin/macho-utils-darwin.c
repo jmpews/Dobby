@@ -75,10 +75,41 @@ zz_macho_get_section_64_via_name(struct mach_header_64 *header,
             seg_cmd_64 = (struct segment_command_64 *)load_cmd;
             sect_64 = (struct section_64 *)((zpointer)seg_cmd_64 +
                                             sizeof(struct segment_command_64));
-            for (zsize j; j < seg_cmd_64->nsects;
+            for (zsize j = 0; j < seg_cmd_64->nsects;
                  j++, sect_64 = (zpointer)sect_64 + sizeof(struct section_64)) {
                 if (!strcmp(sect_64->sectname, sect_name)) {
                     return sect_64;
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+zpointer zz_macho_get_section_64_address_via_name(struct mach_header_64 *header,
+                                 char *sect_name) {
+    struct load_command *load_cmd;
+    struct segment_command_64 *seg_cmd_64;
+    struct section_64 *sect_64;
+    zsize slide, linkEditBase;
+
+    load_cmd = (zpointer)header + sizeof(struct mach_header_64);
+    for (zsize i = 0; i < header->ncmds;
+         i++, load_cmd = (zpointer)load_cmd + load_cmd->cmdsize) {
+        if (load_cmd->cmd == LC_SEGMENT_64) {
+            seg_cmd_64 = (struct segment_command_64 *)load_cmd;
+            if ( (seg_cmd_64->fileoff == 0) && (seg_cmd_64->filesize != 0) ) {
+                slide = (uintptr_t)header - seg_cmd_64->vmaddr;
+            }
+            if ( strcmp(seg_cmd_64->segname, "__LINKEDIT") == 0 ) {
+                linkEditBase = seg_cmd_64->vmaddr - seg_cmd_64->fileoff + slide;
+            }
+            sect_64 = (struct section_64 *)((zpointer)seg_cmd_64 +
+                                            sizeof(struct segment_command_64));
+            for (zsize j = 0; j < seg_cmd_64->nsects;
+                j++, sect_64 = (zpointer)sect_64 + sizeof(struct section_64)) {
+                if (!strcmp(sect_64->sectname, sect_name)) {
+                    return (zpointer)(sect_64->addr + slide);
                 }
             }
         }

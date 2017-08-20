@@ -108,7 +108,6 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
             p = ZzAllocatorNewCodeSlice(writer->size); // @common-funciton
             entry->isNearJump = false;
         } else {
-            Xinfo("entry %p use near jump.", (zpointer)entry);
             entry->isNearJump = true;
         }
         if (!p->data || !p->size)
