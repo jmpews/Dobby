@@ -4,9 +4,12 @@
 
 > [Move to HookZz Example](https://jmpews.github.io/zzpp/hookzz-example/)
 
+> [Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/)
+
 > [Move to HookZzModules](https://github.com/jmpews/HookZzModules)
 
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
+
 
 # Export 5 core function
 
@@ -43,7 +46,7 @@ build hook address(a piece of code) with `pre_call`, `half_call`. the definition
 @half_call_ptr: half function call address
 
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
-````
+```
 
 #### 4. `ZzEnableHook`
 
