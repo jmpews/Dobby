@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static ZzAllocator *g_allocator = NULL;
+ZzAllocator *g_allocator = NULL;
 
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 

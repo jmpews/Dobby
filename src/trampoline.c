@@ -110,6 +110,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
         } else {
             entry->isNearJump = true;
         }
+
         if (!p->data || !p->size)
             break;
         if (!zz_vm_patch_code((zaddr)p->data, temp_codeslice_data, writer->size))

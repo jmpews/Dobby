@@ -1,12 +1,12 @@
 #include "thread-utils-posix.h"
 
-static ZzThreadLocalKey *g_thread_local_key;
+ZzThreadLocalKey *g_thread_local_key = 0;
 
 void zz_thread_initialize_thread_local_keys() {
     if(!g_thread_local_key) {
         ZzThreadLocalKey *global_thread_local_key = (ZzThreadLocalKey *)malloc(sizeof(ZzThreadLocalKey));
         global_thread_local_key->capacity = 4;
-        pthread_key_t *thread_local_keys = (pthread_key_t *)malloc(sizeof(pthread_key_t));
+        pthread_key_t *thread_local_keys = (pthread_key_t *)malloc(sizeof(pthread_key_t) * global_thread_local_key->capacity);
         if(!thread_local_keys)
             return;
         global_thread_local_key->thread_local_keys = thread_local_keys;

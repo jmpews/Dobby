@@ -30,9 +30,9 @@
 #endif
 
 #define ZzHOOKENTRIES_DEFAULT 100
-ZzInterceptor *g_interceptor;
-ZzHookFunctionEntrySet *g_hook_func_entries;
-ZzInterceptorCenter *g_intercepter_center;
+ZzInterceptor *g_interceptor = NULL;
+ZzHookFunctionEntrySet *g_hook_func_entries = NULL;
+ ZzInterceptorCenter *g_intercepter_center = NULL;
 
 ZZSTATUS ZzInitialize(void)
 {
@@ -138,6 +138,9 @@ static ZzHookFunctionEntry *ZzAddHookEntry(ZzHookFunctionEntry *entry)
         g_hook_func_entries->entries = p;
     }
     g_hook_func_entries->entries[g_hook_func_entries->size++] = entry;
+    // Xinfo("entries: %p, %p", entry, g_hook_func_entries->entries[g_hook_func_entries->size-1]);
+    // Xinfo("thunk: enter: %p, leave: %p", (zpointer)entry->interceptor->enter_thunk, (zpointer)entry->interceptor->leave_thunk);
+    // Xinfo("trampoline: enter: %p, half: %p, leave: %p", entry->on_enter_trampoline, entry->on_half_trampoline, entry->on_leave_trampoline);
     return entry;
 }
 
