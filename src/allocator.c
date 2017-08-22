@@ -64,9 +64,20 @@ ZzMemoryPage *ZzAllocatorNewNearMemoryPage(zaddr address, zsize range_size) {
 
   ZzMemoryPage *page = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
   page->base = page_ptr;
-  page->curr_pos = page_ptr;
-  page->size = page_size;
-  page->used_size = 0;
+  if((zaddr)page_ptr > address && ((zaddr)page_ptr+page_size) > (address+range_size)) {
+    page->size = (address + range_size) - (zaddr)page_ptr;
+    page->used_size = 0;
+    page->curr_pos = page_ptr;
+  } else if ((zaddr)page_ptr < address && (zaddr)page_ptr < (address-range_size))
+  {
+    page->size = page_size;
+    page->used_size = (address - range_size) - (zaddr)page_ptr;
+    page->curr_pos = (zpointer)(address - range_size);
+  } else {
+    page->size = page_size;
+    page->used_size = 0;
+    page->curr_pos = page_ptr;
+  }
   page->isCodeCave = false;
   return page;
 }
@@ -176,9 +187,10 @@ ZzCodeSlice *ZzAllocatorNewNearCodeSlice(zaddr address, zsize range_size,
     // 2. can't be codecave
     // 3. the rest memory of this page is enough for codeslice_size
     // 4. the page address is near
+    
     if (page->base && !page->isCodeCave && (page->size - page->used_size) > codeslice_size) {
       if (!address ||
-          (address && (address - (zaddr)page->curr_pos) < range_size)) {
+          (address && (llabs((long long)address - (long long)page->curr_pos) < range_size))) {
         codeslice = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
         codeslice->isCodeCave = page->isCodeCave;
         codeslice->data = page->curr_pos;
@@ -205,6 +217,10 @@ ZzCodeSlice *ZzAllocatorNewNearCodeSlice(zaddr address, zsize range_size,
   ZzMemoryPage *page;
   if (address) {
     page = ZzAllocatorNewNearMemoryPage(address, range_size);
+    // try allocate again, avoid the boundary page
+    if (page && (page->size - page->used_size) < codeslice_size) {
+      page = ZzAllocatorNewNearMemoryPage(address, range_size);
+    }
     if (!page) {
       page = ZzAllocatorNewNearCodeCave(address, range_size, codeslice_size);
       if (!page)

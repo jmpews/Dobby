@@ -229,8 +229,8 @@ zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize ra
     }
     aligned_addr = (zaddr)address & ~(page_size - 1);
 
-    vm_address_t target_start_addr = aligned_addr - range_size;
-    vm_address_t target_end_addr = aligned_addr + range_size;
+    vm_address_t target_start_addr = zz_vm_align_floor(address - range_size, page_size);
+    vm_address_t target_end_addr = zz_vm_align_floor(address + range_size, page_size);
 
     for(tmp_addr = target_start_addr; tmp_addr < target_end_addr; tmp_addr += page_size) {
         kr = mach_vm_allocate(task, &tmp_addr, page_size * n_pages,
@@ -270,7 +270,7 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize 
     return NULL;
 }
 
-
+// TODO: vm_region_recurse_64 is better ?
 zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size, zsize size) {
     char zeroArray[128];
     char readZeroArray[128];
