@@ -23,13 +23,14 @@ typedef struct _ZzStack
 	zsize size;
     zsize capacity;
     ZzCallerStack **caller_stacks;
+    zpointer thread_local_key_ptr;
 } ZzStack;
 
 
 void ZzInitializeThreadLocalKey();
 zpointer ZzNewThreadLocalKey();
 ZzStack *ZzCurrentThreadStack(zpointer thread_local_key_ptr);
-ZzStack * ZzNewStack();
+ZzStack * ZzNewStack(zpointer thread_local_key_ptr);
 ZzCallerStack *ZzNewCallerStack();
 ZzCallerStack *ZzStackPOP(ZzStack *stack);
 ZZSTATUS ZzStackPUSH(ZzStack *stack, ZzCallerStack *caller_stack);

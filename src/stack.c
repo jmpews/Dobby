@@ -19,13 +19,12 @@ zpointer ZzNewThreadLocalKey() {
 ZzStack *ZzCurrentThreadStack(zpointer thread_local_key_ptr) {
     ZzStack *stack  = (ZzStack *)zz_thread_get_current_thread_data(thread_local_key_ptr);
     if(!stack) {
-        stack = ZzNewStack();
-        zz_thread_set_current_thread_data(thread_local_key_ptr, (zpointer)stack);
+		return NULL;
     }
     return stack;
 }
 
-ZzStack * ZzNewStack() {
+ZzStack * ZzNewStack(zpointer thread_local_key_ptr) {
     ZzStack *stack;
     stack = (ZzStack *)malloc(sizeof(ZzStack));
     stack->capacity = 4;
@@ -33,9 +32,10 @@ ZzStack * ZzNewStack() {
     if(!caller_stacks)
         return NULL;
     stack->caller_stacks = caller_stacks;
-    stack->size = 0;
+	stack->size = 0;
+	stack->thread_local_key_ptr = thread_local_key_ptr;
+	zz_thread_set_current_thread_data(thread_local_key_ptr, (zpointer)stack);
     return stack;
-
 }
 
 ZzCallerStack *ZzNewCallerStack() {
@@ -104,10 +104,11 @@ ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, z
 		stack->capacity = stack->capacity * 2;
 	}
 
-	char *key_tmp = (char *)malloc(strlen(key));
+	char *key_tmp = (char *)malloc(strlen(key) + 1);
+    strncpy(key_tmp, key, strlen(key) + 1);
+    
 	zpointer value_tmp = (zpointer)malloc(value_size);
 	memcpy(value_tmp, value_ptr, value_size);
-    strncpy(key_tmp, key, strlen(key));
 	stack->keys[stack->size] = key_tmp;
 	stack->values[stack->size] = value_tmp;
 	stack->size++;

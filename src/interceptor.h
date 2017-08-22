@@ -18,6 +18,7 @@
 #include "../include/zz.h"
 #include "../include/hookzz.h"
 #include "allocator.h"
+#include "stack.h"
 
 typedef struct _FunctionBackup {
     zpointer address;
@@ -42,6 +43,7 @@ typedef struct _ZzHookFunctionEntry {
     bool isEnabled;
 
     zpointer thread_local_key;
+    ZzStack *stack;
 
     zpointer target_ptr;
     zpointer target_end_ptr;

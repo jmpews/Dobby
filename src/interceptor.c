@@ -235,8 +235,7 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer fake_ptr,
         ZzAddHookEntry(entry);
 
         entry->thread_local_key = ZzNewThreadLocalKey();
-
-
+        entry->stack = ZzNewStack(entry->thread_local_key);
         
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
@@ -284,14 +283,15 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
         entry->half_call = half_call_ptr;
 
         /*
-key function.
-build trampoline for jump to thunk.
-*/
+            key function.
+            build trampoline for jump to thunk.
+         */
         ZzBuildTrampoline(entry);
 
         ZzAddHookEntry(entry);
 
         entry->thread_local_key = ZzNewThreadLocalKey();
+        entry->stack = ZzNewStack(entry->thread_local_key);
 
     } while (0);
     return status;

@@ -147,8 +147,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
     Xdebug("target %p call begin-invocation", entry->target_ptr);
 
     ZzCallerStack *caller_stack = ZzNewCallerStack();
-    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
-    ZzStackPUSH(stack, caller_stack);
+    ZzStackPUSH(entry->stack, caller_stack);
 
     entry->caller_ret_addr = *(zpointer *)caller_ret_addr;
 
@@ -179,9 +178,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer next_hop)
 {
     Xdebug("target %p call half-invocation", entry->target_ptr );
-
-    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
-    ZzCallerStack *caller_stack =  ZzStackPOP(stack);
+    ZzCallerStack *caller_stack =  ZzStackPOP(entry->stack);
 
     if (entry->half_call)
     {
@@ -197,9 +194,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      RegState *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
-
-    ZzStack *stack = ZzCurrentThreadStack(entry->thread_local_key);
-    ZzCallerStack *caller_stack =  ZzStackPOP(stack);
+    ZzCallerStack *caller_stack =  ZzStackPOP(entry->stack);
 
     if (entry->post_call)
     {

@@ -62,8 +62,9 @@ typedef void (*HALFCALL)(RegState *rs, ZzCallerStack *stack);
 zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key);
 ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, zsize value_size);
 
+#define STACK_CHECK_KEY(stack, key) (bool)ZzCallerStackGet(stack, key)
 #define STACK_GET(stack, key, type) *(type *)ZzCallerStackGet(stack, key)
-#define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &value, sizeof(type))
+#define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &(value), sizeof(type))
 
 ZZSTATUS ZzInitialize(void);
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
@@ -71,6 +72,5 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
-
 
 #endif
