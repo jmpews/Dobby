@@ -14,8 +14,12 @@
  *    limitations under the License.
  */
 
+#include "thunker-arm64.h"
+#include "writer-arm64.h"
+
+#include "interceptor.h"
+#include "stack.h"
 #include "thunker.h"
-#include "../../stack.h"
 
 /*
     Programmer’s Guide for ARMv8-A:
@@ -146,8 +150,8 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
 
-    ZzCallerStack *caller_stack = ZzNewCallerStack();
-    ZzStackPUSH(entry->stack, caller_stack);
+    ZzCallStack *callstack = ZzNewCallStack();
+    ZzPushCallStack(entry->stack, callstack);
 
     entry->caller_ret_addr = *(zpointer *)caller_ret_addr;
 
@@ -155,7 +159,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
     {
         PRECALL pre_call;
         pre_call = entry->pre_call;
-        (*pre_call)(rs, caller_stack);
+        (*pre_call)(rs, callstack);
     }
     if (entry->replace_call)
     {
@@ -178,13 +182,13 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer next_hop)
 {
     Xdebug("target %p call half-invocation", entry->target_ptr );
-    ZzCallerStack *caller_stack =  ZzStackPOP(entry->stack);
+    ZzCallStack *callstack =  ZzPopCallStack(entry->stack);
 
     if (entry->half_call)
     {
         HALFCALL half_call;
         half_call = entry->half_call;
-        (*half_call)(rs, caller_stack);
+        (*half_call)(rs, callstack);
     }
     *(zpointer *)next_hop = (zpointer)entry->caller_half_ret_addr;
 }
@@ -194,18 +198,18 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      RegState *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
-    ZzCallerStack *caller_stack =  ZzStackPOP(entry->stack);
+    ZzCallStack *callstack =  ZzPopCallStack(entry->stack);
 
     if (entry->post_call)
     {
         POSTCALL post_call;
         post_call = entry->post_call;
-        (*post_call)(rs, caller_stack);
+        (*post_call)(rs, callstack);
     }
     *(zpointer *)next_hop = entry->caller_ret_addr;
 }
 
-void zz_build_enter_thunk(ZzWriter *writer)
+void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 {
 
     // pop x17
@@ -226,7 +230,7 @@ void zz_build_enter_thunk(ZzWriter *writer)
     writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 
-void zz_build_half_thunk(ZzWriter *writer)
+void ZzThunkerBuildHalfThunk(ZzWriter *writer)
 {
     // pop x17
     writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
@@ -246,7 +250,7 @@ void zz_build_half_thunk(ZzWriter *writer)
     writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 
-void zz_build_leave_thunk(ZzWriter *writer)
+void ZzThunkerBuildLeaveThunk(ZzWriter *writer)
 {
 
     // pop x17
@@ -270,7 +274,7 @@ void zz_build_leave_thunk(ZzWriter *writer)
     作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数, 但是特么一下污染了两个寄存器.
     所以有个技巧: 利用栈实现只有一个寄存器就可以完成工作
  */
-void thunker_build_enter_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
+void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr,
                                    zpointer enter_thunk_ptr)
 {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);
@@ -284,7 +288,7 @@ void thunker_build_enter_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
     writer_put_br_reg(writer, ARM64_REG_X17);
 }
 
-void thunker_build_half_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
+void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr,
                                   zpointer half_thunk_ptr)
 {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);
@@ -298,7 +302,7 @@ void thunker_build_half_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
     writer_put_br_reg(writer, ARM64_REG_X17);
 }
 
-void thunker_build_leave_trapoline(ZzWriter *writer, zpointer hookentry_ptr,
+void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
                                    zpointer leave_thunk_ptr)
 {
     writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);

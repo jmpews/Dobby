@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
-#include "writer.h"
+#include "writer-arm64.h"
 #include <string.h>
 
 // ARM Architecture Reference Manual ARMV8
 // C2.1 Understanding the A64 instruction descriptions
 // C2.1.3 The instruction encoding or encodings
 
-ZzWriter *ZzNewWriter(zpointer address)
+ZzWriter *ZzWriterNewWriter(zpointer address)
 {
     ZzWriter *writer = (ZzWriter *)malloc(sizeof(ZzWriter));
     writer->codedata = address;
@@ -33,32 +33,32 @@ ZzWriter *ZzNewWriter(zpointer address)
 
 // ATTENTION!!!
 // the instructions size must equal to `JMP_METHOD_SIZE`
-void WriterPutAbsJump(ZzWriter *self, zpointer target_addr) // @common-function
+void ZzWriterPutAbsJump(ZzWriter *self, zpointer target_addr) // @common-function
 {
     writer_put_ldr_reg_imm(self, ARM64_REG_X17, (zuint)0x8);
     writer_put_br_reg(self, ARM64_REG_X17);
     writer_put_bytes(self, (zpointer)&target_addr, sizeof(target_addr));
 }
 
-void WriterPutNearJump(ZzWriter *self, zsize offset) {
+void ZzWriterPutNearJump(ZzWriter *self, zsize offset) {
     writer_put_b_imm(self, offset);
 }
 
-void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr) // @common-function
+void ZzWriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr) // @common-function
 {
     writer_put_ldr_reg_address(self, ARM64_REG_X17, (zaddr)target_addr);
     writer_put_blr_reg(self, ARM64_REG_X17);
 }
 
-zsize WriterNearJumpRangeSize() {
+zsize ZzWriterNearJumpRangeSize() {
     return ((1 << 25) << 2);
 }
 
-zsize WriterAbsJumpInstructionLength() {
+zsize ZzWriterAbsJumpInstructionLength() {
     return 16;
 }
 
-zsize WriterNearJumpInstructionLength() {
+zsize ZzWriterNearJumpInstructionLength() {
     return 4;
 }
 

@@ -17,9 +17,9 @@
 
 #include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
-#include "instructions.h"
 
-#include "../../trampoline.h"
+#include "instructions.h"
+#include "trampoline.h"
 
 cs_insn *disassemble_instruction_at(zpointer address);
 

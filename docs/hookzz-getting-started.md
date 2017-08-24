@@ -78,7 +78,7 @@ build [test] success for arm64(IOS)!
   [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
+void objcMethod_pre_call(RegState *rs, ZzCallStack *stack) {
   zpointer t = 0x1234; 
   STACK_SET(stack ,"key_x", t, void *);
   STACK_SET(stack ,"key_y", t, zpointer);
@@ -86,7 +86,7 @@ void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
         (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
+void objcMethod_post_call(RegState *rs, ZzCallStack *stack) {
   zpointer x = STACK_GET(stack, "key_x", void *);
   zpointer y = STACK_GET(stack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);

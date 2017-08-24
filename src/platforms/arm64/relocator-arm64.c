@@ -15,8 +15,11 @@
  */
 
 #include <string.h>
+#include "zzdeps/common/debugbreak.h"
+
+#include "relocator-arm64.h"
 #include "relocator.h"
-#include "../../zzdeps/common/debugbreak.h"
+#include "interceptor.h"
 
 /*
     C6.2.19 B.cond
@@ -66,17 +69,17 @@ Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer,
     return ins;
 }
 
-void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer)
+void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer)
 {
     bool finished = false;
     zpointer code_addr = entry->target_ptr;
     Instruction *ins;
     zuint jump_instruction_length = 0;
     if(entry->isNearJump) {
-        jump_instruction_length = WriterNearJumpInstructionLength();
+        jump_instruction_length = ZzWriterNearJumpInstructionLength();
 
     } else {
-        jump_instruction_length = WriterAbsJumpInstructionLength();
+        jump_instruction_length = ZzWriterAbsJumpInstructionLength();
     }
 
     do
@@ -86,7 +89,7 @@ void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *bac
         free(ins);
         if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr && code_addr == entry->target_end_ptr)
         {
-            WriterPutAbsJump(relocate_writer, entry->on_half_trampoline);
+            ZzWriterPutAbsJump(relocate_writer, entry->on_half_trampoline);
             entry->caller_half_ret_addr = (zpointer)relocate_writer->size;
         }
         // hook at half way.

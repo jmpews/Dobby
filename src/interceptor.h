@@ -79,19 +79,18 @@ typedef struct _ZzInterceptorCenter {
 } ZzInterceptorCenter;
 
 typedef struct _ZzInterceptor {
-    ZzHookFunctionEntrySet *hook_func_entries;
-    ZzInterceptorCenter *intercepter_center;
+    ZzHookFunctionEntrySet hook_function_entry_set;
+    ZzInterceptorCenter intercepter_center;
+
+    ZzAllocator *allocator;
+
     zpointer enter_thunk;
     zpointer half_thunk;
     zpointer leave_thunk;
 } ZzInterceptor;
 
-ZZSTATUS ZzInitialize(void);
-
 ZZSTATUS ZzBuildThunk(void);
-
 ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
-
 ZZSTATUS ZzActiveEnterTrampoline(ZzHookFunctionEntry *entry);
 
 #endif

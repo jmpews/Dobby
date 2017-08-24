@@ -37,13 +37,13 @@ static void hack_this_function()
 #endif
 }
 
-void hook_pre_call(RegState *rs, ZzCallerStack *stack)
+void hook_pre_call(RegState *rs, ZzCallStack *stack)
 {
     unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
     printf("request is: %ld\n", request);
 }
 
-void hook_half_call(RegState *rs, ZzCallerStack *stack)
+void hook_half_call(RegState *rs, ZzCallStack *stack)
 {
     unsigned long x0 = (unsigned long)(rs->general.regs.x0);
     printf("getpid() return %ld\n", x0);
@@ -109,7 +109,7 @@ hack success -.0
   [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
+void objcMethod_pre_call(RegState *rs, ZzCallStack *stack) {
   zpointer t = 0x1234; 
   STACK_SET(stack ,"key_x", t, void *);
   STACK_SET(stack ,"key_y", t, zpointer);
@@ -117,7 +117,7 @@ void objcMethod_pre_call(RegState *rs, ZzCallerStack *stack) {
         (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, ZzCallerStack *stack) {
+void objcMethod_post_call(RegState *rs, ZzCallStack *stack) {
   zpointer x = STACK_GET(stack, "key_x", void *);
   zpointer y = STACK_GET(stack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);

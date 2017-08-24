@@ -12,33 +12,5 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef trampoline_h
-#define trampoline_h
-
-#include "../include/zz.h"
-#include "../include/hookzz.h"
-
-#include "allocator.h"
-
-#include "interceptor.h"
-
-/*
-    enter_trampoline:
-        1. 跳转到 `enter_thunk`
-
-    invoke_trampoline:
-        1. 之前保存的指令(涉及到指令修复)
-        2. 跳转到剩余的指令
-
-    leave_trampoline
-        1. 跳转到 `leave_thunk`
- */
-
-typedef struct _ZzTrampoline {
-    ZzCodeSlice *codeslice;
-} ZzTrampoline;
-
-ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry);
-
-
-#endif
+#include "../../../include/zz.h"
+#include "../../../include/hookzz.h"

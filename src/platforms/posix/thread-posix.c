@@ -14,27 +14,22 @@
  *    limitations under the License.
  */
 
+#include "zzdeps/common/debugbreak.h"
 
- #ifndef writer_h 
- #define writer_h
- 
- #include "../include/zz.h"
- #include "../include/hookzz.h"
+#include "thread-posix.h"
+#include "zzdeps/posix/thread-utils-posix.h"
 
- typedef struct _ZzWriter {
-    zpointer *codedata;
-    zpointer base;
-    zpointer pc;
-    zuint size;
-} ZzWriter;
+#include "thread.h"
 
-ZzWriter *ZzWriterNewWriter(zpointer address);
-void ZzWriterPutNearJump(ZzWriter *self, zsize offset);
-void ZzWriterPutAbsJump(ZzWriter *self, zpointer target_addr);
-void ZzWriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
-zsize ZzWriterNearJumpRangeSize();
-zsize ZzWriterAbsJumpInstructionLength();
-zsize ZzWriterNearJumpInstructionLength();
+ zpointer ZzThreadNewThreadLocalKeyPtr() {
+     return zz_posix_thread_new_thread_local_key_ptr();
+ }
 
- #endif
- 
+ zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr) {
+     return zz_posix_thread_get_current_thread_data(key_ptr);
+ }
+
+ bool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data) {
+    return zz_posix_thread_set_current_thread_data(key_ptr, data);
+
+ }

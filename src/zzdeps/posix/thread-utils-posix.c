@@ -1,58 +1,68 @@
 #include "thread-utils-posix.h"
 
-ZzThreadLocalKey *g_thread_local_key = 0;
+ThreadLocalKeyList *g_thread_local_key_list = 0;
 
-void zz_thread_initialize_thread_local_keys() {
-    if(!g_thread_local_key) {
-        ZzThreadLocalKey *global_thread_local_key = (ZzThreadLocalKey *)malloc(sizeof(ZzThreadLocalKey));
-        global_thread_local_key->capacity = 4;
-        pthread_key_t *thread_local_keys = (pthread_key_t *)malloc(sizeof(pthread_key_t) * global_thread_local_key->capacity);
-        if(!thread_local_keys)
-            return;
-        global_thread_local_key->thread_local_keys = thread_local_keys;
-        global_thread_local_key->size = 0;
-        g_thread_local_key = global_thread_local_key;
+
+ThreadLocalKeyList *zz_posix_thread_new_thread_local_key_list() {
+    ThreadLocalKeyList *keylist_tmp = (ThreadLocalKeyList *)malloc(sizeof(ThreadLocalKeyList));
+    keylist_tmp->capacity = 4;
+    keylist_tmp->keys = (ThreadLocalKey *)malloc(sizeof(ThreadLocalKey) * keylist_tmp->capacity);
+    if(!keylist_tmp->keys) {
+        return NULL;
+    }
+    return keylist_tmp;
+}
+
+ThreadLocalKey *zz_posix_thread_new_thread_local_key(ThreadLocalKeyList *keylist) {
+    if(!keylist)
+        return NULL;
+
+    if(keylist->size >= keylist->capacity) {
+        ThreadLocalKey *keys_tmp = (ThreadLocalKey *)realloc(keylist->keys, sizeof(ThreadLocalKey) * keylist->capacity * 2);
+        if(!keys_tmp)
+            return NULL;
+        keylist->keys = keys_tmp;
+        keylist->capacity = keylist->capacity * 2;
+    }
+    return &(keylist->keys[keylist->size++]);
+}
+
+void zz_posix_thread_initialize_thread_local_key_list() {
+    if(!g_thread_local_key_list) {
+        g_thread_local_key_list = zz_posix_thread_new_thread_local_key_list();
     }
 }
 
-zpointer zz_thread_new_thread_local_key() {
-    if(!g_thread_local_key) {
-        zz_thread_initialize_thread_local_keys();
+zpointer zz_posix_thread_new_thread_local_key_ptr() {
+    if(!g_thread_local_key_list) {
+        zz_posix_thread_initialize_thread_local_key_list();
     }
-    ZzThreadLocalKey *g_keys= g_thread_local_key;
-	if (g_keys->size >= g_keys->capacity)
-	{
-		pthread_key_t *thread_local_keys = (pthread_key_t *)realloc(g_keys->thread_local_keys, sizeof(pthread_key_t) * (g_keys->capacity) * 2);
-		if(!thread_local_keys)
-			return false;
-        g_keys->thread_local_keys = thread_local_keys;
-        g_keys->capacity = g_keys->capacity * 2;
-	}
 
-    pthread_key_t *key_ptr = &(g_keys->thread_local_keys[g_keys->size]);
-    pthread_key_create(key_ptr, NULL);
-	g_keys->size++;
-	return key_ptr;
+    ThreadLocalKey *key = zz_posix_thread_new_thread_local_key(g_thread_local_key_list);
+
+    pthread_key_create(&key->key, NULL);
+	return (zpointer)key;
 }
 
-zpointer zz_thread_get_current_thread_data(zpointer key_ptr) {
-    ZzThreadLocalKey *g_keys= g_thread_local_key;
-    pthread_key_t key = *(pthread_key_t *)key_ptr;
+zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr) {
+    ThreadLocalKeyList *g_keys= g_thread_local_key_list;
+    if(!key_ptr)
+        return NULL;
     for (zsize i = 0; i < g_keys->size; i++)
     {
-        if(g_keys->thread_local_keys[i] == key)
-            return (zpointer)pthread_getspecific(g_keys->thread_local_keys[i]);
+        if(&g_keys->keys[i] == key_ptr)
+            return (zpointer)pthread_getspecific(g_keys->keys[i].key);
     }
     return NULL;
 }
 
-int zz_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
-    ZzThreadLocalKey *g_keys= g_thread_local_key;
-    pthread_key_t key = *(pthread_key_t *)key_ptr;
+bool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
+    ThreadLocalKeyList *g_keys= g_thread_local_key_list;
+    
     for (zsize i = 0; i < g_keys->size; i++)
     {
-        if(g_keys->thread_local_keys[i] == key)
-            return pthread_setspecific(g_keys->thread_local_keys[i], data);
+        if(&g_keys->keys[i] == key_ptr)
+            return pthread_setspecific(g_keys->keys[i].key, data);
     } 
-    return -1;
+    return false;
 }

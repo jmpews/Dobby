@@ -79,14 +79,14 @@ ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_siz
 
 without the explicit argument, use `RegState` to replace, you can access all the registers at the moment. 
 
-**For `ZzCallerStack`:**
+**For `ZzCallStack`:**
 
-if you want `pre_call` and `post_call`(`half_call`) as in the function, to access  trick variable like the `self`, you need `ZzCallerStack *stack`.
+if you want `pre_call` and `post_call`(`half_call`) as in the function, to access  trick variable like the `self`, you need `ZzCallStack *stack`.
 
 ```
-typedef void (*PRECALL)(RegState *rs, ZzCallerStack *stack);
-typedef void (*POSTCALL)(RegState *rs, ZzCallerStack *stack);
-typedef void (*HALFCALL)(RegState *rs, ZzCallerStack *stack);
+typedef void (*PRECALL)(RegState *rs, ZzCallStack *stack);
+typedef void (*POSTCALL)(RegState *rs, ZzCallStack *stack);
+typedef void (*HALFCALL)(RegState *rs, ZzCallStack *stack);
 ```
 
 #### 2. `RegState`
@@ -129,14 +129,14 @@ typedef struct _RegState {
 } RegState;
 ```
 
-#### 3. `ZzCallerStack`
+#### 3. `ZzCallStack`
 
 need the follow method to access the stack.
 
 ```
-zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key);
-ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, zsize value_size);
+zpointer ZzCallStackGet(ZzCallStack *stack , char *key);
+ZZSTATUS ZzCallStackSet(ZzCallStack *stack, char *key, zpointer value_ptr, zsize value_size);
 
-#define STACK_GET(stack, key, type) *(type *)ZzCallerStackGet(stack, key)
-#define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &value, sizeof(type))
+#define STACK_GET(stack, key, type) *(type *)ZzCallStackGet(stack, key)
+#define STACK_SET(stack, key, value, type) ZzCallStackSet(stack, key, &value, sizeof(type))
 ```

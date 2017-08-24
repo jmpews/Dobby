@@ -32,13 +32,13 @@ static void hack_this_function()
 #endif
 }
 
-void hook_pre_call(RegState *rs, ZzCallerStack *stack)
+void hook_pre_call(RegState *rs, zpointer stack)
 {
     unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
     printf("request is: %ld\n", request);
 }
 
-void hook_half_call(RegState *rs, ZzCallerStack *stack)
+void hook_half_call(RegState *rs, zpointer stack)
 {
     unsigned long x0 = (unsigned long)(rs->general.regs.x0);
     printf("getpid() return %ld\n", x0);
@@ -46,7 +46,6 @@ void hook_half_call(RegState *rs, ZzCallerStack *stack)
 
 __attribute__((constructor)) void test_hook_address()
 {
-    ZzInitialize();
     void *hack_this_function_ptr = (void *)hack_this_function;
     // hook address with only `pre_call`
     // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void *)hook_pre_call, NULL);

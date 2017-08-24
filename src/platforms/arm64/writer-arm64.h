@@ -18,15 +18,8 @@
 #include "../../../include/hookzz.h"
 #include "../../../include/zz.h"
 
-#include "../../trampoline.h"
 #include "instructions.h"
-
-typedef struct _ZzWriter {
-    zpointer *codedata;
-    zpointer base;
-    zpointer pc;
-    zuint size;
-} ZzWriter;
+#include "writer.h"
 
 typedef struct _ZzArm64RegInfo {
     zuint index;
@@ -34,16 +27,6 @@ typedef struct _ZzArm64RegInfo {
     zuint width;
     bool is_integer;
 } ZzArm64RegInfo;
-
-ZzWriter *ZzNewWriter(zpointer address);
-
-void WriterPutAbsJump(ZzWriter *self, zpointer target_addr);
-void WriterPutNearJump(ZzWriter *self, zsize offset);
-void WriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
-zsize WriterNearJumpRangeSize();
-zsize WriterAbsJumpInstructionLength();
-zsize WriterNearJumpInstructionLength();
-    
 
 void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
 

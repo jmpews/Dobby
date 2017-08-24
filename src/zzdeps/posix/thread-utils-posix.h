@@ -9,15 +9,19 @@
 
 #include "../zz.h"
 
-typedef struct _ZzThreadLocalKey {
+typedef struct _ThreadLocalKey {
+    pthread_key_t key;
+} ThreadLocalKey;
+
+typedef struct _ThreadLocalKeyList {
     zsize size;
     zsize capacity;
-    pthread_key_t *thread_local_keys;
-} ZzThreadLocalKey;
+    ThreadLocalKey *keys;
+} ThreadLocalKeyList;
 
-void zz_thread_initialize_thread_local_keys();
-zpointer zz_thread_new_thread_local_key();
-zpointer zz_thread_get_current_thread_data(zpointer key_ptr);
-int zz_thread_set_current_thread_data(zpointer key_ptr, zpointer data);
+void zz_posix_thread_initialize_thread_local_key_list();
+zpointer zz_posix_thread_new_thread_local_key_ptr();
+zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr);
+bool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data);
 
 #endif

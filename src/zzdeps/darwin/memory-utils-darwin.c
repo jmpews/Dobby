@@ -144,7 +144,7 @@ bool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_pro
     zaddr aligned_addr;
     zsize aligned_size;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
     aligned_size =
         (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
@@ -179,7 +179,7 @@ zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages)
     mach_vm_address_t result;
     kern_return_t kr;
     zsize page_size;
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
 
     if (n_pages <= 0)
     {
@@ -208,7 +208,7 @@ zpointer zz_vm_allocate_via_task(task_t task, zsize size)
     zpointer result;
     zsize n_pages;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     n_pages = ((size + page_size - 1) & ~(page_size - 1)) / page_size;
 
     result = zz_vm_allocate_pages_via_task(task, n_pages);
@@ -221,7 +221,7 @@ zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize ra
     kern_return_t kr;
     mach_vm_address_t tmp_addr;
     zsize page_size;
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
 
     if (n_pages <= 0)
     {
@@ -251,7 +251,7 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize 
 
     memset(zeroArray, 0, 128);
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
     target_search_start = aligned_addr - range_size;
     target_search_end = aligned_addr + range_size;
@@ -281,7 +281,7 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
 
     memset(zeroArray, 0, 128);
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     search_start_limit = address - range_size;
     search_end_limit = address + range_size;
 
@@ -352,7 +352,7 @@ bool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer 
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     /*
       https://www.gnu.org/software/hurd/gnumach-doc/Memory-Attributes.html
      */

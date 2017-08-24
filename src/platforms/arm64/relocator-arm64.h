@@ -14,24 +14,23 @@
  *    limitations under the License.
  */
 
-#ifndef platforms_x86_relocator_h
-#define platforms_x86_relocator_h
+#ifndef platforms_arm64_relocator_h
+#define platforms_arm64_relocator_h
 
 #include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
 
 #include "instructions.h"
 #include "capstone.h"
-#include "writer.h"
-#include "reader.h"
+#include "writer-arm64.h"
 
-#include "../../interceptor.h"
+#include "reader.h"
+#include "relocator.h"
+
 
 bool branch_is_unconditional(Instruction *ins);
 
 Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer, ZzWriter *relocate_writer);
-
-void relocator_build_invoke_trampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer);
     
 bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer);
 

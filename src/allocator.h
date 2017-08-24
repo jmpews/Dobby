@@ -43,7 +43,8 @@ typedef struct _allocator {
     zsize capacity;
 } ZzAllocator;
 
-ZzCodeSlice *ZzAllocatorNewNearCodeSlice(zaddr address, zsize range_size, zsize codeslice_size);
-ZzCodeSlice *ZzAllocatorNewCodeSlice(zsize codeslice_size);
+ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize range_size, zsize codeslice_size);
+ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size);
+ZzAllocator *ZzNewAllocator();
 
 #endif

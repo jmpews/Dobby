@@ -122,7 +122,7 @@ __attribute__((__naked__)) static void ctx_save() {
 之后直接复制这块函数内存数据即可, 这一般适合那种指令片段堆.
 
 ```
-void zz_build_enter_thunk(ZzWriter *writer) {
+void ZzThunkerBuildEnterThunk(ZzWriter *writer) {
 
     // pop x17
     writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);

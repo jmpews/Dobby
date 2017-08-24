@@ -46,27 +46,19 @@ typedef unsigned char zbyte;
 #define false 0
 #define true 1
 
-typedef struct _ZzCallerStack
-{
-	zpointer sp;
-	zsize size;
-    zsize capacity;	
-	char **keys;
-	zpointer *values;
-} ZzCallerStack;
 
-typedef void (*PRECALL)(RegState *rs, ZzCallerStack *stack);
-typedef void (*POSTCALL)(RegState *rs, ZzCallerStack *stack);
-typedef void (*HALFCALL)(RegState *rs, ZzCallerStack *stack);
 
-zpointer ZzCallerStackGet(ZzCallerStack *stack , char *key);
-ZZSTATUS ZzCallerStackSet(ZzCallerStack *stack, char *key, zpointer value_ptr, zsize value_size);
+typedef void (*PRECALL)(RegState *rs, zpointer stack);
+typedef void (*POSTCALL)(RegState *rs, zpointer stack);
+typedef void (*HALFCALL)(RegState *rs, zpointer stack);
 
-#define STACK_CHECK_KEY(stack, key) (bool)ZzCallerStackGet(stack, key)
-#define STACK_GET(stack, key, type) *(type *)ZzCallerStackGet(stack, key)
-#define STACK_SET(stack, key, value, type) ZzCallerStackSet(stack, key, &(value), sizeof(type))
+zpointer ZzGetCallStackData(zpointer stack_ptr, char *key);
+bool ZzSetCallStackData(zpointer stack_ptr, char *key, zpointer value_ptr, zsize value_size);
 
-ZZSTATUS ZzInitialize(void);
+#define STACK_CHECK_KEY(stack, key) (bool)ZzGetCallStackData(stack, key)
+#define STACK_GET(stack, key, type) *(type *)ZzGetCallStackData(stack, key)
+#define STACK_SET(stack, key, value, type) ZzSetCallStackData(stack, key, &(value), sizeof(type))
+
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
     POSTCALL post_call_ptr);
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);

@@ -13,7 +13,7 @@ bool zz_vm_check_address_valid_via_msync(const zpointer p)
     zsize page_size;
     zpointer base;
     /* get the page size */
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     /* find the address of the page that contains p */
     base = (void *)((((size_t)p) / page_size) * page_size);
     /* call msync, if it returns non-zero, return false */
@@ -36,7 +36,7 @@ void PointerReadFailedHandler(int signum)
     siglongjmp(sigjmp_env, 1);
 }
 
-bool zz_vm_check_address_valid_via_signal(zpointer p)
+bool zz_posix_vm_check_address_valid_via_signal(zpointer p)
 {
     // Set up SIGSEGV and SIGBUS handlers
     struct sigaction new_segv_action, old_segv_action;
@@ -65,7 +65,7 @@ bool zz_vm_check_address_valid_via_signal(zpointer p)
     return true;
 }
 
-zsize zz_vm_get_page_size() { return getpagesize(); }
+zsize zz_posix_vm_get_page_size() { return getpagesize(); }
 
 // int mprotect(void *addr, size_t len, int prot);
 bool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot)
@@ -76,7 +76,7 @@ bool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot)
     zaddr aligned_addr;
     zsize aligned_size;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
     aligned_size =
         (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
@@ -108,7 +108,7 @@ zpointer zz_posix_vm_allocate_pages(zsize n_pages)
     zpointer page_mmap;
     int kr;
     zsize page_size;
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
 
     if (n_pages <= 0)
     {
@@ -134,7 +134,7 @@ zpointer zz_posix_vm_allocate(zsize size)
     zpointer result;
     zsize n_pages;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     n_pages = ((size + page_size - 1) & ~(page_size - 1)) / page_size;
 
     result = zz_posix_vm_allocate_pages(n_pages);
@@ -146,7 +146,7 @@ zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size,  zsize
     zpointer page_mmap;
     zaddr t;
     zsize page_size;
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
 
     if (n_pages <= 0)
     {
@@ -174,14 +174,14 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
 
     memset(zeroArray, 0, 128);
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
     target_search_start = aligned_addr - range_size;
     target_search_end = aligned_addr + range_size;
 
     Xdebug("searching for %p cave, use 0x1000 interval.", (zpointer)address);
     for(tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
-        if(zz_vm_check_address_valid_via_signal((zpointer)tmp_addr))
+        if(zz_posix_vm_check_address_valid_via_signal((zpointer)tmp_addr))
             if(memcpy(readZeroArray, (zpointer)tmp_addr, 128)) {
                 if(!memcmp(readZeroArray, zeroArray, 128)) {
                     *size_ptr = 0x1000;
@@ -213,7 +213,7 @@ bool zz_posix_vm_patch_code( const zaddr address, const zpointer codedata, zuint
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;
 
-    page_size = zz_vm_get_page_size();
+    page_size = zz_posix_vm_get_page_size();
     /*
       https://www.gnu.org/software/hurd/gnumach-doc/Memory-Attributes.html
      */

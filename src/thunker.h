@@ -12,39 +12,19 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef stack_h
-#define stack_h
+#ifndef thunker_h 
+#define thunker_h 
 
 #include "../include/zz.h"
 #include "../include/hookzz.h"
 
-typedef struct _ZzCallStackItem {
-    char *key;
-    zpointer value;
-} ZzCallStackItem;
+#include "writer.h"
+void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer enter_thunk_ptr);
+void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer half_thunk_ptr);
+void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer leave_thunk_ptr);
 
-typedef struct _ZzCallStack
-{
-	zpointer sp;
-	zsize size;
-    zsize capacity;	
-    ZzCallStackItem *items;
-} ZzCallStack;
-
-typedef struct _ZzStack
-{
-	zsize size;
-    zsize capacity;
-    zpointer key_ptr;
-    ZzCallStack **callstacks;
-} ZzStack;
-
-ZzStack *ZzNewStack(zpointer key_ptr);
-
-ZzStack *ZzCurrentThreadStack(zpointer key_ptr);
-ZzStack * ZzNewStack(zpointer key_ptr);
-ZzCallStack *ZzNewCallStack();
-ZzCallStack *ZzPopCallStack(ZzStack *stack);
-bool ZzPushCallStack(ZzStack *stack, ZzCallStack *callstack);
+void ZzThunkerBuildEnterThunk(ZzWriter *writer);
+void ZzThunkerBuildHalfThunk(ZzWriter *writer);
+void ZzThunkerBuildLeaveThunk(ZzWriter *writer);
 
 #endif

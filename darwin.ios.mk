@@ -14,7 +14,7 @@
 
 HOOKZZ_DIR = $(abspath .)
 
-SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
+SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/posix/*.c)  $(wildcard src/platforms/darwin/*.c) $(wildcard src/platforms/arm64/*.c)
 ZZDEPS_SOURCES = $(wildcard src/zzdeps/darwin/*.c) $(wildcard src/zzdeps/common/*.c) $(wildcard src/zzdeps/posix/*.c) 
 ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES) 
 
@@ -24,13 +24,14 @@ ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
 OUTPUT_DIR = build
 
+SELF_INCLUDE = $(abspath src)
 
 # capstone framework
 CAPSTONE_INCLUDE = $(abspath deps/capstone/include)
 CAPSTONE_LIB_DIR = $(abspath deps/capstone)
 CAPSTONE_LIB = capstone.arm64
 
-INCLUDE_DIR = -I$(CAPSTONE_INCLUDE)
+INCLUDE_DIR = -I$(CAPSTONE_INCLUDE) -I$(SELF_INCLUDE)
 LIB_DIR = -L$(CAPSTONE_LIB_DIR)
 LIBS = -l$(CAPSTONE_LIB)
 
