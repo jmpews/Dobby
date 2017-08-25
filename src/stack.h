@@ -25,7 +25,8 @@ typedef struct _ZzCallStackItem {
 
 typedef struct _ZzCallStack
 {
-	zpointer sp;
+    zpointer sp;
+    zpointer caller_ret_addr;
 	zsize size;
     zsize capacity;	
     ZzCallStackItem *items;

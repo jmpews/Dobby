@@ -47,7 +47,7 @@ typedef struct _ZzHookFunctionEntry {
 
     zpointer target_ptr;
     zpointer target_end_ptr;
-    zpointer caller_ret_addr;
+
     zpointer caller_half_ret_addr;
 
     zpointer pre_call;

@@ -42,6 +42,9 @@ ZZSTATUS ZzInitializeInterceptor(void)
         hook_function_entry_set->capacity = ZzHOOKENTRIES_DEFAULT;
         hook_function_entry_set->entries = (ZzHookFunctionEntry **)malloc(
             sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity);
+        if(!hook_function_entry_set->entries) {
+            return ZZ_FAILED;
+        }
         hook_function_entry_set->size = 0;
 
         g_interceptor = interceptor;

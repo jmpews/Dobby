@@ -34,6 +34,7 @@ ZzCallStack *ZzNewCallStack(ZzStack *stack) {
 	if(!callstack->items)
 		return NULL;
 
+	callstack->size = 0;
     return callstack;
 }
 

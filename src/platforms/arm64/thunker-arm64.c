@@ -152,15 +152,14 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 
     ZzCallStack *callstack = ZzNewCallStack();
     ZzPushCallStack(entry->stack, callstack);
-
-    entry->caller_ret_addr = *(zpointer *)caller_ret_addr;
-
+    
     if (entry->pre_call)
     {
         PRECALL pre_call;
         pre_call = entry->pre_call;
         (*pre_call)(rs, callstack);
     }
+
     if (entry->replace_call)
     {
         *(zpointer *)next_hop = entry->replace_call;
@@ -169,9 +168,12 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
     {
         *(zpointer *)next_hop = entry->on_invoke_trampoline;
     }
-    if (entry->post_call)
+
+    if(entry->hook_type == HOOK_FUNCTION_TYPE)
     {
+        callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
         *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
+
     }
 }
 
@@ -206,7 +208,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
         post_call = entry->post_call;
         (*post_call)(rs, callstack);
     }
-    *(zpointer *)next_hop = entry->caller_ret_addr;
+    *(zpointer *)next_hop = callstack->caller_ret_addr;
 }
 
 void ZzThunkerBuildEnterThunk(ZzWriter *writer)
