@@ -80,6 +80,13 @@ test : darwin.ios
 	@mv test_hook_oc.dylib $(OUTPUT_DIR)/
 	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
 
+
+	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_MGCopyAnswer.m -o tests/test_hook_MGCopyAnswer.o
+	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_MGCopyAnswer.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_MGCopyAnswer.o -o test_hook_MGCopyAnswer.dylib
+	@mv test_hook_MGCopyAnswer.dylib $(OUTPUT_DIR)/
+	@echo "$(OK_COLOR)build [test_hook_MGCopyAnswer.dylib] success for arm64(ios)! $(NO_COLOR)"
+
+
 	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_address.c -o tests/test_hook_address.o
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_address.o -o test_hook_address.dylib
 	@mv test_hook_address.dylib $(OUTPUT_DIR)/

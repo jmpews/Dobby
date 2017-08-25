@@ -24,6 +24,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 #import <mach-o/dyld.h>
+#import <dlfcn.h>
 
 @interface HookZz : NSObject
 
@@ -33,8 +34,20 @@
 
 + (void)load {
   [self zzMethodSwizzlingHook];
+  [self hookMGCopyAnswer];
 }
 
+void MGCopyAnswer_pre_call(RegState *rs, zpointer stack) {
+  zpointer t = 0x1234; 
+}
+
++ (void)hookMGCopyAnswer {
+    void *lib = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_NOW);
+    void *symbol_addr = dlsym(lib, "MGCopyAnswer");
+    ZzBuildHook((void *)symbol_addr, NULL, NULL, MGCopyAnswer_pre_call, NULL);
+    ZzEnableHook((void *)symbol_addr);
+
+}
 void objcMethod_pre_call(RegState *rs, zpointer stack) {
   zpointer t = 0x1234; 
   STACK_SET(stack ,"key_x", t, void *);
@@ -49,6 +62,7 @@ void objcMethod_post_call(RegState *rs, zpointer stack) {
   NSLog(@"function over, and get 'key_x' is: %p", x);
   NSLog(@"function over, and get 'key_y' is: %p", y);
 }
+
 + (void)zzMethodSwizzlingHook {
   Class hookClass = objc_getClass("UIViewController");
   SEL oriSEL = @selector(viewWillAppear:);
