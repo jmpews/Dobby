@@ -10,6 +10,7 @@ ThreadLocalKeyList *zz_posix_thread_new_thread_local_key_list() {
     if(!keylist_tmp->keys) {
         return NULL;
     }
+    keylist_tmp->size = 0;
     return keylist_tmp;
 }
 
