@@ -17,13 +17,12 @@
 #ifndef platforms_arm64_relocator_h
 #define platforms_arm64_relocator_h
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
+#include "capstone.h"
+
+#include "hookzz.h"
 
 #include "instructions.h"
-#include "capstone.h"
 #include "writer-arm64.h"
-
 #include "reader.h"
 #include "relocator.h"
 

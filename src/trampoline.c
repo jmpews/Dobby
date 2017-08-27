@@ -84,8 +84,8 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
 
         if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr)
         {
-            // update caller_half_ret_addr
-            entry->caller_half_ret_addr += (zaddr)codeslice->data;
+            // update target_half_ret_addr
+            entry->target_half_ret_addr += (zaddr)codeslice->data;
         }
 
         if (!ZzMemoryPatchCode((zaddr)codeslice->data, temp_codeslice_data, relocate_writer->size))

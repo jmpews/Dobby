@@ -12,6 +12,13 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+#ifndef relocator_h
+#define relocator_h
+
+#include "hookzz.h"
 #include "interceptor.h"
 #include "writer.h"
+
 void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer);
+
+#endif

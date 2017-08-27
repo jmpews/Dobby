@@ -176,7 +176,6 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
     entry->origin_prologue.address = target_ptr;
 
     entry->thread_local_key = ZzThreadNewThreadLocalKeyPtr();
-    entry->stack = ZzNewStack(entry->thread_local_key);
 
     ZzBuildTrampoline(entry);
     ZzAddHookFunctionEntry(entry);

@@ -12,12 +12,11 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef instructions_h
-#define instructions_h
+#ifndef platforms_arm64_instructions_h
+#define platforms_arm64_instructions_h
 
 #include "capstone.h"
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
+#include "hookzz.h"
 
 typedef struct _Instruction {
     zpointer address;

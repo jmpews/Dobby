@@ -12,5 +12,9 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
+#ifndef platforms_posix_thread_h
+#define platforms_posix_thread_h
+
+#include "hookzz.h"
+
+#endif

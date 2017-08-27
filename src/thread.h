@@ -15,8 +15,7 @@
 #ifndef thread_h
 #define thread_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
+#include "hookzz.h"
 
 zpointer ZzThreadNewThreadLocalKeyPtr();
 zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr);

@@ -24,14 +24,15 @@ ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
 OUTPUT_DIR = build
 
-SELF_INCLUDE = $(abspath src)
+SELF_SRC_DIR = $(abspath src)
+SELF_INCLUDE_DIR = $(abspath include)
 
 # capstone framework
 CAPSTONE_INCLUDE = $(abspath deps/capstone/include)
 CAPSTONE_LIB_DIR = $(abspath deps/capstone)
 CAPSTONE_LIB = capstone.arm64
 
-INCLUDE_DIR = -I$(CAPSTONE_INCLUDE) -I$(SELF_INCLUDE)
+INCLUDE_DIR = -I$(CAPSTONE_INCLUDE) -I$(SELF_INCLUDE_DIR) -I$(SELF_SRC_DIR)
 LIB_DIR = -L$(CAPSTONE_LIB_DIR)
 LIBS = -l$(CAPSTONE_LIB)
 
@@ -79,13 +80,6 @@ test : darwin.ios
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_oc.o -o test_hook_oc.dylib
 	@mv test_hook_oc.dylib $(OUTPUT_DIR)/
 	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
-
-
-	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_MGCopyAnswer.m -o tests/test_hook_MGCopyAnswer.o
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_MGCopyAnswer.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_MGCopyAnswer.o -o test_hook_MGCopyAnswer.dylib
-	@mv test_hook_MGCopyAnswer.dylib $(OUTPUT_DIR)/
-	@echo "$(OK_COLOR)build [test_hook_MGCopyAnswer.dylib] success for arm64(ios)! $(NO_COLOR)"
-
 
 	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_address.c -o tests/test_hook_address.o
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_address.o -o test_hook_address.dylib

@@ -90,7 +90,7 @@ void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzWriter *back
         if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr && code_addr == entry->target_end_ptr)
         {
             ZzWriterPutAbsJump(relocate_writer, entry->on_half_trampoline);
-            entry->caller_half_ret_addr = (zpointer)relocate_writer->size;
+            entry->target_half_ret_addr = (zpointer)relocate_writer->size;
         }
         // hook at half way.
         if ((code_addr - entry->target_ptr) >= jump_instruction_length)

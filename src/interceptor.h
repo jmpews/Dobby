@@ -15,8 +15,8 @@
 #ifndef interceptor_h
 #define interceptor_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
+#include "hookzz.h"
+
 #include "allocator.h"
 #include "stack.h"
 
@@ -47,8 +47,7 @@ typedef struct _ZzHookFunctionEntry {
 
     zpointer target_ptr;
     zpointer target_end_ptr;
-
-    zpointer caller_half_ret_addr;
+    zpointer target_half_ret_addr;
 
     zpointer pre_call;
     zpointer half_call;

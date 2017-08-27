@@ -107,12 +107,4 @@ typedef uint8_t bool;
 
 #define Serror(MSG) Xerror("%s", MSG)
 #endif
-
-//#define xinfo(str) printf(GRN "[*] " "%s" "\n" RESET, str)
-//#define xinfo(X) {printf(RESET "[*] "); X; printf("\n");}
-// #define Xinfo(fmt, ...) \
-//         do { fprintf(stderr, RESET "[*] " fmt "\n", \
-//         __VA_ARGS__); } while (0)
-// #define Sinfo(MSG) Xinfo("%s", MSG)
-
 #endif

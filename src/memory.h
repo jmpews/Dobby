@@ -15,8 +15,8 @@
 #ifndef memory_h
 #define memory_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
+#include "hookzz.h"
+
 // #include "platforms/darwin/memory-darwin.h"
 // #include "zzdeps/darwin/memory-utils-darwin.h"
 

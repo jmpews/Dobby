@@ -21,6 +21,8 @@
 #include "stack.h"
 #include "thunker.h"
 
+#include "zzdeps/common/debugbreak.h"
+
 /*
     Programmer’s Guide for ARMv8-A:
         Page: (6-15)
@@ -149,9 +151,13 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
+    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    if(!stack) {
+        stack = ZzNewStack(entry->thread_local_key);
+    }
 
     ZzCallStack *callstack = ZzNewCallStack();
-    ZzPushCallStack(entry->stack, callstack);
+    ZzPushCallStack(stack, callstack);
     
     if (entry->pre_call)
     {
@@ -184,7 +190,11 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer next_hop)
 {
     Xdebug("target %p call half-invocation", entry->target_ptr );
-    ZzCallStack *callstack =  ZzPopCallStack(entry->stack);
+    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    if(!stack) {
+        debug_break();
+    }
+    ZzCallStack *callstack =  ZzPopCallStack(stack);
 
     if (entry->half_call)
     {
@@ -192,7 +202,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
         half_call = entry->half_call;
         (*half_call)(rs, callstack);
     }
-    *(zpointer *)next_hop = (zpointer)entry->caller_half_ret_addr;
+    *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
 }
 
 // just like post_call, wow!
@@ -200,7 +210,11 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      RegState *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
-    ZzCallStack *callstack =  ZzPopCallStack(entry->stack);
+    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    if(!stack) {
+        debug_break();
+    }
+    ZzCallStack *callstack =  ZzPopCallStack(stack);
 
     if (entry->post_call)
     {

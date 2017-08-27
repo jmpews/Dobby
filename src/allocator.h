@@ -17,9 +17,7 @@
 
 #include <stdint.h>
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
-
+#include "hookzz.h"
 #include "memory.h"
 
 typedef struct _codeslice {

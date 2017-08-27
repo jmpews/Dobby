@@ -12,11 +12,10 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef reader_h
-#define reader_h
+#ifndef platforms_arm64_reader_h
+#define platforms_arm64_reader_h
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
+#include "hookzz.h"
 
 #include "instructions.h"
 #include "trampoline.h"

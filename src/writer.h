@@ -18,8 +18,7 @@
  #ifndef writer_h 
  #define writer_h
  
- #include "../include/zz.h"
- #include "../include/hookzz.h"
+ #include "hookzz.h"
 
  typedef struct _ZzWriter {
     zpointer *codedata;

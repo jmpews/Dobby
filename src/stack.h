@@ -15,8 +15,7 @@
 #ifndef stack_h
 #define stack_h
 
-#include "../include/zz.h"
-#include "../include/hookzz.h"
+#include "hookzz.h"
 
 typedef struct _ZzCallStackItem {
     char *key;
@@ -40,12 +39,13 @@ typedef struct _ZzStack
     ZzCallStack **callstacks;
 } ZzStack;
 
-ZzStack *ZzNewStack(zpointer key_ptr);
 
-ZzStack *ZzCurrentThreadStack(zpointer key_ptr);
-ZzStack * ZzNewStack(zpointer key_ptr);
+ZzStack *ZzNewStack(zpointer key_ptr);
+ZzStack *ZzGetCurrentThreadStack(zpointer key_ptr);
+
 ZzCallStack *ZzNewCallStack();
 ZzCallStack *ZzPopCallStack(ZzStack *stack);
 bool ZzPushCallStack(ZzStack *stack, ZzCallStack *callstack);
+    
 
 #endif
