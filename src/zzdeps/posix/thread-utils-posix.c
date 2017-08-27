@@ -1,4 +1,5 @@
 #include "thread-utils-posix.h"
+#include <pthread.h>
 
 ThreadLocalKeyList *g_thread_local_key_list = 0;
 
@@ -66,4 +67,8 @@ bool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
             return pthread_setspecific(g_keys->keys[i].key, data);
     } 
     return false;
+}
+
+long zz_posix_get_current_thread_id() {
+    return (long)pthread_self();
 }

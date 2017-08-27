@@ -33,3 +33,7 @@
     return zz_posix_thread_set_current_thread_data(key_ptr, data);
 
  }
+
+ long ZzThreadGetCurrentThreadID() {
+     return zz_posix_get_current_thread_id();
+ }

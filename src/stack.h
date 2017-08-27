@@ -24,28 +24,30 @@ typedef struct _ZzCallStackItem {
 
 typedef struct _ZzCallStack
 {
-    zpointer sp;
-    zpointer caller_ret_addr;
+    long call_id;
 	zsize size;
     zsize capacity;	
+    zpointer sp;
+    zpointer caller_ret_addr;
     ZzCallStackItem *items;
 } ZzCallStack;
 
-typedef struct _ZzStack
+typedef struct _ZzThreadStack
 {
+    long thread_id;
 	zsize size;
     zsize capacity;
     zpointer key_ptr;
     ZzCallStack **callstacks;
-} ZzStack;
+} ZzThreadStack;
 
 
-ZzStack *ZzNewStack(zpointer key_ptr);
-ZzStack *ZzGetCurrentThreadStack(zpointer key_ptr);
+ZzThreadStack *ZzNewThreadStack(zpointer key_ptr);
+ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr);
 
 ZzCallStack *ZzNewCallStack();
-ZzCallStack *ZzPopCallStack(ZzStack *stack);
-bool ZzPushCallStack(ZzStack *stack, ZzCallStack *callstack);
+ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
+bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
     
 
 #endif

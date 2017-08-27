@@ -151,9 +151,9 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
 {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
-    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if(!stack) {
-        stack = ZzNewStack(entry->thread_local_key);
+        stack = ZzNewThreadStack(entry->thread_local_key);
     }
 
     ZzCallStack *callstack = ZzNewCallStack();
@@ -163,7 +163,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry,
     {
         PRECALL pre_call;
         pre_call = entry->pre_call;
-        (*pre_call)(rs, callstack);
+        (*pre_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
 
     if (entry->replace_call)
@@ -190,7 +190,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
                                       zpointer next_hop)
 {
     Xdebug("target %p call half-invocation", entry->target_ptr );
-    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if(!stack) {
         debug_break();
     }
@@ -200,7 +200,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
     {
         HALFCALL half_call;
         half_call = entry->half_call;
-        (*half_call)(rs, callstack);
+        (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
     *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
 }
@@ -210,7 +210,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
                                      RegState *rs, zpointer next_hop)
 {
     Xdebug("%p call end-invocation", entry->target_ptr);
-    ZzStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if(!stack) {
         debug_break();
     }
@@ -220,7 +220,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
     {
         POSTCALL post_call;
         post_call = entry->post_call;
-        (*post_call)(rs, callstack);
+        (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
     *(zpointer *)next_hop = callstack->caller_ret_addr;
 }

@@ -20,16 +20,16 @@
 #include "stack.h"
 #include "thread.h"
 
-ZzStack *ZzGetCurrentThreadStack(zpointer key_ptr) {
-    ZzStack *stack  = (ZzStack *)ZzThreadGetCurrentThreadData(key_ptr);
+ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr) {
+    ZzThreadStack *stack  = (ZzThreadStack *)ZzThreadGetCurrentThreadData(key_ptr);
     if(!stack)
 		return NULL;
     return stack;
 }
 
-ZzStack *ZzNewStack(zpointer key_ptr) {
-    ZzStack *stack;
-    stack = (ZzStack *)malloc(sizeof(ZzStack));
+ZzThreadStack *ZzNewThreadStack(zpointer key_ptr) {
+    ZzThreadStack *stack;
+    stack = (ZzThreadStack *)malloc(sizeof(ZzThreadStack));
     stack->capacity = 4;
     ZzCallStack **callstacks = (ZzCallStack **)malloc(sizeof(ZzCallStack *) * (stack->capacity));
     if(!callstacks)
@@ -37,11 +37,12 @@ ZzStack *ZzNewStack(zpointer key_ptr) {
     stack->callstacks = callstacks;
 	stack->size = 0;
 	stack->key_ptr = key_ptr;
+	stack->thread_id = ZzThreadGetCurrentThreadID();
 	ZzThreadSetCurrentThreadData(key_ptr, (zpointer)stack);
     return stack;
 }
 
-ZzCallStack *ZzNewCallStack(ZzStack *stack) {
+ZzCallStack *ZzNewCallStack(ZzThreadStack *stack) {
     ZzCallStack *callstack;
     callstack = (ZzCallStack *)malloc(sizeof(ZzCallStack));
 	callstack->capacity = 4;
@@ -54,7 +55,7 @@ ZzCallStack *ZzNewCallStack(ZzStack *stack) {
     return callstack;
 }
 
-ZzCallStack *ZzPopCallStack(ZzStack *stack) {
+ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {
 	if(stack->size > 0)
 		stack->size--;
 	else
@@ -63,7 +64,7 @@ ZzCallStack *ZzPopCallStack(ZzStack *stack) {
 	return callstack;
 }
 
-bool ZzPushCallStack(ZzStack *stack, ZzCallStack *callstack) {
+bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
 	if(!stack)
 		return false;
 
@@ -75,6 +76,8 @@ bool ZzPushCallStack(ZzStack *stack, ZzCallStack *callstack) {
 		stack->callstacks = callstacks;
 		stack->capacity = stack->capacity * 2;
 	}
+
+	callstack->call_id = stack->size;
 
 	stack->callstacks[stack->size++] = callstack;
 	return true;

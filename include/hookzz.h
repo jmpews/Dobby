@@ -51,7 +51,7 @@ typedef uint8_t bool;
 
 // --- log configuration ---
 
-#define GLOBAL_DEBUG 1
+#define GLOBAL_DEBUG 0
 #define GLOBAL_INFO 1
 #define SYSLOG 0
 #define COLOR_LOG 0
@@ -184,9 +184,23 @@ typedef enum _ZZSTATUS {
     ZZ_NO_BUILD_HOOK
 } ZZSTATUS;
 
-typedef void (*PRECALL)(RegState *rs, zpointer stack);
-typedef void (*POSTCALL)(RegState *rs, zpointer stack);
-typedef void (*HALFCALL)(RegState *rs, zpointer stack);
+
+typedef struct _CallStack
+{
+    long call_id;
+	zsize size;
+} CallStack;
+
+typedef struct _ThreadStack
+{
+    long thread_id;
+	zsize size;
+} ThreadStack;
+
+
+typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
 
 zpointer ZzGetCallStackData(zpointer stack_ptr, char *key);
 bool ZzSetCallStackData(zpointer stack_ptr, char *key, zpointer value_ptr, zsize value_size);

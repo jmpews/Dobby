@@ -14,12 +14,6 @@
  *    limitations under the License.
  */
 
-// `xcrun --sdk iphoneos --find clang` -isysroot `xcrun --sdk iphoneos
-// --show-sdk-path` -g -gmodules
-// -I/Users/jmpews/Desktop/SpiderZz/project/HookZz/include
-// -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/build -lhookzz.static
-// -framework Foundation -dynamiclib -arch arm64 test_hook_oc.m -o
-// test_hook_oc.dylib
 #include "hookzz.h"
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
@@ -34,21 +28,9 @@
 
 + (void)load {
   [self zzMethodSwizzlingHook];
-  [self hookMGCopyAnswer];
 }
 
-void MGCopyAnswer_pre_call(RegState *rs, zpointer stack) {
-  zpointer t = 0x1234; 
-}
-
-+ (void)hookMGCopyAnswer {
-    void *lib = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_NOW);
-    void *symbol_addr = dlsym(lib, "MGCopyAnswer");
-    ZzBuildHook((void *)symbol_addr, NULL, NULL, MGCopyAnswer_pre_call, NULL);
-    ZzEnableHook((void *)symbol_addr);
-
-}
-void objcMethod_pre_call(RegState *rs, zpointer stack) {
+void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *stack) {
   zpointer t = 0x1234; 
   STACK_SET(stack ,"key_x", t, void *);
   STACK_SET(stack ,"key_y", t, zpointer);
@@ -56,7 +38,7 @@ void objcMethod_pre_call(RegState *rs, zpointer stack) {
         (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, zpointer stack) {
+void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *stack) {
   zpointer x = STACK_GET(stack, "key_x", void *);
   zpointer y = STACK_GET(stack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);

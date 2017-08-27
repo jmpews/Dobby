@@ -43,7 +43,6 @@ typedef struct _ZzHookFunctionEntry {
     bool isEnabled;
 
     zpointer thread_local_key;
-    ZzStack *stack;
 
     zpointer target_ptr;
     zpointer target_end_ptr;
