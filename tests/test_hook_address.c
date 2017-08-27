@@ -32,12 +32,12 @@ static void hack_this_function()
 #endif
 }
 
-void hook_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *stack) {
+void hook_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
     unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
     printf("request is: %ld\n", request);
 }
 
-void hook_half_call(RegState *rs, ThreadStack *threadstack, CallStack *stack) {
+void hook_half_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
     unsigned long x0 = (unsigned long)(rs->general.regs.x0);
     printf("getpid() return %ld\n", x0);
 }
