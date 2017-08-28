@@ -22,7 +22,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Features
 
-- [hookzz-modules](https://github.com/jmpews/HookZzModules)
+- [HookZz-Modules, help you hook.](https://github.com/jmpews/HookZzModules)
 
 - hook function with `replace_call`
 
@@ -64,12 +64,14 @@ generate [src/allocator.o]!
 generate [src/interceptor.o]!
 generate [src/memory.o]!
 generate [src/stack.o]!
+generate [src/thread.o]!
 generate [src/trampoline.o]!
+generate [src/platforms/posix/thread-posix.o]!
 generate [src/platforms/darwin/memory-darwin.o]!
 generate [src/platforms/arm64/reader.o]!
-generate [src/platforms/arm64/relocator.o]!
-generate [src/platforms/arm64/thunker.o]!
-generate [src/platforms/arm64/writer.o]!
+generate [src/platforms/arm64/relocator-arm64.o]!
+generate [src/platforms/arm64/thunker-arm64.o]!
+generate [src/platforms/arm64/writer-arm64.o]!
 generate [src/zzdeps/darwin/macho-utils-darwin.o]!
 generate [src/zzdeps/darwin/memory-utils-darwin.o]!
 generate [src/zzdeps/common/memory-utils-common.o]!

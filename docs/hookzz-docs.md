@@ -11,17 +11,10 @@
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
 
-# Export 5 core function
+# Export 4 core function
 
-#### 1. `ZzInitialize`
 
-initialize the interceptor and so on.
-
-```
-ZZSTATUS ZzInitialize(void);
-```
-
-#### 2. `ZzBuildHook`
+#### 1. `ZzBuildHook`
 
 build hook with `replace_call`, `pre_call`, `post_call`, but not enable. the definition of `PRECALL` and `POSTCALL` type is below.
 
@@ -35,7 +28,7 @@ build hook with `replace_call`, `pre_call`, `post_call`, but not enable. the def
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 ```
 
-#### 3. `ZzBuildHookAddress`
+#### 2. `ZzBuildHookAddress`
 
 build hook address(a piece of code) with `pre_call`, `half_call`. the definition of `PRECALL` and `POSTCALL` type is below.
 
@@ -48,7 +41,9 @@ build hook address(a piece of code) with `pre_call`, `half_call`. the definition
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ```
 
-#### 4. `ZzEnableHook`
+**[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm)**
+
+#### 3. `ZzEnableHook`
 
 enable hook with `code patch` at target_ptr.
 
@@ -58,7 +53,7 @@ enable hook with `code patch` at target_ptr.
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ```
 
-#### 5. `ZzRuntimeCodePatch`
+#### 4. `ZzRuntimeCodePatch`
 
 runtime code patch without codesign limit, and will work better with [MachoParser](https://github.com/jmpews/MachoParser).
 
@@ -70,6 +65,8 @@ runtime code patch without codesign limit, and will work better with [MachoParse
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
 ```
 
+**[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm#L270)**
+
 # Export 3 core type:
 
 
@@ -77,21 +74,45 @@ ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_siz
 
 **For `RegState`:**
 
-without the explicit argument, use `RegState` to replace, you can access all the registers at the moment. 
+without the explicit argument, use `RegState` to replace, you can access all the registers. 
 
-**For `ZzCallStack`:**
+**For `ThreadStack`:**
 
-if you want `pre_call` and `post_call`(`half_call`) as in the function, to access  trick variable like the `self`, you need `ZzCallStack *stack`.
+Contains all of the current `CallStack`.
+
+
+**For `CallStack`:**
+
+if you want use variable in `pre_call` and `post_call`(`half_call`), just like the trick variable `self`, you need `CallStack *stack`.
 
 ```
-typedef void (*PRECALL)(RegState *rs, ZzCallStack *stack);
-typedef void (*POSTCALL)(RegState *rs, ZzCallStack *stack);
-typedef void (*HALFCALL)(RegState *rs, ZzCallStack *stack);
+typedef struct _CallStack
+{
+    long call_id;
+} CallStack;
+
+typedef struct _ThreadStack
+{
+    long thread_id;
+    zsize size;
+} ThreadStack;
+
+
+typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+
 ```
+
+
+**[Move to hook_objc_msgSend Example](https://github.com/jmpews/HookZzModules/tree/master/hook_objc_msgSend)**
+
+**[Move to hook_MGCopyAnswer Example](https://github.com/jmpews/HookZzModules/tree/master/hook_MGCopyAnswer)**
+
 
 #### 2. `RegState`
 
-current all cpu register state, read `zzdefs.h` for detail.
+current all cpu register state.
 
 ```
 typedef union FPReg_ {
@@ -129,14 +150,17 @@ typedef struct _RegState {
 } RegState;
 ```
 
-#### 3. `ZzCallStack`
+#### 3. `CallStack` & `ThreadStack`
 
-need the follow method to access the stack.
+follow method to access the stack.
 
 ```
-zpointer ZzCallStackGet(ZzCallStack *stack , char *key);
-ZZSTATUS ZzCallStackSet(ZzCallStack *stack, char *key, zpointer value_ptr, zsize value_size);
+zpointer ZzGetCallStackData(zpointer stack_ptr, char *key);
+bool ZzSetCallStackData(zpointer stack_ptr, char *key, zpointer value_ptr, zsize value_size);
 
-#define STACK_GET(stack, key, type) *(type *)ZzCallStackGet(stack, key)
-#define STACK_SET(stack, key, value, type) ZzCallStackSet(stack, key, &value, sizeof(type))
+#define STACK_CHECK_KEY(stack, key) (bool)ZzGetCallStackData(stack, key)
+#define STACK_GET(stack, key, type) *(type *)ZzGetCallStackData(stack, key)
+#define STACK_SET(stack, key, value, type) ZzSetCallStackData(stack, key, &(value), sizeof(type))
 ```
+
+**[Move to hook_objc_msgSend Example](https://github.com/jmpews/HookZzModules/tree/master/hook_objc_msgSend)**

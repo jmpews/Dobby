@@ -1,4 +1,4 @@
-## HookZz
+# HookZz
 
 **a hook framework**
 
@@ -6,7 +6,7 @@
 
 **still developing, for arm64/IOS now!**
 
-## HookFramework 架构设计
+# HookFramework 架构设计
 
 一般来说可以分为以下几个模块
 
@@ -22,7 +22,7 @@
 
 需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行` 3. 如何分配相近的内存来达到 `near jump`
 
-这一部分与具体的操作系统有关. 比如 `darwin` 使用 `mach_vm_allocate`
+这一部分与具体的操作系统有关. 比如 `darwin` 下分配内存使用 `mmap` 实际使用的是 `mach_vm_allocate`. [move to detail]( https://github.com/bminor/glibc/blob/master/sysdeps/mach/hurd/mmap.c).
 
 在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
 
@@ -32,7 +32,31 @@
 
 举个例子比如 `b label`, 在 armv8 中的可以想在 `+-128MB` 范围内进行 `near jump`, 具体可以参考 `ARM Architecture Reference Manual ARMv8, for ARMv8-A architecture profile Page: C6-550`.
 
-这里可以有两个尝试. 1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小. 2.尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
+这里可以有两个尝试.
+
+1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小.
+
+2. 尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
+
+当然还可以有强制相对跳(`double jump`), 直接对 `+-128MB` 内选一个地址强制 code patch 并修复.
+
+```
+__asm__ {
+	// 第一次绝对地址跳, 跳转到修复模块, 执行正常流程
+	"ldr x17, #0x8\n"
+	"b #0xc\n"
+	".long\n"
+	".long\n"
+	"br x17"
+
+	// double jump, 跳转到 on_enter_trampoline
+	"ldr x17, #0x8\n"
+	"b #0xc\n"
+	".long\n"
+	".long\n"
+	"br x17"
+}
+```
 
 #### 2. 指令写 模块
 
@@ -45,12 +69,13 @@
 例如:
 
 ```
+// frida-gum/gum/arch-arm64/gumarm64writer.c
 void
 gum_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
                                       arm64_reg reg,
                                       GumAddress address)
 {
-  gum_arm64_writer_put_ldr_reg_u64(self, reg, (guint64)address);
+  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (guint64) address);
 }
 
 void
@@ -60,13 +85,13 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_writer_describe_reg(self, reg, &ri);
+  gum_arm64_writer_describe_reg (self, reg, &ri);
 
-  g_assert_cmpuint(ri.width, ==, 64);
+  g_assert_cmpuint (ri.width, ==, 64);
 
-  gum_arm64_writer_add_literal_reference_here(self, val);
-  gum_arm64_writer_put_instruction(
-      self, (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
+  gum_arm64_writer_add_literal_reference_here (self, val);
+  gum_arm64_writer_put_instruction (self,
+      (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
 }
 
 ```
@@ -122,24 +147,23 @@ __attribute__((__naked__)) static void ctx_save() {
 之后直接复制这块函数内存数据即可, 这一般适合那种指令片段堆.
 
 ```
-void ZzThunkerBuildEnterThunk(ZzWriter *writer) {
+void ZzThunkerBuildEnterThunk(ZzWriter *writer)
+{
 
     // pop x17
     writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
     writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
-    // TODO:  is bad code ?
-    writer_put_bytes(writer, (void *) ctx_save, 26 * 4);
+    writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
 
     // call `function_context_begin_invocation`
-    writer_put_bytes(writer, (void *) pass_enter_func_args, 4 * 4);
+    writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
     writer_put_ldr_reg_address(
-            writer, ARM64_REG_X17,
-            (zaddr) (zpointer) function_context_begin_invocation);
+        writer, ARM64_REG_X17,
+        (zaddr)(zpointer)function_context_begin_invocation);
     writer_put_blr_reg(writer, ARM64_REG_X17);
 
-    // TOOD: is bad code ?
-    writer_put_bytes(writer, (void *) ctx_restore, 23 * 4);
+    writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 ```
 
@@ -149,45 +173,47 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer) {
 
 #### 4. 指令修复 模块
 
-这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复.
+这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复. 对于确定的哪些指令需要修复可以参考 [Move to <解析ARM和x86_x64指令格式>](http://jmpews.github.io/2017/05/17/pwn/%E8%A7%A3%E6%9E%90ARM%E5%92%8Cx86_x64%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F/).
 
-大致的思路就是: 判断 `capstone` 读取到的指令 ID, 针对特定指令写一个小函数进行修复
+大致的思路就是: 判断 `capstone` 读取到的指令 ID, 针对特定指令写一个小函数进行修复.
 
 例如在 `frida-gum` 中:
 
 ```
+frida-gum/gum/arch-arm64/gumarm64relocator.c
 static gboolean
 gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
                                GumCodeGenCtx * ctx)
 {
-  const cs_arm64_op *target = &ctx->detail->operands[0];
+  const cs_arm64_op * target = &ctx->detail->operands[0];
 
-  (void)self;
+  (void) self;
 
-  gum_arm64_writer_put_ldr_reg_address(ctx->output, ARM64_REG_X17, target->imm);
-  gum_arm64_writer_put_br_reg(ctx->output, ARM64_REG_X17);
+  gum_arm64_writer_put_ldr_reg_address (ctx->output, ARM64_REG_X16,
+      target->imm);
+  gum_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
 
-  return true;
+  return TRUE;
 }
 ```
 
 #### 5. 跳板 模块
 
-跳板模块的设计是希望各个模块的实现更浅的耦合, 跳板函数主要作用就是进行跳转, 并准备 `跳转目标` 需要的参数. 举个例子, 被 hook 的函数经过入口跳板(`enter_trampoline`), 跳转到调度函数(`enter_chunk`), 需要被 hook 的函数相关信息等, 这个就需要在构造跳板是完成
+跳板模块的设计是希望各个模块的实现更浅的耦合, 跳板函数主要作用就是进行跳转, 并准备 `跳转目标` 需要的参数. 举个例子, 被 hook 的函数经过入口跳板(`enter_trampoline`), 跳转到调度函数(`enter_chunk`), 需要被 hook 的函数相关信息等, 这个就需要在构造跳板时完成.
 
 #### 6. 调度 模块
 
-可以理解为所有被 hook 的函数都必须经过的函数, 类似于 `objc_msgSend`, 在这里通过栈来函数(`pre_call`, `replace_call`, `post_call`)调用顺序.
+可以理解为所有被 hook 的函数都必须经过的函数, 类似于 `objc_msgSend`, 在这里通过栈返回值来控制函数(`replace_call`, `pre_call`, `half_call`, `post_call`)调用顺序.
 
 本质有些类似于 `objc_msgSend` 所有的被 hook 的函数都在经过 `enter_trampoline` 跳板后, 跳转到 `enter_thunk`, 在此进行下一步的跳转判断决定, 并不是直接跳转到 `replace_call`.
 
 #### 7. 栈模块
 
-如果希望在 `pre_call` 和 `post_call` 只用局部变量, 就想在同一个函数内一样. 在 frida 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加一个函数栈.
+如果希望在 `pre_call` 和 `post_call` 只用局部变量, 就想在同一个函数内一样. 在 `frida-js` 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加一个函数栈. 所以这里存在两种栈. 1. 线程栈(保存了该 hook-entry 的所有当前函数调用栈) 2. 函数调用栈(本次函数调用时的栈)
 
-## 坑
+# 坑
 
-#### `ldr` 指令
+## `ldr` 指令
 
 在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);`
 
@@ -214,15 +240,27 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 在 `hookzz` 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
 
 ```
-
-void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address) {
-    writer_put_ldr_reg_imm(self, reg, (zuint) 0x8);
-    writer_put_b_imm(self, (zaddr) 0xc);
-    writer_put_bytes(self, (zpointer) &address, sizeof(address));
+void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
+{
+    writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    writer_put_b_imm(self, (zaddr)0xc);
+    writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 ```
 
-#### 寄存器污染
+也就是下面的样子.
+
+```
+__asm__ {
+	"ldr x17, #0x8\n"
+	"b #0xc\n"
+	".long\n"
+	".long\n"
+	"br x17"
+}
+```
+
+## 寄存器污染
 
 在进行 inlinehook 需要进行各种跳转, 通常会以以下模板进行跳转.
 
@@ -233,11 +271,11 @@ void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address) {
 12: 0x00000000
 ```
 
-问题在于这会造成 x16 寄存器被污染. 所以这里有两种思路解决这个问题.
+问题在于这会造成 x16 寄存器被污染(在 arm64 中 `svc #0x80` 使用 x16 传递系统调用号) 所以这里有两种思路解决这个问题.
 
 思路一:
 
-在使用寄存器之前进行 `push`, 跳转后 `pop`, 这里存在一个问题就是在原地址的几条指令进行 `patch code` 时一定会污染一个寄存器(也不能说一定, 如果这时进行压栈, 在之后的 `invoke_trampline` 会导致函数栈发生改变, 此时有个解决方法可以 pop 出来, 由 hookentry 或者其他变量暂时保存, 但这时需要处理锁的问题. )
+在使用寄存器之前进行 `push`, 跳转后 `pop`, 这里存在一个问题就是在原地址的几条指令进行 `patch code` 时一定会污染一个寄存器(也不能说一定, 如果这时进行压栈, 在之后的 `invoke_trampline` 会导致函数栈发生改变, 此时有个解决方法可以 `pop` 出来, 由 hook-entry 或者其他变量暂时保存, 但这时需要处理锁的问题. )
 
 思路二:
 
@@ -250,9 +288,9 @@ Programmer’s Guide for ARMv8-A
 9.1.1 Parameters in general-purpose registers
 ```
 
-这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 svc 类系统调用, 系统调用号(syscall number)的传递是利用 x16 寄存器进行传递的, 所以本框架使用 x17 寄存器, 并且在传递参数时使用, `push` & `pop`, 在跳转后恢复 x17.
+这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 svc 类系统调用, 系统调用号(syscall number)的传递是利用 x16 寄存器进行传递的, 所以本框架使用 x17 寄存器, 并且在传递参数时使用, `push` & `pop`, 在跳转后恢复 x17, 避免了一个寄存器的使用.
 
-#### rwx 与 codesigning
+## `rwx` 与 `codesigning`
 
 对于非越狱, 不能分配可执行内存, 不能进行 `code patch`.
 

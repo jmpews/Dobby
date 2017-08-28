@@ -20,12 +20,14 @@ generate [src/allocator.o]!
 generate [src/interceptor.o]!
 generate [src/memory.o]!
 generate [src/stack.o]!
+generate [src/thread.o]!
 generate [src/trampoline.o]!
+generate [src/platforms/posix/thread-posix.o]!
 generate [src/platforms/darwin/memory-darwin.o]!
 generate [src/platforms/arm64/reader.o]!
-generate [src/platforms/arm64/relocator.o]!
-generate [src/platforms/arm64/thunker.o]!
-generate [src/platforms/arm64/writer.o]!
+generate [src/platforms/arm64/relocator-arm64.o]!
+generate [src/platforms/arm64/thunker-arm64.o]!
+generate [src/platforms/arm64/writer-arm64.o]!
 generate [src/zzdeps/darwin/macho-utils-darwin.o]!
 generate [src/zzdeps/darwin/memory-utils-darwin.o]!
 generate [src/zzdeps/common/memory-utils-common.o]!
@@ -56,17 +58,25 @@ before build demo dylib, specify the hookzz library path(shared or static).
 2. build with `make -f darwin.ios.mk test`
 
 ```
+λ : >>> make -f darwin.ios.mk test
 build success for arm64(IOS)!
 build [test_hook_oc.dylib] success for arm64(ios)!
 build [test_hook_address.dylib] success for arm64(ios)!
 build [test] success for arm64(IOS)!
+```
 
+```
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (master●) (normal)
+λ : >>> ls build
+libhookzz.dylib         libhookzz.static.a      test_hook_address.dylib test_hook_oc.dylib
 ```
 
 ```
 #include "hookzz.h"
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
+#import <mach-o/dyld.h>
+#import <dlfcn.h>
 
 @interface HookZz : NSObject
 
@@ -78,29 +88,30 @@ build [test] success for arm64(IOS)!
   [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(RegState *rs, ZzCallStack *stack) {
+void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
   zpointer t = 0x1234; 
-  STACK_SET(stack ,"key_x", t, void *);
-  STACK_SET(stack ,"key_y", t, zpointer);
-  NSLog(@"hookzz OC-Method: -[ViewController %s]",
+  STACK_SET(callstack ,"key_x", t, void *);
+  STACK_SET(callstack ,"key_y", t, zpointer);
+  NSLog(@"hookzz OC-Method: -[UIViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, ZzCallStack *stack) {
-  zpointer x = STACK_GET(stack, "key_x", void *);
-  zpointer y = STACK_GET(stack, "key_y", zpointer);
+void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+  zpointer x = STACK_GET(callstack, "key_x", void *);
+  zpointer y = STACK_GET(callstack, "key_y", zpointer);
   NSLog(@"function over, and get 'key_x' is: %p", x);
   NSLog(@"function over, and get 'key_y' is: %p", y);
 }
+
 + (void)zzMethodSwizzlingHook {
   Class hookClass = objc_getClass("UIViewController");
   SEL oriSEL = @selector(viewWillAppear:);
   Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
   IMP oriImp = method_getImplementation(oriMethod);
 
-  ZzInitialize();
-  ZzBuildHook((void *)oriImp, NULL, NULL, (zpointer)objcMethod_pre_call, (zpointer)objcMethod_post_call);
+  ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
   ZzEnableHook((void *)oriImp);
+
 }
 
 @end
@@ -114,7 +125,7 @@ build new ios app project. and then `Build Phases -> New Run Script Phase` add a
 cd ${BUILT_PRODUCTS_DIR}
 cd ${FULL_PRODUCT_NAME}
 
-cp /path/HookZz/tests/test_hook_oc.dylib ./
+cp /path/HookZz/build/test_hook_oc.dylib ./
 /usr/bin/codesign --force --sign ${EXPANDED_CODE_SIGN_IDENTITY} --timestamp=none test_hook_oc.dylib
 /Users/jmpews/Desktop/SpiderZz/Pwntools/Darwin/bin/optool install -c load -p "@executable_path/test_hook_oc.dylib" -t ${EXECUTABLE_NAME}
 ```
