@@ -270,6 +270,85 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize 
     return NULL;
 }
 
+// https://github.com/kpwn/935csbypass/blob/master/cs_bypass.m
+zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsize size) {
+    char zeroArray[128];
+    char readZeroArray[128];
+    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit, search_end_limit;
+    zsize page_size;
+
+    zpointer result_ptr;
+
+    kern_return_t kr      = KERN_SUCCESS;
+    vm_address_t  address_tmp = 0;
+    vm_size_t     size_tmp    = 0;
+
+    memset(zeroArray, 0, 128);
+
+    page_size = zz_posix_vm_get_page_size();
+    search_start_limit = address - range_size;
+    search_end_limit = address + range_size;
+    
+    while (1) {
+        mach_msg_type_number_t count;
+        struct vm_region_submap_info_64 info;
+        uint32_t nesting_depth;
+        
+        count = VM_REGION_SUBMAP_INFO_COUNT_64;
+        kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp, &nesting_depth,
+                                  (vm_region_info_64_t)&info, &count);
+        if (kr == KERN_INVALID_ADDRESS) {
+            break;
+        } else if (kr) {
+            mach_error("vm_region:", kr);
+            break; /* last region done */
+        }
+        
+        if (info.is_submap) {
+            nesting_depth++;
+        } else {
+            address_tmp += size_tmp;
+            
+            if (info.protection & PROT_EXEC && info.protection & PROT_READ) {
+                search_start = (zaddr)address_tmp - size_tmp;
+                search_end = (zaddr)address_tmp;
+                
+                
+                if(search_start < search_start_limit) {
+                    
+                    if(search_end > search_start_limit && search_end < search_end_limit) {
+                        search_start = search_start_limit;
+                    } else if (search_end > search_end_limit)
+                    {
+                        search_start = search_start_limit;
+                        search_end = search_end_limit;
+                    } else {
+                        continue;
+                    }
+                } else if(search_start >= search_start_limit && search_start <= search_end_limit){
+                    if(search_end > search_start_limit && search_end < search_end_limit) {
+                    } else if (search_end > search_end_limit)
+                    {
+                        search_end = search_end_limit;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+        
+                result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end, (zbyte *)zeroArray, size);
+                if(result_ptr) {
+                    return result_ptr;
+                }
+
+            }
+            
+        }
+    }
+    return NULL;
+}
+
 // TODO: vm_region_recurse_64 is better ?
 zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size, zsize size) {
     char zeroArray[128];

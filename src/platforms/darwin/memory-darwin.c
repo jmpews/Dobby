@@ -58,5 +58,6 @@ bool ZzMemoryProtectAsWritable(const zaddr address, zsize size)
 }
 
 zpointer ZzMemorySearchCodeCave(zaddr address, zsize range_size, zsize size) {
-    return zz_vm_search_text_code_cave_via_dylibs(address, range_size, size);
+    // return zz_vm_search_text_code_cave_via_dylibs(address, range_size, size);
+    return zz_vm_search_code_cave_via_recurse(address, range_size, size);
 }

@@ -189,9 +189,9 @@ ZZSTATUS ZzActiveHookFunctionEntry(ZzHookFunctionEntry *entry)
 
     ZzWriter *writer = ZzWriterNewWriter(temp_codeslice_data);
     if(entry->isNearJump) {
-        Xdebug("target %p near jump to %p", entry->target_ptr, entry->on_enter_trampoline);
         ZzWriterPutNearJump(writer, (zsize)((zaddr)entry->on_enter_trampoline - (zaddr)entry->target_ptr));
     } else {
+        Xdebug("target %p abs jump to %p", entry->target_ptr, entry->on_enter_trampoline);
         ZzWriterPutAbsJump(writer, entry->on_enter_trampoline); // @common-function
     }
     ZzMemoryPatchCode((zaddr)target_ptr, temp_codeslice_data, writer->size);

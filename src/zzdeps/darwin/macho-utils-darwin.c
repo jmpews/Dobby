@@ -1,10 +1,31 @@
 
+#include <mach-o/dyld.h>
+#include <mach-o/nlist.h>
 #include <mach-o/dyld_images.h>
 #include <mach/task_info.h>
 
 #include "../common/debugbreak.h"
 #include "../darwin/memory-utils-darwin.h"
 #include "macho-utils-darwin.h"
+
+#if 0
+#ifdef __LP64__
+#define mach_hdr struct mach_header_64
+#define sgmt_cmd struct segment_command_64
+#define sect_cmd struct section_64
+#define nlist_ struct nlist_64
+#define LC_SGMT LC_SEGMENT_64
+#define MH_MAGIC_ MH_MAGIC_64
+#else
+#define mach_hdr struct mach_header
+#define sgmt_cmd struct segment_command
+#define sect_cmd struct section
+#define nlist_ struct nlist
+#define LC_SGMT LC_SEGMENT
+#define MH_MAGIC_ MH_MAGIC
+#endif
+#define load_cmd struct load_command
+#endif
 
 // get dyld load address by task_info, TASK_DYLD_INFO
 zpointer zz_macho_get_dyld_load_address_via_task(task_t task) {
@@ -84,6 +105,40 @@ zz_macho_get_section_64_via_name(struct mach_header_64 *header,
         }
     }
     return NULL;
+}
+
+struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, uint32_t cmd) {
+    struct load_command *load_cmd;
+    struct segment_command_64 *seg_cmd_64;
+    struct section_64 *sect_64;
+    
+    load_cmd = (zpointer)header + sizeof(struct mach_header_64);
+    for (zsize i = 0; i < header->ncmds;
+         i++, load_cmd = (zpointer)load_cmd + load_cmd->cmdsize) {
+        if (load_cmd->cmd == cmd) {
+            return load_cmd;
+        }
+    }
+    return NULL;
+}
+
+zpointer zz_macho_get_symbol_via_name(struct mach_header_64 *header, const char *name) {
+
+    struct segment_command_64 *seg_cmd_64 = zz_macho_get_segment_64_via_name((struct mach_header_64 *)header, (char *)"__TEXT");
+    struct segment_command_64 *seg_cmd_64_linkedit = zz_macho_get_segment_64_via_name((struct mach_header_64 *)header, (char *)"__LINKEDIT");
+    zsize slide = (zaddr)header - (zaddr)seg_cmd_64->vmaddr;
+    zsize linkEditBase = seg_cmd_64_linkedit->vmaddr - seg_cmd_64_linkedit->fileoff + slide;
+    struct symtab_command* symtab = (struct symtab_command*)zz_macho_get_load_command_via_cmd(header, LC_SYMTAB);
+
+    char* sym_str_table = (char*) linkEditBase + symtab->stroff;
+    struct nlist_64* sym_table = (struct nlist_64 *)(linkEditBase + symtab->symoff);
+    
+    for (int i = 0; i < symtab->nsyms; i++) {
+        if (sym_table[i].n_value && !strcmp(name,&sym_str_table[sym_table[i].n_un.n_strx])) {
+            return (void*) (uint64_t) (sym_table[i].n_value + slide);
+        }
+    }
+    return 0;
 }
 
 zpointer zz_macho_get_section_64_address_via_name(struct mach_header_64 *header,

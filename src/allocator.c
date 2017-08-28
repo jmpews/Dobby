@@ -257,7 +257,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address,
     }
   }
 
-  ZzMemoryPage *page;
+  ZzMemoryPage *page = NULL;
   page = ZzNewNearMemoryPage(address, range_size);
   // try allocate again, avoid the boundary page
   if (page && (page->size - page->used_size) < codeslice_size) {
