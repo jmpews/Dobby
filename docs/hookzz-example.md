@@ -11,9 +11,9 @@
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
 
-# Simple Example
+## Simple Example
 
-## 1. use `ZzBuildHookAddress`
+#### 1. use `ZzBuildHookAddress`
 
 hook at address, and specify the hook length. (i.e. hook a piece of code.)
 
@@ -88,7 +88,7 @@ getpid() return 27675
 hack success -.0
 ```
 
-## 2. use `ZzBuildHook`
+#### 2. use `ZzBuildHook`
 
 ```c
 #include "hookzz.h"
@@ -144,7 +144,7 @@ void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *cal
 2017-08-18 00:21:07.976 T007[1073:43815] function over, and get 'key_y' is: 0x1234
 ```
 
-## 3. use `ZzRuntimeCodePatch`
+#### 3. use `ZzRuntimeCodePatch`
 
 use `nop` to patch all `svc #0x80`, try to bypass `svc #0x80` AntiDebug, but can't bypass `check_svc_integrity`.
 
@@ -186,9 +186,9 @@ __attribute__((constructor)) void patch_svc_x80_with_nop() {
 
 **[Move to AntiDebugBypass Detail](https://github.com/jmpews/HookZzModules/tree/master/AntiDebugBypass)**
 
-# Advanced Example
+## Advanced Example
 
-## 1. use `replace_call` bypass syscall-antidebug
+#### 1. use `replace_call` bypass syscall-antidebug
 
 **TIPS: how to hook variadic function? fake a origin function stack.**
 
@@ -245,7 +245,7 @@ __attribute__((constructor)) void patch_ptrace_sysctl_syscall() {
 
 **[Move to AntiDebugBypass Detail](https://github.com/jmpews/HookZzModules/tree/master/AntiDebugBypass)**
 
-## 2. use `pre_call` bypass syscall-antidebug
+#### 2. use `pre_call` bypass syscall-antidebug
 
 ```c
 void syscall_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
@@ -275,7 +275,7 @@ __attribute__((constructor)) void patch_syscall_by_pre_call() {
 **[Move to AntiDebugBypass Detail](https://github.com/jmpews/HookZzModules/tree/master/AntiDebugBypass)**
 
 
-## 3. hook Objective-C method.
+#### 3. hook Objective-C method.
 
 read `<objc/runtime.h>` funciton.
 
@@ -302,7 +302,7 @@ void objcMethod_pre_call(RegState *rs) {
 }
 ```
 
-## 4. hook `svc #0x80`
+#### 4. hook `svc #0x80`
 
 ```c
 void hook_svc_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
@@ -376,10 +376,10 @@ __attribute__((constructor)) void hook_svc_x80() {
 
 **[Move to AntiDebugBypass Detail](https://github.com/jmpews/HookZzModules/tree/master/AntiDebugBypass)**
 
-## 5. hook `objc_msgSend`
+#### 5. hook `objc_msgSend`
 
 **[Move to hook_objc_msgSend Detail](https://github.com/jmpews/HookZzModules/tree/master/hook_objc_msgSend)**
 
-## 6. hook `MGCopyAnswer`
+#### 6. hook `MGCopyAnswer`
 
 **[Move to hook_MGCopyAnswer Detail](https://github.com/jmpews/HookZzModules/tree/master/hook_MGCopyAnswer)**

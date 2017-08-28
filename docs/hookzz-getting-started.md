@@ -10,7 +10,7 @@
 
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
-# 1. build hookzz dylib
+## 1. build hookzz dylib
 
 clone the repo `git clone https://github.com/jmpews/HookZz` and build for `darwin.ios`. btw, you can set the log infomation level in `src/zz.h`.
 
@@ -43,7 +43,7 @@ check the dylibs in `build` directory. `libhookzz.dylib` is shared library, and 
 libhookzz.dylib    libhookzz.static.a
 ```
 
-# 2. build the test demo dylib
+## 2. build the test demo dylib
 
 a demo dylib to hook `[UIViewController viewWillAppear]`
 
@@ -117,7 +117,7 @@ void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *cal
 @end
 ```
 
-# 3. test your demo dylib
+## 3. test your demo dylib
 
 build new ios app project. and then `Build Phases -> New Run Script Phase` add a run script.
 

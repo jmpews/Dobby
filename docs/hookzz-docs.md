@@ -11,8 +11,7 @@
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
 
-# Export 4 core function
-
+## Export 4 core function
 
 #### 1. `ZzBuildHook`
 
@@ -67,8 +66,7 @@ ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_siz
 
 **[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm#L270)**
 
-# Export 3 core type:
-
+## Export 3 core type:
 
 #### 1. `PRECALL`, `POSTCALL`, `HALFCALL`
 

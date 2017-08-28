@@ -22,7 +22,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Features
 
-- [HookZz-Modules, help you hook.](https://github.com/jmpews/HookZzModules)
+- [HookZz-Modules help you to hook.](https://github.com/jmpews/HookZzModules)
 
 - hook function with `replace_call`
 
