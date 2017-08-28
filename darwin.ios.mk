@@ -58,12 +58,15 @@ WARN_COLOR=\x1b[33;01m
 # 2. must `rm -rf  $(OUTPUT_DIR)/libhookzz.static.a`, very important!!!
 darwin.ios : $(ALL_SOURCES_O)
 	@mkdir -p $(OUTPUT_DIR)
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o libhookzz.dylib
-	@mv libhookzz.dylib $(OUTPUT_DIR)/
 	@rm -rf libhookzz.static.a
-	@ar -rcs libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
 	@rm -rf $(OUTPUT_DIR)/libhookzz.static.a
+
+	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o libhookzz.dylib
+	@ar -rcs libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
+
 	@mv libhookzz.static.a $(OUTPUT_DIR)/
+	@mv libhookzz.dylib $(OUTPUT_DIR)/
+
 	@echo "$(OK_COLOR)build success for arm64(IOS)! $(NO_COLOR)"
 
 $(SRC_SOURCES_O): %.o : %.c
