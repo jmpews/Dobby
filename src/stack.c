@@ -42,7 +42,7 @@ ZzThreadStack *ZzNewThreadStack(zpointer key_ptr) {
     return stack;
 }
 
-ZzCallStack *ZzNewCallStack(ZzThreadStack *stack) {
+ZzCallStack *ZzNewCallStack() {
     ZzCallStack *callstack;
     callstack = (ZzCallStack *)malloc(sizeof(ZzCallStack));
 	callstack->capacity = 4;
@@ -53,6 +53,11 @@ ZzCallStack *ZzNewCallStack(ZzThreadStack *stack) {
 
 	callstack->size = 0;
     return callstack;
+}
+void ZzFreeCallStack(ZzCallStack *callstack) {
+	free(callstack->items);
+	free(callstack);
+	callstack = NULL;
 }
 
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {

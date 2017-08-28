@@ -46,6 +46,7 @@ ZzThreadStack *ZzNewThreadStack(zpointer key_ptr);
 ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr);
 
 ZzCallStack *ZzNewCallStack();
+void ZzFreeCallStack(ZzCallStack *callstack);
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
 bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
     

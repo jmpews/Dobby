@@ -188,7 +188,6 @@ typedef enum _ZZSTATUS {
 typedef struct _CallStack
 {
     long call_id;
-	zsize size;
 } CallStack;
 
 typedef struct _ThreadStack

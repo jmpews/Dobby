@@ -201,6 +201,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
         HALFCALL half_call;
         half_call = entry->half_call;
         (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
+        ZzFreeCallStack(callstack);
     }
     *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
 }
@@ -221,6 +222,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
+        ZzFreeCallStack(callstack);
     }
     *(zpointer *)next_hop = callstack->caller_ret_addr;
 }
