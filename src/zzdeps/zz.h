@@ -30,8 +30,8 @@ typedef uint8_t bool;
 
 // --- log configuration ---
 
-#define GLOBAL_DEBUG 1
-#define GLOBAL_INFO 1
+#define GLOBAL_DEBUG 0
+#define GLOBAL_INFO 0
 #define SYSLOG 0
 #define COLOR_LOG 0
 

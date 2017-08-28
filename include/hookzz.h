@@ -43,8 +43,8 @@ typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
 
-#ifndef bool
-typedef uint8_t bool;
+#if defined(false)
+#else
 #define false 0
 #define true 1
 #endif
@@ -201,12 +201,12 @@ typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *calls
 typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
 typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
 
-zpointer ZzGetCallStackData(zpointer stack_ptr, char *key);
-bool ZzSetCallStackData(zpointer stack_ptr, char *key, zpointer value_ptr, zsize value_size);
+zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
 
-#define STACK_CHECK_KEY(stack, key) (bool)ZzGetCallStackData(stack, key)
-#define STACK_GET(stack, key, type) *(type *)ZzGetCallStackData(stack, key)
-#define STACK_SET(stack, key, value, type) ZzSetCallStackData(stack, key, &(value), sizeof(type))
+#define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
+#define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
+#define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
 
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
     POSTCALL post_call_ptr);

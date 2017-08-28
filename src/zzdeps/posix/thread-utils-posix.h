@@ -16,7 +16,7 @@ typedef struct _ThreadLocalKey {
 typedef struct _ThreadLocalKeyList {
     zsize size;
     zsize capacity;
-    ThreadLocalKey *keys;
+    ThreadLocalKey **keys;
 } ThreadLocalKeyList;
 
 void zz_posix_thread_initialize_thread_local_key_list();

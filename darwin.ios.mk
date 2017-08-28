@@ -93,4 +93,5 @@ test : darwin.ios
 
 clean:
 	@rm -rf $(ALL_SOURCES_O)
+	@rm -rf $(OUTPUT_DIR)
 	@echo "$(OK_COLOR)clean all *.o success!$(NO_COLOR)"

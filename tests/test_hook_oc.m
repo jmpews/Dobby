@@ -34,7 +34,7 @@ void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *call
   zpointer t = 0x1234; 
   STACK_SET(callstack ,"key_x", t, void *);
   STACK_SET(callstack ,"key_y", t, zpointer);
-  NSLog(@"hookzz OC-Method: -[ViewController %s]",
+  NSLog(@"hookzz OC-Method: -[UIViewController %s]",
         (zpointer)(rs->general.regs.x1));
 }
 

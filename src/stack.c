@@ -88,7 +88,7 @@ bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
 	return true;
 }
 
-zpointer ZzGetCallStackData(zpointer callstack_ptr, char *key) {
+zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
 	ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
 	if(!callstack)
 		return NULL;
@@ -114,7 +114,7 @@ ZzCallStackItem *ZzNewCallStackData(ZzCallStack *callstack) {
 	return &(callstack->items[callstack->size++]);
 }
 
-bool ZzSetCallStackData(zpointer callstack_ptr, char *key, zpointer value_ptr, zsize value_size) {
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size) {
 	ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
 	if(!callstack)
 		return false;
