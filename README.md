@@ -38,7 +38,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Getting Started
 
-[Move to HookZz Getting Started](https://github.com/jmpews/HookZz/blob/master/HookFrameworkDesign.md)
+[Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/)
 
 # How it works ?
 
