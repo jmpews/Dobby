@@ -61,16 +61,26 @@ __attribute__((constructor)) void test_hook_printf()
 
 /*
 
-    Output:
+(lldb) disass -s 0x1815f61d8 -c 3
+libsystem_c.dylib`printf:
+    0x1815f61d8 <+0>: sub    sp, sp, #0x30             ; =0x30 
+    0x1815f61dc <+4>: stp    x20, x19, [sp, #0x10]
+    0x1815f61e0 <+8>: stp    x29, x30, [sp, #0x20]
+(lldb) c
+Process 41408 resuming
+HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
 
-    HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
+printf-pre-call
+call printf
+HookZzzzzzz, 1, 0x2, 3, 4, 5, 6, 7, 8, 9
+HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
 
-    printf-pre-call
-    call printf
-    HookZzzzzzz, 1, 0x2, 3, 4, 5, 6, 7, 8, 9
-    HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
-
-    printf-post-call
+printf-post-call
+(lldb) disass -s 0x1815f61d8 -c 3
+libsystem_c.dylib`printf:
+    0x1815f61d8 <+0>: b      0x1795f61d8
+    0x1815f61dc <+4>: stp    x20, x19, [sp, #0x10]
+    0x1815f61e0 <+8>: stp    x29, x30, [sp, #0x20]
 
 
 */

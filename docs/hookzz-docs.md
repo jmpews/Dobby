@@ -40,8 +40,6 @@ build hook address(a piece of code) with `pre_call`, `half_call`. the definition
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ```
 
-**[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm)**
-
 #### 3. `ZzEnableHook`
 
 enable hook with `code patch` at target_ptr.
@@ -102,12 +100,6 @@ typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *call
 
 ```
 
-
-**[Move to hook_objc_msgSend Example](https://github.com/jmpews/HookZzModules/tree/master/hook_objc_msgSend)**
-
-**[Move to hook_MGCopyAnswer Example](https://github.com/jmpews/HookZzModules/tree/master/hook_MGCopyAnswer)**
-
-
 #### 2. `RegState`
 
 current all cpu register state.
@@ -148,17 +140,23 @@ typedef struct _RegState {
 } RegState;
 ```
 
-#### 3. `CallStack` & `ThreadStack`
+#### 3. `CallStack`
 
-follow method to access the stack.
+export 2 method user to get/set `callstack`
 
 ```
-zpointer ZzGetCallStackData(zpointer stack_ptr, char *key);
-bool ZzSetCallStackData(zpointer stack_ptr, char *key, zpointer value_ptr, zsize value_size);
+// get value with the key
+zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
 
-#define STACK_CHECK_KEY(stack, key) (bool)ZzGetCallStackData(stack, key)
-#define STACK_GET(stack, key, type) *(type *)ZzGetCallStackData(stack, key)
-#define STACK_SET(stack, key, value, type) ZzSetCallStackData(stack, key, &(value), sizeof(type))
+// set value with key.
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
 ```
 
-**[Move to hook_objc_msgSend Example](https://github.com/jmpews/HookZzModules/tree/master/hook_objc_msgSend)**
+but for convenience, the macro is better.
+
+```
+#define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
+#define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
+#define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
+
+```

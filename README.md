@@ -10,7 +10,7 @@
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
-**special thanks to `frida-gum's` perfect code and modular architecture, frida==aircraft carrier, hookzz==boat.**
+**special thanks to `frida-gum's` perfect code and modular architecture, frida is aircraft carrier, HookZz is boat.**
 
 # Features
 
@@ -24,9 +24,9 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - hook **address(a piece of code)** with `pre_call` and `half_call`
 
-- almost only **one instruction** to hook(i.e.hook **short funciton, even only one instruction**)
+- (almost)only **one instruction** to hook(i.e.hook **short funciton, even only one instruction**)
 
-- runtime code patch work with [MachoParser](https://github.com/jmpews/MachoParser),without codesign limit
+- runtime code patch, without codesign limit
 
 - it's cute
 
@@ -50,7 +50,9 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 [Move to HookZzModules](https://github.com/jmpews/HookZzModules)
 
-# Quick Example(Read It Carefully!)
+# Quick Example No.1
+
+**Read It Carefully!**
 
 ```
 #include "hookzz.h"
@@ -99,20 +101,16 @@ __attribute__((constructor)) void test_hook_printf()
 }
 ```
 
-#### Instruction After Hook
+breakpoint with lldb.
 
 ```
+(lldb) disass -s 0x1815f61d8 -c 3
 libsystem_c.dylib`printf:
-    0x1828eaa5c <+0>:  b      0x17a8eaa5c
-    0x1828eaa60 <+4>:  stp    x29, x30, [sp, #0x10]
-    0x1828eaa64 <+8>:  add    x29, sp, #0x10            ; =0x10 
-    0x1828eaa68 <+12>: sub    sp, sp, #0x10             ; =0x10 
-    0x1828eaa6c <+16>: mov    x19, x0
-```
-
-#### Output
-
-```
+    0x1815f61d8 <+0>: sub    sp, sp, #0x30             ; =0x30 
+    0x1815f61dc <+4>: stp    x20, x19, [sp, #0x10]
+    0x1815f61e0 <+8>: stp    x29, x30, [sp, #0x20]
+(lldb) c
+Process 41408 resuming
 HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
 
 printf-pre-call
@@ -121,6 +119,105 @@ HookZzzzzzz, 1, 0x2, 3, 4, 5, 6, 7, 8, 9
 HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
 
 printf-post-call
+(lldb) disass -s 0x1815f61d8 -c 3
+libsystem_c.dylib`printf:
+    0x1815f61d8 <+0>: b      0x1795f61d8
+    0x1815f61dc <+4>: stp    x20, x19, [sp, #0x10]
+    0x1815f61e0 <+8>: stp    x29, x30, [sp, #0x20]
+
+```
+
+# Quick Example No.2
+
+**Read It Carefully!**
+
+```
+#include "hookzz.h"
+#include <stdio.h>
+#include <unistd.h>
+
+static void hack_this_function()
+{
+#ifdef __arm64__
+    __asm__("mov X0, #0\n"
+            "mov w16, #20\n"
+            "svc #0x80");
+#endif
+}
+
+static void sorry_to_exit()
+{
+#ifdef __arm64__
+    __asm__("mov X0, #0\n"
+            "mov w16, #1\n"
+            "svc #0x80");
+#endif
+}
+
+void getpid_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+    unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
+    printf("request(x16) is: %ld\n", request);
+    printf("x0 is: %ld\n", (long)rs->general.regs.x0);
+}
+
+void getpid_half_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+    pid_t x0 = (pid_t)(rs->general.regs.x0);
+    printf("getpid() return at x0 is: %d\n", x0);
+}
+
+__attribute__((constructor)) void test_hook_address()
+{
+    void *hack_this_function_ptr = (void *)hack_this_function;
+    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, getpid_pre_call, getpid_half_call);
+    ZzEnableHook((void *)hack_this_function_ptr + 8);
+
+    void *sorry_to_exit_ptr = (void *)sorry_to_exit;
+    unsigned long nop_bytes = 0xD503201F;
+    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 4);
+
+    hack_this_function();
+    sorry_to_exit();
+
+    printf("hack success -.0\n");
+}
+```
+
+breakpoint with lldb.
+
+```
+(lldb) disass -n hack_this_function
+test_hook_address.dylib`hack_this_function:
+    0x1000b0280 <+0>:  mov    x0, #0x0
+    0x1000b0284 <+4>:  mov    w16, #0x14
+    0x1000b0288 <+8>:  svc    #0x80
+    0x1000b028c <+12>: ret    
+
+(lldb) disass -n sorry_to_exit
+test_hook_address.dylib`sorry_to_exit:
+    0x1000b0290 <+0>:  mov    x0, #0x0
+    0x1000b0294 <+4>:  mov    w16, #0x1
+    0x1000b0298 <+8>:  svc    #0x80
+    0x1000b029c <+12>: ret    
+
+(lldb) c
+Process 41414 resuming
+request(x16) is: 20
+x0 is: 0
+getpid() return at x0 is: 41414
+hack success -.0
+(lldb) disass -n hack_this_function
+test_hook_address.dylib`hack_this_function:
+    0x1000b0280 <+0>:  mov    x0, #0x0
+    0x1000b0284 <+4>:  mov    w16, #0x14
+    0x1000b0288 <+8>:  b      0x1001202cc
+    0x1000b028c <+12>: ret    
+
+(lldb) disass -n sorry_to_exit
+test_hook_address.dylib`sorry_to_exit:
+    0x1000b0290 <+0>:  mov    x0, #0x0
+    0x1000b0294 <+4>:  mov    w16, #0x1
+    0x1000b0298 <+8>:  nop    
+    0x1000b029c <+12>: ret  
 ```
 
 # Compile

@@ -38,7 +38,7 @@ static void hack_this_function()
 
 void hook_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
     unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
-    printf("request is: %ld\n", request);
+    printf("x16 is: %ld\n", request);
 }
 
 void hook_half_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
