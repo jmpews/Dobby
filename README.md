@@ -1,13 +1,5 @@
 # HookZz
 
-> [Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/)
-
-> [Move to HookZz Example](https://jmpews.github.io/zzpp/hookzz-example/)
-
-> [Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/)
-
-> [Move to HookZzModules](https://github.com/jmpews/HookZzModules)
-
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
 # What is HookZz ?
@@ -52,7 +44,11 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 [Move to HookZz example](https://jmpews.github.io/zzpp/hookzz-example/)
 
-# Quick Example
+# Modules
+
+[Move to HookZzModules](https://github.com/jmpews/HookZzModules)
+
+# Quick Example(Read It Carefully!)
 
 ```
 #include "hookzz.h"
