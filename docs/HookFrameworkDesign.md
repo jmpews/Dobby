@@ -32,11 +32,13 @@
 
 举个例子比如 `b label`, 在 armv8 中的可以想在 `+-128MB` 范围内进行 `near jump`, 具体可以参考 `ARM Architecture Reference Manual ARMv8, for ARMv8-A architecture profile Page: C6-550`.
 
-这里可以有两个尝试.
+这里可以有三个尝试.
 
 1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小.
 
-2. 尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
+2. 尝试使用 `vm_region_recurse_64` 搜索 `protection` 为 `PROT_EXEC` & `PROT_READ` 区域. (通常用来暴力查找 `dyld` 的地址)
+
+3. 尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
 
 当然还可以有强制相对跳(`double jump`), 直接对 `+-128MB` 内选一个地址强制 code patch 并修复.
 
@@ -209,7 +211,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 #### 7. 栈模块
 
-如果希望在 `pre_call` 和 `post_call` 只用局部变量, 就想在同一个函数内一样. 在 `frida-js` 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加一个函数栈. 所以这里存在两种栈. 1. 线程栈(保存了该 hook-entry 的所有当前函数调用栈) 2. 函数调用栈(本次函数调用时的栈)
+如果希望在 `pre_call` 和 `post_call`  使用同一个局部变量, 就想在同一个函数内一样. 在 `frida-js` 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加线程栈, 同时为每一次调用添加函数栈. 所以这里存在两种栈. 1. 线程栈(保存了该 hook-entry 的所有当前函数调用栈) 2. 函数调用栈(本次函数调用时的栈)
 
 # 坑
 
@@ -237,7 +239,7 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 }
 ```
 
-在 `hookzz` 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
+在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
 
 ```
 void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
@@ -279,7 +281,11 @@ __asm__ {
 
 思路二:
 
-挑选合适的寄存器, 不考虑污染问题. 这时可以参考, 下面的资料, 选择 x16 or x17, 或者自己做一个实验 `otool -tv ~/Downloads/DiSpecialDriver64 > ~/Downloads/DiSpecialDriver64.txt` 通过 dump 一个 arm64 程序的指令, 来判断哪个寄存器用的最少, 但是不要使用 x18 寄存器, 你对该寄存器的修改是无效的.
+挑选合适的寄存器, 不考虑污染问题. 这时可以参考, 下面的资料, 选择 x16 or x17, 或者自己做一个实验 `otool -tv ~/Downloads/DiSpecialDriver64 > ~/Downloads/DiSpecialDriver64.txt` 通过 dump 一个 arm64 程序的指令, 来判断哪个寄存器用的最少, 但是不要使用 `x18` 寄存器, 你对该寄存器的修改是无效的.
+
+Tips: 之前还想过为对每一个寄存器都做适配, 用户可以选择当前的 `hook-entry` 选择哪一个寄存器作为临时寄存器.
+
+参考资料:
 
 ```
 PAGE: 9-3
@@ -288,7 +294,7 @@ Programmer’s Guide for ARMv8-A
 9.1.1 Parameters in general-purpose registers
 ```
 
-这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 svc 类系统调用, 系统调用号(syscall number)的传递是利用 x16 寄存器进行传递的, 所以本框架使用 x17 寄存器, 并且在传递参数时使用, `push` & `pop`, 在跳转后恢复 x17, 避免了一个寄存器的使用.
+这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 `svc #0x80` 类系统调用, 系统调用号(syscall number)的传递是利用 `x16` 寄存器进行传递的, 所以本框架使用 `x17` 寄存器, 并且在传递参数时使用 `push` & `pop`, 在跳转后恢复 `x17`, 避免了一个寄存器的使用.
 
 ## `rwx` 与 `codesigning`
 
@@ -324,7 +330,7 @@ xnu-3789.41.3/bsd/sys/reason.h
 #define CODESIGNING_EXIT_REASON_TASK_ACCESS_PORT      3
 ```
 
-找到对应处理函数, 请仔细阅读注释里内容
+找到对应处理函数, 请仔细阅读注释里内容, 不做解释了.
 
 ```
 # xnu-3789.41.3/osfmk/vm/vm_fault.c:2632

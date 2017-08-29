@@ -89,6 +89,11 @@ test : darwin.ios
 	@mv test_hook_address.dylib $(OUTPUT_DIR)/
 	@echo "$(OK_COLOR)build [test_hook_address.dylib] success for arm64(ios)! $(NO_COLOR)"
 
+	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/test_hook_printf.c -o tests/test_hook_printf.o
+	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/test_hook_printf.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/test_hook_printf.o -o test_hook_printf.dylib
+	@mv test_hook_printf.dylib $(OUTPUT_DIR)/
+	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for arm64(ios)! $(NO_COLOR)"
+
 	@echo "$(OK_COLOR)build [test] success for arm64(IOS)! $(NO_COLOR)"
 
 clean:
