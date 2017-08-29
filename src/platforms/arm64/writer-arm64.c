@@ -14,8 +14,11 @@
  *    limitations under the License.
  */
 
-#include "writer-arm64.h"
 #include <string.h>
+
+#include "writer-arm64.h"
+
+#include "zzdeps/zz.h"
 
 // ARM Architecture Reference Manual ARMV8
 // C2.1 Understanding the A64 instruction descriptions

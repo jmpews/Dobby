@@ -4,6 +4,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "../zz.h"
 #include "../common/memory-utils-common.h"

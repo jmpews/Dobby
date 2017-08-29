@@ -12,7 +12,6 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#include "../../../include/zz.h"
-#include "../../../include/hookzz.h"
+#include "hookzz.h"
 
 #include "memory.h"

@@ -14,6 +14,9 @@
 
 // 1. zpointer and zaddr is different
 
+#ifndef zz_type
+#define zz_type
+
 typedef void *zpointer;
 typedef unsigned long zsize;
 typedef unsigned long zaddr;
@@ -21,12 +24,13 @@ typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
 
-#ifndef bool
-typedef uint8_t bool;
 #endif
 
+#if defined(false)
+#else
 #define false 0
 #define true 1
+#endif
 
 // --- log configuration ---
 

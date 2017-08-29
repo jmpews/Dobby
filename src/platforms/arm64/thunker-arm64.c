@@ -22,6 +22,7 @@
 #include "thunker.h"
 
 #include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 /*
     Programmer’s Guide for ARMv8-A:

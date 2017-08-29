@@ -23,6 +23,8 @@
 #include "trampoline.h"
 #include "thread.h"
 
+#include "zzdeps/zz.h"
+
 #define ZzHOOKENTRIES_DEFAULT 100
 ZzInterceptor *g_interceptor = NULL;
 

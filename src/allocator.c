@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "zzdeps/zz.h"
 
 // ZzAllocator *g_allocator = NULL;
 

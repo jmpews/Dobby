@@ -14,6 +14,8 @@
 
 #include "reader.h"
 #include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
+
 static csh handle;
 
 void capstone_init(void)
