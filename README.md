@@ -16,7 +16,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - [HookZz-Modules help you to hook.](https://github.com/jmpews/HookZzModules)
 
-- the power to direct access registers
+- the power to access registers directly
 
 - hook function with `replace_call`
 
@@ -54,7 +54,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 **Read It Carefully!**
 
-```
+```c
 #include "hookzz.h"
 #include <string.h>
 #include <stdarg.h>
@@ -131,7 +131,7 @@ libsystem_c.dylib`printf:
 
 **Read It Carefully!**
 
-```
+```c
 #include "hookzz.h"
 #include <stdio.h>
 #include <unistd.h>

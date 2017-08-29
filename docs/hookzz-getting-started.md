@@ -12,7 +12,7 @@
 
 ## 1. build hookzz dylib
 
-clone the repo `git clone https://github.com/jmpews/HookZz` and build for `darwin.ios`. btw, you can set the log infomation level in `src/zz.h`.
+clone the repo `git clone https://github.com/jmpews/HookZz` and build for `darwin.ios`. btw, you can set the log infomation in `hookzz.h`.
 
 ```
 λ : >>> make -f darwin.ios.mk darwin.ios
@@ -62,59 +62,14 @@ before build demo dylib, specify the hookzz library path(shared or static).
 build success for arm64(IOS)!
 build [test_hook_oc.dylib] success for arm64(ios)!
 build [test_hook_address.dylib] success for arm64(ios)!
+build [test_hook_printf.dylib] success for arm64(ios)!
 build [test] success for arm64(IOS)!
 ```
 
 ```
-jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (master●) (normal)
 λ : >>> ls build
-libhookzz.dylib         libhookzz.static.a      test_hook_address.dylib test_hook_oc.dylib
-```
-
-```
-#include "hookzz.h"
-#import <Foundation/Foundation.h>
-#import <objc/runtime.h>
-#import <mach-o/dyld.h>
-#import <dlfcn.h>
-
-@interface HookZz : NSObject
-
-@end
-
-@implementation HookZz
-
-+ (void)load {
-  [self zzMethodSwizzlingHook];
-}
-
-void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-  zpointer t = 0x1234; 
-  STACK_SET(callstack ,"key_x", t, void *);
-  STACK_SET(callstack ,"key_y", t, zpointer);
-  NSLog(@"hookzz OC-Method: -[UIViewController %s]",
-        (zpointer)(rs->general.regs.x1));
-}
-
-void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-  zpointer x = STACK_GET(callstack, "key_x", void *);
-  zpointer y = STACK_GET(callstack, "key_y", zpointer);
-  NSLog(@"function over, and get 'key_x' is: %p", x);
-  NSLog(@"function over, and get 'key_y' is: %p", y);
-}
-
-+ (void)zzMethodSwizzlingHook {
-  Class hookClass = objc_getClass("UIViewController");
-  SEL oriSEL = @selector(viewWillAppear:);
-  Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-  IMP oriImp = method_getImplementation(oriMethod);
-
-  ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
-  ZzEnableHook((void *)oriImp);
-
-}
-
-@end
+libhookzz.dylib         test_hook_address.dylib test_hook_printf.dylib
+libhookzz.static.a      test_hook_oc.dylib
 ```
 
 ## 3. test your demo dylib
