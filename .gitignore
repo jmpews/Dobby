@@ -1,4 +1,5 @@
 .DS_Store
+darwin.ios.release.mk
 .idea/
 .vscode/
 cmake-build-debug/
