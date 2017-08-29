@@ -40,7 +40,8 @@ typedef unsigned char zbyte;
 #define true 1
 #endif
 
-
+#ifndef zz_register_type
+#define zz_register_type
 #if defined (__aarch64__)
 typedef union FPReg_ {
     __int128_t q;
@@ -77,6 +78,7 @@ typedef struct _RegState {
     } floating;
 } RegState;
 #elif defined(__x86_64__)
+#endif
 #endif
 
 

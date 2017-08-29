@@ -16,6 +16,8 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - [HookZz-Modules help you to hook.](https://github.com/jmpews/HookZzModules)
 
+- the power to direct access registers
+
 - hook function with `replace_call`
 
 - hook function with `pre_call` and `post_call`
