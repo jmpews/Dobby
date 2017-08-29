@@ -29,6 +29,9 @@ int fake_printf(const char * restrict format, ...) {
     memcpy(stack, args, 8 * 16);
     va_end(args);
 
+    // how to hook variadic function? fake a original copy stack.
+    // [move to detail-1](http://jmpews.github.io/2017/08/29/pwn/%E7%9F%AD%E5%87%BD%E6%95%B0%E5%92%8C%E4%B8%8D%E5%AE%9A%E5%8F%82%E6%95%B0%E7%9A%84hook/)
+    // [move to detail-2](https://github.com/jmpews/HookZzModules/tree/master/AntiDebugBypass)
     int x = orig_printf(format, stack[0], stack[1], stack[2], stack[3], stack[4], stack[5], stack[6], stack[7], stack[8], stack[9], stack[10], stack[11], stack[12], stack[13], stack[14], stack[15]);
     return x;
 }
