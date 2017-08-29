@@ -43,7 +43,11 @@ cs_insn *disassemble_instruction_at(zpointer address)
     cs_insn *insn;
     size_t count;
     count = cs_disasm(handle, address, 16, (unsigned long)address, 0, &insn);
-    if (!insn)
+    if (!insn) {
+        #if defined(DEBUG_MODE)
         debug_break();
+        #endif
+        Xerror("disassemble_instruction_at error at %p", (zpointer)address);
+    }
     return insn;
 }

@@ -33,8 +33,11 @@ Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer,
     Instruction *ins = (Instruction *)malloc(sizeof(Instruction));
     cs_insn *ins_cs = disassemble_instruction_at(address);
 
-    if ((ins_cs->size) % 4)
+    if ((ins_cs->size) % 4) {
+        #if defined(DEBUG_MODE)
         debug_break();
+        #endif
+    }
     ins->address = address;
     ins->ins_cs = ins_cs;
     ins->size = ins_cs->size;

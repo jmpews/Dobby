@@ -14,6 +14,8 @@
 
 // 1. zpointer and zaddr is different
 
+#define DEBUG_MODE 0
+
 #ifndef zz_type
 #define zz_type
 
