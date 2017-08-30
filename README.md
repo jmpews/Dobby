@@ -36,7 +36,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # How it works ?
 
-[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/HookFrameworkDesign.md)
+[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
 
 # Docs
 
@@ -101,7 +101,7 @@ __attribute__((constructor)) void test_hook_printf()
 }
 ```
 
-breakpoint with lldb.
+breakpoint with lldb. **Read It Carefully!**
 
 ```
 (lldb) disass -s 0x1815f61d8 -c 3
@@ -182,7 +182,7 @@ __attribute__((constructor)) void test_hook_address()
 }
 ```
 
-breakpoint with lldb.
+breakpoint with lldb. **Read It Carefully!**
 
 ```
 (lldb) disass -n hack_this_function

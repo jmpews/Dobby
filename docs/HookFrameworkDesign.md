@@ -1,11 +1,5 @@
 # HookZz
 
-**a hook framework**
-
-**ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate). special thanks to `frida-gum's` perfect code and modular architecture**.
-
-**still developing, for arm64/IOS now!**
-
 # HookFramework 架构设计
 
 一般来说可以分为以下几个模块
@@ -36,23 +30,23 @@
 
 1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小.
 
-2. 尝试使用 `vm_region_recurse_64` 搜索 `protection` 为 `PROT_EXEC` & `PROT_READ` 区域. (通常用来暴力查找 `dyld` 的地址)
+2. 尝试使用 `vm_region_recurse_64` 搜索 `protection` 为 `PROT_EXEC` & `PROT_READ` 的 `code cave`. (通常用来暴力查找 `dyld` 的地址)
 
-3. 尝试搜索内存空洞(memory code cave), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `memory code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
+3. 尝试搜索内存空洞(`code cave`), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
 
-当然还可以有强制相对跳(`double jump`), 直接对 `+-128MB` 内选一个地址强制 code patch 并修复.
+当然还可以有强制相对跳(`double jump`), 直接对 `+-128MB` 内选一个地址强制 code patch 并修复.
 
 ```
 __asm__ {
 	// 第一次绝对地址跳, 跳转到修复模块, 执行正常流程
-	"ldr x17, #0x8\n"
+	"ldr x17, #0x8\n"
 	"b #0xc\n"
 	".long\n"
 	".long\n"
 	"br x17"
 
 	// double jump, 跳转到 on_enter_trampoline
-	"ldr x17, #0x8\n"
+	"ldr x17, #0x8\n"
 	"b #0xc\n"
 	".long\n"
 	".long\n"
@@ -175,7 +169,7 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 
 #### 4. 指令修复 模块
 
-这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复. 对于确定的哪些指令需要修复可以参考 [Move to <解析ARM和x86_x64指令格式>](http://jmpews.github.io/2017/05/17/pwn/%E8%A7%A3%E6%9E%90ARM%E5%92%8Cx86_x64%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F/).
+这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复. 对于确定的哪些指令需要修复可以参考 [Move to <解析ARM和x86_x64指令格式>](http://jmpews.github.io/2017/05/17/pwn/%E8%A7%A3%E6%9E%90ARM%E5%92%8Cx86_x64%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F/).
 
 大致的思路就是: 判断 `capstone` 读取到的指令 ID, 针对特定指令写一个小函数进行修复.
 
@@ -211,7 +205,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 #### 7. 栈模块
 
-如果希望在 `pre_call` 和 `post_call`  使用同一个局部变量, 就想在同一个函数内一样. 在 `frida-js` 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加线程栈, 同时为每一次调用添加函数栈. 所以这里存在两种栈. 1. 线程栈(保存了该 hook-entry 的所有当前函数调用栈) 2. 函数调用栈(本次函数调用时的栈)
+如果希望在 `pre_call` 和 `post_call`  使用同一个局部变量, 就想在同一个函数内一样. 在 `frida-js` 中也就是 `this` 这个关键字. 这就需要自建函数栈, 模拟栈的行为. 同时还要避免线程冲突, 所以需要使用 `thread local variable`, 为每一个线程中的每一个 `hook-entry` 添加线程栈, 同时为每一次调用添加函数栈. 所以这里存在两种栈. 1. 线程栈(保存了该 hook-entry 的所有当前函数调用栈) 2. 函数调用栈(本次函数调用时的栈)
 
 # 坑
 
@@ -254,7 +248,7 @@ void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
 
 ```
 __asm__ {
-	"ldr x17, #0x8\n"
+	"ldr x17, #0x8\n"
 	"b #0xc\n"
 	".long\n"
 	".long\n"
@@ -273,7 +267,7 @@ __asm__ {
 12: 0x00000000
 ```
 
-问题在于这会造成 x16 寄存器被污染(在 arm64 中 `svc #0x80` 使用 x16 传递系统调用号) 所以这里有两种思路解决这个问题.
+问题在于这会造成 x16 寄存器被污染(arm64 中 `svc #0x80` 使用 x16 传递系统调用号) 所以这里有两种思路解决这个问题.
 
 思路一:
 
@@ -330,7 +324,7 @@ xnu-3789.41.3/bsd/sys/reason.h
 #define CODESIGNING_EXIT_REASON_TASK_ACCESS_PORT      3
 ```
 
-找到对应处理函数, 请仔细阅读注释里内容, 不做解释了.
+找到对应处理函数, 请仔细阅读注释里内容, 不做解释了.
 
 ```
 # xnu-3789.41.3/osfmk/vm/vm_fault.c:2632
