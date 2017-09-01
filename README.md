@@ -10,7 +10,9 @@
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
-**special thanks to `frida-gum's` perfect code and modular architecture, frida is aircraft carrier, HookZz is boat.**
+**special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat.**
+
+**thanks to [capstone](https://github.com/aquynh/capstone), and the disassembly framework used is [Capstone](https://github.com/aquynh/capstone)**
 
 # Features
 
