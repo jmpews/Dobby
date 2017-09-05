@@ -30,7 +30,7 @@
 bool branch_is_unconditional(Instruction *ins);
 
 Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer, ZzWriter *relocate_writer);
-    
+
 bool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer);
 
 bool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer);

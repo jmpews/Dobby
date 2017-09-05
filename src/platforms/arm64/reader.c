@@ -18,8 +18,7 @@
 
 static csh handle;
 
-void capstone_init(void)
-{
+void capstone_init(void) {
     cs_err err = 0;
 
 #if defined(__x86_64__)
@@ -27,8 +26,7 @@ void capstone_init(void)
 #elif defined(__arm64__)
     err = cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle);
 #endif
-    if (err)
-    {
+    if (err) {
         Xerror("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
@@ -36,18 +34,17 @@ void capstone_init(void)
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-cs_insn *disassemble_instruction_at(zpointer address)
-{
+cs_insn *disassemble_instruction_at(zpointer address) {
     if (!handle)
         capstone_init();
     cs_insn *insn;
     size_t count;
-    count = cs_disasm(handle, address, 16, (unsigned long)address, 0, &insn);
+    count = cs_disasm(handle, address, 16, (unsigned long) address, 0, &insn);
     if (!insn) {
-        #if defined(DEBUG_MODE)
+#if defined(DEBUG_MODE)
         debug_break();
-        #endif
-        Xerror("disassemble_instruction_at error at %p", (zpointer)address);
+#endif
+        Xerror("disassemble_instruction_at error at %p", (zpointer) address);
     }
     return insn;
 }

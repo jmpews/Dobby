@@ -29,31 +29,29 @@
 zsize ZzMemoryGetPageSzie() {
     return zz_posix_vm_get_page_size();
 }
-zpointer ZzMemoryAllocatePages(zsize n_pages)
-{
+
+zpointer ZzMemoryAllocatePages(zsize n_pages) {
     return zz_vm_allocate_pages_via_task(mach_task_self(), n_pages);
 }
-zpointer ZzMemoryAllocateNearPages(zaddr address, zsize range_size, zsize n_pages)
-{
-    return zz_vm_allocate_near_pages_via_task(mach_task_self(),address, range_size, n_pages);
+
+zpointer ZzMemoryAllocateNearPages(zaddr address, zsize range_size, zsize n_pages) {
+    return zz_vm_allocate_near_pages_via_task(mach_task_self(), address, range_size, n_pages);
 }
-zpointer ZzMemoryAllocate(zsize size)
-{
+
+zpointer ZzMemoryAllocate(zsize size) {
     return zz_vm_allocate_via_task(mach_task_self(), size);
 }
 
-bool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size)
-{
+bool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size) {
     return zz_vm_patch_code_via_task(mach_task_self(), address, codedata, codedata_size);
 }
 
-bool ZzMemoryProtectAsExecutable(const zaddr address, zsize size)
-{
+bool ZzMemoryProtectAsExecutable(const zaddr address, zsize size) {
 
     return zz_vm_protect_as_executable_via_task(mach_task_self(), address, size);
 }
-bool ZzMemoryProtectAsWritable(const zaddr address, zsize size)
-{
+
+bool ZzMemoryProtectAsWritable(const zaddr address, zsize size) {
     return zz_vm_protect_as_writable_via_task(mach_task_self(), address, size);
 }
 

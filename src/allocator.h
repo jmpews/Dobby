@@ -27,7 +27,7 @@ typedef struct _codeslice {
     bool isCodeCave;
 } ZzCodeSlice;
 
-typedef struct _ZzMemoryPage{
+typedef struct _ZzMemoryPage {
     zpointer base;
     zpointer curr_pos;
     zsize size;
@@ -42,7 +42,9 @@ typedef struct _allocator {
 } ZzAllocator;
 
 ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize range_size, zsize codeslice_size);
+
 ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size);
+
 ZzAllocator *ZzNewAllocator();
 
 #endif

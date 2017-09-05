@@ -15,12 +15,12 @@
  */
 
 
- #ifndef writer_h 
- #define writer_h
- 
- #include "hookzz.h"
+#ifndef writer_h
+#define writer_h
 
- typedef struct _ZzWriter {
+#include "hookzz.h"
+
+typedef struct _ZzWriter {
     zpointer *codedata;
     zpointer base;
     zpointer pc;
@@ -28,12 +28,18 @@
 } ZzWriter;
 
 ZzWriter *ZzWriterNewWriter(zpointer address);
+
 void ZzWriterPutNearJump(ZzWriter *self, zsize offset);
+
 void ZzWriterPutAbsJump(ZzWriter *self, zpointer target_addr);
+
 void ZzWriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
+
 zsize ZzWriterNearJumpRangeSize();
+
 zsize ZzWriterAbsJumpInstructionLength();
+
 zsize ZzWriterNearJumpInstructionLength();
 
- #endif
+#endif
  

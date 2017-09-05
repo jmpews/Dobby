@@ -29,4 +29,5 @@ bool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint coded
 bool ZzMemoryProtectAsExecutable(const zaddr address, zsize size); // @common-function
 bool ZzMemoryProtectAsWritable(const zaddr address, zsize size); // @common-function
 zpointer ZzMemorySearchCodeCave(zaddr address, zsize range_size, zsize size);
+
 #endif

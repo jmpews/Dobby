@@ -24,9 +24,8 @@
 // C2.1 Understanding the A64 instruction descriptions
 // C2.1.3 The instruction encoding or encodings
 
-ZzWriter *ZzWriterNewWriter(zpointer address)
-{
-    ZzWriter *writer = (ZzWriter *)malloc(sizeof(ZzWriter));
+ZzWriter *ZzWriterNewWriter(zpointer address) {
+    ZzWriter *writer = (ZzWriter *) malloc(sizeof(ZzWriter));
     writer->codedata = address;
     writer->base = address;
     writer->pc = address;
@@ -38,9 +37,9 @@ ZzWriter *ZzWriterNewWriter(zpointer address)
 // the instructions size must equal to `JMP_METHOD_SIZE`
 void ZzWriterPutAbsJump(ZzWriter *self, zpointer target_addr) // @common-function
 {
-    writer_put_ldr_reg_imm(self, ARM64_REG_X17, (zuint)0x8);
+    writer_put_ldr_reg_imm(self, ARM64_REG_X17, (zuint) 0x8);
     writer_put_br_reg(self, ARM64_REG_X17);
-    writer_put_bytes(self, (zpointer)&target_addr, sizeof(target_addr));
+    writer_put_bytes(self, (zpointer) & target_addr, sizeof(target_addr));
 }
 
 void ZzWriterPutNearJump(ZzWriter *self, zsize offset) {
@@ -49,7 +48,7 @@ void ZzWriterPutNearJump(ZzWriter *self, zsize offset) {
 
 void ZzWriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr) // @common-function
 {
-    writer_put_ldr_reg_address(self, ARM64_REG_X17, (zaddr)target_addr);
+    writer_put_ldr_reg_address(self, ARM64_REG_X17, (zaddr) target_addr);
     writer_put_blr_reg(self, ARM64_REG_X17);
 }
 
@@ -67,23 +66,20 @@ zsize ZzWriterNearJumpInstructionLength() {
 
 // NOUSE:
 void writer_put_ldr_br_b_reg_address(ZzWriter *self, arm64_reg reg,
-                                     zaddr address)
-{
-    writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
+                                     zaddr address) {
+    writer_put_ldr_reg_imm(self, reg, (zuint) 0xc);
     writer_put_br_reg(self, reg);
-    writer_put_b_imm(self, (zaddr)0xc);
-    writer_put_bytes(self, (zpointer)&address, sizeof(address));
+    writer_put_b_imm(self, (zaddr) 0xc);
+    writer_put_bytes(self, (zpointer) & address, sizeof(address));
 }
 
-void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
-{
-    writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    writer_put_b_imm(self, (zaddr)0xc);
-    writer_put_bytes(self, (zpointer)&address, sizeof(address));
+void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address) {
+    writer_put_ldr_reg_imm(self, reg, (zuint) 0x8);
+    writer_put_b_imm(self, (zaddr) 0xc);
+    writer_put_bytes(self, (zpointer) & address, sizeof(address));
 }
 
-void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm)
-{
+void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm) {
     ZzArm64RegInfo ri;
     uint32_t ins_bytes = 0;
 
@@ -99,8 +95,7 @@ void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm)
 // C6 A64 Base Instruction Descriptions
 // C6.2 Alphabetical list of A64 base instructions
 void writer_put_str_reg_reg_offset(ZzWriter *self, arm64_reg src_reg,
-                                   arm64_reg dst_reg, zsize dst_offset)
-{
+                                   arm64_reg dst_reg, zsize dst_offset) {
     ZzArm64RegInfo rs, rd;
     zuint size = 0, v, opc;
 
@@ -108,21 +103,19 @@ void writer_put_str_reg_reg_offset(ZzWriter *self, arm64_reg src_reg,
     writer_describe_reg(dst_reg, &rd);
 
     opc = 0;
-    if (rs.is_integer)
-    {
+    if (rs.is_integer) {
         size = (rs.width == 64) ? 3 : 2;
         v = 0;
     }
 
     writer_put_instruction(self,
                            0x39000000 | (size << 30) | (v << 26) | (opc << 22) |
-                               (((zuint)dst_offset / (rs.width / 8)) << 10) |
-                               (rd.index << 5) | rs.index);
+                           (((zuint) dst_offset / (rs.width / 8)) << 10) |
+                           (rd.index << 5) | rs.index);
 }
 
 void writer_put_ldr_reg_reg_offset(ZzWriter *self, arm64_reg dst_reg,
-                                   arm64_reg src_reg, zsize src_offset)
-{
+                                   arm64_reg src_reg, zsize src_offset) {
     ZzArm64RegInfo rs, rd;
     zuint size, v, opc;
 
@@ -130,51 +123,45 @@ void writer_put_ldr_reg_reg_offset(ZzWriter *self, arm64_reg dst_reg,
     writer_describe_reg(src_reg, &rs);
 
     opc = 1;
-    if (rd.is_integer)
-    {
+    if (rd.is_integer) {
         size = (rd.width == 64) ? 3 : 2;
         v = 0;
     }
 
     writer_put_instruction(self,
                            0x39000000 | (size << 30) | (v << 26) | (opc << 22) |
-                               (((zuint)src_offset / (rd.width / 8)) << 10) |
-                               (rs.index << 5) | rd.index);
+                           (((zuint) src_offset / (rd.width / 8)) << 10) |
+                           (rs.index << 5) | rd.index);
 }
 
-void writer_put_b_cond_imm(ZzWriter *self, arm64_cc cc, zuint imm)
-{
+void writer_put_b_cond_imm(ZzWriter *self, arm64_cc cc, zuint imm) {
     uint32_t ins_bytes = 0;
     ins_bytes = ins_bytes | 0x54000000 | (cc - 1);
     ins_bytes = ins_bytes | (imm >> 2) << 5;
     writer_put_instruction(self, ins_bytes);
 }
 
-void writer_put_br_reg(ZzWriter *self, arm64_reg reg)
-{
+void writer_put_br_reg(ZzWriter *self, arm64_reg reg) {
     ZzArm64RegInfo ri;
     writer_describe_reg(reg, &ri);
 
     writer_put_instruction(self, 0xd61f0000 | (ri.index << 5));
 }
 
-void writer_put_blr_reg(ZzWriter *self, arm64_reg reg)
-{
+void writer_put_blr_reg(ZzWriter *self, arm64_reg reg) {
     ZzArm64RegInfo ri;
     writer_describe_reg(reg, &ri);
 
     writer_put_instruction(self, 0xd63f0000 | (ri.index << 5));
 }
 
-void writer_put_b_imm(ZzWriter *self, zsize imm)
-{
+void writer_put_b_imm(ZzWriter *self, zsize imm) {
     // zaddr offset = address - (zaddr)self->pc;
     writer_put_instruction(self, 0x14000000 | ((imm / 4) & 0x03ffffff));
 }
 
 void writer_put_add_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
-                                arm64_reg left_reg, zsize right_value)
-{
+                                arm64_reg left_reg, zsize right_value) {
     ZzArm64RegInfo rd, rl;
 
     writer_describe_reg(dst_reg, &rd);
@@ -189,8 +176,7 @@ void writer_put_add_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
 }
 
 void writer_put_sub_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
-                                arm64_reg left_reg, zsize right_value)
-{
+                                arm64_reg left_reg, zsize right_value) {
     ZzArm64RegInfo rd, rl;
 
     writer_describe_reg(dst_reg, &rd);
@@ -200,18 +186,16 @@ void writer_put_sub_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
     writer_put_instruction(self, (1 << 31) | 0x51000000 | rd.index | (rl.index << 5) | (right_value << 10));
 }
 
-void writer_put_bytes(ZzWriter *self, zbyte *data, zuint data_size)
-{
+void writer_put_bytes(ZzWriter *self, zbyte *data, zuint data_size) {
     memcpy(self->codedata, data, data_size);
-    self->codedata = (zpointer)self->codedata + data_size;
+    self->codedata = (zpointer) self->codedata + data_size;
     self->pc += data_size;
     self->size += data_size;
 }
 
-void writer_put_instruction(ZzWriter *self, uint32_t insn)
-{
-    *(uint32_t *)(self->codedata) = insn;
-    self->codedata = (zpointer)self->codedata + sizeof(uint32_t);
+void writer_put_instruction(ZzWriter *self, uint32_t insn) {
+    *(uint32_t * )(self->codedata) = insn;
+    self->codedata = (zpointer) self->codedata + sizeof(uint32_t);
     self->pc += 4;
     self->size += 4;
 }
@@ -221,7 +205,7 @@ typedef enum _ZzReg {
     //   zzfp = 29,
     //   zzlr = 30,
     //   zzsp = 31,
-    zzx0 = 0,
+            zzx0 = 0,
     zzx1,
     zzx2,
     zzx3,
@@ -258,34 +242,24 @@ typedef enum _ZzReg {
     zzsp = zzx31
 } ZzReg;
 
-void writer_describe_reg(arm64_reg reg, ZzArm64RegInfo *ri)
-{
-    if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28)
-    {
+void writer_describe_reg(arm64_reg reg, ZzArm64RegInfo *ri) {
+    if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28) {
         ri->is_integer = true;
         ri->width = 64;
         ri->meta = zzx0 + (reg - ARM64_REG_X0);
-    }
-    else if (reg == ARM64_REG_X29 || reg == ARM64_REG_FP)
-    {
+    } else if (reg == ARM64_REG_X29 || reg == ARM64_REG_FP) {
         ri->is_integer = true;
         ri->width = 64;
         ri->meta = zzx29;
-    }
-    else if (reg == ARM64_REG_X30 || reg == ARM64_REG_LR)
-    {
+    } else if (reg == ARM64_REG_X30 || reg == ARM64_REG_LR) {
         ri->is_integer = true;
         ri->width = 64;
         ri->meta = zzx30;
-    }
-    else if (reg == ARM64_REG_SP)
-    {
+    } else if (reg == ARM64_REG_SP) {
         ri->is_integer = true;
         ri->width = 64;
         ri->meta = zzx31;
-    }
-    else
-    {
+    } else {
         Serror("error at writer_describe_reg");
         exit(1);
         ri->index = 0;

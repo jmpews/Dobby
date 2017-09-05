@@ -21,19 +21,19 @@
 
 #include "thread.h"
 
- zpointer ZzThreadNewThreadLocalKeyPtr() {
-     return zz_posix_thread_new_thread_local_key_ptr();
- }
+zpointer ZzThreadNewThreadLocalKeyPtr() {
+    return zz_posix_thread_new_thread_local_key_ptr();
+}
 
- zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr) {
-     return zz_posix_thread_get_current_thread_data(key_ptr);
- }
+zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr) {
+    return zz_posix_thread_get_current_thread_data(key_ptr);
+}
 
- bool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data) {
+bool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data) {
     return zz_posix_thread_set_current_thread_data(key_ptr, data);
 
- }
+}
 
- long ZzThreadGetCurrentThreadID() {
-     return zz_posix_get_current_thread_id();
- }
+long ZzThreadGetCurrentThreadID() {
+    return zz_posix_get_current_thread_id();
+}

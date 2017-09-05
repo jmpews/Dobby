@@ -12,18 +12,23 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef thunker_h 
-#define thunker_h 
+#ifndef thunker_h
+#define thunker_h
 
 #include "hookzz.h"
 
 #include "writer.h"
+
 void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer enter_thunk_ptr);
+
 void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer half_thunk_ptr);
+
 void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr, zpointer leave_thunk_ptr);
 
 void ZzThunkerBuildEnterThunk(ZzWriter *writer);
+
 void ZzThunkerBuildHalfThunk(ZzWriter *writer);
+
 void ZzThunkerBuildLeaveThunk(ZzWriter *writer);
 
 #endif

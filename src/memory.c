@@ -16,8 +16,7 @@
 
 #include "memory.h"
 
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size)
-{
+ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size) {
     if (!ZzMemoryPatchCode(address, codedata, codedata_size))
         return ZZ_FAILED;
     return ZZ_SUCCESS;

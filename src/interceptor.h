@@ -32,8 +32,8 @@ struct _ZzInterceptor;
  * hook entry
  */
 
- #define HOOK_FUNCTION_TYPE 1
- #define HOOK_ADDRESS_TYPE 2
+#define HOOK_FUNCTION_TYPE 1
+#define HOOK_ADDRESS_TYPE 2
 
 typedef struct _ZzHookFunctionEntry {
     int hook_type;
@@ -88,7 +88,9 @@ typedef struct _ZzInterceptor {
 } ZzInterceptor;
 
 ZZSTATUS ZzBuildThunk(void);
+
 ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
+
 ZZSTATUS ZzActiveEnterTrampoline(ZzHookFunctionEntry *entry);
 
 #endif

@@ -18,8 +18,11 @@
 #include "hookzz.h"
 
 zpointer ZzThreadNewThreadLocalKeyPtr();
+
 zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr);
+
 bool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data);
+
 long ZzThreadGetCurrentThreadID();
 
 #endif

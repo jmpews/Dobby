@@ -19,8 +19,7 @@
 #include "thunker.h"
 #include "relocator.h"
 
-ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry) {
     zbyte temp_codeslice_data[256];
     ZzWriter *writer;
     ZzCodeSlice *codeslice;
@@ -30,14 +29,14 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
     interceptor = entry->interceptor;
     writer = ZzWriterNewWriter(temp_codeslice_data);
 
-    ZzThunkerBuildJumpToEnterThunk(writer, (zpointer)entry,
-                                  (zpointer)interceptor->enter_thunk); // @common-function
+    ZzThunkerBuildJumpToEnterThunk(writer, (zpointer) entry,
+                                   (zpointer) interceptor->enter_thunk); // @common-function
 
     status = ZZ_FAILED;
-    do
-    {
-        codeslice = ZzNewNearCodeSlice(entry->interceptor->allocator, (zaddr)entry->target_ptr, ZzWriterNearJumpRangeSize(), writer->size); // @common-function
-        if(!codeslice) {
+    do {
+        codeslice = ZzNewNearCodeSlice(entry->interceptor->allocator, (zaddr) entry->target_ptr,
+                                       ZzWriterNearJumpRangeSize(), writer->size); // @common-function
+        if (!codeslice) {
             codeslice = ZzNewCodeSlice(entry->interceptor->allocator, writer->size); // @common-funciton
             entry->isNearJump = false;
         } else {
@@ -47,7 +46,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
 
         if (!codeslice || !codeslice->data || !codeslice->size)
             break;
-        if (!ZzMemoryPatchCode((zaddr)codeslice->data, temp_codeslice_data, writer->size))
+        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size))
             break;
         entry->on_enter_trampoline = codeslice->data;
         status = ZZ_SUCCESS;
@@ -57,8 +56,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry)
     return status;
 }
 
-ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry) {
     zbyte temp_codeslice_data[256];
     ZzWriter *backup_writer, *relocate_writer;
     ZzCodeSlice *codeslice;
@@ -69,26 +67,24 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
     relocate_writer = ZzWriterNewWriter(temp_codeslice_data);
 
     ZzRelocatorBuildInvokeTrampoline(entry, backup_writer,
-                                      relocate_writer);
+                                     relocate_writer);
 
     ZzWriterPutAbsJump(relocate_writer,
-                    entry->target_ptr +
-                        (zuint)(backup_writer->pc - backup_writer->base));
+                       entry->target_ptr +
+                       (zuint)(backup_writer->pc - backup_writer->base));
 
     status = ZZ_FAILED;
-    do
-    {
+    do {
         codeslice = ZzNewCodeSlice(entry->interceptor->allocator, relocate_writer->size); // @common-function
         if (!codeslice || !codeslice->data || !codeslice->size)
             break;
 
-        if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr)
-        {
+        if (entry->hook_type == HOOK_ADDRESS_TYPE && entry->target_end_ptr) {
             // update target_half_ret_addr
-            entry->target_half_ret_addr += (zaddr)codeslice->data;
+            entry->target_half_ret_addr += (zaddr) codeslice->data;
         }
 
-        if (!ZzMemoryPatchCode((zaddr)codeslice->data, temp_codeslice_data, relocate_writer->size))
+        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, relocate_writer->size))
             break;
         entry->on_invoke_trampoline = codeslice->data;
 
@@ -102,8 +98,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry)
     return status;
 }
 
-ZZSTATUS ZzBuildLeaveTrampoline(ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildLeaveTrampoline(ZzHookFunctionEntry *entry) {
     zbyte temp_codeslice_data[256];
     ZzWriter *writer;
     ZzCodeSlice *codeslice;
@@ -113,16 +108,15 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzHookFunctionEntry *entry)
     interceptor = entry->interceptor;
     writer = ZzWriterNewWriter(temp_codeslice_data);
 
-    ZzThunkerBuildJumpToLeaveThunk(writer, (zpointer)entry,
-                                  (zpointer)interceptor->leave_thunk);
+    ZzThunkerBuildJumpToLeaveThunk(writer, (zpointer) entry,
+                                   (zpointer) interceptor->leave_thunk);
 
     status = ZZ_FAILED;
-    do
-    {
+    do {
         codeslice = ZzNewCodeSlice(entry->interceptor->allocator, writer->size); // @common-function
         if (!codeslice || !codeslice->data || !codeslice->size)
             break;
-        if (!ZzMemoryPatchCode((zaddr)codeslice->data, temp_codeslice_data, writer->size))
+        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size))
             break;
         entry->on_leave_trampoline = codeslice->data;
         status = ZZ_SUCCESS;
@@ -132,8 +126,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzHookFunctionEntry *entry)
     return ZZ_DONE;
 }
 
-ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry) {
     zbyte temp_codeslice_data[256];
     ZzWriter *writer;
     ZzCodeSlice *codeslice;
@@ -143,16 +136,15 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry)
     interceptor = entry->interceptor;
     writer = ZzWriterNewWriter(temp_codeslice_data);
 
-    ZzThunkerBuildJumpToHalfThunk(writer, (zpointer)entry,
-                                 (zpointer)interceptor->half_thunk);
+    ZzThunkerBuildJumpToHalfThunk(writer, (zpointer) entry,
+                                  (zpointer) interceptor->half_thunk);
 
     status = ZZ_FAILED;
-    do
-    {
+    do {
         codeslice = ZzNewCodeSlice(entry->interceptor->allocator, writer->size); // @common-function
         if (!codeslice || !codeslice->data || !codeslice->size)
             break;
-        if (!ZzMemoryPatchCode((zaddr)codeslice->data, temp_codeslice_data, writer->size))
+        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size))
             break;
         entry->on_half_trampoline = codeslice->data;
         status = ZZ_SUCCESS;
@@ -162,17 +154,13 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry)
     return ZZ_DONE;
 }
 
-ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry) {
     ZzBuildEnterTrampoline(entry);
 
-    if (entry->hook_type == HOOK_ADDRESS_TYPE)
-    {
+    if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         ZzBuildHalfTrampoline(entry);
         ZzBuildInvokeTrampoline(entry);
-    }
-    else
-    {
+    } else {
         ZzBuildInvokeTrampoline(entry);
         ZzBuildLeaveTrampoline(entry);
     }

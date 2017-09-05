@@ -49,7 +49,7 @@ void writer_put_add_reg_reg_imm(ZzWriter *self, arm64_reg dst_reg,
 void writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zsize imm);
 
 void writer_put_br_reg(ZzWriter *self, arm64_reg reg);
-    
+
 
 void writer_put_blr_reg(ZzWriter *self, arm64_reg reg);
 
