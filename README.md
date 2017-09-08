@@ -1,4 +1,6 @@
-# HookZz
+# HookZz (Development)
+
+**Do Not Compile This Now!!!**
 
 > [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
 
