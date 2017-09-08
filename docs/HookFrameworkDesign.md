@@ -67,7 +67,7 @@ __asm__ {
 ```
 // frida-gum/gum/arch-arm64/gumarm64writer.c
 void
-gum_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
+gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
                                       arm64_reg reg,
                                       GumAddress address)
 {
@@ -81,12 +81,12 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_writer_describe_reg (self, reg, &ri);
+  gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
 
   g_assert_cmpuint (ri.width, ==, 64);
 
   gum_arm64_writer_add_literal_reference_here (self, val);
-  gum_arm64_writer_put_instruction (self,
+  gum_arm64_zz_arm64_writer_put_instruction (self,
       (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
 }
 
@@ -147,19 +147,19 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 {
 
     // pop x17
-    writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
-    writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
-    writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
 
     // call `function_context_begin_invocation`
-    writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
-    writer_put_ldr_reg_address(
+    zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
+    zz_arm64_writer_put_ldr_reg_address(
         writer, ARM64_REG_X17,
         (zaddr)(zpointer)function_context_begin_invocation);
     writer_put_blr_reg(writer, ARM64_REG_X17);
 
-    writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 ```
 
@@ -185,9 +185,9 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
   (void) self;
 
-  gum_arm64_writer_put_ldr_reg_address (ctx->output, ARM64_REG_X16,
+  gum_arm64_zz_arm64_writer_put_ldr_reg_address (ctx->output, ARM64_REG_X16,
       target->imm);
-  gum_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
+  gum_arm64_zz_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
 
   return TRUE;
 }
@@ -211,7 +211,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 ## `ldr` 指令
 
-在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);`
+在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `zz_arm64_writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);`
 
 `frida-gum` 的实现原理是, 有一个相对地址表, 在整体一段写完后进行修复.
 
@@ -223,12 +223,12 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_writer_describe_reg (self, reg, &ri);
+  gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
 
   g_assert_cmpuint (ri.width, ==, 64);
 
   gum_arm64_writer_add_literal_reference_here (self, val);
-  gum_arm64_writer_put_instruction (self,
+  gum_arm64_zz_arm64_writer_put_instruction (self,
       (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
 }
 ```
@@ -236,11 +236,11 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
 
 ```
-void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
+void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
 {
-    writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    writer_put_b_imm(self, (zaddr)0xc);
-    writer_put_bytes(self, (zpointer)&address, sizeof(address));
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    zz_arm64_writer_put_b_imm(self, (zaddr)0xc);
+    zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 ```
 

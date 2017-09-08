@@ -34,7 +34,7 @@ void capstone_init(void) {
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-static cs_insn *disassemble_instruction_at(zpointer address) {
+static cs_insn *zz_arm64_reader_disassemble_at(zpointer address) {
     if (!handle)
         capstone_init();
     cs_insn *insn;
@@ -46,7 +46,7 @@ static cs_insn *disassemble_instruction_at(zpointer address) {
 void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
 
     // capstone ins
-    cs_insn *ins_cs = disassemble_instruction_at(old_ins->address);
+    cs_insn *ins_cs = zz_arm64_reader_disassemble_at(old_ins->address);
 
     // capstone ins detail
     // cs_detail *ins_csd = ins_cs->detail->x86;

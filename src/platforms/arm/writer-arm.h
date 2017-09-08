@@ -12,14 +12,19 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef platforms_arm64_writer_h
-#define platforms_arm64_writer_h
+#ifndef platforms_arm_writer_h
+#define platforms_arm_writer_h
 
 #include "hookzz.h"
 
 #include "instructions.h"
-#include "writer-arm64.h"
-#include "regs-arm64.h"
+#include "writer.h"
+
+typedef struct _ZzArmRegInfo {
+    zuint index;
+    zuint meta;
+    zuint width;
+} ZzArmRegInfo;
 
 void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
 

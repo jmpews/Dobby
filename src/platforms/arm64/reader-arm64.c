@@ -12,20 +12,16 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#include "reader.h"
+#include "reader-arm64.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
 static csh handle;
 
-void capstone_init(void) {
+void zz_arm64_reader_capstone_init(void) {
     cs_err err = 0;
 
-#if defined(__x86_64__)
-    err = cs_open(CS_ARCH_X86, CS_MODE_64, &handle);
-#elif defined(__arm64__)
     err = cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle);
-#endif
     if (err) {
         Xerror("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
@@ -34,7 +30,7 @@ void capstone_init(void) {
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-cs_insn *disassemble_instruction_at(zpointer address) {
+cs_insn *zz_arm64_reader_disassemble_at(zpointer address) {
     if (!handle)
         capstone_init();
     cs_insn *insn;
@@ -44,7 +40,7 @@ cs_insn *disassemble_instruction_at(zpointer address) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
-        Xerror("disassemble_instruction_at error at %p", (zpointer) address);
+        Xerror("zz_arm64_reader_disassemble_at error at %p", (zpointer) address);
     }
     return insn;
 }

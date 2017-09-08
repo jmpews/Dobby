@@ -16,13 +16,9 @@
 
 #include <string.h>
 
-#include "zzdeps/zz.h"
-#include "writer-arm64.h"
+#include "writer-arm.h"
 
-// REF:
-// ARM Architecture Reference Manual ARMV8
-// C2.1 Understanding the A64 instruction descriptions
-// C2.1.3 The instruction encoding or encodings
+#include "zzdeps/zz.h"
 
 ZzWriter *ZzWriterNewWriter(zpointer address) {
     ZzWriter *writer = (ZzWriter *) malloc(sizeof(ZzWriter));
@@ -198,6 +194,48 @@ void zz_arm64_writer_put_instruction(ZzWriter *self, uint32_t insn) {
     self->size += 4;
 }
 
+// TODO:
+typedef enum _ZzReg {
+    //   zzfp = 29,
+    //   zzlr = 30,
+    //   zzsp = 31,
+            zzx0 = 0,
+    zzx1,
+    zzx2,
+    zzx3,
+    zzx4,
+    zzx5,
+    zzx6,
+    zzx7,
+    zzx8,
+    zzx9,
+    zzx10,
+    zzx11,
+    zzx12,
+    zzx13,
+    zzx14,
+    zzx15,
+    zzx16,
+    zzx17,
+    zzx18,
+    zzx19,
+    zzx20,
+    zzx21,
+    zzx22,
+    zzx23,
+    zzx24,
+    zzx25,
+    zzx26,
+    zzx27,
+    zzx28,
+    zzx29,
+    zzx30,
+    zzx31,
+    zzfp = zzx29,
+    zzlr = zzx30,
+    zzsp = zzx31
+} ZzReg;
+
 void zz_arm64_writer_describe_reg(arm64_reg reg, ZzArm64RegInfo *ri) {
     if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28) {
         ri->is_integer = true;
@@ -216,10 +254,8 @@ void zz_arm64_writer_describe_reg(arm64_reg reg, ZzArm64RegInfo *ri) {
         ri->width = 64;
         ri->meta = zzx31;
     } else {
-        Serror("zz_arm64_writer_describe_reg error.");
-        #if defined(DEBUG_MODE)
-            debug_break();
-        #endif
+        Serror("error at zz_arm64_writer_describe_reg");
+        exit(1);
         ri->index = 0;
     }
     ri->index = ri->meta - zzx0;

@@ -12,16 +12,17 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#ifndef platforms_arm64_reader_h
-#define platforms_arm64_reader_h
+#ifndef platforms_arm_instructions_h
+#define platforms_arm_instructions_h
 
+#include "capstone.h"
 #include "hookzz.h"
 
-#include "instructions.h"
-#include "trampoline.h"
-
-cs_insn *disassemble_instruction_at(zpointer address);
-
-#define JMP_METHOD_SIZE 16
+typedef struct _Instruction {
+    zpointer address;
+    cs_insn *ins_cs;
+    uint8_t size;
+    zbyte bytes[16];
+} Instruction;
 
 #endif
