@@ -52,7 +52,7 @@
 		865F61211F613A9F0000622F /* thread-utils-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F41F613A9E0000622F /* thread-utils-posix.h */; };
 		865F61231F613A9F0000622F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 865F60F61F613A9E0000622F /* README.md */; };
 		865F61241F613A9F0000622F /* zz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F71F613A9E0000622F /* zz.h */; };
-		865F61261F613B740000622F /* hookzz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F61251F613B740000622F /* hookzz.h */; };
+		865F61261F613B740000622F /* hookzz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F61251F613B740000622F /* hookzz.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		865F61281F613C2F0000622F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 865F61271F613C2F0000622F /* libcapstone.a */; };
 /* End PBXBuildFile section */
 
@@ -298,13 +298,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				865F61261F613B740000622F /* hookzz.h in Headers */,
 				865F61211F613A9F0000622F /* thread-utils-posix.h in Headers */,
 				865F61241F613A9F0000622F /* zz.h in Headers */,
 				865F61061F613A9F0000622F /* memory-darwin.h in Headers */,
 				865F60B41F613A4A0000622F /* interceptor.h in Headers */,
 				865F61001F613A9F0000622F /* thunker-arm64.h in Headers */,
 				865F60FD1F613A9F0000622F /* relocator-arm64.h in Headers */,
-				865F61261F613B740000622F /* hookzz.h in Headers */,
 				865F60F81F613A9F0000622F /* instructions.h in Headers */,
 				865F60B81F613A4A0000622F /* allocator.h in Headers */,
 				865F60BD1F613A4A0000622F /* relocator.h in Headers */,
