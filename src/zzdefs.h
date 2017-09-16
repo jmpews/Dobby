@@ -23,40 +23,15 @@
     https://en.wikipedia.org/wiki/X86_calling_conventions
 */
 
-#if defined (__aarch64__)
-typedef union FPReg_ {
-    __int128_t q;
-    struct {
-        double d1; // Holds the double (LSB).
-        double d2;
-    } d;
-    struct {
-        float f1; // Holds the float (LSB).
-        float f2;
-        float f3;
-        float f4;
-    } f;
-} FPReg;
-
-// just ref how to backup/restore registers
-typedef struct _RegState {
-    uint64_t pc;
-    uint64_t sp;
-
-    union {
-        uint64_t x[29];
-        struct {
-            uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28;
-        } regs;
-    } general;
-
-    uint64_t fp;
-    uint64_t lr;
-
-    union {
-        FPReg q[8];
-        FPReg q0, q1, q2, q3, q4, q5, q6, q7;
-    } floating;
-} RegState;
-#elif defined(__x86_64__)
-#endif
+#define GUM_INT5_MASK  0x0000001f
+#define GUM_INT8_MASK  0x000000ff
+#define GUM_INT10_MASK 0x000003ff
+#define GUM_INT11_MASK 0x000007ff
+#define GUM_INT12_MASK 0x00000fff
+#define GUM_INT14_MASK 0x00003fff
+#define GUM_INT16_MASK 0x0000ffff
+#define GUM_INT18_MASK 0x0003ffff
+#define GUM_INT19_MASK 0x0007ffff
+#define GUM_INT24_MASK 0x00ffffff
+#define GUM_INT26_MASK 0x03ffffff
+#define GUM_INT28_MASK 0x0fffffff

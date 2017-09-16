@@ -49,61 +49,10 @@ ZZSTATUS ZzInitializeInterceptor(void) {
 
         g_interceptor = interceptor;
         interceptor->allocator = ZzNewAllocator();
-        ZzBuildThunk();
+        ZzThunkerBuildThunk();
         return ZZ_DONE_INIT;
     }
     return ZZ_ALREADY_INIT;
-}
-
-ZZSTATUS ZzBuildThunk(void) {
-    ZzInterceptor *interceptor = g_interceptor;
-    if (!interceptor)
-        return ZZ_FAILED;
-    zbyte temp_codeslice_data[256];
-    ZzWriter *writer;
-    ZzCodeSlice *codeslice;
-    ZZSTATUS status;
-
-    status = ZZ_FAILED;
-    do {
-        writer = ZzWriterNewWriter(temp_codeslice_data); // @common-function
-        ZzThunkerBuildLeaveThunk(writer);              // @common-function
-
-        // bad code ! lost `ZzCodeSlice` pointer.
-        codeslice = ZzNewCodeSlice(interceptor->allocator, writer->size); // @common-function
-        if (!codeslice || !codeslice->data || !codeslice->size)
-            break;
-        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size)) // @common-function
-            break;
-        interceptor->leave_thunk = codeslice->data;
-        free(writer);
-
-        writer = ZzWriterNewWriter(temp_codeslice_data); // @common-function
-        ZzThunkerBuildHalfThunk(writer);               // @common-function
-
-        // bad code ! lost `ZzCodeSlice` pointer.
-        codeslice = ZzNewCodeSlice(interceptor->allocator, writer->size); // @common-function
-        if (!codeslice || !codeslice->data || !codeslice->size)
-            break;
-        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size)) // @common-function
-            break;
-        interceptor->half_thunk = codeslice->data;
-        free(writer);
-
-        writer = ZzWriterNewWriter(temp_codeslice_data);
-        ZzThunkerBuildEnterThunk(writer); // @common-function
-
-        // bad code ! lost `ZzCodeSlice` pointer.
-        codeslice = ZzNewCodeSlice(interceptor->allocator, writer->size);
-        if (!codeslice || !codeslice->data || !codeslice->size)
-            break;
-        if (!ZzMemoryPatchCode((zaddr) codeslice->data, temp_codeslice_data, writer->size))
-            break;
-        interceptor->enter_thunk = codeslice->data;
-        free(writer);
-        status = ZZ_SUCCESS;
-    } while (0);
-    return status;
 }
 
 ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
@@ -122,7 +71,7 @@ ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
     return NULL;
 }
 
-bool ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
+zboolZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
     ZzInterceptor *interceptor = g_interceptor;
     if (!interceptor)
         return false;

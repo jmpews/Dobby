@@ -157,7 +157,7 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
     zz_arm64_writer_put_ldr_reg_address(
         writer, ARM64_REG_X17,
         (zaddr)(zpointer)function_context_begin_invocation);
-    writer_put_blr_reg(writer, ARM64_REG_X17);
+    zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
 
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }

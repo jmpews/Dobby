@@ -23,8 +23,8 @@
 typedef struct _codeslice {
     zpointer data;
     zsize size;
-    bool is_used;
-    bool isCodeCave;
+    zboolis_used;
+    zboolisCodeCave;
 } ZzCodeSlice;
 
 typedef struct _ZzMemoryPage {
@@ -32,7 +32,7 @@ typedef struct _ZzMemoryPage {
     zpointer curr_pos;
     zsize size;
     zsize used_size;
-    bool isCodeCave;
+    zboolisCodeCave;
 } ZzMemoryPage;
 
 typedef struct _allocator {

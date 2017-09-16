@@ -15,7 +15,7 @@ ThreadLocalKeyList *zz_posix_thread_new_thread_local_key_list() {
     return keylist_tmp;
 }
 
-bool zz_posix_thread_add_thread_local_key(ThreadLocalKeyList *keylist, ThreadLocalKey *key) {
+zboolzz_posix_thread_add_thread_local_key(ThreadLocalKeyList *keylist, ThreadLocalKey *key) {
     if (!keylist)
         return false;
 
@@ -59,7 +59,7 @@ zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr) {
     return NULL;
 }
 
-bool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
+zboolzz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
     ThreadLocalKeyList *g_keys = g_thread_local_key_list;
 
     for (zsize i = 0; i < g_keys->size; i++) {

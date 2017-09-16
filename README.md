@@ -42,6 +42,10 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 [Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
 
+# Why I do this?
+
+For Arsenal - [zzdeps](https://github.com/jmpews/zzdeps)
+
 # Docs
 
 [Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/)

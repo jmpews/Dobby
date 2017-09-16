@@ -52,6 +52,14 @@ __inline__ static void trap_instruction(void)
 {
     __asm__ volatile("int $0x03");
 }
+#elif defined(__thumb__) && defined(__APPLE__)
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline))
+static void __inline__ trap_instruction(void) {
+    __builtin_trap();
+}
 #elif defined(__thumb__)
 enum { HAVE_TRAP_INSTRUCTION = 1, };
 /* FIXME: handle __THUMB_INTERWORK__ */
@@ -79,6 +87,14 @@ __inline__ static void trap_instruction(void)
      * (gdb) tbreak *($pc + $instruction_len)
      * (gdb) jump   *($pc + $instruction_len)
      */
+}
+#elif defined(__arm__) && !defined(__thumb__) && defined(__APPLE__)
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline))
+static void __inline__ trap_instruction(void) {
+    __builtin_trap();
 }
 #elif defined(__arm__) && !defined(__thumb__)
 enum { HAVE_TRAP_INSTRUCTION = 1, };

@@ -18,7 +18,7 @@
 
 // --- about read function ---
 
-bool zz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer,
+zboolzz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer,
                               zsize length) {
     vm_size_t dataCnt;
     dataCnt = 0;
@@ -87,7 +87,7 @@ zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr, const zadd
     return 0;
 }
 
-bool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
+zboolzz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
     if (address <= 0)
         return false;
 #define CHECK_LEN 1
@@ -101,7 +101,7 @@ bool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
     return true;
 }
 
-bool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p,
+zboolzz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p,
                                   vm_inherit_t *inherit_p) {
 
     zaddr region = (zaddr) address;
@@ -121,7 +121,7 @@ bool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *p
     return true;
 }
 
-bool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_prot_t page_prot) {
+zboolzz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_prot_t page_prot) {
     kern_return_t kr;
 
     zsize page_size;
@@ -143,11 +143,11 @@ bool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_pro
     return true;
 }
 
-bool zz_vm_protect_as_executable_via_task(task_t task, const zaddr address, zsize size) {
+zboolzz_vm_protect_as_executable_via_task(task_t task, const zaddr address, zsize size) {
     return zz_vm_protect_via_task(task, address, size, (VM_PROT_READ | VM_PROT_EXECUTE));
 }
 
-bool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address, zsize size) {
+zboolzz_vm_protect_as_writable_via_task(task_t task, const zaddr address, zsize size) {
     if (!zz_vm_protect_via_task(task, address, size, (VM_PROT_ALL | VM_PROT_COPY))) {
         return zz_vm_protect_via_task(task, address, size, (VM_PROT_DEFAULT | VM_PROT_COPY));
     }
@@ -267,7 +267,7 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsi
     while (1) {
         mach_msg_type_number_t count;
         struct vm_region_submap_info_64 info;
-        uint32_t nesting_depth;
+        zuint32 nesting_depth;
 
         count = VM_REGION_SUBMAP_INFO_COUNT_64;
         kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp, &nesting_depth,
@@ -396,7 +396,7 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-bool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size) {
+zboolzz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size) {
     zsize page_size;
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;

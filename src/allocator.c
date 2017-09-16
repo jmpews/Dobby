@@ -116,7 +116,7 @@ ZzMemoryPage *ZzNewNearCodeCave(zaddr address, zsize range_size,
     return page;
 }
 
-bool ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
+zboolZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
     if (!allocator)
         return false;
     if (allocator->size >= allocator->capacity) {
@@ -139,7 +139,7 @@ bool ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
 
 // can just replace it with `ZzNewNearCodeSlice(0, 0, codeslice_size`
 ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size) {
-    ZzCodeSlice *codeslice;
+    ZzCodeSlice *code_slice;
 
     for (int i = 0; i < allocator->size; i++) {
         ZzMemoryPage *page = allocator->memory_pages[i];
@@ -149,13 +149,13 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size) {
         // 4. the page address is near
         if (page->base && !page->isCodeCave &&
             (page->size - page->used_size) > codeslice_size) {
-            codeslice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
-            codeslice->data = page->curr_pos;
-            codeslice->size = codeslice_size;
+            code_slice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
+            code_slice->data = page->curr_pos;
+            code_slice->size = codeslice_size;
 
             page->curr_pos += codeslice_size;
             page->used_size += codeslice_size;
-            return codeslice;
+            return code_slice;
         }
     }
 
@@ -163,14 +163,14 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size) {
     page = ZzNewMemoryPage();
     ZzAddMemoryPage(allocator, page);
 
-    codeslice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
-    codeslice->data = page->curr_pos;
-    codeslice->size = codeslice_size;
+    code_slice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
+    code_slice->data = page->curr_pos;
+    code_slice->size = codeslice_size;
 
     page->curr_pos += codeslice_size;
     page->used_size += codeslice_size;
 
-    return codeslice;
+    return code_slice;
 }
 
 //  1. try allocate from the history pages
@@ -180,7 +180,7 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size) {
 ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address,
                                 zsize range_size, zsize codeslice_size) {
 
-    ZzCodeSlice *codeslice;
+    ZzCodeSlice *code_slice;
 
     for (int i = 0; i < allocator->size; i++) {
         ZzMemoryPage *page = allocator->memory_pages[i];
@@ -224,14 +224,14 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address,
             }
 
             if (1 == flag) {
-                codeslice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
-                codeslice->isCodeCave = page->isCodeCave;
-                codeslice->data = page->curr_pos;
-                codeslice->size = codeslice_size;
+                code_slice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
+                code_slice->isCodeCave = page->isCodeCave;
+                code_slice->data = page->curr_pos;
+                code_slice->size = codeslice_size;
 
                 page->curr_pos += codeslice_size;
                 page->used_size += codeslice_size;
-                return codeslice;
+                return code_slice;
             } else if (2 == flag) {
 
                 // new page
@@ -245,14 +245,14 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address,
                 // origin page
                 page->size = split_addr - (zaddr) page->base;
 
-                codeslice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
-                codeslice->isCodeCave = false;
-                codeslice->data = new_page->curr_pos;
-                codeslice->size = codeslice_size;
+                code_slice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
+                code_slice->isCodeCave = false;
+                code_slice->data = new_page->curr_pos;
+                code_slice->size = codeslice_size;
 
                 new_page->curr_pos += codeslice_size;
                 new_page->used_size += codeslice_size;
-                return codeslice;
+                return code_slice;
             }
         }
     }
@@ -271,13 +271,13 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address,
     if (!page)
         return NULL;
 
-    codeslice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
-    codeslice->isCodeCave = page->isCodeCave;
-    codeslice->data = page->curr_pos;
-    codeslice->size = codeslice_size;
+    code_slice = (ZzCodeSlice *) malloc(sizeof(ZzCodeSlice));
+    code_slice->isCodeCave = page->isCodeCave;
+    code_slice->data = page->curr_pos;
+    code_slice->size = codeslice_size;
 
     page->curr_pos += codeslice_size;
     page->used_size += codeslice_size;
 
-    return codeslice;
+    return code_slice;
 }

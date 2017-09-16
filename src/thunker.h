@@ -31,4 +31,6 @@ void ZzThunkerBuildHalfThunk(ZzWriter *writer);
 
 void ZzThunkerBuildLeaveThunk(ZzWriter *writer);
 
+void ZzThunkerBuildThunk(void);
+
 #endif

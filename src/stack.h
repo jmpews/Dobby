@@ -50,7 +50,7 @@ void ZzFreeCallStack(ZzCallStack *callstack);
 
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
 
-bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
+zboolZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
 
 
 #endif

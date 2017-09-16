@@ -36,6 +36,6 @@ zpointer zz_macho_get_section_64_address_via_name(struct mach_header_64 *header,
 
 zpointer zz_macho_get_symbol_via_name(struct mach_header_64 *header, const char *name);
 
-struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, uint32_t cmd);
+struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, zuint32 cmd);
 
 #endif

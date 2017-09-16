@@ -11,8 +11,8 @@
 
 zsize zz_posix_vm_get_page_size();
 
-bool zz_vm_check_address_valid_via_msync(const zpointer p);
+zboolzz_vm_check_address_valid_via_msync(const zpointer p);
 
-bool zz_posix_vm_check_address_valid_via_signal(zpointer p);
+zboolzz_posix_vm_check_address_valid_via_signal(zpointer p);
 
 #endif

@@ -7,7 +7,7 @@
 
 #include "memory-utils-posix.h"
 // http://renatocunha.com/blog/2015/12/msync-pointer-validity/
-bool zz_vm_check_address_valid_via_msync(const zpointer p) {
+zboolzz_vm_check_address_valid_via_msync(const zpointer p) {
     int ret = 0;
     zsize page_size;
     zpointer base;
@@ -34,7 +34,7 @@ void PointerReadFailedHandler(int signum) {
     siglongjmp(sigjmp_env, 1);
 }
 
-bool zz_posix_vm_check_address_valid_via_signal(zpointer p) {
+zboolzz_posix_vm_check_address_valid_via_signal(zpointer p) {
     // Set up SIGSEGV and SIGBUS handlers
     struct sigaction new_segv_action, old_segv_action;
     struct sigaction new_bus_action, old_bus_action;
@@ -64,7 +64,7 @@ bool zz_posix_vm_check_address_valid_via_signal(zpointer p) {
 zsize zz_posix_vm_get_page_size() { return getpagesize(); }
 
 // int mprotect(void *addr, size_t len, int prot);
-bool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot) {
+zboolzz_posix_vm_protect(const zaddr address, zsize size, int page_prot) {
     int r;
 
     zsize page_size;
@@ -84,11 +84,11 @@ bool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot) {
     return true;
 }
 
-bool zz_posix_vm_protect_as_executable(const zaddr address, zsize size) {
+zboolzz_posix_vm_protect_as_executable(const zaddr address, zsize size) {
     return zz_posix_vm_protect(address, size, (PROT_READ | PROT_EXEC));
 }
 
-bool zz_posxi_vm_protect_as_writable(const zaddr address, zsize size) {
+zboolzz_posxi_vm_protect_as_writable(const zaddr address, zsize size) {
     if (!zz_posix_vm_protect(address, size, (PROT_READ | PROT_WRITE)))
         return false;
     return true;
@@ -196,7 +196,7 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-bool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size) {
+zboolzz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size) {
     zsize page_size;
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;

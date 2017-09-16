@@ -42,29 +42,28 @@ typedef unsigned char zbyte;
 
 #ifndef zz_register_type
 #define zz_register_type
-#if defined (__aarch64__)
+#if defined (__arm64__)
 typedef union FPReg_ {
     __int128_t q;
     struct {
-        double d1; // Holds the double (LSB).
+        double d1;
         double d2;
     } d;
     struct {
-        float f1; // Holds the float (LSB).
+        float f1;
         float f2;
         float f3;
         float f4;
     } f;
 } FPReg;
 
-// just ref how to backup/restore registers
 typedef struct _RegState {
     uint64_t pc;
     uint64_t sp;
 
     union {
         uint64_t x[29];
-        struct {
+        struc {
             uint64_t x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28;
         } regs;
     } general;
@@ -77,10 +76,23 @@ typedef struct _RegState {
         FPReg q0,q1,q2,q3,q4,q5,q6,q7;
     } floating;
 } RegState;
+#elif defined(__arm__)
+typedef struct _RegState {
+    zuint32 pc;
+    zuint32 sp;
+
+    union {
+        zuint32 r[13];
+        struct {
+            zuint32 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
+        } regs;
+    } general;
+
+    zuint32 lr;
+} RegState;
 #elif defined(__x86_64__)
 #endif
 #endif
-
 
 typedef enum _ZZSTATUS {
     ZZ_UNKOWN = -1,
@@ -115,7 +127,7 @@ typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *call
 typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
 
 zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
+zboolZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
 
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)

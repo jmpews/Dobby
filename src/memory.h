@@ -25,9 +25,9 @@ zsize ZzMemoryGetPageSzie(); // @common-function
 zpointer ZzMemoryAllocatePages(zsize n_pages); // @common-function
 zpointer ZzMemoryAllocateNearPages(zaddr address, zsize range_size, zsize n_pages); // @common-function
 zpointer ZzMemoryAllocate(zsize size); // @common-function
-bool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size); // @common-function
-bool ZzMemoryProtectAsExecutable(const zaddr address, zsize size); // @common-function
-bool ZzMemoryProtectAsWritable(const zaddr address, zsize size); // @common-function
+zboolZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size); // @common-function
+zboolZzMemoryProtectAsExecutable(const zaddr address, zsize size); // @common-function
+zboolZzMemoryProtectAsWritable(const zaddr address, zsize size); // @common-function
 zpointer ZzMemorySearchCodeCave(zaddr address, zsize range_size, zsize size);
 
 #endif

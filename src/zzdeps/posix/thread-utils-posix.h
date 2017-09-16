@@ -26,7 +26,7 @@ zpointer zz_posix_thread_new_thread_local_key_ptr();
 
 zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr);
 
-bool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data);
+zboolzz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data);
 
 long zz_posix_get_current_thread_id();
 

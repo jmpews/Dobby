@@ -107,7 +107,7 @@ zz_macho_get_section_64_via_name(struct mach_header_64 *header,
     return NULL;
 }
 
-struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, uint32_t cmd) {
+struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, zuint32 cmd) {
     struct load_command *load_cmd;
     struct segment_command_64 *seg_cmd_64;
     struct section_64 *sect_64;

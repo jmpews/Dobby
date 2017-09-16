@@ -34,7 +34,7 @@
  */
 
 typedef struct _ZzTrampoline {
-    ZzCodeSlice *codeslice;
+    ZzCodeSlice *code_slice;
 } ZzTrampoline;
 
 ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry);
