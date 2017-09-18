@@ -20,7 +20,7 @@
 
 typedef struct _Instruction {
     zpointer address;
-    cs_insn *ins_cs;
+    cs_insn *cs_insn;
     uint8_t size;
     zbyte bytes[16];
 } Instruction;

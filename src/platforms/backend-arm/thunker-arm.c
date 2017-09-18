@@ -207,9 +207,6 @@ void ZzThunkerBuildHalfThunk(ZzWriter *writer) {}
 
 void ZzThunkerBuildLeaveThunk(ZzWriter *writer) {}
 
-void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
-                                    zpointer leave_thunk_ptr) {}
-
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zbyte temp_code_slice_data[256];
     ZzThumbWriter *thumb_writer;

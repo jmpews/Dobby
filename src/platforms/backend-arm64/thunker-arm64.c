@@ -15,14 +15,6 @@
  */
 
 #include "thunker-arm64.h"
-#include "writer-arm64.h"
-
-#include "interceptor.h"
-#include "stack.h"
-#include "thunker.h"
-
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 /*
     Programmer’s Guide for ARMv8-A:
@@ -30,15 +22,15 @@
         Page: (6-16)
 
     STP X9, X8, [X4]
-        Stores the doubleword in X9 to address X4 and stores the doubleword in X8 to address X4 + 8.
-    LDP X8, X2, [X0, #0x10]!
-        Loads doubleword at address X0 + 0x10 into X8 and the doubleword at address X0 + 0x10 + 8 into X2 and add 0x10 to X0. See Figure 6-7.
+        Stores the doubleword in X9 to address X4 and stores the doubleword
+   in X8 to address X4 + 8. LDP X8, X2, [X0, #0x10]! Loads doubleword at
+   address X0 + 0x10 into X8 and the doubleword at address X0 + 0x10 + 8
+   into X2 and add 0x10 to X0. See Figure 6-7.
  */
 
 // 前提: 不能直接访问 pc, 也就说只有通过寄存器才能实现绝对地址跳
 
-__attribute__((__naked__)) static void ctx_save()
-{
+__attribute__((__naked__)) static void ctx_save() {
     __asm__ volatile(
 
         /* reserve space for next_hop */
@@ -78,8 +70,7 @@ __attribute__((__naked__)) static void ctx_save()
         "sub sp, sp, #(2*8)\n");
 }
 
-__attribute__((__naked__)) static void pass_enter_func_args()
-{
+__attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
     __asm__ volatile("mov x0, x17\n"
                      "add x1, sp, #8\n"
@@ -87,8 +78,7 @@ __attribute__((__naked__)) static void pass_enter_func_args()
                      "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
 }
 
-__attribute__((__naked__)) static void pass_half_func_args()
-{
+__attribute__((__naked__)) static void pass_half_func_args() {
     /* transfer args */
     __asm__ volatile("mov x0, x17\n"
                      "add x1, sp, #8\n"
@@ -96,16 +86,14 @@ __attribute__((__naked__)) static void pass_half_func_args()
                      "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
 }
 
-__attribute__((__naked__)) static void pass_leave_func_args()
-{
+__attribute__((__naked__)) static void pass_leave_func_args() {
     /* transfer args */
     __asm__ volatile("mov x0, x17\n"
                      "add x1, sp, #8\n"
                      "add x2, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
 }
 
-__attribute__((__naked__)) static void ctx_restore()
-{
+__attribute__((__naked__)) static void ctx_restore() {
     __asm__ volatile(
         /* alignment padding + dummy PC */
         "add sp, sp, #(2*8)\n"
@@ -148,63 +136,51 @@ __attribute__((__naked__)) static void ctx_restore()
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry,
-                                       RegState *rs,
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
                                        zpointer caller_ret_addr,
-                                       zpointer next_hop)
-{
+                                       zpointer next_hop) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
         stack = ZzNewThreadStack(entry->thread_local_key);
     }
 
     ZzCallStack *callstack = ZzNewCallStack();
     ZzPushCallStack(stack, callstack);
 
-    if (entry->pre_call)
-    {
+    if (entry->pre_call) {
         PRECALL pre_call;
         pre_call = entry->pre_call;
         (*pre_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
 
-    if (entry->replace_call)
-    {
+    if (entry->replace_call) {
         *(zpointer *)next_hop = entry->replace_call;
-    }
-    else
-    {
+    } else {
         *(zpointer *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE)
-    {
+    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
         callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
         *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
 // just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry,
-                                      RegState *rs,
+void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
                                       zpointer caller_ret_addr,
-                                      zpointer next_hop)
-{
+                                      zpointer next_hop) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->half_call)
-    {
+    if (entry->half_call) {
         HALFCALL half_call;
         half_call = entry->half_call;
         (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -215,21 +191,18 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry,
-                                     RegState *rs, zpointer next_hop)
-{
+void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
+                                     zpointer next_hop) {
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->post_call)
-    {
+    if (entry->post_call) {
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -239,11 +212,11 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
     ZzFreeCallStack(callstack);
 }
 
-void ZzThunkerBuildEnterThunk(ZzWriter *writer)
-{
+void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
 
     // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
+                                           0);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
     // TODO:  is bad code ?
@@ -253,18 +226,17 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
     zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
     zz_arm64_writer_put_ldr_reg_address(
         writer, ARM64_REG_X17,
-        (zaddr)(zpointer)
-            function_context_begin_invocation);
+        (zaddr)(zpointer)function_context_begin_invocation);
     zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
 
     // TOOD: is bad code ?
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 
-void ZzThunkerBuildHalfThunk(ZzWriter *writer)
-{
+void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
     // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
+                                           0);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
     // TODO:  is bad code ?
@@ -274,19 +246,18 @@ void ZzThunkerBuildHalfThunk(ZzWriter *writer)
     zz_arm64_writer_put_bytes(writer, (void *)pass_half_func_args, 4 * 4);
     zz_arm64_writer_put_ldr_reg_address(
         writer, ARM64_REG_X17,
-        (zaddr)(zpointer)
-            function_context_half_invocation);
+        (zaddr)(zpointer)function_context_half_invocation);
     zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
 
     // TOOD: is bad code ?
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 
-void ZzThunkerBuildLeaveThunk(ZzWriter *writer)
-{
+void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 
     // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
+                                           0);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
 
     // TODO:  is bad code ?
@@ -294,9 +265,9 @@ void ZzThunkerBuildLeaveThunk(ZzWriter *writer)
 
     // call `function_context_end_invocation`
     zz_arm64_writer_put_bytes(writer, (void *)pass_leave_func_args, 3 * 4);
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-                                        (zaddr)(zpointer)
-                                            function_context_end_invocation);
+    zz_arm64_writer_put_ldr_reg_address(
+        writer, ARM64_REG_X17,
+        (zaddr)(zpointer)function_context_end_invocation);
     zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
 
     // TOOD: is bad code ?
@@ -304,47 +275,77 @@ void ZzThunkerBuildLeaveThunk(ZzWriter *writer)
 }
 
 /*
-    作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数, 但是特么一下污染了两个寄存器.
-    所以有个技巧: 利用栈实现只有一个寄存器就可以完成工作
+    作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数,
+   但是特么一下污染了两个寄存器. 所以有个技巧:
+   利用栈实现只有一个寄存器就可以完成工作
  */
-void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr,
-                                    zpointer enter_thunk_ptr)
-{
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);
+// void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr,
+//                                     zpointer enter_thunk_ptr) {
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)hookentry_ptr);
 
-    // push x17
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+//     // push x17
+//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
+//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
+//     ARM64_REG_SP,
+//                                            0);
 
-    // jump to `dest`
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)enter_thunk_ptr);
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-}
+//     // jump to `dest`
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)enter_thunk_ptr);
+//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+// }
 
-void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr,
-                                   zpointer half_thunk_ptr)
-{
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);
+// void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr,
+//                                    zpointer half_thunk_ptr) {
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)hookentry_ptr);
 
-    // push x17
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+//     // push x17
+//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
+//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
+//     ARM64_REG_SP,
+//                                            0);
 
-    // jump to `dest`
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)half_thunk_ptr);
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-}
+//     // jump to `dest`
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)half_thunk_ptr);
+//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+// }
 
-void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
-                                    zpointer leave_thunk_ptr)
-{
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)hookentry_ptr);
+// void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
+//                                     zpointer leave_thunk_ptr) {
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)hookentry_ptr);
 
-    // push x17
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+//     // push x17
+//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
+//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
+//     ARM64_REG_SP,
+//                                            0);
 
-    // jump to `dest`
-    zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17, (zaddr)leave_thunk_ptr);
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+//     // jump to `dest`
+//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
+//                                         (zaddr)leave_thunk_ptr);
+//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+// }
+
+void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
+    zbyte temp_code_slice_data[256];
+    ZzArm64Writer *arm64_writer;
+    ZzCodeSlice *code_slice;
+    ZZSTATUS status;
+    arm64_writer = &self->arm64_writer;
+
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+    zz_arm64_thunker_build_enter_thunk(arm64_writer);
+
+    code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data,
+                           arm64_writer->size))
+        return;
+
+    self->leave_thunk = code_slice->data;
+
+    return;
 }

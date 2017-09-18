@@ -1,12 +1,12 @@
 /**
  *    Copyright 2017 jmpews
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +17,8 @@
 #ifndef hook_zz_h
 #define hook_zz_h
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define DEBUG_MODE 0
 
@@ -37,7 +37,7 @@ typedef int8_t zint8;
 typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
-typedef bool zbool ;
+typedef bool zbool;
 
 #endif
 
@@ -49,7 +49,7 @@ typedef bool zbool ;
 
 #ifndef zz_register_type
 #define zz_register_type
-#if defined (__arm64__)
+#if defined(__arm64__)
 typedef union FPReg_ {
     __int128_t q;
     struct {
@@ -70,8 +70,10 @@ typedef struct _RegState {
 
     union {
         uint64_t x[29];
-        struc {
-            uint64_t x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28;
+        struct {
+            uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13,
+                x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26,
+                x27, x28;
         } regs;
     } general;
 
@@ -80,7 +82,7 @@ typedef struct _RegState {
 
     union {
         FPReg q[8];
-        FPReg q0,q1,q2,q3,q4,q5,q6,q7;
+        FPReg q0, q1, q2, q3, q4, q5, q6, q7;
     } floating;
 } RegState;
 #elif defined(__arm__)
@@ -116,34 +118,37 @@ typedef enum _ZZSTATUS {
     ZZ_NO_BUILD_HOOK
 } ZZSTATUS;
 
+typedef struct _CallStack { long call_id; } CallStack;
 
-typedef struct _CallStack
-{
-    long call_id;
-} CallStack;
-
-typedef struct _ThreadStack
-{
+typedef struct _ThreadStack {
     long thread_id;
-	zsize size;
+    zsize size;
 } ThreadStack;
 
-
-typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack,
+                        CallStack *callstack);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack,
+                         CallStack *callstack);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack,
+                         CallStack *callstack);
 
 zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
-zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
+zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key,
+                         zpointer value_ptr, zsize value_size);
 
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
-#define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
-#define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
+#define STACK_GET(callstack, key, type)                                        \
+    *(type *)ZzGetCallStackData(callstack, key)
+#define STACK_SET(callstack, key, value, type)                                 \
+    ZzSetCallStackData(callstack, key, &(value), sizeof(type))
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-    POSTCALL post_call_ptr);
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr,
+                     zpointer *origin_ptr, PRECALL pre_call_ptr,
+                     POSTCALL post_call_ptr);
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr,
+                            PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
+ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata,
+                            zuint codedata_size);
 
 #endif

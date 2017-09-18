@@ -32,15 +32,15 @@ void zz_arm64_reader_capstone_init(void) {
 
 cs_insn *zz_arm64_reader_disassemble_at(zpointer address) {
     if (!handle)
-        capstone_init();
+        zz_arm64_reader_capstone_init();
     cs_insn *insn;
     size_t count;
-    count = cs_disasm(handle, address, 16, (unsigned long) address, 0, &insn);
+    count = cs_disasm(handle, address, 16, (unsigned long)address, 0, &insn);
     if (!insn) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
-        Xerror("zz_arm64_reader_disassemble_at error at %p", (zpointer) address);
+        Xerror("zz_arm64_reader_disassemble_at error at %p", (zpointer)address);
     }
     return insn;
 }
