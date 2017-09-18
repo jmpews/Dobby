@@ -42,16 +42,16 @@ zpointer ZzMemoryAllocate(zsize size) {
     return zz_vm_allocate_via_task(mach_task_self(), size);
 }
 
-zboolZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size) {
+zbool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size) {
     return zz_vm_patch_code_via_task(mach_task_self(), address, codedata, codedata_size);
 }
 
-zboolZzMemoryProtectAsExecutable(const zaddr address, zsize size) {
+zbool ZzMemoryProtectAsExecutable(const zaddr address, zsize size) {
 
     return zz_vm_protect_as_executable_via_task(mach_task_self(), address, size);
 }
 
-zboolZzMemoryProtectAsWritable(const zaddr address, zsize size) {
+zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size) {
     return zz_vm_protect_as_writable_via_task(mach_task_self(), address, size);
 }
 

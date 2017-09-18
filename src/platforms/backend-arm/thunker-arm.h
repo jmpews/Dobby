@@ -12,12 +12,24 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-
-
 #ifndef platforms_backend_arm_thunker_arm
 #define platforms_backend_arm_thunker_arm
 
-#include "hookzz.h"
+// platforms
+#include "platforms/arch-arm/relocator-arm.h"
+#include "platforms/arch-arm/relocator-thumb.h"
+#include "platforms/arch-arm/writer-arm.h"
+#include "platforms/arch-arm/writer-thumb.h"
+
+#include "interceptor-arm.h"
+
+// hookzz
+#include "stack.h"
 #include "thunker.h"
+
+// zzdeps
+#include "hookzz.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 #endif

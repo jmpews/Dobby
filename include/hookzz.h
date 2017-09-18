@@ -28,9 +28,16 @@
 typedef void *zpointer;
 typedef unsigned long zsize;
 typedef unsigned long zaddr;
+typedef uint32_t zuint32;
+typedef uint16_t zuint16;
+typedef uint8_t zuint8;
+typedef int32_t zint32;
+typedef int16_t zint16;
+typedef int8_t zint8;
 typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
+typedef bool zbool ;
 
 #endif
 
@@ -127,7 +134,7 @@ typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *call
 typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
 
 zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
-zboolZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
+zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
 
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)

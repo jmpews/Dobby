@@ -16,12 +16,13 @@
 
 #include <stdlib.h>
 
+// hookzz
 #include "interceptor.h"
-#include "writer.h"
 #include "stack.h"
+#include "thread.h"
 #include "thunker.h"
 #include "trampoline.h"
-#include "thread.h"
+#include "writer.h"
 
 #include "zzdeps/zz.h"
 
@@ -31,25 +32,22 @@ ZzInterceptor *g_interceptor = NULL;
 ZZSTATUS ZzInitializeInterceptor(void) {
     ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntrySet *hook_function_entry_set;
-    ZzInterceptorCenter intercepter_center;
 
     if (NULL == interceptor) {
-        interceptor = (ZzInterceptor *) malloc(sizeof(ZzInterceptor));
+        interceptor = (ZzInterceptor *)malloc(sizeof(ZzInterceptor));
 
         hook_function_entry_set = &(interceptor->hook_function_entry_set);
-        intercepter_center = interceptor->intercepter_center;
 
         hook_function_entry_set->capacity = ZzHOOKENTRIES_DEFAULT;
-        hook_function_entry_set->entries = (ZzHookFunctionEntry **) malloc(
-                sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity);
+        hook_function_entry_set->entries = (ZzHookFunctionEntry **)malloc(
+            sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity);
         if (!hook_function_entry_set->entries) {
             return ZZ_FAILED;
         }
         hook_function_entry_set->size = 0;
 
         g_interceptor = interceptor;
-        interceptor->allocator = ZzNewAllocator();
-        ZzThunkerBuildThunk();
+        ZzThunkerBuildThunk(interceptor->backend);
         return ZZ_DONE_INIT;
     }
     return ZZ_ALREADY_INIT;
@@ -60,7 +58,8 @@ ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
     if (!interceptor)
         return NULL;
 
-    ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
+    ZzHookFunctionEntrySet *hook_function_entry_set =
+        &(interceptor->hook_function_entry_set);
 
     for (int i = 0; i < hook_function_entry_set->size; ++i) {
         if ((hook_function_entry_set->entries)[i] &&
@@ -71,32 +70,37 @@ ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
     return NULL;
 }
 
-zboolZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
+zbool ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
     ZzInterceptor *interceptor = g_interceptor;
     if (!interceptor)
         return false;
 
-    ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
+    ZzHookFunctionEntrySet *hook_function_entry_set =
+        &(interceptor->hook_function_entry_set);
 
     if (hook_function_entry_set->size >= hook_function_entry_set->capacity) {
-        ZzHookFunctionEntry **entries = (ZzHookFunctionEntry **) realloc(
-                hook_function_entry_set->entries,
-                sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity * 2);
+        ZzHookFunctionEntry **entries = (ZzHookFunctionEntry **)realloc(
+            hook_function_entry_set->entries,
+            sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity *
+                2);
         if (!entries)
             return false;
 
-        hook_function_entry_set->capacity = hook_function_entry_set->capacity * 2;
+        hook_function_entry_set->capacity =
+            hook_function_entry_set->capacity * 2;
         hook_function_entry_set->entries = entries;
     }
     hook_function_entry_set->entries[hook_function_entry_set->size++] = entry;
     return true;
 }
 
-void
-ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zpointer target_ptr, zpointer target_end_ptr,
-                              zpointer replace_call, PRECALL pre_call, HALFCALL half_call, POSTCALL post_call) {
+void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type,
+                                   zpointer target_ptr, zpointer target_end_ptr,
+                                   zpointer replace_call, PRECALL pre_call,
+                                   HALFCALL half_call, POSTCALL post_call) {
     ZzInterceptor *interceptor = g_interceptor;
-    ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
+    ZzHookFunctionEntrySet *hook_function_entry_set =
+        &(interceptor->hook_function_entry_set);
 
     entry->hook_type = hook_type;
     entry->id = hook_function_entry_set->size;
@@ -107,9 +111,9 @@ ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zpointe
     entry->target_end_ptr = target_end_ptr;
 
     entry->replace_call = replace_call;
-    entry->pre_call = (zpointer) pre_call;
-    entry->half_call = (zpointer) half_call;
-    entry->post_call = (zpointer) post_call;
+    entry->pre_call = (zpointer)pre_call;
+    entry->half_call = (zpointer)half_call;
+    entry->post_call = (zpointer)post_call;
 
     entry->on_enter_trampoline = NULL;
     entry->on_invoke_trampoline = NULL;
@@ -120,30 +124,13 @@ ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zpointe
 
     entry->thread_local_key = ZzThreadNewThreadLocalKeyPtr();
 
-    ZzBuildTrampoline(entry);
+    ZzBuildTrampoline(interceptor->backend, entry);
     ZzAddHookFunctionEntry(entry);
 }
 
-ZZSTATUS ZzActiveHookFunctionEntry(ZzHookFunctionEntry *entry) {
-    zpointer target_ptr = entry->target_ptr;
-    ZzInterceptor *interceptor = entry->interceptor;
-    zbyte temp_codeslice_data[256];
-
-    ZzWriter *writer = ZzWriterNewWriter(temp_codeslice_data);
-    if (entry->isNearJump) {
-        ZzWriterPutNearJump(writer, (zsize) ((zaddr) entry->on_enter_trampoline - (zaddr) entry->target_ptr));
-    } else {
-        Xdebug("target %p abs jump to %p", entry->target_ptr, entry->on_enter_trampoline);
-        ZzWriterPutAbsJump(writer, entry->on_enter_trampoline); // @common-function
-    }
-    ZzMemoryPatchCode((zaddr) target_ptr, temp_codeslice_data, writer->size);
-    free(writer);
-
-    return ZZ_DONE_HOOK;
-}
-
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr,
-                     zpointer *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
+                     zpointer *origin_ptr, PRECALL pre_call_ptr,
+                     POSTCALL post_call_ptr) {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
     ZzInterceptor *interceptor = g_interceptor;
@@ -168,15 +155,15 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr,
             break;
         }
 
-        entry = (ZzHookFunctionEntry *) malloc(sizeof(ZzHookFunctionEntry));
+        entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
 
         if (!entry) {
             Xerror("build HookFunctionEnry faild at %p", target_ptr);
             break;
         }
 
-
-        ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
+        ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0,
+                                      replace_call_ptr, pre_call_ptr, NULL,
                                       post_call_ptr);
 
         if (origin_ptr)
@@ -187,7 +174,8 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr,
 }
 
 ZZSTATUS
-ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr) {
+ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr,
+                   PRECALL pre_call_ptr, HALFCALL half_call_ptr) {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
     ZzInterceptor *interceptor = g_interceptor;
@@ -212,15 +200,16 @@ ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL p
             break;
         }
 
-        entry = (ZzHookFunctionEntry *) malloc(sizeof(ZzHookFunctionEntry));
+        entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
 
         if (!entry) {
             Xerror("build HookFunctionEnry faild at %p", target_start_ptr);
             break;
         }
 
-        ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE, target_start_ptr, target_end_ptr, NULL, pre_call_ptr,
-                                      half_call_ptr, NULL);
+        ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE,
+                                      target_start_ptr, target_end_ptr, NULL,
+                                      pre_call_ptr, half_call_ptr, NULL);
 
     } while (0);
     return status;
@@ -228,7 +217,7 @@ ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL p
 
 ZZSTATUS ZzEnableHook(zpointer target_ptr) {
     ZZSTATUS status = ZZ_DONE_ENABLE;
-    // check is already hooked ?
+    ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntry *entry = ZzFindHookFunctionEntry(target_ptr);
 
     if (!entry) {
@@ -243,5 +232,5 @@ ZZSTATUS ZzEnableHook(zpointer target_ptr) {
         return status;
     }
 
-    return ZzActiveHookFunctionEntry(entry);
+    return ZzActiveTrampoline(interceptor->backend, entry);
 }

@@ -29,7 +29,7 @@ zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr) {
     return zz_posix_thread_get_current_thread_data(key_ptr);
 }
 
-zboolZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data) {
+zbool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data) {
     return zz_posix_thread_set_current_thread_data(key_ptr, data);
 
 }

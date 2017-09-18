@@ -15,35 +15,41 @@
 #ifndef platforms_arch_arm_regs_h
 #define platforms_arch_arm_regs_h
 
+// platforms
 #include "instructions.h"
 
+// hookzz
+
+// zzdeps
+#include "hookzz.h"
+#include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
-#include "hookzz.h"
+
 // REF:
 // ARM Architecture Reference Manual
 // A2.4 Registers
 
 typedef enum _ZzReg {
-    zzr0 = 0,
-    zzr1,
-    zzr2,
-    zzr3,
-    zzr4,
-    zzr5,
-    zzr6,
-    zzr7,
-    zzr8,
-    zzr9,
-    zzr10,
-    zzr11,
-    zzr12,
-    zzr13,
-    zzr14,
-    zzr15,
-    zzsp = zzr13,
-    zzlr = zzr14,
-    zzpc = zzr15
+    ZZ_ARM_R0 = 0,
+    ZZ_ARM_R1,
+    ZZ_ARM_R2,
+    ZZ_ARM_R3,
+    ZZ_ARM_R4,
+    ZZ_ARM_R5,
+    ZZ_ARM_R6,
+    ZZ_ARM_R7,
+    ZZ_ARM_R8,
+    ZZ_ARM_R9,
+    ZZ_ARM_R10,
+    ZZ_ARM_R11,
+    ZZ_ARM_R12,
+    ZZ_ARM_R13,
+    ZZ_ARM_R14,
+    ZZ_ARM_R15,
+    ZZ_ARM_SP = ZZ_ARM_R13,
+    ZZ_ARM_LR = ZZ_ARM_R14,
+    ZZ_ARM_PC = ZZ_ARM_R15
 } ZzReg;
 
 typedef struct _ZzArmRegInfo {
@@ -53,28 +59,5 @@ typedef struct _ZzArmRegInfo {
 } ZzArmRegInfo;
 
 void zz_arm_register_describe(arm_reg reg, ZzArmRegInfo *ri);
-
-void zz_arm_register_describe(arm_reg reg, ZzArmRegInfo *ri) {
-    if (reg >= ARM_REG_R0 && reg <= ARM_REG_R12) {
-        ri->width = 32;
-        ri->meta = zzr0 + (reg - ARM_REG_R0);
-    } else if (reg == ARM_REG_R13 || reg == ARM_REG_SP) {
-        ri->width = 32;
-        ri->meta = zzr13;
-    } else if (reg == ARM_REG_R14 || reg == ARM_REG_LR) {
-        ri->width = 32;
-        ri->meta = zzr14;
-    } else if (reg == ARM_REG_PC) {
-        ri->width = 32;
-        ri->meta = zzr15;
-    } else {
-        Serror("zz_arm64_register_describe error.");
-        #if defined(DEBUG_MODE)
-            debug_break();
-        #endif
-        ri->index = 0;
-    }
-    ri->index = ri->meta - zzr0;
-}
 
 #endif

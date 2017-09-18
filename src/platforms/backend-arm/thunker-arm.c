@@ -14,25 +14,17 @@
  *    limitations under the License.
  */
 
- #include "platforms/arch/arm/writer-arm.h"
- #include "platforms/arch/arm/writer-thumb.h"
- #include "platforms/arch/arm/relocator-arm.h"
- #include "platforms/arch/arm/relocator-thumb.h"
+#include "thunker-arm.h"
 
-#include "interceptor.h"
-#include "stack.h"
-#include "thunker.h"
+// 前提: arm 可以直接访问 pc 寄存器, 也就是说无需中间寄存器就可以实现 `abs
+// jump`.
 
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
-#include "hookzz.h"
+// frida-gum 的做法, 手动恢复 lr, 并将 `next_hop` 写在之前 store `lr` 的位置,
+// 之后利用恢复寄存器跳转
 
-
-// 前提: arm 可以直接访问 pc 寄存器, 也就是说无需中间寄存器就可以实现 `abs jump`.
-
-// frida-gum 的做法, 手动恢复 lr, 并将 `next_hop` 写在之前 store `lr` 的位置, 之后利用恢复寄存器跳转
-
-// 还有一个点, 就是 hook-entry 的参数传递, 这就是为啥 frida-gum 中为啥把 gum_emit_prolog 分成了两部分, 把 gum_emit_push_cpu_context_high_part 放在 x7 用之前.
+// 还有一个点, 就是 hook-entry 的参数传递, 这就是为啥 frida-gum 中为啥把
+// gum_emit_prolog 分成了两部分, 把 gum_emit_push_cpu_context_high_part 放在 x7
+// 用之前.
 
 // 这个和 arm64 有不同, arm64 中借助了一个中间寄存器 x16 or x17.
 
@@ -42,13 +34,14 @@
 
 // 14 = 5 + 8 + 1
 
-// 按理说应该最先进入 ctx_save, 之后才能保证即使各种操作寄存器不被污染, 几个理想方案
-// 1. 把 ctx_save 归属为 trampoline, 优点: 优先进行寄存器状态保存, 缺点: ctx_save 重复多次
-// 2. 把 ctx_save 归属为 thunk, 统一做寄存器保存, trampline 入口处进行参数保存至栈. 优点: ctx_save 可以作为公用. 缺点: 操作复杂, 耦合略强.
-// 3. 把 ctx_save 进行拆分, 缺点: 模块化设计差, 耦合强 (frida-gum采用)
+// 按理说应该最先进入 ctx_save, 之后才能保证即使各种操作寄存器不被污染,
+// 几个理想方案 1. 把 ctx_save 归属为 trampoline, 优点: 优先进行寄存器状态保存,
+// 缺点: ctx_save 重复多次 2. 把 ctx_save 归属为 thunk, 统一做寄存器保存,
+// trampline 入口处进行参数保存至栈. 优点: ctx_save 可以作为公用. 缺点:
+// 操作复杂, 耦合略强. 3. 把 ctx_save 进行拆分, 缺点: 模块化设计差, 耦合强
+// (frida-gum采用)
 
-__attribute__((__naked__)) static void ctx_save()
-{
+__attribute__((__naked__)) static void ctx_save() {
     __asm__ volatile(
         /* reserve space for next_hop and for cpsr */
         // "sub sp, sp, #(2*4)\n"
@@ -79,41 +72,26 @@ __attribute__((__naked__)) static void ctx_save()
         "str r1, [sp, #(0*4)]\n");
 }
 
-__attribute__((__naked__)) static void pass_enter_func_args()
-{
+__attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
-    __asm__ volatile(
-        "ldr r0, sp, #(0)\n"
-        "add r1, sp, #8\n"
-        "add r2, sp, #(2*4 + 13*4)\n"
-        "add r3, sp, #(2*4 + 14*4 + 4)\n");
+    __asm__ volatile("ldr r0, [sp, #(0)]\n"
+                     "add r1, sp, #8\n"
+                     "add r2, sp, #(2*4 + 13*4)\n"
+                     "add r3, sp, #(2*4 + 14*4 + 4)\n");
 }
 
-__attribute__((__naked__)) static void pass_half_func_args()
-{
-    /* transfer args */
-    __asm__ volatile(
-        "ldr r0, sp, #(0)\n"
-        "add r1, sp, #8\n"
-        "add r2, sp, #(2*4 + 13*4)\n"
-        "add r3, sp, #(2*4 + 14*4 + 4)\n");
-}
+// __attribute__((__naked__)) static void pass_leave_func_args() {
+//     /* transfer args */
+//     __asm__ volatile("ldr r0, [sp, #(0)]\n"
+//                      "add r1, sp, #8\n"
+//                      "add r2, sp, #(2*4 + 13*4)\n"
+//                      "add r3, sp, #(2*4 + 14*4 + 4)\n");
+// }
 
-__attribute__((__naked__)) static void pass_leave_func_args()
-{
-    /* transfer args */
-    __asm__ volatile(
-        "ldr r0, sp, #(0)\n"
-        "add r1, sp, #8\n"
-        "add r2, sp, #(2*4 + 13*4)\n"
-        "add r3, sp, #(2*4 + 14*4 + 4)\n");
-}
-
-__attribute__((__naked__)) static void ctx_restore()
-{
+__attribute__((__naked__)) static void ctx_restore() {
     __asm__ volatile(
         /* restore sp(fake) */
-        "add sp, sp, #(2*4)"
+        "add sp, sp, #(2*4)\n"
 
         "ldr r0, [sp], #4\n"
         "ldr r1, [sp], #4\n"
@@ -136,63 +114,51 @@ __attribute__((__naked__)) static void ctx_restore()
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry,
-                                       RegState *rs,
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
                                        zpointer caller_ret_addr,
-                                       zpointer next_hop)
-{
+                                       zpointer next_hop) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
         stack = ZzNewThreadStack(entry->thread_local_key);
     }
 
     ZzCallStack *callstack = ZzNewCallStack();
     ZzPushCallStack(stack, callstack);
 
-    if (entry->pre_call)
-    {
+    if (entry->pre_call) {
         PRECALL pre_call;
         pre_call = entry->pre_call;
         (*pre_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
 
-    if (entry->replace_call)
-    {
+    if (entry->replace_call) {
         *(zpointer *)next_hop = entry->replace_call;
-    }
-    else
-    {
+    } else {
         *(zpointer *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE)
-    {
+    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
         callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
         *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
 // just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry,
-                                      RegState *rs,
+void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
                                       zpointer caller_ret_addr,
-                                      zpointer next_hop)
-{
+                                      zpointer next_hop) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->half_call)
-    {
+    if (entry->half_call) {
         HALFCALL half_call;
         half_call = entry->half_call;
         (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -203,21 +169,18 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry,
-                                     RegState *rs, zpointer next_hop)
-{
+void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
+                                     zpointer next_hop) {
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack)
-    {
+    if (!stack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->post_call)
-    {
+    if (entry->post_call) {
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -227,8 +190,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry,
     ZzFreeCallStack(callstack);
 }
 
-void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer)
-{
+void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* reserve space for next_hop and for cpsr */
     zz_arm_writer_put_sub_reg_reg_imm(writer, ARM_REG_SP, ARM_REG_SP, 2 * 4);
@@ -237,45 +199,33 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer)
 
     zz_arm_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
 
-    zz_arm_writer_put_ldr_reg_address(
-        writer, ARM64_REG_X17,
-        (zaddr)(zpointer)
-            function_context_begin_invocation);
-    zz_arm_writer_put_blr_reg(writer, ARM64_REG_X17);
-
-    // TOOD: is bad code ?
     zz_arm_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
-    zz_arm_writer_put_ldr_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 0);
+    zz_arm_writer_put_ldr_reg_reg_imm(writer, ARM_REG_PC, ARM_REG_SP, 0);
 }
 
-void ZzThunkerBuildHalfThunk(ZzWriter *writer)
-{
-}
+void ZzThunkerBuildHalfThunk(ZzWriter *writer) {}
 
-void ZzThunkerBuildLeaveThunk(ZzWriter *writer)
-{
-}
+void ZzThunkerBuildLeaveThunk(ZzWriter *writer) {}
 
 void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
-                                    zpointer leave_thunk_ptr)
-{
-}
+                                    zpointer leave_thunk_ptr) {}
 
-void ZzBuildThunk(ZzInterceptorBackend *self)
-{
-    zbyte temp_codeslice_data[256];
+void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
+    zbyte temp_code_slice_data[256];
     ZzThumbWriter *thumb_writer;
     ZzCodeSlice *code_slice;
     ZZSTATUS status;
+    thumb_writer = &self->thumb_writer;
 
-    zz_thumb_writer_reset(&thumb_writer, temp_codeslice_data);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
 
-    code_slice = ZzNewCodeSlice(self->allocator, writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_codeslice_data, writer->size))
+    code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data,
+                           thumb_writer->size))
         return;
 
     self->leave_thunk = code_slice->data;
 
-    return status;
+    return;
 }

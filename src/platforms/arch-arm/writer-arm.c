@@ -14,12 +14,7 @@
  *    limitations under the License.
  */
 
-#include <string.h>
-
 #include "writer-arm.h"
-
-#include "writer.h"
-#include "zzdefs.h"
 
 // ATTENTION !!!:
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
@@ -27,10 +22,10 @@
 
 ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
     ZzArmWriter *writer = (ZzArmWriter *)malloc(sizeof(ZzArmWriter));
-    self->codedata = data_ptr;
-    self->base = data_ptr;
-    self->pc = data_ptr;
-    self->size = 0;
+    writer->codedata = data_ptr;
+    writer->base = data_ptr;
+    writer->pc = data_ptr;
+    writer->size = 0;
     return writer;
 }
 
@@ -56,36 +51,43 @@ void zz_arm_writer_put_instruction(ZzArmWriter *self, zuint32 insn) {
 }
 
 void zz_arm_writer_put_b_imm(ZzArmWriter *self, zuint32 imm) {
-    zz_arm_writer_put_instruction(self, 0xea000000 | (imm / 4) & 0xffffff);
-}
-
-void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, arm_reg reg,
-                                       zaddr address) {
-    zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ARM_REG_PC, 0);
-    zz_arm_writer_put_b_imm(self, 0x4);
-    zz_arm_winter_put_bytes(self, (zpointer)&address, sizeof(zpointer));
+    zz_arm_writer_put_instruction(self, 0xea000000 | ((imm / 4) & 0xffffff));
 }
 
 void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
                                        arm_reg src_reg, zuint32 imm) {
     ZzArmRegInfo rd, rs;
 
-    zz_arm_reg_describe(dst_reg, &rd);
-    zz_arm_reg_describe(src_reg, &rs);
+    zz_arm_register_describe(dst_reg, &rd);
+    zz_arm_register_describe(src_reg, &rs);
 
     zz_arm_writer_put_instruction(self, 0xe5900000 | rd.index << 12 |
                                             rs.index << 16 |
-                                            (imm & GUM_INT12_MASK));
+                                            (imm & ZZ_INT12_MASK));
+}
+
+void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, arm_reg reg,
+                                       zaddr address) {
+    zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ARM_REG_PC, 0);
+    zz_arm_writer_put_b_imm(self, 0x4);
+    zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
 void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
                                        arm_reg src_reg, zuint32 imm) {
     ZzArmRegInfo rd, rs;
 
-    zz_arm_reg_describe(dst_reg, &rd);
-    zz_arm_reg_describe(src_reg, &rs);
+    zz_arm_register_describe(dst_reg, &rd);
+    zz_arm_register_describe(src_reg, &rs);
 
     zz_arm_writer_put_instruction(self, 0xe2800000 | rd.index << 12 |
                                             rs.index << 16 |
-                                            (imm & GUM_INT12_MASK));
+                                            (imm & ZZ_INT12_MASK));
 }
+
+void zz_arm_writer_put_sub_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
+                                       arm_reg src_reg, zuint32 imm) {
+    zz_arm_writer_put_add_reg_reg_imm(self, dst_reg, src_reg, -imm);
+}
+
+zsize zz_arm_writer_near_jump_range_size() { return 16; }

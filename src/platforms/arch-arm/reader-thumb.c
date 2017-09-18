@@ -13,8 +13,6 @@
 //    limitations under the License.
 
 #include "reader-thumb.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 static csh handle;
 

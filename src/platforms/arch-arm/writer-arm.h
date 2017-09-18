@@ -15,16 +15,36 @@
 #ifndef platforms_arch_arm_writer_arm_h
 #define platforms_arch_arm_writer_arm_h
 
+#include <string.h>
+
+// platforms
 #include "instructions.h"
+#include "regs-arm.h"
 #include "writer-arm.h"
 
+// hookzz
 #include "writer.h"
 
+// zzdeps
+#include "hookzz.h"
+#include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
-#include "hookzz.h"
-
 
 typedef ZzWriter ZzArmWriter;
+ZzArmWriter *zz_arm_writer_new(zpointer data_ptr);
+void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr);
+void zz_arm_writer_put_bytes(ZzArmWriter *self, zbyte *data, zuint data_size);
+void zz_arm_writer_put_instruction(ZzArmWriter *self, zuint32 insn);
+void zz_arm_writer_put_b_imm(ZzArmWriter *self, zuint32 imm);
+void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
+                                       arm_reg src_reg, zuint32 imm);
+void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, arm_reg reg,
+                                       zaddr address);
+void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
+                                       arm_reg src_reg, zuint32 imm);
+void zz_arm_writer_put_sub_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
+                                       arm_reg src_reg, zuint32 imm);
+zsize zz_arm_writer_near_jump_range_size();
 
 #endif

@@ -71,13 +71,13 @@ gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
                                       arm64_reg reg,
                                       GumAddress address)
 {
-  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (guint64) address);
+  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (zuint64) address);
 }
 
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
                                   arm64_reg reg,
-                                  guint64 val)
+                                  zuint64 val)
 {
   GumArm64RegInfo ri;
 
@@ -189,7 +189,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
       target->imm);
   gum_arm64_zz_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
 
-  return TRUE;
+  return true;
 }
 ```
 
@@ -219,7 +219,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
                                   arm64_reg reg,
-                                  guint64 val)
+                                  zuint64 val)
 {
   GumArm64RegInfo ri;
 

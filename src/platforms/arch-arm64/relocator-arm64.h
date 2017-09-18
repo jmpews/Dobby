@@ -27,18 +27,18 @@
 #include "relocator.h"
 
 
-zboolbranch_is_unconditional(Instruction *ins);
+zbool branch_is_unconditional(Instruction *ins);
 
 Instruction *relocator_read_one(zpointer address, ZzWriter *backup_writer, ZzWriter *relocate_writer);
 
-zboolrelocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer);
+zbool relocator_rewrite_ldr(Instruction *ins, ZzWriter *relocate_writer);
 
-zboolrelocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer);
+zbool relocator_rewrite_b(Instruction *ins, ZzWriter *relocate_writer);
 
-zboolrelocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer);
+zbool relocator_rewrite_bl(Instruction *ins, ZzWriter *relocate_writer);
 
-zboolrelocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer);
+zbool relocator_rewrite_adr(Instruction *ins, ZzWriter *relocate_writer);
 
-zboolrelocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer);
+zbool relocator_rewrite_b_cond(Instruction *ins, ZzWriter *relocate_writer);
 
 #endif

@@ -14,7 +14,7 @@
 
 HOOKZZ_DIR = $(abspath .)
 
-SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/backend-posix/*.c)  $(wildcard src/platforms/backend-darwin/*.c) $(wildcard src/platforms/arch-arm/*.c)
+SRC_SOURCES= $(wildcard src/*.c) $(wildcard src/platforms/backend-posix/*.c)  $(wildcard src/platforms/backend-darwin/*.c) $(wildcard src/platforms/arch-arm/*.c) $(wildcard src/platforms/backend-arm/*.c)
 ZZDEPS_SOURCES = $(wildcard src/zzdeps/darwin/*.c) $(wildcard src/zzdeps/common/*.c) $(wildcard src/zzdeps/posix/*.c) 
 ALL_SOURCES = $(SRC_SOURCES) $(ZZDEPS_SOURCES) 
 
@@ -63,7 +63,7 @@ ios.arm : $(ALL_SOURCES_O)
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
 	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
 
-	@echo "$(OK_COLOR)build success for arm64(IOS)! $(NO_COLOR)"
+	@echo "$(OK_COLOR)build success for armv7-ios-hookzz! $(NO_COLOR)"
 
 $(SRC_SOURCES_O): %.o : %.c
 	@$(ZZ_GCC) -c $< -o $@

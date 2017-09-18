@@ -35,14 +35,16 @@ struct _ZzInterceptor;
 #define HOOK_FUNCTION_TYPE 1
 #define HOOK_ADDRESS_TYPE 2
 
+struct _ZzHookFunctionEntryBackend;
 typedef struct _ZzHookFunctionEntry {
     int hook_type;
-    zboolisNearJump;
-
+    zbool isNearJump;
     unsigned long id;
-    zboolisEnabled;
+    zbool isEnabled;
+    zbool try_near_jump;
 
     zpointer thread_local_key;
+    struct _ZzHookFunctionEntryBackend *backend;
 
     zpointer target_ptr;
     zpointer target_end_ptr;
@@ -75,10 +77,12 @@ typedef struct _ZzInterceptorCenter {
     ZzCodeSlice leave_thunk;
 } ZzInterceptorCenter;
 
+struct _ZzInterceptorBackend;
+
 typedef struct _ZzInterceptor {
     ZzHookFunctionEntrySet hook_function_entry_set;
 
-    ZzInterceptorCenter intercepter_center;
+    struct _ZzInterceptorBackend *backend;
 
     ZzAllocator *allocator;
 
@@ -87,9 +91,7 @@ typedef struct _ZzInterceptor {
     zpointer leave_thunk;
 } ZzInterceptor;
 
-
-ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
-
-ZZSTATUS ZzActiveEnterTrampoline(ZzHookFunctionEntry *entry);
+ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr,
+                                            zpointer target_end_ptr);
 
 #endif

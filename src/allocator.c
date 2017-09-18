@@ -116,7 +116,7 @@ ZzMemoryPage *ZzNewNearCodeCave(zaddr address, zsize range_size,
     return page;
 }
 
-zboolZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
+zbool ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
     if (!allocator)
         return false;
     if (allocator->size >= allocator->capacity) {

@@ -15,14 +15,16 @@
 #ifndef platforms_arch_arm_reader_arm_h
 #define platforms_arch_arm_reader_arm_h
 
+// platforms
 #include "instructions.h"
 
-#include "trampoline.h"
+// hookzz
 
+// zzdeps
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 #include "hookzz.h"
-
+#include "zzdefs.h"
 
 cs_insn *zz_arm_reader_disassemble_at(zpointer address);
 

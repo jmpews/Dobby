@@ -60,7 +60,7 @@ typedef struct _ZzArm64RegInfo {
     zuint index;
     zuint meta;
     zuint width;
-    zboolis_integer;
+    zbool is_integer;
 } ZzArm64RegInfo;
 
 void zz_arm64_register_describe(arm64_reg reg, ZzArm64RegInfo *ri);

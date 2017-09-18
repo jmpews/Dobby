@@ -22,6 +22,10 @@
 #include "interceptor.h"
 
 /*
+    prepare_trampline:
+        1. 判断跳板类型
+        2. 初始化
+
     enter_trampoline:
         1. 跳转到 `enter_thunk`
 
@@ -37,7 +41,16 @@ typedef struct _ZzTrampoline {
     ZzCodeSlice *code_slice;
 } ZzTrampoline;
 
-ZZSTATUS ZzBuildTrampoline(ZzHookFunctionEntry *entry);
+
+
+ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzActiveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+
+ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildHalfTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 
 #endif

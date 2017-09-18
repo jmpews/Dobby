@@ -2,32 +2,35 @@
 #ifndef platforms_backend_arm_intercetor_arm
 #define platforms_backend_arm_intercetor_arm
 
-#include "hookzz.h"
+// platforms
+#include "platforms/arch-arm/relocator-arm.h"
+#include "platforms/arch-arm/relocator-thumb.h"
+#include "platforms/arch-arm/writer-arm.h"
+#include "platforms/arch-arm/writer-thumb.h"
 
-#include "interceptor.h"
+// hookzz
 #include "allocator.h"
+#include "interceptor.h"
 
-#include "platforms/arch/arm/writer-arm.h"
-#include "platforms/arch/arm/writer-thumb.h"
-#include "platforms/arch/arm/relocator-arm.h"
-#include "platforms/arch/arm/relocator-thumb.h"
+// zzdeps
+#include "hookzz.h"
+#include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
-
-typedef struct _ZzArmInterceptorBackend
-{
+typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
     ZzArmRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
 
     ZzArmWriter arm_writer;
-    ZzThumbWriter arm_writer;
+    ZzThumbWriter thumb_writer;
 
-    zpinter enter_thunk;
+    zpointer enter_thunk;
     zpointer leave_thunk;
-} _ZzInterceptorBackend;
+} ZzInterceptorBackend;
 
-typedef struct _ZzArmHookFuntionEntryBackend
-{
+typedef struct _ZzArmHookFuntionEntryBackend {
     zbool is_thumb;
     zuint redirect_code_size;
 } ZzArmHookFunctionEntryBackend;
