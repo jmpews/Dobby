@@ -195,20 +195,16 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     /* reserve space for next_hop and for cpsr */
     zz_arm_writer_put_sub_reg_reg_imm(writer, ARM_REG_SP, ARM_REG_SP, 2 * 4);
 
-    zz_arm_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+    zz_arm_writer_put_bytes(writer, (void *)ctx_save, 48);
 
-    zz_arm_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
+    zz_arm_writer_put_bytes(writer, (void *)pass_enter_func_args, 8);
 
-    zz_arm_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+    zz_arm_writer_put_bytes(writer, (void *)ctx_restore, 62);
     zz_arm_writer_put_ldr_reg_reg_imm(writer, ARM_REG_PC, ARM_REG_SP, 0);
 }
 
-void ZzThunkerBuildHalfThunk(ZzWriter *writer) {}
-
-void ZzThunkerBuildLeaveThunk(ZzWriter *writer) {}
-
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzThumbWriter *thumb_writer;
     ZzCodeSlice *code_slice;
     ZZSTATUS status;
@@ -222,7 +218,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                            thumb_writer->size))
         return;
 
-    self->leave_thunk = code_slice->data;
+    self->enter_thunk = code_slice->data;
 
     return;
 }

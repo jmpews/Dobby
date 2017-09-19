@@ -35,6 +35,8 @@ ZzArm64Writer *zz_arm64_writer_new(zpointer data_ptr);
 
 void zz_arm64_writer_reset(ZzArm64Writer *self, zpointer data_ptr);
 
+void zz_arm64_writer_init(ZzArm64Writer *self, zpointer target_addr);
+
 zsize zz_arm64_writer_near_jump_range_size();
 
 void zz_arm64_writer_put_ldr_reg_address(ZzArm64Writer *self, arm64_reg reg,

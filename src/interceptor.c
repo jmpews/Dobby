@@ -47,7 +47,8 @@ ZZSTATUS ZzInitializeInterceptor(void) {
         hook_function_entry_set->size = 0;
 
         g_interceptor = interceptor;
-        ZzThunkerBuildThunk(interceptor->backend);
+        interceptor->allocator = ZzNewAllocator();
+        interceptor->backend = ZzBuildInteceptorBackend(interceptor->allocator);
         return ZZ_DONE_INIT;
     }
     return ZZ_ALREADY_INIT;

@@ -19,6 +19,15 @@
 #define ZZ_ARM64_TINY_REDIRECT_SIZE 16
 #define ZZ_ARM64_FULL_REDIRECT_SIZE 16
 
+ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
+    ZzInterceptorBackend *backend =
+        (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    backend->allocator = allocator;
+    zz_arm64_writer_init(&backend->arm64_writer, NULL);
+    zz_arm64_relocator_init(backend, NULL, &backend->arm64_writer);
+    ZzThunkerBuildThunk(backend);
+}
+
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self,
                              ZzHookFunctionEntry *entry) {
     zpointer target_addr = entry->target_ptr;
@@ -39,7 +48,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self,
 
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self,
                                 ZzHookFunctionEntry *entry) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzArm64Writer *arm64_writer;
     ZzCodeSlice *code_slice;
     ZzArm64HookFunctionEntryBackend *entry_backend;
@@ -89,7 +98,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self,
 
 ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self,
                                  ZzHookFunctionEntry *entry) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice;
     ZzArm64HookFunctionEntryBackend *entry_backend;
     ZZSTATUS status;
@@ -134,7 +143,7 @@ ZZSTATUS ZzBuildHalfTrampoline(struct _ZzInterceptorBackend *self,
 
 ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self,
                                 ZzHookFunctionEntry *entry) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice;
     ZzArm64HookFunctionEntryBackend *entry_backend;
     ZZSTATUS status;
@@ -172,7 +181,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self,
 
 ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self,
                             ZzHookFunctionEntry *entry) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice;
     ZzArm64HookFunctionEntryBackend *entry_backend;
     ZZSTATUS status;

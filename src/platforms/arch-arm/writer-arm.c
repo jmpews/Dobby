@@ -29,6 +29,10 @@ ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
     return writer;
 }
 
+void zz_arm_writer_init(ZzArmWriter *self, zpointer data_ptr) {
+    zz_arm_writer_reset(self, data_ptr);
+}
+
 void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
     self->codedata = data_ptr;
     self->base = data_ptr;

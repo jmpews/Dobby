@@ -36,6 +36,10 @@ ZzArm64Writer *zz_arm64_writer_new(zpointer data_ptr) {
     return writer;
 }
 
+void zz_arm64_writer_init(ZzArm64Writer *self, zpointer target_addr) {
+    zz_arm64_writer_reset(self, target_addr);
+}
+
 void zz_arm64_writer_reset(ZzArm64Writer *self, zpointer data_ptr) {
     self->codedata = data_ptr;
     self->base = data_ptr;

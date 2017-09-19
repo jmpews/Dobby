@@ -331,7 +331,7 @@ void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 // }
 
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    zbyte temp_code_slice_data[256];
+    zbyte temp_code_slice_data[256] = {0};
     ZzArm64Writer *arm64_writer;
     ZzCodeSlice *code_slice;
     ZZSTATUS status;

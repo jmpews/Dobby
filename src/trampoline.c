@@ -20,7 +20,7 @@
 #include "trampoline.h"
 
 // ZZSTATUS ZzBuildEnterTrampoline(ZzHookFunctionEntry *entry) {
-//     zbyte temp_code_slice_data[256];
+//     zbyte temp_code_slice_data[256] = {0};
 //     ZzWriter *writer;
 //     ZzCodeSlice *code_slice;
 //     ZzInterceptor *interceptor;
@@ -60,7 +60,7 @@
 // }
 
 // ZZSTATUS ZzBuildInvokeTrampoline(ZzHookFunctionEntry *entry) {
-//     zbyte temp_code_slice_data[256];
+//     zbyte temp_code_slice_data[256] = {0};
 //     ZzWriter *backup_writer, *relocate_writer;
 //     ZzCodeSlice *code_slice;
 //     ZzInterceptor *interceptor;
@@ -104,7 +104,7 @@
 // }
 
 // ZZSTATUS ZzBuildLeaveTrampoline(ZzHookFunctionEntry *entry) {
-//     zbyte temp_code_slice_data[256];
+//     zbyte temp_code_slice_data[256] = {0};
 //     ZzWriter *writer;
 //     ZzCodeSlice *code_slice;
 //     ZzInterceptor *interceptor;
@@ -134,7 +134,7 @@
 // }
 
 // ZZSTATUS ZzBuildHalfTrampoline(ZzHookFunctionEntry *entry) {
-//     zbyte temp_code_slice_data[256];
+//     zbyte temp_code_slice_data[256] = {0};
 //     ZzWriter *writer;
 //     ZzCodeSlice *code_slice;
 //     ZzInterceptor *interceptor;

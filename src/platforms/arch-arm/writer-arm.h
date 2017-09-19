@@ -33,6 +33,7 @@
 
 typedef ZzWriter ZzArmWriter;
 ZzArmWriter *zz_arm_writer_new(zpointer data_ptr);
+void zz_arm_writer_init(ZzArmWriter *self, zpointer data_ptr);
 void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr);
 void zz_arm_writer_put_bytes(ZzArmWriter *self, zbyte *data, zuint data_size);
 void zz_arm_writer_put_instruction(ZzArmWriter *self, zuint32 insn);

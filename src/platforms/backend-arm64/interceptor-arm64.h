@@ -9,6 +9,7 @@
 // hookzz
 #include "allocator.h"
 #include "interceptor.h"
+#include "thunker.h"
 
 // zzdeps
 #include "hookzz.h"
