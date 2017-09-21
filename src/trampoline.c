@@ -163,9 +163,9 @@
 //     return ZZ_DONE;
 // }
 
-ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self,
-                           ZzHookFunctionEntry *entry) {
+ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
 
+    ZzPrepareTrampoline(self, entry);
     ZzBuildEnterTrampoline(self, entry);
 
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {

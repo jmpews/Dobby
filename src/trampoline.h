@@ -39,19 +39,14 @@
 
 typedef struct _ZzTrampoline { ZzCodeSlice *code_slice; } ZzTrampoline;
 
-ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self,
-                           ZzHookFunctionEntry *entry);
-ZZSTATUS ZzActiveTrampoline(struct _ZzInterceptorBackend *self,
-                            ZzHookFunctionEntry *entry);
+ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzActiveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 struct _ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator);
 
-ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self,
-                                ZzHookFunctionEntry *entry);
-ZZSTATUS ZzBuildHalfTrampoline(struct _ZzInterceptorBackend *self,
-                               ZzHookFunctionEntry *entry);
-ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self,
-                                 ZzHookFunctionEntry *entry);
-ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self,
-                                ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildHalfTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 #endif

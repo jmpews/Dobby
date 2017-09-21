@@ -19,8 +19,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code,
-                           ZzArmWriter *writer) {
+void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *output) {
     cs_err err;
     err = cs_open(CS_ARCH_ARM, CS_MODE_ARM, &relocator->capstone);
     if (err) {
@@ -29,40 +28,92 @@ void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code,
     }
     cs_option(relocator->capstone, CS_OPT_DETAIL, CS_OPT_ON);
 
+    relocator->inpos = 0;
+    relocator->outpos = 0;
+
     relocator->input_start = input_code;
     relocator->input_cur = input_code;
-    relocator->input_insns = (Instruction *)malloc(
-        MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+    relocator->input_pc = (zaddr)input_code;
+
+    relocator->input_insns =
+        (Instruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+    memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+
+    relocator->output = output;
 }
 
-zsize zz_arm_relocator_read_one(ZzArmRelocator *self,
-                                Instruction *instruction) {
-    cs_insn **cs_insn_ptr, *cs_insn;
-    Instruction insn = self->input_insns[self->inpos];
-    cs_insn_ptr = &insn.cs_insn;
+void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWriter *output) {
+    self->input_cur = input_code;
+    self->input_start = input_code;
+    self->input_pc = (zaddr)input_code;
 
-    if (cs_disasm(self->capstone, self->input_cur, 4, self->input_pc, 1,
-                  cs_insn_ptr) != 1) {
+    self->inpos = 0;
+    self->outpos = 0;
+
+    self->output = output;
+}
+
+zsize zz_arm_relocator_read_one(ZzArmRelocator *self, Instruction *instruction) {
+    cs_insn **cs_insn_ptr, *cs_insn;
+    Instruction *insn = &self->input_insns[self->inpos];
+    cs_insn_ptr = &insn->cs_insn;
+
+    if (*cs_insn_ptr == NULL)
+        *cs_insn_ptr = cs_malloc(self->capstone);
+
+    // http://www.capstone-engine.org/iteration.html
+    uint64_t address;
+    size_t size;
+    const uint8_t *code;
+
+    code = self->input_cur;
+    size = 4;
+    address = self->input_pc;
+    cs_insn = *cs_insn_ptr;
+
+    if (!cs_disasm_iter(self->capstone, &code, &size, &address, cs_insn)) {
         return 0;
     }
-
-    cs_insn = *cs_insn_ptr;
 
     switch (cs_insn->id) {}
 
     self->inpos++;
 
     if (instruction != NULL)
-        *instruction = insn;
+        instruction = insn;
 
     self->input_cur += cs_insn->size;
     self->input_pc += cs_insn->size;
 
     return self->input_cur - self->input_start;
 }
-
-void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes,
-                                   zuint *max_bytes) {
+void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
     *max_bytes = 16;
     return;
+}
+
+void zz_arm_relocator_write_all(ZzArmRelocator *self) {
+    zuint count = 0;
+    while (zz_arm_relocator_write_one(self))
+        count++;
+}
+
+zbool zz_arm_relocator_write_one(ZzArmRelocator *self) {
+    Instruction *insn;
+    cs_insn *cs_insn;
+    zbool rewritten = false;
+
+    insn = &self->input_insns[self->outpos];
+    cs_insn = insn->cs_insn;
+
+    if (self->inpos != self->outpos) {
+        self->outpos++;
+    } else {
+        return false;
+    }
+
+    switch (cs_insn->id) {}
+    if (!rewritten)
+        zz_arm_writer_put_bytes(self->output, cs_insn->bytes, cs_insn->size);
+    return true;
 }

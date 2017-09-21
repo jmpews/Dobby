@@ -45,8 +45,9 @@ typedef struct _ZzThumbRelocator {
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code,
                              ZzThumbWriter *writer);
-zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self,
-                                  Instruction *instruction);
-void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes,
-                                     zuint *max_bytes);
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, zpointer input_code, ZzThumbWriter *output);
+zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self, Instruction *instruction);
+zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
+void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
+void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 #endif

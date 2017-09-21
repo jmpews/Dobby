@@ -45,6 +45,8 @@ void zz_thumb_writer_put_add_sub_ldr_reg_reg_offset(ZzThumbWriter *self, arm_reg
 void zz_thumb_writer_put_add_sub_str_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
                                                     arm_reg dst_reg, zint32 dst_offset);
 
+void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address);
+
 // ------- architecture default -------
 
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr);

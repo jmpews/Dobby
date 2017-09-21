@@ -39,6 +39,12 @@ void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
     self->pc = data_ptr;
     self->size = 0;
 }
+
+void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address) {
+    zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
+    zz_thumb_writer_put_b_imm(self, 0x0);
+    zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
+}
 // ------- user custom -------
 
 void zz_thumb_writer_put_add_sub_ldr_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
@@ -131,19 +137,22 @@ void zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, arm_reg reg, zint32 im
 
     zz_arm_register_describe(reg, &ri);
 
-    if (ri.meta <= ZZ_ARM_R7) {
+    if (ri.meta <= ZZ_ARM_R7 && imm > 0) {
         zz_thumb_writer_put_instruction(self,
                                         0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
     } else {
-        zbool add = true;
+        zbool add;
+        if (imm > 0)
+            add = true;
+        else
+            add = false;
         zz_thumb_writer_put_instruction(self, 0xf85f | (add << 7));
-        zz_thumb_writer_put_instruction(self, (ri.index << 12) | imm);
+        zz_thumb_writer_put_instruction(self, (ri.index << 12) | ABS(imm));
     }
 }
 
 void zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address) {
-    zz_thumb_writer_put_ldr_reg_imm(self, reg, 2);
-    zz_thumb_writer_put_b_imm(self, 0x2);
+    zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
@@ -182,10 +191,14 @@ static void zz_thumb_writer_put_transfer_reg_reg_offset(ZzThumbWriter *self,
             zz_thumb_writer_put_instruction(self, (lr.index << 12) | right_offset);
         }
     } else {
-        zz_thumb_writer_put_instruction(
-            self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
-        zz_thumb_writer_put_instruction(self, 0x0c00 | (lr.index << 12) |
-                                                  (ABS(right_offset) & ZZ_INT8_MASK));
+        if ((rr.index & 0xF) == 0xF) {
+            zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
+        } else {
+            zz_thumb_writer_put_instruction(
+                self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
+            zz_thumb_writer_put_instruction(self, 0x0c00 | (lr.index << 12) |
+                                                      (ABS(right_offset) & ZZ_INT8_MASK));
+        }
     }
 }
 

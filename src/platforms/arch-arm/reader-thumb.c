@@ -30,15 +30,15 @@ void zz_thumb_reader_capstone_init(void) {
 
 cs_insn *zz_thumb_reader_disassemble_at(zpointer address) {
     if (!handle)
-    zz_thumb_reader_capstone_init();
+        zz_thumb_reader_capstone_init();
     cs_insn *insn;
     size_t count;
-    count = cs_disasm(handle, address, 16, (unsigned long) address, 0, &insn);
+    count = cs_disasm(handle, address, 16, (unsigned long)address, 0, &insn);
     if (!insn) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
-        Xerror("zz_thumb_reader_disassemble_at error at %p", (zpointer) address);
+        Xerror("zz_thumb_reader_disassemble_at error at %p", (zpointer)address);
     }
     return insn;
 }
