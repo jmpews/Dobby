@@ -45,11 +45,10 @@ __attribute__((__naked__)) static void ctx_save() {
     __asm__ volatile(
         /* reserve space for next_hop and for cpsr */
         // "sub sp, sp, #(2*4)\n"
-
+        ".thumb\n"
         /* save {r0-r7} */
-        ".arm\n"
         "sub sp, sp, #(14*4)\n"
-        
+
         "str lr, [sp, #(13*4)]\n"
 
         "str r12, [sp, #(12*4)]\n"
@@ -75,8 +74,7 @@ __attribute__((__naked__)) static void ctx_save() {
 
 __attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
-    __asm__ volatile(".arm\n"
-                     "ldr r0, [sp, #-4]\n"
+    __asm__ volatile(".thumb\n"
                      "add r1, sp, #8\n"
                      "add r2, sp, #(2*4 + 13*4)\n"
                      "add r3, sp, #(2*4 + 14*4 + 4)\n");
@@ -91,27 +89,26 @@ __attribute__((__naked__)) static void pass_enter_func_args() {
 // }
 
 __attribute__((__naked__)) static void ctx_restore() {
-    __asm__ volatile(
-        /* restore sp */
-        ".arm\n"
-        "add sp, sp, #(2*4)\n"
+    __asm__ volatile(".thumb\n"
+                     /* restore sp */
+                     "add sp, sp, #(2*4)\n"
 
-        "ldr r0, [sp], #4\n"
-        "ldr r1, [sp], #4\n"
-        "ldr r2, [sp], #4\n"
-        "ldr r3, [sp], #4\n"
-        "ldr r4, [sp], #4\n"
-        "ldr r5, [sp], #4\n"
-        "ldr r6, [sp], #4\n"
-        "ldr r7, [sp], #4\n"
+                     "ldr r0, [sp], #4\n"
+                     "ldr r1, [sp], #4\n"
+                     "ldr r2, [sp], #4\n"
+                     "ldr r3, [sp], #4\n"
+                     "ldr r4, [sp], #4\n"
+                     "ldr r5, [sp], #4\n"
+                     "ldr r6, [sp], #4\n"
+                     "ldr r7, [sp], #4\n"
 
-        "ldr r8, [sp], #4\n"
-        "ldr r9, [sp], #4\n"
-        "ldr r10, [sp], #4\n"
-        "ldr r11, [sp], #4\n"
-        "ldr r12, [sp], #4\n"
+                     "ldr r8, [sp], #4\n"
+                     "ldr r9, [sp], #4\n"
+                     "ldr r10, [sp], #4\n"
+                     "ldr r11, [sp], #4\n"
+                     "ldr r12, [sp], #4\n"
 
-        "ldr lr, [sp], #4\n");
+                     "ldr lr, [sp], #4\n");
 }
 
 // just like pre_call, wow!
@@ -191,7 +188,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs, z
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* reserve space for next_hop and for cpsr */
-    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 2 * 4);
+    // zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 2 * 4);
 
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 48);
 
@@ -200,9 +197,14 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 58);
 
     /* jump to next_hop */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 2 * 4);
+    // zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 2 * 4);
 
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, -4);
+    /* restore arg space */
+    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
+
+    /* pop and jump to next hop */
+    // use Post-indexed ldr to `pop`
+    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
 }
 
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {

@@ -44,11 +44,7 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg, zad
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
-    if (ri.meta <= ZZ_ARM_R7) {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-    } else {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
-    }
+    zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
     zz_thumb_writer_put_b_imm(self, 0x2);
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
@@ -61,16 +57,28 @@ void zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr
 
 void zz_thumb_writer_put_add_sub_ldr_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
                                                     arm_reg src_reg, zint32 src_offset) {
-    zz_thumb_writer_put_add_reg_imm(self, src_reg, src_offset);
+    if (src_offset < 0)
+        zz_thumb_writer_put_sub_reg_imm(self, src_reg, ABS(src_offset));
+    else
+        zz_thumb_writer_put_add_reg_imm(self, src_reg, src_offset);
     zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, 0);
-    zz_thumb_writer_put_sub_reg_imm(self, src_reg, src_offset);
+    if (src_offset < 0)
+        zz_thumb_writer_put_add_reg_imm(self, src_reg, ABS(src_offset));
+    else
+        zz_thumb_writer_put_sub_reg_imm(self, src_reg, src_offset);
 }
 
 void zz_thumb_writer_put_add_sub_str_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
                                                     arm_reg dst_reg, zint32 dst_offset) {
-    zz_thumb_writer_put_add_reg_imm(self, dst_reg, dst_offset);
+    if (dst_offset < 0)
+        zz_thumb_writer_put_sub_reg_imm(self, dst_reg, ABS(dst_offset));
+    else
+        zz_thumb_writer_put_add_reg_imm(self, dst_reg, dst_offset);
     zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, 0);
-    zz_thumb_writer_put_sub_reg_imm(self, dst_reg, dst_offset);
+    if (dst_offset < 0)
+        zz_thumb_writer_put_add_reg_imm(self, dst_reg, ABS(dst_offset));
+    else
+        zz_thumb_writer_put_sub_reg_imm(self, dst_reg, dst_offset);
 }
 
 // ------- architecture default -------
@@ -151,16 +159,17 @@ void zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, arm_reg reg, zint32 im
 
     zz_arm_register_describe(reg, &ri);
 
+    if ((((zaddr)self->pc) % 4) && imm == 0) {
+        zz_thumb_writer_put_nop(self);
+    }
     if (ri.meta <= ZZ_ARM_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
+
         zz_thumb_writer_put_instruction(self,
                                         0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
     } else if (imm < (1 << 12)) {
         zbool add = 0;
         if (imm >= 0)
             add = 1;
-        if ((((zaddr)self->pc) % 4) && imm == 0) {
-            zz_thumb_writer_put_nop(self);
-        }
         zz_thumb_writer_put_instruction(self, 0xf85f | (add << 7));
         zz_thumb_writer_put_instruction(self, (ri.index << 12) | ABS(imm));
     }
@@ -249,7 +258,7 @@ zaddr zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self,
         return 0;
 
     if (rr.meta == ZZ_ARM_SP && lr.meta <= ZZ_ARM_R7 && right_offset < ((1 << 8) << 2)) {
-        insn = 0x6000 | (right_offset / 4) << 6 | (rr.index << 3) | lr.index;
+        insn = 0x9000 | (lr.index << 8) | (right_offset / 4);
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
         zz_thumb_writer_put_instruction(self, insn);
@@ -291,7 +300,8 @@ zaddr zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self,
 zaddr zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self,
                                                      ZzThumbMemoryOperation operation,
                                                      arm_reg left_reg, arm_reg right_reg,
-                                                     zint32 right_offset) {
+                                                     zint32 right_offset, zbool index,
+                                                     zbool wback) {
     ZzArmRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
@@ -303,7 +313,7 @@ zaddr zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self,
         if (rr.meta == ZZ_ARM_PC) {
             zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         } else {
-            zbool add = 0, index = 0, wback = 0;
+            zbool add = 0;
             if (right_offset > 0)
                 add = 1;
             zz_thumb_writer_put_instruction(
@@ -333,7 +343,7 @@ static void zz_thumb_writer_put_transfer_reg_reg_offset(ZzThumbWriter *self,
                                                        right_offset))
         return;
     if (zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, operation, left_reg, right_reg,
-                                                       right_offset))
+                                                       right_offset, 1, 0))
         return;
 }
 
@@ -348,6 +358,19 @@ void zz_thumb_writer_put_str_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg
     zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg,
                                                 dst_offset);
 }
+
+void zz_thumb_writer_put_ldr_index_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
+                                                  arm_reg src_reg, zsize src_offset, zbool index) {
+    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg,
+                                                   src_offset, index, 1);
+}
+
+void zz_thumb_writer_put_str_index_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
+                                                  arm_reg dst_reg, zsize dst_offset, zbool index) {
+    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg,
+                                                   dst_offset, index, 1);
+}
+
 void zz_thumb_writer_put_str_reg_reg(ZzThumbWriter *self, arm_reg src_reg, arm_reg dst_reg) {
     zz_thumb_writer_put_str_reg_reg_offset(self, src_reg, dst_reg, 0);
 }

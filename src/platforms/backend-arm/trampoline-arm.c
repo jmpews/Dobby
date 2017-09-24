@@ -86,16 +86,15 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)target_addr);
 
-    // SAME RESULT!
-    // zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, -4);
-    zz_thumb_writer_put_add_sub_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, -4);
+    /* 2 stack space: 1. next_hop 2. entry arg */
+    zz_thumb_writer_put_sub_reg_imm(thumb_writer, ARM_REG_SP, 0xc);
+    zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, 0x8);
 
     zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ARM_REG_R7, (zaddr)entry);
+    zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, 0x4);
 
-    zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP,
-                                           -(CTX_SAVE_STACK_OFFSET + 4));
-
-    zz_thumb_writer_put_add_sub_ldr_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, -4);
+    zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_imm(thumb_writer, ARM_REG_SP, 0x4);
 
     zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
                                         (zaddr)((zaddr)self->enter_thunk + 1));

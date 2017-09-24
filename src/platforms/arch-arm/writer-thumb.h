@@ -74,6 +74,10 @@ void zz_thumb_writer_put_ldr_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg
                                             zsize src_offset);
 void zz_thumb_writer_put_str_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg, arm_reg dst_reg,
                                             zsize dst_offset);
+void zz_thumb_writer_put_str_index_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
+                                                  arm_reg dst_reg, zsize dst_offset, zbool index);
+void zz_thumb_writer_put_ldr_index_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
+                                                  arm_reg src_reg, zsize src_offset, zbool index);
 void zz_thumb_writer_put_str_reg_reg(ZzThumbWriter *self, arm_reg src_reg, arm_reg dst_reg);
 void zz_thumb_writer_put_ldr_reg_reg(ZzThumbWriter *self, arm_reg dst_reg, arm_reg src_reg);
 void zz_thumb_writer_put_add_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, zint32 imm);
