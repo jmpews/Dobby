@@ -49,7 +49,7 @@ typedef bool zbool;
 
 #ifndef zz_register_type
 #define zz_register_type
-#if defined(__arm64__)
+#if defined(__arm64__) || defined(__aarch64__)
 typedef union FPReg_ {
     __int128_t q;
     struct {

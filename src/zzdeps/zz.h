@@ -69,12 +69,12 @@ typedef bool zbool;
 #endif
 
 #include <stdio.h>
-#include <sys/syslog.h>
 
 // Important!!!
 // STDERR before STDOUT, because sync
 
 #if (SYSLOG)
+#include <sys/syslog.h>
 #define Xinfo(fmt, ...)                                                        \
     do {                                                                       \
         if (GLOBAL_INFO)                                                       \
