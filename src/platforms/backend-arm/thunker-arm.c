@@ -47,8 +47,9 @@ __attribute__((__naked__)) static void ctx_save() {
         // "sub sp, sp, #(2*4)\n"
 
         /* save {r0-r7} */
+        ".arm\n"
         "sub sp, sp, #(14*4)\n"
-
+        
         "str lr, [sp, #(13*4)]\n"
 
         "str r12, [sp, #(12*4)]\n"
@@ -74,7 +75,8 @@ __attribute__((__naked__)) static void ctx_save() {
 
 __attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
-    __asm__ volatile("ldr r0, [sp, #-4]\n"
+    __asm__ volatile(".arm\n"
+                     "ldr r0, [sp, #-4]\n"
                      "add r1, sp, #8\n"
                      "add r2, sp, #(2*4 + 13*4)\n"
                      "add r3, sp, #(2*4 + 14*4 + 4)\n");
@@ -91,6 +93,7 @@ __attribute__((__naked__)) static void pass_enter_func_args() {
 __attribute__((__naked__)) static void ctx_restore() {
     __asm__ volatile(
         /* restore sp */
+        ".arm\n"
         "add sp, sp, #(2*4)\n"
 
         "ldr r0, [sp], #4\n"
