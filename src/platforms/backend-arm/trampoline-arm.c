@@ -93,14 +93,12 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ARM_REG_R7, (zaddr)entry);
 
     zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP,
-                                           -(2 * 4 + 14 * 4 + 2 * 4 + 4));
+                                           -(CTX_SAVE_STACK_OFFSET + 4));
 
-    zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, -4);
+    zz_thumb_writer_put_add_sub_ldr_reg_reg_offset(thumb_writer, ARM_REG_R7, ARM_REG_SP, -4);
 
-    // SAME RESULT!
-    // zz_thumb_writer_put_ldr_reg_imm(thumb_writer, ARM_REG_PC, -4);
-    // zz_thumb_writer_put_bytes(thumb_writer, (zpointer)&self->enter_thunk, sizeof(zpointer));
-    zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)self->enter_thunk);
+    zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
+                                        (zaddr)((zaddr)self->enter_thunk + 1));
 
     if (is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
 

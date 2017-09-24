@@ -52,6 +52,7 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg, zad
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr);
 void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr);
 void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr);
+void zz_thumb_writer_put_nop(ZzThumbWriter *self);
 void zz_thumb_writer_put_bytes(ZzThumbWriter *self, zbyte *data, zuint data_size);
 void zz_thumb_writer_put_instruction(ZzThumbWriter *self, uint16_t insn);
 void zz_thumb_writer_put_b_imm(ZzThumbWriter *self, zuint32 imm);

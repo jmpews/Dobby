@@ -74,7 +74,7 @@ __attribute__((__naked__)) static void ctx_save() {
 
 __attribute__((__naked__)) static void pass_enter_func_args() {
     /* transfer args */
-    __asm__ volatile("ldr r0, [sp, #(0)]\n"
+    __asm__ volatile("ldr r0, [sp, #-4]\n"
                      "add r1, sp, #8\n"
                      "add r2, sp, #(2*4 + 13*4)\n"
                      "add r3, sp, #(2*4 + 14*4 + 4)\n");
@@ -90,7 +90,7 @@ __attribute__((__naked__)) static void pass_enter_func_args() {
 
 __attribute__((__naked__)) static void ctx_restore() {
     __asm__ volatile(
-        /* restore sp(fake) */
+        /* restore sp */
         "add sp, sp, #(2*4)\n"
 
         "ldr r0, [sp], #4\n"
@@ -108,15 +108,12 @@ __attribute__((__naked__)) static void ctx_restore() {
         "ldr r11, [sp], #4\n"
         "ldr r12, [sp], #4\n"
 
-        "ldr lr, [sp], #4\n"
-
-        "ldr pc, [sp], #8\n");
+        "ldr lr, [sp], #4\n");
 }
 
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                       zpointer caller_ret_addr,
-                                       zpointer next_hop) {
+                                       zpointer caller_ret_addr, zpointer next_hop) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -147,8 +144,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 
 // just like post_call, wow!
 void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                      zpointer caller_ret_addr,
-                                      zpointer next_hop) {
+                                      zpointer caller_ret_addr, zpointer next_hop) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -169,8 +165,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                     zpointer next_hop) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs, zpointer next_hop) {
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -193,14 +188,18 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* reserve space for next_hop and for cpsr */
-    zz_arm_writer_put_sub_reg_reg_imm(writer, ARM_REG_SP, ARM_REG_SP, 2 * 4);
+    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 2 * 4);
 
-    zz_arm_writer_put_bytes(writer, (void *)ctx_save, 48);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 48);
 
-    zz_arm_writer_put_bytes(writer, (void *)pass_enter_func_args, 8);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)pass_enter_func_args), 8);
 
-    zz_arm_writer_put_bytes(writer, (void *)ctx_restore, 62);
-    zz_arm_writer_put_ldr_reg_reg_imm(writer, ARM_REG_PC, ARM_REG_SP, 0);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 58);
+
+    /* jump to next_hop */
+    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 2 * 4);
+
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, -4);
 }
 
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
@@ -214,8 +213,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
 
     code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data,
-                           thumb_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
         return;
 
     self->enter_thunk = code_slice->data;

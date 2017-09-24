@@ -44,7 +44,7 @@ void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code,
     relocator->input_insns =
         (Instruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
 
-    memset(relocator->input_insns, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+    memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
 
     relocator->output = output;
 }

@@ -26,6 +26,7 @@
 // hookzz
 #include "stack.h"
 #include "thunker.h"
+#include "zzdefs.h"
 
 // zzdeps
 #include "hookzz.h"

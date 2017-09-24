@@ -71,12 +71,6 @@ typedef struct {
     zsize capacity;
 } ZzHookFunctionEntrySet;
 
-typedef struct _ZzInterceptorCenter {
-    ZzCodeSlice enter_thunk;
-    ZzCodeSlice half_thunk;
-    ZzCodeSlice leave_thunk;
-} ZzInterceptorCenter;
-
 struct _ZzInterceptorBackend;
 
 typedef struct _ZzInterceptor {
@@ -91,7 +85,6 @@ typedef struct _ZzInterceptor {
     zpointer leave_thunk;
 } ZzInterceptor;
 
-ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr,
-                                            zpointer target_end_ptr);
+ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
 
 #endif
