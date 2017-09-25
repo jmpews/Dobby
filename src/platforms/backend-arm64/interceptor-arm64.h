@@ -17,6 +17,8 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
+#define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
+
 typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
     ZzArm64Relocator arm64_relocator;

@@ -20,7 +20,7 @@
 #include "zzdeps/zz.h"
 
 // (next_hop + general_regs + sp)
-#define CTX_SAVE_STACK_OFFSET (0x8 + 0x38 + 0x8)
+#define CTX_SAVE_STACK_OFFSET (4 * 14)
 
 typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;

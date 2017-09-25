@@ -16,15 +16,16 @@
 
 #include "interceptor-arm64.h"
 
-#define ZZ_ARM64_TINY_REDIRECT_SIZE 16
+#define ZZ_ARM64_TINY_REDIRECT_SIZE 4
 #define ZZ_ARM64_FULL_REDIRECT_SIZE 16
 
 ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
     backend->allocator = allocator;
     zz_arm64_writer_init(&backend->arm64_writer, NULL);
-    zz_arm64_relocator_init(backend, NULL, &backend->arm64_writer);
+    zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);
     ZzThunkerBuildThunk(backend);
+    return backend;
 }
 
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
@@ -35,8 +36,9 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     entry_backend =
         (ZzArm64HookFunctionEntryBackend *)malloc(sizeof(ZzArm64HookFunctionEntryBackend));
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
+
     if (entry->try_near_jump) {
-        entry_backend->redirect_code_size = ZZ_ARM64_FULL_REDIRECT_SIZE;
+        entry_backend->redirect_code_size = ZZ_ARM64_TINY_REDIRECT_SIZE;
     } else {
         zz_arm64_relocator_try_relocate(target_addr, ZZ_ARM64_FULL_REDIRECT_SIZE, &redirect_limit);
         entry_backend->redirect_code_size = ZZ_ARM64_FULL_REDIRECT_SIZE;
@@ -57,32 +59,31 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
 
-    zz_arm64_writer_put_ldr_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)entry);
+    /* 2 stack space: 1. next_hop 2. entry arg */
+    zz_arm64_writer_put_sub_reg_reg_imm(arm64_writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 0x8);
 
-    // push x17
-    zz_arm64_writer_put_sub_reg_reg_imm(arm64_writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-    zz_arm64_writer_put_str_reg_reg_offset(arm64_writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_ldr_b_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)entry);
+    zz_arm64_writer_put_str_reg_reg_offset(arm64_writer, ARM64_REG_X17, ARM64_REG_SP, 0x8);
 
-    // jump to `dest`
-    zz_arm64_writer_put_ldr_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)self->enter_thunk);
-    zz_arm64_writer_put_br_reg(arm64_writer, ARM64_REG_X17);
+    /* jump to enter thunk */
+    zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)self->enter_thunk);
 
     if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
         code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                        zz_arm64_writer_near_jump_range_size(),
-                                        arm64_writer->size); // @common-function
+                                        zz_arm64_writer_near_jump_range_size(), arm64_writer->size);
         if (!code_slice)
             return ZZ_FAILED;
     }
 
     if (!code_slice)
-        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size); // @common-funciton
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
     if (!code_slice)
         return ZZ_FAILED;
 
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
         return ZZ_FAILED;
     entry->on_enter_trampoline = code_slice->data;
+
     status = ZZ_SUCCESS;
 
     free(arm64_writer);
@@ -106,18 +107,19 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     zsize tmp_relocator_insn_size;
 
     do {
-        zz_arm64_relocator_read_one(arm64_relocatorr, NULL);
+        zz_arm64_relocator_read_one(arm64_relocator, NULL);
         tmp_relocator_insn_size = arm64_relocator->input_cur - arm64_relocator->input_start;
     } while (tmp_relocator_insn_size < entry_backend->redirect_code_size);
 
-    zz_arm64_relocator_write_all(arm64_relocatorr);
+    zz_arm64_relocator_write_all(arm64_relocator);
 
-    zz_arm64_writer_put_ldr_reg_imm(arm64_writer, ARM64_REG_X17, (zuint)0x8);
-    zz_arm64_writer_put_br_reg(arm64_writer, ARM64_REG_X17);
-    zz_arm64_writer_put_bytes(arm64_writer, (zpointer)&target_addr, sizeof(target_addr));
+    zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
-    code_slice = ZzNewCodeSlice(self->allocator, tmp_relocator_insn_size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, tmp_relocator_insn_size))
+    /* jump to rest target address */
+    zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)restore_target_addr);
+
+    code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
         return ZZ_FAILED;
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         // update target_half_ret_addr
@@ -145,16 +147,16 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
 
-    zz_arm64_writer_put_ldr_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)entry);
+    /* 2 stack space: 1. next_hop 2. entry arg */
+    zz_arm64_writer_put_sub_reg_reg_imm(arm64_writer, ARM64_REG_SP, ARM64_REG_SP, 0x8);
 
-    // push x17
-    zz_arm64_writer_put_sub_reg_reg_imm(arm64_writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-    zz_arm64_writer_put_str_reg_reg_offset(arm64_writer, ARM64_REG_X17, ARM64_REG_SP, 0);
+    zz_arm64_writer_put_ldr_b_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)entry);
+    zz_arm64_writer_put_str_reg_reg_offset(arm64_writer, ARM64_REG_X17, ARM64_REG_SP, 0x4);
 
-    // jump to `dest`
-    zz_arm64_writer_put_ldr_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)self->leave_thunk);
-    zz_arm64_writer_put_br_reg(arm64_writer, ARM64_REG_X17);
-    code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size); // @common-function
+    /* jump to leave thunk */
+    zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)self->leave_thunk);
+
+    code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
 
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
         return ZZ_FAILED;
@@ -181,13 +183,11 @@ ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *ent
         zz_arm64_writer_put_b_imm(arm64_writer,
                                   (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
     } else {
-        zz_arm64_writer_put_ldr_reg_imm(arm64_writer, ARM64_REG_X17, (zuint)0x8);
-        zz_arm64_writer_put_br_reg(arm64_writer, ARM64_REG_X17);
-        zz_arm64_writer_put_bytes(arm64_writer, (zpointer) & (entry->on_enter_trampoline),
-                                  sizeof(zpointer));
+        zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17,
+                                               (zaddr)entry->on_enter_trampoline);
     }
 
-    if (!ZzMemoryPatchCode(target_addr, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)target_addr, temp_code_slice_data, arm64_writer->size))
         return ZZ_FAILED;
 
     return ZZ_SUCCESS;

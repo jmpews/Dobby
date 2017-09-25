@@ -106,7 +106,7 @@ void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm
 
 zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instruction) {
     cs_insn **cs_insn_ptr, *cs_insn;
-    Instruction &insn = &self->input_insns[self->inpos];
+    Instruction *insn = &self->input_insns[self->inpos];
     cs_insn_ptr = &insn->cs_insn;
 
     if (*cs_insn_ptr == NULL)
@@ -131,7 +131,7 @@ zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instructi
     self->inpos++;
 
     if (instruction != NULL)
-        *instruction = insn;
+        instruction = insn;
 
     self->input_cur += cs_insn->size;
     self->input_pc += cs_insn->size;

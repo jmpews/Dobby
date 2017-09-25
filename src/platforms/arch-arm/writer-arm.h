@@ -45,8 +45,11 @@ void zz_arm_writer_put_ldr_b_reg_address(ZzArmWriter *self, arm_reg reg, zaddr a
 void zz_arm_writer_put_bytes(ZzArmWriter *self, zbyte *data, zuint data_size);
 void zz_arm_writer_put_instruction(ZzArmWriter *self, zuint32 insn);
 void zz_arm_writer_put_b_imm(ZzArmWriter *self, zuint32 imm);
+void zz_arm_writer_put_bx_reg(ZzArmWriter *self, arm_reg reg);
+void zz_arm_writer_put_nop(ZzArmWriter *self);
 void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
-                                       zuint32 imm);
+                                       zint32 imm);
+void zz_arm_writer_put_ldr_reg_imm_literal(ZzArmWriter *self, arm_reg dst_reg, zint32 imm);
 void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, arm_reg reg, zaddr address);
 void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
                                        zuint32 imm);

@@ -15,22 +15,11 @@
  */
 
 #include "hookzz.h"
-#import <Foundation/Foundation.h>
-#import <dlfcn.h>
-#import <mach-o/dyld.h>
-#import <objc/runtime.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-@interface HookZz : NSObject
-
-@end
-
-@implementation HookZz
-
-+ (void)load {
-    [self zzMethodSwizzlingHook];
-}
-
-void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+void open_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
     zpointer t = (void *)0x1234;
     // STACK_SET(callstack ,"key_x", t, void *);
     // STACK_SET(callstack ,"key_y", t, zpointer);
@@ -38,24 +27,21 @@ void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *call
     // (zpointer)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+void open_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
     // zpointer x = STACK_GET(callstack, "key_x", void *);
     // zpointer y = STACK_GET(callstack, "key_y", zpointer);
     // NSLog(@"function over, and get 'key_x' is: %p", x);
     // NSLog(@"function over, and get 'key_y' is: %p", y);
 }
 
-+ (void)zzMethodSwizzlingHook {
-    Class hookClass = objc_getClass("UIViewController");
-    SEL oriSEL = @selector(viewWillAppear:);
-    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-    IMP oriImp = method_getImplementation(oriMethod);
+__attribute__((constructor)) void test_hook_printf() {
+    void *open_ptr = (void *)open;
 
-    ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
-    ZzEnableHook((void *)oriImp);
+    ZzBuildHook((void *)open_ptr, NULL, NULL, open_pre_call, open_post_call);
+    ZzEnableHook((void *)open_ptr);
+
+    open("/home/zz", O_RDONLY);
 }
-
-@end
 
 /*
 (lldb) disass -n "-[UIViewController viewWillAppear:]" -c 3

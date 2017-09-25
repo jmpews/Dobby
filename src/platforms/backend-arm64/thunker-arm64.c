@@ -33,9 +33,6 @@
 __attribute__((__naked__)) static void ctx_save() {
     __asm__ volatile(
 
-        /* reserve space for next_hop */
-        "sub sp, sp, #(2*8)\n"
-
         /* save {q0-q7} */
         "sub sp, sp, #(8*16)\n"
         "stp q6, q7, [sp, #(6*16)]\n"
@@ -61,45 +58,20 @@ __attribute__((__naked__)) static void ctx_save() {
         "stp x3, x4, [sp, #(2*8)]\n"
         "stp x1, x2, [sp, #(0*8)]\n"
 
-        /* save sp, x0 */
-        "sub sp, sp, #(2*8)\n"
-        "add x1, sp, #(2*8 + 8*16 + 30*8 + 2*8)\n"
-        "stp x1, x0, [sp, #(0*8)]\n"
-
-        /* alignment padding + dummy PC */
-        "sub sp, sp, #(2*8)\n");
+        "sub sp, sp, #(1*8)\n"
+        "str x0, [sp, #(0*8)]\n");
 }
 
-__attribute__((__naked__)) static void pass_enter_func_args() {
-    /* transfer args */
-    __asm__ volatile("mov x0, x17\n"
-                     "add x1, sp, #8\n"
-                     "add x2, sp, #(2*8 + 2*8 + 28*8 + 8)\n"
-                     "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
-}
+__attribute__((__naked__)) static void pass_enter_func_args() {}
 
-__attribute__((__naked__)) static void pass_half_func_args() {
-    /* transfer args */
-    __asm__ volatile("mov x0, x17\n"
-                     "add x1, sp, #8\n"
-                     "add x2, sp, #(2*8 + 2*8 + 28*8 + 8)\n"
-                     "add x3, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
-}
+__attribute__((__naked__)) static void pass_half_func_args() {}
 
-__attribute__((__naked__)) static void pass_leave_func_args() {
-    /* transfer args */
-    __asm__ volatile("mov x0, x17\n"
-                     "add x1, sp, #8\n"
-                     "add x2, sp, #(2*8 + 2*8 + 30*8 + 8*16)\n");
-}
+__attribute__((__naked__)) static void pass_leave_func_args() {}
 
 __attribute__((__naked__)) static void ctx_restore() {
     __asm__ volatile(
-        /* alignment padding + dummy PC */
-        "add sp, sp, #(2*8)\n"
-
-        /* restore sp, x0 */
-        "ldp x1, x0, [sp], #16\n"
+        /* restore x0 */
+        "ldr x0, [sp], #8\n"
 
         /* restore {x1-x30} */
         "ldp x1, x2, [sp], #16\n"
@@ -122,23 +94,12 @@ __attribute__((__naked__)) static void ctx_restore() {
         "ldp q0, q1, [sp], #32\n"
         "ldp q2, q3, [sp], #32\n"
         "ldp q4, q5, [sp], #32\n"
-        "ldp q6, q7, [sp], #32\n"
-
-        // //  next hop
-        // //  ATTENTION: svc #x80, use x16 to transfer syscall number.
-        // //  use x17 replace x16.
-        // "ldp x16, x17, [sp], #16\n"
-        // "br x16\n");
-
-        /* next hop */
-        "ldr x17, [sp], #16\n"
-        "br x17\n");
+        "ldp q6, q7, [sp], #32\n");
 }
 
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                       zpointer caller_ret_addr,
-                                       zpointer next_hop) {
+                                       zpointer caller_ret_addr, zpointer next_hop) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -169,8 +130,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 
 // just like post_call, wow!
 void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                      zpointer caller_ret_addr,
-                                      zpointer next_hop) {
+                                      zpointer caller_ret_addr, zpointer next_hop) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -191,8 +151,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                     zpointer next_hop) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs, zpointer next_hop) {
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -213,122 +172,96 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 }
 
 void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
-
-    // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
-                                           0);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-
-    // TODO:  is bad code ?
+    /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 1 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP,
+                                        8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X1, ARM64_REG_SP, 0 * 8);
 
-    // call `function_context_begin_invocation`
-    zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
-    zz_arm64_writer_put_ldr_reg_address(
-        writer, ARM64_REG_X17,
-        (zaddr)(zpointer)function_context_begin_invocation);
-    zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
+    /* alignment padding + dummy PC */
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
 
-    // TOOD: is bad code ?
+    /* pass enter func args */
+    /* entry */
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X0, ARM64_REG_SP,
+                                           2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    /* next hop*/
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+
+    /* RegState */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 2 * 8);
+    /* caller ret address */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 2 * 8 + 8 + 28 * 8 + 8);
+
+    /* call function_context_begin_invocation */
+    zz_arm64_writer_put_ldr_blr_reg_address(writer, ARM64_REG_X17,
+                                            (zaddr)function_context_begin_invocation);
+    /* alignment padding + dummy PC */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+
+    /* restore sp */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 1 * 8);
+
+    /* restore general registers stack */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+
+    /* load next hop to x17 */
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 8);
+
+    /* restore next hop and arg stack */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+
+    /* jump to next hop */
+    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
 }
 
-void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
-    // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
-                                           0);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-
-    // TODO:  is bad code ?
-    zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
-
-    // call `function_context_half_invocation`
-    zz_arm64_writer_put_bytes(writer, (void *)pass_half_func_args, 4 * 4);
-    zz_arm64_writer_put_ldr_reg_address(
-        writer, ARM64_REG_X17,
-        (zaddr)(zpointer)function_context_half_invocation);
-    zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
-
-    // TOOD: is bad code ?
-    zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
-}
-
+void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {}
 void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 
-    // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP,
-                                           0);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
-
-    // TODO:  is bad code ?
+    /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 1 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP,
+                                        8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X1, ARM64_REG_SP, 0 * 8);
 
-    // call `function_context_end_invocation`
-    zz_arm64_writer_put_bytes(writer, (void *)pass_leave_func_args, 3 * 4);
-    zz_arm64_writer_put_ldr_reg_address(
-        writer, ARM64_REG_X17,
-        (zaddr)(zpointer)function_context_end_invocation);
-    zz_arm64_writer_put_blr_reg(writer, ARM64_REG_X17);
+    /* alignment padding + dummy PC */
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
 
-    // TOOD: is bad code ?
+    /* pass enter func args */
+    /* entry */
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X0, ARM64_REG_SP,
+                                           2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    /* next hop*/
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+
+    /* RegState */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X2, ARM64_REG_SP, 2 * 8);
+
+    /* call function_context_end_invocation */
+    zz_arm64_writer_put_ldr_blr_reg_address(writer, ARM64_REG_X17,
+                                            (zaddr)function_context_end_invocation);
+    /* alignment padding + dummy PC */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+
+    /* restore sp */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 1 * 8);
+
+    /* restore general registers stack */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+
+    /* load next hop to x17 */
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 8);
+
+    /* restore next hop and arg stack */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+
+    /* jump to next hop */
+    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
 }
-
-/*
-    作为跳板, 按理说需要两个寄存器, 一个寄存器用于跳转, 一个寄存器由于保存参数,
-   但是特么一下污染了两个寄存器. 所以有个技巧:
-   利用栈实现只有一个寄存器就可以完成工作
- */
-// void ZzThunkerBuildJumpToEnterThunk(ZzWriter *writer, zpointer hookentry_ptr,
-//                                     zpointer enter_thunk_ptr) {
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)hookentry_ptr);
-
-//     // push x17
-//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
-//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
-//     ARM64_REG_SP,
-//                                            0);
-
-//     // jump to `dest`
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)enter_thunk_ptr);
-//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-// }
-
-// void ZzThunkerBuildJumpToHalfThunk(ZzWriter *writer, zpointer hookentry_ptr,
-//                                    zpointer half_thunk_ptr) {
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)hookentry_ptr);
-
-//     // push x17
-//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
-//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
-//     ARM64_REG_SP,
-//                                            0);
-
-//     // jump to `dest`
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)half_thunk_ptr);
-//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-// }
-
-// void ZzThunkerBuildJumpToLeaveThunk(ZzWriter *writer, zpointer hookentry_ptr,
-//                                     zpointer leave_thunk_ptr) {
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)hookentry_ptr);
-
-//     // push x17
-//     zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP,
-//     16); zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X17,
-//     ARM64_REG_SP,
-//                                            0);
-
-//     // jump to `dest`
-//     zz_arm64_writer_put_ldr_reg_address(writer, ARM64_REG_X17,
-//                                         (zaddr)leave_thunk_ptr);
-//     zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-// }
 
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zbyte temp_code_slice_data[256] = {0};
@@ -341,8 +274,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
 
     code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data,
-                           arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
         return;
 
     self->leave_thunk = code_slice->data;

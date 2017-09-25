@@ -42,57 +42,29 @@
 // (frida-gum采用)
 
 __attribute__((__naked__)) static void ctx_save() {
-    __asm__ volatile(
-        /* reserve space for next_hop and for cpsr */
-        // "sub sp, sp, #(2*4)\n"
-        ".thumb\n"
-        /* save {r0-r7} */
-        "sub sp, sp, #(14*4)\n"
+    __asm__ volatile(".arm\n"
+                     "sub sp, sp, #(14*4)\n"
 
-        "str lr, [sp, #(13*4)]\n"
+                     "str lr, [sp, #(13*4)]\n"
 
-        "str r12, [sp, #(12*4)]\n"
-        "str r11, [sp, #(11*4)]\n"
-        "str r10, [sp, #(10*4)]\n"
-        "str r9, [sp, #(9*4)]\n"
-        "str r8, [sp, #(8*4)]\n"
+                     "str r12, [sp, #(12*4)]\n"
+                     "str r11, [sp, #(11*4)]\n"
+                     "str r10, [sp, #(10*4)]\n"
+                     "str r9, [sp, #(9*4)]\n"
+                     "str r8, [sp, #(8*4)]\n"
 
-        "str r7, [sp, #(7*4)]\n"
-        "str r6, [sp, #(6*4)]\n"
-        "str r5, [sp, #(5*4)]\n"
-        "str r4, [sp, #(4*4)]\n"
-        "str r3, [sp, #(3*4)]\n"
-        "str r2, [sp, #(2*4)]\n"
-        "str r1, [sp, #(1*4)]\n"
-        "str r0, [sp, #(0*4)]\n"
-
-        /* save sp */
-        "sub sp, sp, #(2*4)\n"
-        "add r1, sp, #(2*4+14*4)\n"
-        "str r1, [sp, #(0*4)]\n");
+                     "str r7, [sp, #(7*4)]\n"
+                     "str r6, [sp, #(6*4)]\n"
+                     "str r5, [sp, #(5*4)]\n"
+                     "str r4, [sp, #(4*4)]\n"
+                     "str r3, [sp, #(3*4)]\n"
+                     "str r2, [sp, #(2*4)]\n"
+                     "str r1, [sp, #(1*4)]\n"
+                     "str r0, [sp, #(0*4)]\n");
 }
-
-__attribute__((__naked__)) static void pass_enter_func_args() {
-    /* transfer args */
-    __asm__ volatile(".thumb\n"
-                     "add r1, sp, #8\n"
-                     "add r2, sp, #(2*4 + 13*4)\n"
-                     "add r3, sp, #(2*4 + 14*4 + 4)\n");
-}
-
-// __attribute__((__naked__)) static void pass_leave_func_args() {
-//     /* transfer args */
-//     __asm__ volatile("ldr r0, [sp, #(0)]\n"
-//                      "add r1, sp, #8\n"
-//                      "add r2, sp, #(2*4 + 13*4)\n"
-//                      "add r3, sp, #(2*4 + 14*4 + 4)\n");
-// }
 
 __attribute__((__naked__)) static void ctx_restore() {
-    __asm__ volatile(".thumb\n"
-                     /* restore sp */
-                     "add sp, sp, #(2*4)\n"
-
+    __asm__ volatile(".arm\n"
                      "ldr r0, [sp], #4\n"
                      "ldr r1, [sp], #4\n"
                      "ldr r2, [sp], #4\n"
@@ -112,8 +84,8 @@ __attribute__((__naked__)) static void ctx_restore() {
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                       zpointer caller_ret_addr, zpointer next_hop) {
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
+                                       zpointer caller_ret_addr) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -142,9 +114,8 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, RegState *rs,
     }
 }
 
-// just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
-                                      zpointer caller_ret_addr, zpointer next_hop) {
+void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
+                                      zpointer caller_ret_addr) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -165,7 +136,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, RegState *rs,
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs, zpointer next_hop) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs) {
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -187,17 +158,86 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, RegState *rs, z
 
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
-    /* reserve space for next_hop and for cpsr */
-    // zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 2 * 4);
+    /* save general registers and sp */
+    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_nop(writer);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_arm_writer_put_nop(writer);
 
-    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 48);
+    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
+                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
 
-    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)pass_enter_func_args), 8);
+    /* pass enter func args */
+    /* entry */
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP,
+                                           CTX_SAVE_STACK_OFFSET + 0x8);
+    /* next hop*/
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
+                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    /* RegState */
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
+    /* caller ret address */
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R3, ARM_REG_SP, 0x8 + 13 * 4);
 
-    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 58);
+    /* call function_context_begin_invocation */
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
+                                          (zaddr)function_context_begin_invocation);
+    zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
 
-    /* jump to next_hop */
-    // zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 2 * 4);
+    /* restore general registers and sp */
+    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
+
+    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_nop(writer);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_arm_writer_put_nop(writer);
+
+    /* restore arg space */
+    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
+
+    /* pop and jump to next hop */
+    // use Post-indexed ldr to `pop`
+    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
+}
+
+void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
+
+    /* save general registers and sp */
+    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_nop(writer);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_arm_writer_put_nop(writer);
+
+    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
+                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+
+    /* pass enter func args */
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP,
+                                           CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
+                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
+
+    /* call  function_context_begin_invocation */
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
+                                          (zaddr)function_context_end_invocation);
+    zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
+
+    /* restore general registers and sp */
+    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
+
+    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_nop(writer);
+    zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_arm_writer_put_nop(writer);
 
     /* restore arg space */
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
@@ -208,7 +248,7 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 }
 
 void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    zbyte temp_code_slice_data[256] = {0};
+    zbyte temp_code_slice_data[512] = {0};
     ZzThumbWriter *thumb_writer;
     ZzCodeSlice *code_slice;
     ZZSTATUS status;
@@ -221,7 +261,16 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
         return;
 
-    self->enter_thunk = code_slice->data;
+    self->enter_thunk = code_slice->data + 1;
+
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+    zz_thumb_thunker_build_leave_thunk(thumb_writer);
+
+    code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+        return;
+
+    self->leave_thunk = code_slice->data + 1;
 
     return;
 }
