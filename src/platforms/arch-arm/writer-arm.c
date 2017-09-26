@@ -22,9 +22,11 @@
 
 ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
     ZzArmWriter *writer = (ZzArmWriter *)malloc(sizeof(ZzArmWriter));
-    writer->codedata = data_ptr;
-    writer->base = data_ptr;
-    writer->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    writer->codedata = data_ptr + t;
+    writer->base = data_ptr + t;
+    writer->pc = data_ptr + t;
     writer->size = 0;
     return writer;
 }
@@ -34,9 +36,11 @@ void zz_arm_writer_init(ZzArmWriter *self, zpointer data_ptr) {
 }
 
 void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
-    self->codedata = data_ptr;
-    self->base = data_ptr;
-    self->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    self->codedata = data_ptr + t;
+    self->base = data_ptr + t;
+    self->pc = data_ptr + t;
     self->size = 0;
 }
 
@@ -115,7 +119,13 @@ void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_r
 
 void zz_arm_writer_put_sub_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
                                        zuint32 imm) {
-    zz_arm_writer_put_add_reg_reg_imm(self, dst_reg, src_reg, -imm);
+    ZzArmRegInfo rd, rs;
+
+    zz_arm_register_describe(dst_reg, &rd);
+    zz_arm_register_describe(src_reg, &rs);
+
+    zz_arm_writer_put_instruction(self, 0xe2400000 | rd.index << 12 | rs.index << 16 |
+                                            (imm & ZZ_INT12_MASK));
 }
 
 void zz_arm_writer_put_bx_reg(ZzArmWriter *self, arm_reg reg) {

@@ -80,7 +80,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     if (!code_slice)
         return ZZ_FAILED;
 
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
         return ZZ_FAILED;
     entry->on_enter_trampoline = code_slice->data;
 
@@ -119,7 +119,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)restore_target_addr);
 
     code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
         return ZZ_FAILED;
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         // update target_half_ret_addr
@@ -158,7 +158,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 
     code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
 
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
         return ZZ_FAILED;
 
     entry->on_leave_trampoline = code_slice->data;
@@ -187,7 +187,7 @@ ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *ent
                                                (zaddr)entry->on_enter_trampoline);
     }
 
-    if (!ZzMemoryPatchCode((zaddr)target_addr, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)target_addr, arm64_writer->base, arm64_writer->size))
         return ZZ_FAILED;
 
     return ZZ_SUCCESS;

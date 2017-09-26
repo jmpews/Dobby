@@ -121,7 +121,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     if (!code_slice)
         return ZZ_FAILED;
 
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
         return ZZ_FAILED;
     entry->on_enter_trampoline = code_slice->data + 1;
     status = ZZ_SUCCESS;
@@ -165,7 +165,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)restore_target_addr);
 
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
-        if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+        if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
             return ZZ_FAILED;
     } else {
 
@@ -190,7 +190,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         zz_arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zaddr)restore_target_addr);
 
         code_slice = ZzNewCodeSlice(self->allocator, arm_writer->size);
-        if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm_writer->size))
+        if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size))
             return ZZ_FAILED;
     }
 
@@ -239,7 +239,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     if (!code_slice)
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
 
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
         return ZZ_FAILED;
 
     entry->on_leave_trampoline = code_slice->data + 1;
@@ -272,7 +272,7 @@ ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *ent
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
                                                 (zaddr)entry->on_enter_trampoline);
         }
-        if (!ZzMemoryPatchCode((zaddr)target_addr, temp_code_slice_data, thumb_writer->size))
+        if (!ZzMemoryPatchCode((zaddr)target_addr, thumb_writer->base, thumb_writer->size))
             return ZZ_FAILED;
     } else {
         ZzArmWriter *arm_writer;
@@ -286,7 +286,7 @@ ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *ent
             zz_arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
                                               (zaddr)entry->on_enter_trampoline);
         }
-        if (!ZzMemoryPatchCode((zaddr)target_addr, temp_code_slice_data, arm_writer->size))
+        if (!ZzMemoryPatchCode((zaddr)target_addr, arm_writer->base, arm_writer->size))
             return ZZ_FAILED;
     }
 

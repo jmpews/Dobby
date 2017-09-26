@@ -156,14 +156,15 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
     ZzFreeCallStack(callstack);
 }
 
+// A4.1.10 BX
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
     zz_thumb_writer_put_nop(writer);
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_arm_writer_put_nop(writer);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
@@ -193,8 +194,8 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
     zz_thumb_writer_put_nop(writer);
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_arm_writer_put_nop(writer);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     /* restore arg space */
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
@@ -210,8 +211,8 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
     zz_thumb_writer_put_nop(writer);
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_arm_writer_put_nop(writer);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
@@ -225,7 +226,7 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
                                         CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
 
-    /* call  function_context_begin_invocation */
+    /* call function_context_begin_invocation */
     zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
                                           (zaddr)function_context_end_invocation);
     zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
@@ -236,8 +237,8 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
     zz_thumb_writer_put_nop(writer);
     zz_thumb_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_arm_writer_put_nop(writer);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     /* restore arg space */
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
@@ -258,7 +259,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
 
     code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
         return;
 
     self->enter_thunk = code_slice->data + 1;
@@ -267,7 +268,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_leave_thunk(thumb_writer);
 
     code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, thumb_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
         return;
 
     self->leave_thunk = code_slice->data + 1;

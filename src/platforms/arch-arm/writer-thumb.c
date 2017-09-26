@@ -22,9 +22,11 @@
 
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr) {
     ZzThumbWriter *writer = (ZzThumbWriter *)malloc(sizeof(ZzThumbWriter));
-    writer->codedata = data_ptr;
-    writer->base = data_ptr;
-    writer->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    writer->codedata = data_ptr + t;
+    writer->base = data_ptr + t;
+    writer->pc = data_ptr + t;
     writer->size = 0;
     return writer;
 }
@@ -34,9 +36,11 @@ void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr) {
 }
 
 void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
-    self->codedata = data_ptr;
-    self->base = data_ptr;
-    self->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    self->codedata = data_ptr + t;
+    self->base = data_ptr + t;
+    self->pc = data_ptr + t;
     self->size = 0;
 }
 
@@ -44,11 +48,19 @@ zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg,
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
-    if (ri.meta <= ZZ_ARM_R7) {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-    } else {
+
+    if (((zaddr)self->pc) % 4) {
         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-        zz_thumb_writer_put_nop(self);
+        if (ri.meta <= ZZ_ARM_R7) {
+            zz_thumb_writer_put_nop(self);
+        }
+    } else {
+        if (ri.meta <= ZZ_ARM_R7) {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+        } else {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+            zz_thumb_writer_put_nop(self);
+        }
     }
     zz_thumb_writer_put_b_imm(self, 0x2);
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));

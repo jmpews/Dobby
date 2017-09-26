@@ -29,9 +29,11 @@
 
 ZzArm64Writer *zz_arm64_writer_new(zpointer data_ptr) {
     ZzArm64Writer *writer = (ZzArm64Writer *)malloc(sizeof(ZzArm64Writer));
-    writer->codedata = data_ptr;
-    writer->base = data_ptr;
-    writer->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    writer->codedata = data_ptr + t;
+    writer->base = data_ptr + t;
+    writer->pc = data_ptr + t;
     writer->size = 0;
     return writer;
 }
@@ -41,9 +43,11 @@ void zz_arm64_writer_init(ZzArm64Writer *self, zpointer target_addr) {
 }
 
 void zz_arm64_writer_reset(ZzArm64Writer *self, zpointer data_ptr) {
-    self->codedata = data_ptr;
-    self->base = data_ptr;
-    self->pc = data_ptr;
+    int t = (zaddr)data_ptr % 4;
+
+    self->codedata = data_ptr + t;
+    self->base = data_ptr + t;
+    self->pc = data_ptr + t;
     self->size = 0;
 }
 

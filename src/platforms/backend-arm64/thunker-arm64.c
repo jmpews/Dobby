@@ -274,7 +274,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
 
     code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, temp_code_slice_data, arm64_writer->size))
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
         return;
 
     self->leave_thunk = code_slice->data;
