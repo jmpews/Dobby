@@ -30,7 +30,8 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef struct _ZzThumbRelocator {
+typedef struct _ZzThumbRelocator
+{
     csh capstone;
 
     zpointer input_start;

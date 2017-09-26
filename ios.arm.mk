@@ -75,9 +75,9 @@ $(ZZDEPS_SOURCES_O): %.o : %.c
 
 # -undefined dynamic_lookup
 test : ios.arm
-	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_oc.m -o tests/arm-ios/test_hook_oc.o
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm-ios/test_hook_oc.o -o $(OUTPUT_DIR)/test_hook_oc.dylib
-	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for armv7-ios! $(NO_COLOR)"
+	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_oc_thumb.m -o tests/arm-ios/test_hook_oc_thumb.o
+	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc_thumb.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm-ios/test_hook_oc_thumb.o -o $(OUTPUT_DIR)/test_hook_oc_thumb.dylib
+	@echo "$(OK_COLOR)build [test_hook_oc_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_open_arm.c -o tests/arm-ios/test_hook_open_arm.o
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_open_arm.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm-ios/test_hook_open_arm.o -o $(OUTPUT_DIR)/test_hook_open_arm.dylib
