@@ -229,6 +229,7 @@ zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint
         return FALSE;
 
     zaddr target = (zaddr) start_page_addr;
+    zz_posxi_vm_protect_as_writable(start_page_addr, range_size);
     memcpy((zpointer) start_page_addr, (zpointer) code_mmap, range_size);
     zz_posix_vm_protect_as_executable(start_page_addr, range_size);
     munmap(code_mmap, range_size);
