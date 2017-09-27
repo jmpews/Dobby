@@ -25,7 +25,7 @@
 
 // ATTENTION !!!:
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
-// `witer` REF: `Instruction Set Encoding`
+// `witer` REF: `ZzInstruction Set Encoding`
 
 ZzArm64Writer *zz_arm64_writer_new(zpointer data_ptr)
 {
@@ -128,7 +128,7 @@ void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, arm64_reg reg, zuint imm)
 
 // PAGE: C6-871
 // ARM Architecture Reference Manual ARMV8
-// C6 A64 Base Instruction Descriptions
+// C6 A64 Base ZzInstruction Descriptions
 // C6.2 Alphabetical list of A64 base instructions
 void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, arm64_reg src_reg, arm64_reg dst_reg,
                                             zsize dst_offset)

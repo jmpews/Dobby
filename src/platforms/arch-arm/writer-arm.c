@@ -18,7 +18,7 @@
 
 // ATTENTION !!!:
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
-// `witer` REF: `Instruction Set Encoding`
+// `witer` REF: `ZzInstruction Set Encoding`
 
 ZzArmWriter *zz_arm_writer_new(zpointer data_ptr)
 {

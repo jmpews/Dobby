@@ -271,11 +271,24 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     arm64_writer = &self->arm64_writer;
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-    zz_arm64_thunker_build_enter_thunk(arm64_writer);
-
-    code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
-    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
-        return;
+    do {
+        zz_arm64_thunker_build_enter_thunk(arm64_writer);
+        if (code_slice) {
+            if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
+                return;
+            break;
+        }
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+        if (!code_slice) {
+#if defined(DEBUG_MODE)
+            debug_break();
+#endif
+            return ZZ_FAILED;
+        } else {
+            zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+            arm64_writer->pc = code_slice->data;
+        }
+    } while (code_slice);
 
     self->leave_thunk = code_slice->data;
 

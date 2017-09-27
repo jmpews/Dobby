@@ -189,7 +189,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
       target->imm);
   gum_arm64_zz_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
 
-  return true;
+  return TRUE;
 }
 ```
 

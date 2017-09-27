@@ -15,7 +15,7 @@ zbool zz_vm_check_address_valid_via_msync(const zpointer p) {
     page_size = zz_posix_vm_get_page_size();
     /* find the address of the page that contains p */
     base = (void *) ((((size_t) p) / page_size) * page_size);
-    /* call msync, if it returns non-zero, return false */
+    /* call msync, if it returns non-zero, return FALSE */
     ret = msync(base, page_size, MS_ASYNC) != -1;
     return ret ? ret : errno != ENOMEM;
 }
@@ -51,14 +51,14 @@ zbool zz_posix_vm_check_address_valid_via_signal(zpointer p) {
     if (sigsetjmp(sigjmp_env, 1)) {
         sigaction(SIGSEGV, &old_segv_action, NULL);
         sigaction(SIGBUS, &old_bus_action, NULL);
-        return false;
+        return FALSE;
     }
     // ATTENTION !!! this function is conflict with LLDB, reason is below.
     // lldb is still catch EXC_BAD_ACCESS, without lldb is ok.
     // or you can use `zz_check_address_valid_via_mem` replace
     // https://stackoverflow.com/questions/26829119/how-to-make-lldb-ignore-exc-bad-access-exception
     char x = *(char *) p;
-    return true;
+    return TRUE;
 }
 
 zsize zz_posix_vm_get_page_size() { return getpagesize(); }
@@ -79,9 +79,9 @@ zbool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot) {
     r = mprotect((zpointer) aligned_addr, aligned_size, page_prot);
     if (r == -1) {
         Xerror("r = %d, at (%p) error!", r, (zpointer) address);
-        return false;
+        return FALSE;
     }
-    return true;
+    return TRUE;
 }
 
 zbool zz_posix_vm_protect_as_executable(const zaddr address, zsize size) {
@@ -90,8 +90,8 @@ zbool zz_posix_vm_protect_as_executable(const zaddr address, zsize size) {
 
 zbool zz_posxi_vm_protect_as_writable(const zaddr address, zsize size) {
     if (!zz_posix_vm_protect(address, size, (PROT_READ | PROT_WRITE)))
-        return false;
-    return true;
+        return FALSE;
+    return TRUE;
 }
 
 //  void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
@@ -226,12 +226,12 @@ zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint
 
     /* SAME: mprotect(code_mmap, range_size, prot); */
     if (!zz_posix_vm_protect((zaddr) code_mmap, range_size, PROT_READ | PROT_EXEC))
-        return false;
+        return FALSE;
 
     zaddr target = (zaddr) start_page_addr;
     memcpy((zpointer) start_page_addr, (zpointer) code_mmap, range_size);
     zz_posix_vm_protect_as_executable(start_page_addr, range_size);
     munmap(code_mmap, range_size);
-    return true;
+    return TRUE;
 }
 

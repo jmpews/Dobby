@@ -72,13 +72,13 @@ ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {
 
 zbool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
     if (!stack)
-        return false;
+        return FALSE;
 
     if (stack->size >= stack->capacity) {
         ZzCallStack **callstacks = (ZzCallStack **) realloc(stack->callstacks,
                                                             sizeof(ZzCallStack *) * (stack->capacity) * 2);
         if (!callstacks)
-            return false;
+            return FALSE;
         stack->callstacks = callstacks;
         stack->capacity = stack->capacity * 2;
     }
@@ -86,7 +86,7 @@ zbool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
     callstack->call_id = stack->size;
 
     stack->callstacks[stack->size++] = callstack;
-    return true;
+    return TRUE;
 }
 
 zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
@@ -119,7 +119,7 @@ ZzCallStackItem *ZzNewCallStackData(ZzCallStack *callstack) {
 zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size) {
     ZzCallStack *callstack = (ZzCallStack *) callstack_ptr;
     if (!callstack)
-        return false;
+        return FALSE;
 
     ZzCallStackItem *item = ZzNewCallStackData(callstack);
 
@@ -130,6 +130,6 @@ zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr
     memcpy(value_tmp, value_ptr, value_size);
     item->key = key_tmp;
     item->value = value_tmp;
-    return true;
+    return TRUE;
 }
 

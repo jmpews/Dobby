@@ -19,10 +19,11 @@
 #include "hookzz.h"
 
 typedef struct _Instruction {
-    zpointer address;
-    cs_insn *cs_insn;
+    cs_insn *insn_cs;
+    zaddr pc;
+    cs_arm *detail;
     uint8_t size;
     zbyte bytes[16];
-} Instruction;
+} ZzInstruction;
 
 #endif

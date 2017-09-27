@@ -34,8 +34,8 @@ zpointer ZzMemoryAllocatePages(zsize n_pages) {
     return zz_vm_allocate_pages_via_task(mach_task_self(), n_pages);
 }
 
-zpointer ZzMemoryAllocateNearPages(zaddr address, zsize range_size, zsize n_pages) {
-    return zz_vm_allocate_near_pages_via_task(mach_task_self(), address, range_size, n_pages);
+zpointer ZzMemoryAllocateNearPages(zaddr address, zsize redirect_range_size, zsize n_pages) {
+    return zz_vm_allocate_near_pages_via_task(mach_task_self(), address, redirect_range_size, n_pages);
 }
 
 zpointer ZzMemoryAllocate(zsize size) {
@@ -55,7 +55,7 @@ zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size) {
     return zz_vm_protect_as_writable_via_task(mach_task_self(), address, size);
 }
 
-zpointer ZzMemorySearchCodeCave(zaddr address, zsize range_size, zsize size) {
-    // return zz_vm_search_text_code_cave_via_dylibs(address, range_size, size);
-    return zz_vm_search_code_cave_via_recurse(address, range_size, size);
+zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size) {
+    // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
+    return zz_vm_search_code_cave_via_recurse(address, redirect_range_size, size);
 }

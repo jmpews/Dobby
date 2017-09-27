@@ -26,10 +26,12 @@
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
 void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code,
-                             ZzArm64Writer *output) {
+                             ZzArm64Writer *output)
+{
     cs_err err;
     err = cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &relocator->capstone);
-    if (err) {
+    if (err)
+    {
         Xerror("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
@@ -42,14 +44,15 @@ void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code,
     relocator->input_cur = input_code;
     relocator->input_pc = (zaddr)input_code;
     relocator->input_insns =
-        (Instruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+        (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
 
-    memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(Instruction));
+    memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
 
     relocator->output = output;
 }
 
-void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm64Writer *output) {
+void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm64Writer *output)
+{
     self->input_cur = input_code;
     self->input_start = input_code;
     self->input_pc = (zaddr)input_code;
@@ -60,9 +63,9 @@ void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm
     self->output = output;
 }
 
-// zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instruction) {
+// zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction) {
 //     cs_insn **cs_insn_ptr, *cs_insn;
-//     Instruction insn = self->input_insns[self->inpos];
+//     ZzInstruction insn = self->input_insns[self->inpos];
 //     cs_insn_ptr = &insn.cs_insn;
 
 //     if (cs_disasm(self->capstone, self->input_cur, 4, self->input_pc, 1, cs_insn_ptr) != 1) {
@@ -71,7 +74,7 @@ void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm
 
 //     cs_insn = *cs_insn_ptr;
 
-//     // zbool flag = true;
+//     // zbool flag = TRUE;
 //     // switch (cs_insn->id) {
 //     // case ARM64_INS_B:
 //     //     if (branch_is_unconditional(ins))
@@ -104,9 +107,10 @@ void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm
 //     return self->input_cur - self->input_start;
 // }
 
-zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instruction) {
+zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction)
+{
     cs_insn **cs_insn_ptr, *cs_insn;
-    Instruction *insn = &self->input_insns[self->inpos];
+    ZzInstruction *insn = &self->input_insns[self->inpos];
     cs_insn_ptr = &insn->cs_insn;
 
     if (*cs_insn_ptr == NULL)
@@ -122,11 +126,14 @@ zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instructi
     address = self->input_pc;
     cs_insn = *cs_insn_ptr;
 
-    if (!cs_disasm_iter(self->capstone, &code, &size, &address, cs_insn)) {
+    if (!cs_disasm_iter(self->capstone, &code, &size, &address, cs_insn))
+    {
         return 0;
     }
 
-    switch (cs_insn->id) {}
+    switch (cs_insn->id)
+    {
+    }
 
     self->inpos++;
 
@@ -139,33 +146,41 @@ zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instructi
     return self->input_cur - self->input_start;
 }
 
-void zz_arm64_relocator_write_all(ZzArm64Relocator *self) {
+void zz_arm64_relocator_write_all(ZzArm64Relocator *self)
+{
     zuint count = 0;
     while (zz_arm64_relocator_write_one(self))
         count++;
 }
 
-zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self) {
-    Instruction *insn;
+zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self)
+{
+    ZzInstruction *insn;
     cs_insn *cs_insn;
-    zbool rewritten = false;
+    zbool rewritten = FALSE;
 
     insn = &self->input_insns[self->outpos];
     cs_insn = insn->cs_insn;
 
-    if (self->inpos != self->outpos) {
+    if (self->inpos != self->outpos)
+    {
         self->outpos++;
-    } else {
-        return false;
+    }
+    else
+    {
+        return FALSE;
     }
 
-    switch (cs_insn->id) {}
+    switch (cs_insn->id)
+    {
+    }
     if (!rewritten)
         zz_arm64_writer_put_bytes(self->output, cs_insn->bytes, cs_insn->size);
-    return true;
+    return TRUE;
 }
 
-void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
+void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes)
+{
     *max_bytes = 16;
     return;
 }
@@ -173,9 +188,9 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 // void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry,
 //                                       ZzArm64Writer *backup_writer,
 //                                       ZzArm64Writer *relocate_writer) {
-//     zbool finished = false;
+//     zbool finished = FALSE;
 //     zpointer code_addr = entry->target_ptr;
-//     Instruction *ins;
+//     ZzInstruction *ins;
 //     zuint jump_instruction_length = 0;
 //     if (entry->isNearJump) {
 //         jump_instruction_length = ZzArm64WriterNearJumpInstructionLength();
@@ -199,9 +214,9 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //             if (entry->hook_type == HOOK_ADDRESS_TYPE &&
 //                 (!entry->target_end_ptr ||
 //                  code_addr >= entry->target_end_ptr)) {
-//                 finished = true;
+//                 finished = TRUE;
 //             } else if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-//                 finished = true;
+//                 finished = TRUE;
 //             }
 //         }
 //     } while (!finished);
@@ -218,30 +233,30 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //     // sizeof(zpointer));
 // }
 
-// zbool branch_is_unconditional(Instruction *ins) {
+// zbool branch_is_unconditional(ZzInstruction *ins) {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 
 //     switch (ins_csd.cc) {
 //     case ARM64_CC_INVALID:
 //     case ARM64_CC_AL:
 //     case ARM64_CC_NV:
-//         return true;
+//         return TRUE;
 //     default:
-//         return false;
+//         return FALSE;
 //     }
 // }
 
-// zbool relocator_rewrite_ldr(Instruction *ins, ZzArm64Writer *relocate_writer)
+// zbool relocator_rewrite_ldr(ZzInstruction *ins, ZzArm64Writer *relocate_writer)
 // {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 //     const cs_arm64_op *dst = &ins_csd.operands[0];
 //     const cs_arm64_op *src = &ins_csd.operands[1];
 //     if (src->type != ARM64_OP_IMM)
-//         return false;
-//     return true;
+//         return FALSE;
+//     return TRUE;
 // }
 
-// zbool relocator_rewrite_b(Instruction *ins, ZzArm64Writer *relocate_writer) {
+// zbool relocator_rewrite_b(ZzInstruction *ins, ZzArm64Writer *relocate_writer) {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 //     zaddr target_addr = ins_csd.operands[0].imm;
 
@@ -251,10 +266,10 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //     zz_arm64_writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17,
 //                                         target_addr);
 //     zz_arm64_writer_put_br_reg(relocate_writer, ARM64_REG_X17);
-//     return true;
+//     return TRUE;
 // }
 
-// zbool relocator_rewrite_bl(Instruction *ins, ZzArm64Writer *relocate_writer)
+// zbool relocator_rewrite_bl(ZzInstruction *ins, ZzArm64Writer *relocate_writer)
 // {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 //     zaddr target_addr = ins_csd.operands[0].imm;
@@ -262,7 +277,7 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //     zz_arm64_writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17,
 //                                         target_addr);
 //     zz_arm64_writer_put_blr_reg(relocate_writer, ARM64_REG_X17);
-//     return true;
+//     return TRUE;
 // }
 
 // /*
@@ -280,7 +295,7 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //         2. [...]
 //         3. [...]
 //  */
-// zbool relocator_rewrite_b_cond(Instruction *ins,
+// zbool relocator_rewrite_b_cond(ZzInstruction *ins,
 //                                ZzArm64Writer *relocate_writer) {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 //     zaddr target_addr = ins_csd.operands[0].imm;
@@ -294,15 +309,15 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
 //     zz_arm64_writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17,
 //                                         target_addr);
 //     zz_arm64_writer_put_br_reg(relocate_writer, ARM64_REG_X17);
-//     return true;
+//     return TRUE;
 // }
 
-// zbool relocator_rewrite_adr(Instruction *ins, ZzArm64Writer *relocate_writer)
+// zbool relocator_rewrite_adr(ZzInstruction *ins, ZzArm64Writer *relocate_writer)
 // {
 //     cs_arm64 ins_csd = ins->cs_insn->detail->arm64;
 
 //     const cs_arm64_op dst = ins_csd.operands[0];
 //     const cs_arm64_op label = ins_csd.operands[1];
 //     zz_arm64_writer_put_ldr_reg_address(relocate_writer, dst.reg, label.imm);
-//     return true;
+//     return TRUE;
 // }

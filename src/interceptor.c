@@ -74,7 +74,7 @@ ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
 zbool ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
     ZzInterceptor *interceptor = g_interceptor;
     if (!interceptor)
-        return false;
+        return FALSE;
 
     ZzHookFunctionEntrySet *hook_function_entry_set =
         &(interceptor->hook_function_entry_set);
@@ -85,14 +85,14 @@ zbool ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
             sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity *
                 2);
         if (!entries)
-            return false;
+            return FALSE;
 
         hook_function_entry_set->capacity =
             hook_function_entry_set->capacity * 2;
         hook_function_entry_set->entries = entries;
     }
     hook_function_entry_set->entries[hook_function_entry_set->size++] = entry;
-    return true;
+    return TRUE;
 }
 
 void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type,

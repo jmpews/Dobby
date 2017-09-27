@@ -17,8 +17,17 @@
 
 #include <stdint.h>
 
+// platforms
+
+// hookzz
 #include "hookzz.h"
 #include "memory.h"
+
+// zzdeps
+#include "hookzz.h"
+#include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 typedef struct _codeslice {
     zpointer data;
@@ -41,7 +50,8 @@ typedef struct _allocator {
     zsize capacity;
 } ZzAllocator;
 
-ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize range_size, zsize codeslice_size);
+ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize redirect_range_size,
+                                zsize codeslice_size);
 
 ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size);
 

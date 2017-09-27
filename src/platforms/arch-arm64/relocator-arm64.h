@@ -32,13 +32,14 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef struct _ZzArm64Relocator {
+typedef struct _ZzArm64Relocator
+{
     csh capstone;
 
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
-    Instruction *input_insns;
+    ZzInstruction *input_insns;
     ZzArm64Writer *output;
 
     zuint inpos;
@@ -49,7 +50,7 @@ void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code,
                              ZzArm64Writer *writer);
 void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm64Writer *output);
 
-zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, Instruction *instruction);
+zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction);
 zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self);
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self);
 void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);

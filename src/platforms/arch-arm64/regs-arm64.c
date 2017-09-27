@@ -18,19 +18,19 @@
 
 void zz_arm64_register_describe(arm64_reg reg, ZzArm64RegInfo *ri) {
     if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28) {
-        ri->is_integer = true;
+        ri->is_integer = TRUE;
         ri->width = 64;
         ri->meta = ZZ_ARM64_X0 + (reg - ARM64_REG_X0);
     } else if (reg == ARM64_REG_X29 || reg == ARM64_REG_FP) {
-        ri->is_integer = true;
+        ri->is_integer = TRUE;
         ri->width = 64;
         ri->meta = ZZ_ARM64_X29;
     } else if (reg == ARM64_REG_X30 || reg == ARM64_REG_LR) {
-        ri->is_integer = true;
+        ri->is_integer = TRUE;
         ri->width = 64;
         ri->meta = ZZ_ARM64_X30;
     } else if (reg == ARM64_REG_SP) {
-        ri->is_integer = true;
+        ri->is_integer = TRUE;
         ri->width = 64;
         ri->meta = ZZ_ARM64_X31;
     } else {

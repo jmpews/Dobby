@@ -41,9 +41,9 @@
 //                                        writer->size); // @common-function
 //         if (!code_slice) {
 //             code_slice = ZzNewCodeSlice(entry->interceptor->allocator,
-//             writer->size); // @common-funciton entry->isNearJump = false;
+//             writer->size); // @common-funciton entry->isNearJump = FALSE;
 //         } else {
-//             entry->isNearJump = true;
+//             entry->isNearJump = TRUE;
 //         }
 
 //         if (!code_slice || !code_slice->data || !code_slice->size)

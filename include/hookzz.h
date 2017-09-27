@@ -41,10 +41,10 @@ typedef bool zbool;
 
 #endif
 
-#if defined(false)
+#if defined(FALSE)
 #else
-#define false 0
-#define true 1
+#define FALSE 0
+#define TRUE 1
 #endif
 
 #ifndef zz_register_type

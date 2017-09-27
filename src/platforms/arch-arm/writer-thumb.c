@@ -18,7 +18,7 @@
 
 // ATTENTION !!!:
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
-// `witer` REF: `Instruction Set Encoding`
+// `witer` REF: `ZzInstruction Set Encoding`
 
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr)
 {
@@ -172,19 +172,19 @@ zpointer zz_thumb_writer_put_branch_imm(ZzThumbWriter *self, zuint32 imm,
 
 zpointer zz_thumb_writer_put_bl_imm(ZzThumbWriter *self, zuint32 imm)
 {
-    zz_thumb_writer_put_branch_imm(self, imm, true, true);
+    zz_thumb_writer_put_branch_imm(self, imm, TRUE, TRUE);
     return self->pc;
 }
 
 zpointer zz_thumb_writer_put_blx_imm(ZzThumbWriter *self, zuint32 imm)
 {
-    zz_thumb_writer_put_branch_imm(self, imm, true, false);
+    zz_thumb_writer_put_branch_imm(self, imm, TRUE, FALSE);
     return self->pc;
 }
 
 zpointer zz_thumb_writer_put_b_imm32(ZzThumbWriter *self, zuint32 imm)
 {
-    zz_thumb_writer_put_branch_imm(self, imm, false, true);
+    zz_thumb_writer_put_branch_imm(self, imm, FALSE, TRUE);
     return self->pc;
 }
 

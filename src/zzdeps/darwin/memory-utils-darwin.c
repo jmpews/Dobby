@@ -24,11 +24,11 @@ zbool zz_vm_read_data_via_task(task_t task, const zaddr address,
     dataCnt = 0;
     if (address <= 0) {
         Xerror("read address %p< 0", (zpointer)address);
-        return false;
+        return FALSE;
     }
     if (length <= 0) {
         Xerror("read length %p <0", (zpointer)address);
-        return false;
+        return FALSE;
     }
     dataCnt = length;
     kern_return_t kr = vm_read_overwrite(task, address, length, (zaddr)buffer,
@@ -36,14 +36,14 @@ zbool zz_vm_read_data_via_task(task_t task, const zaddr address,
 
     if (kr != KERN_SUCCESS) {
         // KR_ERROR_AT(kr, address);
-        return false;
+        return FALSE;
     }
     if (length != dataCnt) {
         warnx("rt_read size return not match!");
-        return false;
+        return FALSE;
     }
 
-    return true;
+    return TRUE;
 }
 
 char *zz_vm_read_string_via_task(task_t task, const zaddr address) {
@@ -93,7 +93,7 @@ zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr,
 
 zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
     if (address <= 0)
-        return false;
+        return FALSE;
 #define CHECK_LEN 1
     char n_read_bytes[1];
     zuint len;
@@ -102,8 +102,8 @@ zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
 
     if (kr != KERN_SUCCESS || len != CHECK_LEN)
         KR_ERROR_AT(kr, address);
-    return false;
-    return true;
+    return FALSE;
+    return TRUE;
 }
 
 zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address,
@@ -119,11 +119,11 @@ zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address,
                              (vm_region_recurse_info_t)&info, &info_count);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
-        return false;
+        return FALSE;
     }
     *prot_p = info.protection & (PROT_READ | PROT_WRITE | PROT_EXEC);
     *inherit_p = info.inheritance;
-    return true;
+    return TRUE;
 }
 
 zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
@@ -139,14 +139,14 @@ zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
     aligned_size =
         (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
 
-    kr = mach_vm_protect(task, (vm_address_t)aligned_addr, aligned_size, false,
+    kr = mach_vm_protect(task, (vm_address_t)aligned_addr, aligned_size, FALSE,
                          page_prot);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
         Xerror("kr = %d, at (%p) error!", kr, (zpointer)address);
-        return false;
+        return FALSE;
     }
-    return true;
+    return TRUE;
 }
 
 zbool zz_vm_protect_as_executable_via_task(task_t task, const zaddr address,
@@ -162,7 +162,7 @@ zbool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address,
         return zz_vm_protect_via_task(task, address, size,
                                       (VM_PROT_DEFAULT | VM_PROT_COPY));
     }
-    return false;
+    return FALSE;
 }
 
 zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages) {
@@ -449,7 +449,7 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
 
     if (!zz_vm_get_page_info_via_task(task_self, (const zaddr)start_page_addr,
                                       &prot, &inherit)) {
-        return false;
+        return FALSE;
     }
 
     /*
@@ -469,19 +469,19 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, start_page_addr);
-        return false;
+        return FALSE;
     }
     memcpy(code_mmap + page_offset, codedata, codedata_size);
 
     /* SAME: mprotect(code_mmap, range_size, prot); */
     if (!zz_vm_protect_via_task(task_self, (zaddr)code_mmap, range_size, prot))
-        return false;
+        return FALSE;
 
     // TODO: need check `memory region` again.
     /*
         TODO:
         // if only this, `memory region` is `r-x`
-        vm_protect((vm_map_t)mach_task_self(), 0x00000001816b2030, 16, false,
+        vm_protect((vm_map_t)mach_task_self(), 0x00000001816b2030, 16, FALSE,
        0x13);
         // and with this, `memory region` is `rwx`
         *(char *)0x00000001816b01a8 = 'a';
@@ -490,12 +490,12 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
     mach_vm_address_t target = (zaddr)start_page_addr;
     vm_prot_t c, m;
     kr = mach_vm_remap(task_self, &target, range_size, 0, VM_FLAGS_OVERWRITE,
-                       task_self, (mach_vm_address_t)code_mmap, /*copy*/ true,
+                       task_self, (mach_vm_address_t)code_mmap, /*copy*/ TRUE,
                        &c, &m, inherit);
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR(kr);
-        return false;
+        return FALSE;
     }
     /*
       read `REF`
@@ -504,7 +504,7 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
     kr = mach_vm_deallocate(task_self, (zaddr)code_mmap, range_size);
     if (kr != KERN_SUCCESS) {
         KR_ERROR(kr);
-        return false;
+        return FALSE;
     }
-    return true;
+    return TRUE;
 }
