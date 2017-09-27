@@ -63,10 +63,11 @@ void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, arm64_reg reg, zaddr
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
-void zz_arm64_writer_put_ldr_blr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
+void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
 {
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
     zz_arm64_writer_put_blr_reg(self, reg);
+    zz_arm64_writer_put_b_imm(self, (zaddr)0xc);
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 

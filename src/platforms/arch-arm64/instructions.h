@@ -21,7 +21,7 @@
 typedef struct _Instruction {
     cs_insn *insn_cs;
     zaddr pc;
-    cs_arm *detail;
+    cs_arm64 *detail;
     uint8_t size;
     zbyte bytes[16];
 } ZzInstruction;
