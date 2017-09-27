@@ -54,4 +54,12 @@ zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruc
 zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self);
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self);
 void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
+
+/* rewrite */
+static zbool zz_arm64_branch_is_unconditional(const cs_insn *insn);
+static zbool zz_arm64_relocator_rewrite_ldr(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
+static zbool zz_arm64_relocator_rewrite_adr(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
+static zbool zz_arm64_relocator_rewrite_b(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
+static zbool zz_arm64_relocator_rewrite_b_cond(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
+static zbool zz_arm64_relocator_rewrite_bl(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
 #endif

@@ -41,7 +41,8 @@
 // 操作复杂, 耦合略强. 3. 把 ctx_save 进行拆分, 缺点: 模块化设计差, 耦合强
 // (frida-gum采用)
 
-__attribute__((__naked__)) static void ctx_save() {
+__attribute__((__naked__)) static void ctx_save()
+{
     __asm__ volatile(".arm\n"
                      "sub sp, sp, #(14*4)\n"
 
@@ -63,7 +64,8 @@ __attribute__((__naked__)) static void ctx_save() {
                      "str r0, [sp, #(0*4)]\n");
 }
 
-__attribute__((__naked__)) static void ctx_restore() {
+__attribute__((__naked__)) static void ctx_restore()
+{
     __asm__ volatile(".arm\n"
                      "ldr r0, [sp], #4\n"
                      "ldr r1, [sp], #4\n"
@@ -85,47 +87,57 @@ __attribute__((__naked__)) static void ctx_restore() {
 
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                       zpointer caller_ret_addr) {
+                                       zpointer caller_ret_addr)
+{
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack) {
+    if (!stack)
+    {
         stack = ZzNewThreadStack(entry->thread_local_key);
     }
 
     ZzCallStack *callstack = ZzNewCallStack();
     ZzPushCallStack(stack, callstack);
 
-    if (entry->pre_call) {
+    if (entry->pre_call)
+    {
         PRECALL pre_call;
         pre_call = entry->pre_call;
         (*pre_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
 
-    if (entry->replace_call) {
+    if (entry->replace_call)
+    {
         *(zpointer *)next_hop = entry->replace_call;
-    } else {
+    }
+    else
+    {
         *(zpointer *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
+    if (entry->hook_type == HOOK_FUNCTION_TYPE)
+    {
         callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
         *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
 void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                      zpointer caller_ret_addr) {
+                                      zpointer caller_ret_addr)
+{
     Xdebug("target %p call half-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack) {
+    if (!stack)
+    {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->half_call) {
+    if (entry->half_call)
+    {
         HALFCALL half_call;
         half_call = entry->half_call;
         (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -136,17 +148,20 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs)
+{
     Xdebug("%p call end-invocation", entry->target_ptr);
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack) {
+    if (!stack)
+    {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    if (entry->post_call) {
+    if (entry->post_call)
+    {
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
@@ -157,7 +172,8 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
 }
 
 // A4.1.10 BX
-void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer)
+{
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
@@ -204,7 +220,8 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
 }
 
-void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer)
+{
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
@@ -246,7 +263,8 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
 }
 
-void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
+void ZzThunkerBuildThunk(ZzInterceptorBackend *self)
+{
     zbyte temp_code_slice_data[512] = {0};
     ZzThumbWriter *thumb_writer;
     ZzCodeSlice *code_slice;
@@ -255,20 +273,25 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
     code_slice = NULL;
-    do {
+    do
+    {
         zz_thumb_thunker_build_enter_thunk(thumb_writer);
-        if (code_slice) {
+        if (code_slice)
+        {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
                 return;
             break;
         }
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
-        if (!code_slice) {
+        if (!code_slice)
+        {
 #if defined(DEBUG_MODE)
             debug_break();
 #endif
             return;
-        } else {
+        }
+        else
+        {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
             thumb_writer->pc = code_slice->data;
         }
@@ -279,20 +302,25 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
     code_slice = NULL;
-    do {
+    do
+    {
         zz_thumb_thunker_build_leave_thunk(thumb_writer);
-        if (code_slice) {
+        if (code_slice)
+        {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
                 return;
             break;
         }
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
-        if (!code_slice) {
+        if (!code_slice)
+        {
 #if defined(DEBUG_MODE)
             debug_break();
 #endif
             return;
-        } else {
+        }
+        else
+        {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
             thumb_writer->pc = code_slice->data;
         }

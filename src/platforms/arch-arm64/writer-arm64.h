@@ -42,7 +42,7 @@ zsize zz_arm64_writer_near_jump_range_size();
 // ======= user custom =======
 
 void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
-void zz_arm64_writer_put_ldr_blr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
 void zz_arm64_writer_put_ldr_b_reg_address(ZzArm64Writer *self, arm64_reg reg, zaddr address);
 
 // ======= default =======
