@@ -30,7 +30,7 @@ SELF_INCLUDE_DIR = $(abspath include)
 # capstone framework
 CAPSTONE_INCLUDE = $(abspath deps/capstone/include)
 CAPSTONE_LIB_DIR = $(abspath deps/capstone)
-CAPSTONE_LIB = capstone.arm64
+CAPSTONE_LIB = capstone.ios.arm64
 
 INCLUDE_DIR = -I$(CAPSTONE_INCLUDE) -I$(SELF_INCLUDE_DIR) -I$(SELF_SRC_DIR)
 LIB_DIR = -L$(CAPSTONE_LIB_DIR)
@@ -54,7 +54,7 @@ ERROR_COLOR=\x1b[31;01m
 WARN_COLOR=\x1b[33;01m
 
 # ATTENTION !!!
-# 1. simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.arm64.a` and then `ar rcs` to pack as `.a`
+# 1. simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.ios.arm64.a` and then `ar rcs` to pack as `.a`
 # 2. must `rm -rf  $(OUTPUT_DIR)/libhookzz.static.a`, very important!!!
 ios.arm64 : $(ALL_SOURCES_O)
 	@mkdir -p $(OUTPUT_DIR)
