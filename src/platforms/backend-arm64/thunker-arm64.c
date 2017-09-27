@@ -278,7 +278,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 return;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();

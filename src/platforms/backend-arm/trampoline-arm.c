@@ -126,7 +126,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 
         if (entry_backend->redirect_code_size != ZZ_ARM_TINY_REDIRECT_SIZE &&
             entry_backend->redirect_code_size != ZZ_THUMB_TINY_REDIRECT_SIZE)
-            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
 
         if (!code_slice) {
 #if defined(DEBUG_MODE)
@@ -163,12 +163,14 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         ZzThumbWriter *thumb_writer;
         thumb_relocator = &self->thumb_relocator;
         thumb_writer = &self->thumb_writer;
-        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        zz_thumb_relocator_reset(thumb_relocator, target_addr, thumb_writer);
-        zsize tmp_relocator_insn_size;
 
+        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
         code_slice = NULL;
+
         do {
+            zz_thumb_relocator_reset(thumb_relocator, target_addr, thumb_writer);
+            zsize tmp_relocator_insn_size;
+
             do {
                 zz_thumb_relocator_read_one(thumb_relocator, NULL);
                 tmp_relocator_insn_size = thumb_relocator->input_cur - thumb_relocator->input_start;
@@ -188,7 +190,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                     return ZZ_FAILED;
                 break;
             }
-            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
             if (!code_slice) {
 #if defined(DEBUG_MODE)
                 debug_break();
@@ -199,18 +201,21 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 thumb_writer->pc = code_slice->data;
             }
         } while (code_slice);
+        entry->on_invoke_trampoline = code_slice->data + 1;
     } else {
 
         ZzArmRelocator *arm_relocator;
         ZzArmWriter *arm_writer;
         arm_relocator = &self->arm_relocator;
         arm_writer = &self->arm_writer;
-        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-        zz_arm_relocator_reset(arm_relocator, target_addr, arm_writer);
-        zsize tmp_relocator_insn_size;
 
+        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
         code_slice = NULL;
+
         do {
+            zz_arm_relocator_reset(arm_relocator, target_addr, arm_writer);
+            zsize tmp_relocator_insn_size;
+
             do {
                 zz_arm_relocator_read_one(arm_relocator, NULL);
                 tmp_relocator_insn_size = arm_relocator->input_cur - arm_relocator->input_start;
@@ -228,7 +233,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                     return ZZ_FAILED;
                 break;
             }
-            code_slice = ZzNewCodeSlice(self->allocator, arm_writer->size);
+            code_slice = ZzNewCodeSlice(self->allocator, arm_writer->size + 4);
             if (!code_slice) {
 #if defined(DEBUG_MODE)
                 debug_break();
@@ -240,14 +245,13 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             }
 
         } while (code_slice);
+        entry->on_invoke_trampoline = code_slice->data;
     }
 
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
 
         entry->target_half_ret_addr += (zaddr)code_slice->data;
     }
-
-    entry->on_invoke_trampoline = code_slice->data + 1;
 
     return status;
 }
@@ -293,7 +297,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 return ZZ_FAILED;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();

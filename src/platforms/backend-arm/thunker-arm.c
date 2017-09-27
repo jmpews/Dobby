@@ -262,7 +262,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 return;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();
@@ -286,7 +286,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 return;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();

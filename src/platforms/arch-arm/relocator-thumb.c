@@ -103,16 +103,15 @@ zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     cs_insn *insn_cs;
     zbool rewritten = FALSE;
 
-    insn_ctx = &self->input_insns[self->outpos];
+    if (self->inpos != self->outpos) {
+        insn_ctx = &self->input_insns[self->outpos];
+        self->outpos++;
+    } else
+        return FALSE;
+
     insn_cs = insn_ctx->insn_cs;
     insn_ctx->pc = insn_cs->address + 4;
     insn_ctx->detail = &insn_cs->detail->arm;
-
-    if (self->inpos != self->outpos) {
-        self->outpos++;
-    } else {
-        return FALSE;
-    }
 
     switch (insn_cs->id) {
     case ARM_INS_LDR:

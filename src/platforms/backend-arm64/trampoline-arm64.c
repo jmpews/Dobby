@@ -83,7 +83,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 return ZZ_FAILED;
         }
         if (!code_slice)
-            code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+            code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();
@@ -115,11 +115,14 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     ZzArm64Writer *arm64_writer;
     arm64_relocator = &self->arm64_relocator;
     arm64_writer = &self->arm64_writer;
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-    zz_arm64_relocator_reset(arm64_relocator, target_addr, arm64_writer);
-    zsize tmp_relocator_insn_size;
 
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+
+    code_slice = NULL;
     do {
+        zz_arm64_relocator_reset(arm64_relocator, target_addr, arm64_writer);
+        zsize tmp_relocator_insn_size;
+
         do {
             zz_arm64_relocator_read_one(arm64_relocator, NULL);
             tmp_relocator_insn_size = arm64_relocator->input_cur - arm64_relocator->input_start;
@@ -138,7 +141,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 return ZZ_FAILED;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();
@@ -191,7 +194,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 return ZZ_FAILED;
             break;
         }
-        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size);
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();
