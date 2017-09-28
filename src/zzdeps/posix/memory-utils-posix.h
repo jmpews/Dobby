@@ -27,7 +27,7 @@ zpointer zz_posix_vm_allocate(zsize size);
 
 zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages);
 
-zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize *size_ptr);
+zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size);
 
 zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size);
 

@@ -22,7 +22,7 @@ SRC_SOURCES_O = $(patsubst %.c,%.o, $(SRC_SOURCES))
 ZZDEPS_SOURCES_O = $(patsubst %.c,%.o, $(ZZDEPS_SOURCES))
 ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
-OUTPUT_DIR = build
+OUTPUT_DIR = $(abspath build/ios-arm)
 
 SELF_SRC_DIR = $(abspath src)
 SELF_INCLUDE_DIR = $(abspath include)
@@ -61,7 +61,7 @@ ios.arm : $(ALL_SOURCES_O)
 	@rm -rf $(OUTPUT_DIR)/*
 
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
-	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).a
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*
 
 	@echo "$(OK_COLOR)build success for armv7-ios-hookzz! $(NO_COLOR)"
 
@@ -76,11 +76,11 @@ $(ZZDEPS_SOURCES_O): %.o : %.c
 # -undefined dynamic_lookup
 test : ios.arm
 	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_oc_thumb.m -o tests/arm-ios/test_hook_oc_thumb.o
-	$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc_thumb.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz tests/arm-ios/test_hook_oc_thumb.o -arch armv7 -o $(OUTPUT_DIR)/test_hook_oc_thumb.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc_thumb.dylib -Wl,-U,_func -framework Foundation -L$(OUTPUT_DIR) -lhookzz.static tests/arm-ios/test_hook_oc_thumb.o -arch armv7 -o $(OUTPUT_DIR)/test_hook_oc_thumb.dylib
 	@echo "$(OK_COLOR)build [test_hook_oc_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_open_arm.c -o tests/arm-ios/test_hook_open_arm.o
-	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_open_arm.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm-ios/test_hook_open_arm.o -o $(OUTPUT_DIR)/test_hook_open_arm.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_open_arm.dylib -Wl,-U,_func -framework Foundation -L$(OUTPUT_DIR) -lhookzz.static tests/arm-ios/test_hook_open_arm.o -o $(OUTPUT_DIR)/test_hook_open_arm.dylib
 	@echo "$(OK_COLOR)build [test_hook_open_arm.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for armv7-ios-hookzz! $(NO_COLOR)"

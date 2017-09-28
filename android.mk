@@ -33,11 +33,13 @@ ZZ_INCLUDE := $(LOCAL_PATH)/include \
 			$(LOCAL_PATH)/src/zzdeps/common \
 			$(LOCAL_PATH)/src/zzdeps/posix \
 			$(LOCAL_PATH)/src/platforms/backend-posix \
+			$(LOCAL_PATH)/src/platforms/backend-linux \
 			$(LOCAL_PATH)/deps/capstone/include
 
 ZZ_SRC := $(wildcard $(LOCAL_PATH)/src/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/zzdeps/common/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/zzdeps/posix/*.c) \
+			$(wildcard $(LOCAL_PATH)/src/platforms/backend-linux/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-posix/*.c)
 
 ifeq ($(TARGET_ARCH), arm)
