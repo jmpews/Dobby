@@ -22,7 +22,7 @@ SRC_SOURCES_O = $(patsubst %.c,%.o, $(SRC_SOURCES))
 ZZDEPS_SOURCES_O = $(patsubst %.c,%.o, $(ZZDEPS_SOURCES))
 ALL_SOURCES_O = $(SRC_SOURCES_O)  $(ZZDEPS_SOURCES_O)
 
-OUTPUT_DIR = build
+OUTPUT_DIR = $(abspath build/ios-arm64)
 
 SELF_SRC_DIR = $(abspath src)
 SELF_INCLUDE_DIR = $(abspath include)
@@ -80,11 +80,11 @@ test : ios.arm64
 	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_address.c -o tests/arm64-ios/test_hook_address.o
-	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_address.o -o $(OUTPUT_DIR)/test_hook_address.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(OUTPUT_DIR) -lhookzz.static tests/arm64-ios/test_hook_address.o -o $(OUTPUT_DIR)/test_hook_address.dylib
 	@echo "$(OK_COLOR)build [test_hook_address.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_printf.c -o tests/arm64-ios/test_hook_printf.o
-	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_printf.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_printf.o -o $(OUTPUT_DIR)/test_hook_printf.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_printf.dylib -Wl,-U,_func -L$(OUTPUT_DIR) -lhookzz.static tests/arm64-ios/test_hook_printf.o -o $(OUTPUT_DIR)/test_hook_printf.dylib
 	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for armv7-ios-hookzz! $(NO_COLOR)"
