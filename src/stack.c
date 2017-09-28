@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #include "stack.h"
-#include "thread.h"
+
 
 ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr) {
     ZzThreadStack *stack = (ZzThreadStack *) ZzThreadGetCurrentThreadData(key_ptr);

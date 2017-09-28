@@ -15,8 +15,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "relocator.h"
-#include "thunker.h"
 #include "trampoline.h"
 
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry)

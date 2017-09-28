@@ -14,32 +14,17 @@
  *    limitations under the License.
  */
 
-
 #ifndef writer_h
 #define writer_h
 
 #include "hookzz.h"
 
-typedef struct _ZzWriter {
+typedef struct _ZzWriter
+{
     zpointer *codedata;
     zpointer base;
     zpointer pc;
     zuint size;
 } ZzWriter;
 
-ZzWriter *ZzWriterNewWriter(zpointer address);
-
-void ZzWriterPutNearJump(ZzWriter *self, zsize offset);
-
-void ZzWriterPutAbsJump(ZzWriter *self, zpointer target_addr);
-
-void ZzWriterPutRetAbsJmp(ZzWriter *self, zpointer target_addr);
-
-zsize ZzWriterNearJumpRangeSize();
-
-zsize ZzWriterAbsJumpInstructionLength();
-
-zsize ZzWriterNearJumpInstructionLength();
-
 #endif
- 

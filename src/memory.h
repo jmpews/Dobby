@@ -15,7 +15,15 @@
 #ifndef memory_h
 #define memory_h
 
+// platforms
+
+// hookzz
 #include "hookzz.h"
+
+// zzdeps
+#include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 // #include "platforms/darwin/memory-darwin.h"
 // #include "zzdeps/darwin/memory-utils-darwin.h"

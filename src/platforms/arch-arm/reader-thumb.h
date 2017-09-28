@@ -20,6 +20,9 @@
 
 // hookzz
 
+// capstone
+#include "capstone.h"
+
 // zzdeps
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"

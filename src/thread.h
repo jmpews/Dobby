@@ -15,6 +15,7 @@
 #ifndef thread_h
 #define thread_h
 
+// hookzz
 #include "hookzz.h"
 
 zpointer ZzThreadNewThreadLocalKeyPtr();

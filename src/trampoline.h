@@ -15,11 +15,16 @@
 #ifndef trampoline_h
 #define trampoline_h
 
+// platforms
+
+// hookzz
 #include "hookzz.h"
-
-#include "allocator.h"
-
 #include "interceptor.h"
+
+// zzdeps
+#include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 /*
     prepare_trampline:
@@ -37,7 +42,10 @@
         1. 跳转到 `leave_thunk`
  */
 
-typedef struct _ZzTrampoline { ZzCodeSlice *code_slice; } ZzTrampoline;
+typedef struct _ZzTrampoline
+{
+    ZzCodeSlice *code_slice;
+} ZzTrampoline;
 
 ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);

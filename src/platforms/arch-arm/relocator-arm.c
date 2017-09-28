@@ -14,15 +14,17 @@
  *    limitations under the License.
  */
 
-#include "relocator-arm.h"
 #include <string.h>
+#include "relocator-arm.h"
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *output) {
+void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *output)
+{
     cs_err err;
     err = cs_open(CS_ARCH_ARM, CS_MODE_ARM, &relocator->capstone);
-    if (err) {
+    if (err)
+    {
         Xerror("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
@@ -42,7 +44,8 @@ void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArm
     relocator->output = output;
 }
 
-void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWriter *output) {
+void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWriter *output)
+{
     self->input_cur = input_code;
     self->input_start = input_code;
     self->input_pc = (zaddr)input_code;
@@ -53,7 +56,8 @@ void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWrit
     self->output = output;
 }
 
-zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction) {
+zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction)
+{
     cs_insn **insn_cs_ptr, *insn_cs;
     ZzInstruction *insn_ctx = &self->input_insns[self->inpos];
     insn_cs_ptr = &insn_ctx->insn_cs;
@@ -71,11 +75,14 @@ zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction
     address = self->input_pc;
     insn_cs = *insn_cs_ptr;
 
-    if (!cs_disasm_iter(self->capstone, &code, &size, &address, insn_cs)) {
+    if (!cs_disasm_iter(self->capstone, &code, &size, &address, insn_cs))
+    {
         return 0;
     }
 
-    switch (insn_cs->id) {}
+    switch (insn_cs->id)
+    {
+    }
 
     self->inpos++;
 
@@ -87,33 +94,39 @@ zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction
 
     return self->input_cur - self->input_start;
 }
-void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
+void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes)
+{
     *max_bytes = 16;
     return;
 }
 
-void zz_arm_relocator_write_all(ZzArmRelocator *self) {
+void zz_arm_relocator_write_all(ZzArmRelocator *self)
+{
     zuint count = 0;
     while (zz_arm_relocator_write_one(self))
         count++;
 }
 
-zbool zz_arm_relocator_write_one(ZzArmRelocator *self) {
+zbool zz_arm_relocator_write_one(ZzArmRelocator *self)
+{
     ZzInstruction *insn_ctx;
     cs_insn *insn_cs;
     zbool rewritten = FALSE;
 
-    if (self->inpos != self->outpos) {
+    if (self->inpos != self->outpos)
+    {
         insn_ctx = &self->input_insns[self->outpos];
         self->outpos++;
-    } else
+    }
+    else
         return FALSE;
 
     insn_cs = insn_ctx->insn_cs;
     insn_ctx->pc = insn_cs->address + 8;
     insn_ctx->detail = &insn_cs->detail->arm;
 
-    switch (insn_cs->id) {
+    switch (insn_cs->id)
+    {
     case ARM_INS_LDR:
         rewritten = zz_arm_relocator_rewrite_ldr(self, insn_ctx);
         break;
@@ -138,8 +151,10 @@ zbool zz_arm_relocator_write_one(ZzArmRelocator *self) {
     return TRUE;
 }
 
-static zbool zz_arm_branch_is_unconditional(const cs_insn *insn_ctx) {
-    switch (insn_ctx->detail->arm.cc) {
+static zbool zz_arm_branch_is_unconditional(const cs_insn *insn_ctx)
+{
+    switch (insn_ctx->detail->arm.cc)
+    {
     case ARM_CC_INVALID:
     case ARM_CC_AL:
         return TRUE;
@@ -148,7 +163,8 @@ static zbool zz_arm_branch_is_unconditional(const cs_insn *insn_ctx) {
     }
 }
 
-static zbool zz_arm_relocator_rewrite_ldr(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
+static zbool zz_arm_relocator_rewrite_ldr(ZzArmRelocator *self, ZzInstruction *insn_ctx)
+{
     const cs_arm_op *dst = &insn_ctx->detail->operands[0];
     const cs_arm_op *src = &insn_ctx->detail->operands[1];
     zint disp;
@@ -159,7 +175,8 @@ static zbool zz_arm_relocator_rewrite_ldr(ZzArmRelocator *self, ZzInstruction *i
     disp = src->mem.disp;
 
     zz_arm_writer_put_ldr_b_reg_address(self->output, dst->reg, insn_ctx->pc);
-    if (disp > 0xff) {
+    if (disp > 0xff)
+    {
         zz_arm_writer_put_add_reg_reg_imm(self->output, dst->reg, dst->reg,
                                           0xc00 | ((disp >> 8) & 0xff));
     }
@@ -169,7 +186,8 @@ static zbool zz_arm_relocator_rewrite_ldr(ZzArmRelocator *self, ZzInstruction *i
     return TRUE;
 }
 
-static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
+static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *insn_ctx)
+{
     const cs_arm_op *dst = &insn_ctx->detail->operands[0];
     const cs_arm_op *left = &insn_ctx->detail->operands[1];
     const cs_arm_op *right = &insn_ctx->detail->operands[2];
@@ -177,7 +195,8 @@ static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *i
     if (left->reg != ARM_REG_PC || right->type != ARM_OP_REG)
         return FALSE;
 
-    if (right->reg == dst->reg) {
+    if (right->reg == dst->reg)
+    {
         zz_arm_writer_put_add_reg_reg_imm(self->output, dst->reg, dst->reg, insn_ctx->pc & 0xff);
         zz_arm_writer_put_add_reg_reg_imm(self->output, dst->reg, dst->reg,
                                           0xc00 | ((insn_ctx->pc >> 8) & 0xff));
@@ -185,7 +204,9 @@ static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *i
                                           0x800 | ((insn_ctx->pc >> 16) & 0xff));
         zz_arm_writer_put_add_reg_reg_imm(self->output, dst->reg, dst->reg,
                                           0x400 | ((insn_ctx->pc >> 24) & 0xff));
-    } else {
+    }
+    else
+    {
         zz_arm_writer_put_ldr_reg_address(self->output, dst->reg, insn_ctx->pc);
         zz_arm_writer_put_add_reg_reg_imm(self->output, dst->reg, right->reg, 0);
     }
@@ -194,7 +215,8 @@ static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *i
 }
 
 static zbool zz_arm_relocator_rewrite_b(ZzArmRelocator *self, cs_mode target_mode,
-                                        ZzInstruction *insn_ctx) {
+                                        ZzInstruction *insn_ctx)
+{
     cs_insn *insn_cs = insn_ctx->insn_cs;
     const cs_arm_op *target = &insn_ctx->detail->operands[0];
 
@@ -207,7 +229,8 @@ static zbool zz_arm_relocator_rewrite_b(ZzArmRelocator *self, cs_mode target_mod
 }
 
 static zbool zz_arm_relocator_rewrite_bl(ZzArmRelocator *self, cs_mode target_mode,
-                                         ZzInstruction *insn_ctx) {
+                                         ZzInstruction *insn_ctx)
+{
     const cs_arm_op *target = &insn_ctx->detail->operands[0];
 
     if (target->type != ARM_OP_IMM)

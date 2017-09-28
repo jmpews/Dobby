@@ -61,7 +61,7 @@ ios.arm64 : $(ALL_SOURCES_O)
 	@rm -rf $(OUTPUT_DIR)/*
 
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
-	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*.o
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).a
 
 	@echo "$(OK_COLOR)build success for arm64-ios-hookzz! $(NO_COLOR)"
 

@@ -2,9 +2,7 @@
 
 # What is HookZz ?
 
-**a cute hook framwork**. 
-
-**still developing, for arm64/IOS now!**
+**a cute hook framwork for arm/arm64/ios/android**
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
@@ -228,10 +226,10 @@ test_hook_address.dylib`sorry_to_exit:
 
 now only for `arm64/ios`.
 
-#### build `libhookzz.static.a` and `libhookzz.dylib` for arm64(ios)
+**build `libhookzz.static.a` and `libhookzz.dylib` for arm64(ios)**
 
 ```
-λ : >>> make -f darwin.ios.mk darwin.ios
+λ : >>> make -f ios.arm64.mk ios.arm64
 generate [src/allocator.o]!
 generate [src/interceptor.o]!
 generate [src/memory.o]!

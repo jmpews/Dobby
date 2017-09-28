@@ -13,16 +13,16 @@
 //    limitations under the License.
 
 #include "reader-arm.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 static csh handle;
 
-void zz_arm_reader_capstone_init(void) {
+void zz_arm_reader_capstone_init(void)
+{
     cs_err err = 0;
 
     err = cs_open(CS_ARCH_ARM, CS_MODE_ARM, &handle);
-    if (err) {
+    if (err)
+    {
         Xerror("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
@@ -30,13 +30,15 @@ void zz_arm_reader_capstone_init(void) {
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-cs_insn *zz_arm_reader_disassemble_at(zpointer address) {
+cs_insn *zz_arm_reader_disassemble_at(zpointer address)
+{
     if (!handle)
         zz_arm_reader_capstone_init();
     cs_insn *insn;
     size_t count;
     count = cs_disasm(handle, address, 16, (unsigned long)address, 0, &insn);
-    if (!insn) {
+    if (!insn)
+    {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif

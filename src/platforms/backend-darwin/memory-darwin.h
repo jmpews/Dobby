@@ -12,6 +12,20 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#include "hookzz.h"
+#ifndef platforms_backend_darwin_memory_h
+#define platforms_backend_darwin_memory_h
 
+// platforms
+
+// hookzz
+#include "hookzz.h"
 #include "memory.h"
+
+// zzdeps
+#include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
+#include "zzdeps/darwin/memory-utils-darwin.h"
+#include "zzdeps/posix/memory-utils-posix.h"
+
+#endif
