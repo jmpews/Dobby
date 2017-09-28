@@ -6,14 +6,14 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := capstone.armv7
-LOCAL_SRC_FILES := $(LOCAL_PATH)/deps/capstone/libcapstone.armv7.android.a
+LOCAL_SRC_FILES := $(LOCAL_PATH)/deps/capstone/libcapstone.android.armv7.a
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/deps/capstone/include
 include $(PREBUILT_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := capstone.armv64
-LOCAL_SRC_FILES := $(LOCAL_PATH)/deps/capstone/libcapstone.arm64.android.a
+LOCAL_SRC_FILES := $(LOCAL_PATH)/deps/capstone/libcapstone.android.arm64.a
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/deps/capstone/include
 include $(PREBUILT_STATIC_LIBRARY)
 
