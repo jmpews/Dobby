@@ -61,7 +61,7 @@ ios.arm64 : $(ALL_SOURCES_O)
 	@rm -rf $(OUTPUT_DIR)/*
 
 	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/libhookzz.dylib $(LDFLAGS) $(ALL_SOURCES_O) -o $(OUTPUT_DIR)/libhookzz.dylib
-	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).a
+	@ar -rcs $(OUTPUT_DIR)/libhookzz.static.a $(ALL_SOURCES_O) $(CAPSTONE_LIB_DIR)/lib$(CAPSTONE_LIB).o/*
 
 	@echo "$(OK_COLOR)build success for arm64-ios-hookzz! $(NO_COLOR)"
 
@@ -75,16 +75,16 @@ $(ZZDEPS_SOURCES_O): %.o : %.c
 
 # -undefined dynamic_lookup
 test : ios.arm64
-	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_oc.m -o tests/arm64-ios/test_hook_oc.o
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_oc.o -o $(OUTPUT_DIR)/test_hook_oc.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_oc.m -o tests/arm64-ios/test_hook_oc.o
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/Frameworks/test_hook_oc.dylib -Wl,-U,_func -framework Foundation -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_oc.o -o $(OUTPUT_DIR)/test_hook_oc.dylib
 	@echo "$(OK_COLOR)build [test_hook_oc.dylib] success for arm64(ios)! $(NO_COLOR)"
 
-	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_address.c -o tests/arm64-ios/test_hook_address.o
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_address.o -o $(OUTPUT_DIR)/test_hook_address.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_address.c -o tests/arm64-ios/test_hook_address.o
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_address.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_address.o -o $(OUTPUT_DIR)/test_hook_address.dylib
 	@echo "$(OK_COLOR)build [test_hook_address.dylib] success for arm64(ios)! $(NO_COLOR)"
 
-	@$(ZZ_GCC) -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_printf.c -o tests/arm64-ios/test_hook_printf.o
-	@$(ZZ_GCC) -dynamiclib -install_name @executable_path/test_hook_printf.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_printf.o -o $(OUTPUT_DIR)/test_hook_printf.dylib
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -I$(HOOKZZ_DIR)/include -c tests/arm64-ios/test_hook_printf.c -o tests/arm64-ios/test_hook_printf.o
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) -arch arm64 -dynamiclib -install_name @executable_path/test_hook_printf.dylib -Wl,-U,_func -L$(HOOKZZ_DIR)/build -lhookzz.static tests/arm64-ios/test_hook_printf.o -o $(OUTPUT_DIR)/test_hook_printf.dylib
 	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for arm64(ios)! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for armv7-ios-hookzz! $(NO_COLOR)"

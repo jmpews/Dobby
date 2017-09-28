@@ -170,7 +170,7 @@ zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize 
     return NULL;
 }
 
-zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize *size_ptr)
+zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size)
 {
     char zeroArray[128];
     char readZeroArray[128];
@@ -192,7 +192,6 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
             {
                 if (!memcmp(readZeroArray, zeroArray, 128))
                 {
-                    *size_ptr = 0x1000;
                     return (void *)tmp_addr;
                 }
             }
