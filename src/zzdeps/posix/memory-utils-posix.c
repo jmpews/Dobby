@@ -7,7 +7,7 @@
 
 #include "memory-utils-posix.h"
 // http://renatocunha.com/blog/2015/12/msync-pointer-validity/
-zbool zz_vm_check_address_valid_via_msync(const zpointer p)
+zbool zz_posix_vm_check_address_valid_via_msync(const zpointer p)
 {
     int ret = 0;
     zsize page_size;
