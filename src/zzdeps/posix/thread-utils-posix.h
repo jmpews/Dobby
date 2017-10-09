@@ -2,9 +2,9 @@
 #define zzdeps_posix_thread_utils_h
 
 #include <err.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include <pthread.h>
 

@@ -24,10 +24,10 @@
 #include "capstone.h"
 
 // zzdeps
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 #include "hookzz.h"
 #include "zzdefs.h"
+#include "zzdeps/common/debugbreak.h"
+#include "zzdeps/zz.h"
 
 cs_insn *zz_thumb_reader_disassemble_at(zpointer address);
 

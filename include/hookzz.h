@@ -52,13 +52,11 @@ typedef bool zbool;
 #if defined(__arm64__) || defined(__aarch64__)
 typedef union FPReg_ {
     __int128_t q;
-    struct
-    {
+    struct {
         double d1;
         double d2;
     } d;
-    struct
-    {
+    struct {
         float f1;
         float f2;
         float f3;
@@ -66,14 +64,12 @@ typedef union FPReg_ {
     } f;
 } FPReg;
 
-typedef struct _RegState
-{
+typedef struct _RegState {
     uint64_t sp;
 
     union {
         uint64_t x[29];
-        struct
-        {
+        struct {
             uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17,
                 x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28;
         } regs;
@@ -88,14 +84,12 @@ typedef struct _RegState
     } floating;
 } RegState;
 #elif defined(__arm__)
-typedef struct _RegState
-{
+typedef struct _RegState {
     zuint32 sp;
 
     union {
         zuint32 r[13];
-        struct
-        {
+        struct {
             zuint32 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
         } regs;
     } general;
@@ -121,14 +115,13 @@ typedef enum _ZZSTATUS {
     ZZ_NO_BUILD_HOOK
 } ZZSTATUS;
 
-typedef struct _CallStack
-{
-    long call_id;
+typedef struct _CallStack {
+    zsize call_id;
+    struct _ThreadStack *threadstack;
 } CallStack;
 
-typedef struct _ThreadStack
-{
-    long thread_id;
+typedef struct _ThreadStack {
+    zsize thread_id;
     zsize size;
 } ThreadStack;
 
@@ -141,7 +134,7 @@ zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr
 
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
-#define STACK_SET(callstack, key, value, type) \
+#define STACK_SET(callstack, key, value, type)                                                     \
     ZzSetCallStackData(callstack, key, &(value), sizeof(type))
 
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr,
@@ -149,6 +142,6 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr,
                             PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
+ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_size);
 
 #endif

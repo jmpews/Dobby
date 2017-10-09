@@ -24,7 +24,7 @@
 // zzdeps
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 #include "zzdeps/posix/thread-utils-posix.h"
+#include "zzdeps/zz.h"
 
 #endif

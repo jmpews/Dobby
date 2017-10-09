@@ -26,6 +26,7 @@ typedef struct _ZzInterceptorBackend {
     ZzArm64Writer arm64_writer;
 
     zpointer enter_thunk;
+    zpointer half_thunk;
     zpointer leave_thunk;
 } ZzInterceptorBackend;
 

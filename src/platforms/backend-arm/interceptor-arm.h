@@ -31,6 +31,7 @@ typedef struct _ZzInterceptorBackend {
     ZzThumbWriter thumb_writer;
 
     zpointer enter_thunk;
+    zpointer half_thunk;
     zpointer leave_thunk;
 } ZzInterceptorBackend;
 

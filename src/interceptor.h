@@ -18,8 +18,8 @@
 // platforms
 
 // hookzz
-#include "hookzz.h"
 #include "allocator.h"
+#include "hookzz.h"
 #include "stack.h"
 #include "thread.h"
 #include "thunker.h"
@@ -30,8 +30,7 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef struct _FunctionBackup
-{
+typedef struct _FunctionBackup {
     zpointer address;
     zsize size;
     zbyte data[32];
@@ -47,8 +46,7 @@ struct _ZzInterceptor;
 #define HOOK_ADDRESS_TYPE 2
 
 struct _ZzHookFunctionEntryBackend;
-typedef struct _ZzHookFunctionEntry
-{
+typedef struct _ZzHookFunctionEntry {
     int hook_type;
     zbool isNearJump;
     unsigned long id;
@@ -77,8 +75,7 @@ typedef struct _ZzHookFunctionEntry
     struct _ZzInterceptor *interceptor;
 } ZzHookFunctionEntry;
 
-typedef struct
-{
+typedef struct {
     ZzHookFunctionEntry **entries;
     zsize size;
     zsize capacity;
@@ -86,8 +83,7 @@ typedef struct
 
 struct _ZzInterceptorBackend;
 
-typedef struct _ZzInterceptor
-{
+typedef struct _ZzInterceptor {
     ZzHookFunctionEntrySet hook_function_entry_set;
 
     struct _ZzInterceptorBackend *backend;

@@ -17,19 +17,15 @@
 
 #include "trampoline.h"
 
-ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry)
-{
+ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
 
     ZzPrepareTrampoline(self, entry);
     ZzBuildEnterTrampoline(self, entry);
 
-    if (entry->hook_type == HOOK_ADDRESS_TYPE)
-    {
+    if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         ZzBuildHalfTrampoline(self, entry);
         ZzBuildInvokeTrampoline(self, entry);
-    }
-    else
-    {
+    } else {
         ZzBuildInvokeTrampoline(self, entry);
         ZzBuildLeaveTrampoline(self, entry);
     }

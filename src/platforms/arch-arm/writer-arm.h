@@ -50,13 +50,13 @@ void zz_arm_writer_put_bx_reg(ZzArmWriter *self, arm_reg reg);
 void zz_arm_writer_put_nop(ZzArmWriter *self);
 void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
                                        zint32 imm);
-void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg,
-                                       arm_reg src_reg, zint32 imm);
+void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
+                                       zint32 imm);
 void zz_arm_writer_put_ldr_reg_imm_literal(ZzArmWriter *self, arm_reg dst_reg, zint32 imm);
-void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzArmWriter *self, arm_reg dst_reg,
-                                             arm_reg src_reg, zint32 imm, zbool index);
-void zz_arm_writer_put_ldr_reg_reg_imm_A1(ZzArmWriter *self, arm_reg dst_reg,
-                                          arm_reg src_reg, zuint32 imm, zbool P, zbool U, zbool W);
+void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
+                                             zint32 imm, zbool index);
+void zz_arm_writer_put_ldr_reg_reg_imm_A1(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
+                                          zuint32 imm, zbool P, zbool U, zbool W);
 void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, arm_reg reg, zaddr address);
 void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, arm_reg dst_reg, arm_reg src_reg,
                                        zuint32 imm);

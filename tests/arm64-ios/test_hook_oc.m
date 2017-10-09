@@ -16,9 +16,9 @@
 
 #include "hookzz.h"
 #import <Foundation/Foundation.h>
-#import <objc/runtime.h>
-#import <mach-o/dyld.h>
 #import <dlfcn.h>
+#import <mach-o/dyld.h>
+#import <objc/runtime.h>
 
 @interface HookZz : NSObject
 
@@ -27,33 +27,31 @@
 @implementation HookZz
 
 + (void)load {
-  [self zzMethodSwizzlingHook];
+    [self zzMethodSwizzlingHook];
 }
 
 void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-  zpointer t = 0x1234; 
-  STACK_SET(callstack ,"key_x", t, void *);
-  STACK_SET(callstack ,"key_y", t, zpointer);
-  NSLog(@"hookzz OC-Method: -[UIViewController %s]",
-        (zpointer)(rs->general.regs.x1));
+    zpointer t = 0x1234;
+    STACK_SET(callstack, "key_x", t, void *);
+    STACK_SET(callstack, "key_y", t, zpointer);
+    NSLog(@"hookzz OC-Method: -[UIViewController %s]", (zpointer)(rs->general.regs.x1));
 }
 
 void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-  zpointer x = STACK_GET(callstack, "key_x", void *);
-  zpointer y = STACK_GET(callstack, "key_y", zpointer);
-  NSLog(@"function over, and get 'key_x' is: %p", x);
-  NSLog(@"function over, and get 'key_y' is: %p", y);
+    zpointer x = STACK_GET(callstack, "key_x", void *);
+    zpointer y = STACK_GET(callstack, "key_y", zpointer);
+    NSLog(@"function over, and get 'key_x' is: %p", x);
+    NSLog(@"function over, and get 'key_y' is: %p", y);
 }
 
 + (void)zzMethodSwizzlingHook {
-  Class hookClass = objc_getClass("UIViewController");
-  SEL oriSEL = @selector(viewWillAppear:);
-  Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-  IMP oriImp = method_getImplementation(oriMethod);
+    Class hookClass = objc_getClass("UIViewController");
+    SEL oriSEL = @selector(viewWillAppear:);
+    Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
+    IMP oriImp = method_getImplementation(oriMethod);
 
-  ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
-  ZzEnableHook((void *)oriImp);
-
+    ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
+    ZzEnableHook((void *)oriImp);
 }
 
 @end
@@ -71,12 +69,10 @@ Process 41637 resuming
 Process 41637 resuming
 (lldb) c
 Process 41637 resuming
-2017-08-30 02:01:58.954875+0800 T007[41637:10198806] hookzz OC-Method: -[UIViewController viewWillAppear:]
-2017-08-30 02:01:58.956558+0800 T007[41637:10198806] function over, and get 'key_x' is: 0x1234
-2017-08-30 02:01:58.956654+0800 T007[41637:10198806] function over, and get 'key_y' is: 0x1234
-(lldb) disass -n "-[UIViewController viewWillAppear:]" -c 3
-UIKit`-[UIViewController viewWillAppear:]:
-    0x18881c10c <+0>: b      0x1810b0b4c
-    0x18881c110 <+4>: ldrsw  x8, [x8, #0x280]
+2017-08-30 02:01:58.954875+0800 T007[41637:10198806] hookzz OC-Method: -[UIViewController
+viewWillAppear:] 2017-08-30 02:01:58.956558+0800 T007[41637:10198806] function over, and get 'key_x'
+is: 0x1234 2017-08-30 02:01:58.956654+0800 T007[41637:10198806] function over, and get 'key_y' is:
+0x1234 (lldb) disass -n "-[UIViewController viewWillAppear:]" -c 3 UIKit`-[UIViewController
+viewWillAppear:]: 0x18881c10c <+0>: b      0x1810b0b4c 0x18881c110 <+4>: ldrsw  x8, [x8, #0x280]
     0x18881c114 <+8>: ldr    x9, [x0, x8]
 */

@@ -26,15 +26,14 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef struct _ZzCallStackItem
-{
+typedef struct _ZzCallStackItem {
     char *key;
     zpointer value;
 } ZzCallStackItem;
 
-typedef struct _ZzCallStack
-{
-    long call_id;
+typedef struct _ZzCallStack {
+    zsize call_id;
+    ThreadStack *threadstack;
     zsize size;
     zsize capacity;
     zpointer sp;
@@ -42,9 +41,8 @@ typedef struct _ZzCallStack
     ZzCallStackItem *items;
 } ZzCallStack;
 
-typedef struct _ZzThreadStack
-{
-    long thread_id;
+typedef struct _ZzThreadStack {
+    zsize thread_id;
     zsize size;
     zsize capacity;
     zpointer key_ptr;

@@ -19,30 +19,32 @@
 #include <unistd.h>
 
 static void hack_this_function() {
-#ifdef __arm64__
-    __asm__("mov X0, #0\n"
-            "mov w16, #20\n"
-            "svc #0x80");
+#ifdef __arm__
+    __asm__ volatile(".code 16\n"
+                     "mov r0, #0\n"
+                     "mov r12, #20\n"
+                     "svc #0x80");
 #endif
 }
 
 static void sorry_to_exit() {
-#ifdef __arm64__
-    __asm__("mov X0, #0\n"
-            "mov w16, #1\n"
-            "svc #0x80");
+#ifdef __arm__
+    __asm__ volatile(".code 16\n"
+                     "mov r0, #0\n"
+                     "mov r12, #1\n"
+                     "svc #0x80");
 #endif
 }
 
 void getpid_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    unsigned long request = *(unsigned long *)(&rs->general.regs.x16);
-    printf("request(x16) is: %ld\n", request);
-    printf("x0 is: %ld\n", (long)rs->general.regs.x0);
+    unsigned long request = *(unsigned long *)(&rs->general.regs.r12);
+    printf("request(r12) is: %ld\n", request);
+    printf("r0 is: %ld\n", (long)rs->general.regs.r0);
 }
 
 void getpid_half_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    pid_t x0 = (pid_t)(rs->general.regs.x0);
-    printf("getpid() return at x0 is: %d\n", x0);
+    pid_t r0 = (pid_t)(rs->general.regs.r0);
+    printf("getpid() return at r0 is: %d\n", r0);
 }
 
 __attribute__((constructor)) void test_hook_address() {
@@ -56,52 +58,16 @@ __attribute__((constructor)) void test_hook_address() {
     // *)getpid_half_call);
 
     // hook address with both `half_call` and `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, getpid_pre_call,
+    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 10, getpid_pre_call,
                        getpid_half_call);
     ZzEnableHook((void *)hack_this_function_ptr + 8);
 
     void *sorry_to_exit_ptr = (void *)sorry_to_exit;
-    unsigned long nop_bytes = 0xD503201F;
-    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 4);
+    unsigned long nop_bytes = 0x46c0;
+    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 2);
 
     hack_this_function();
     sorry_to_exit();
 
     printf("hack success -.0\n");
 }
-
-/*
-(lldb) disass -n hack_this_function
-test_hook_address.dylib`hack_this_function:
-    0x1000b0280 <+0>:  mov    x0, #0x0
-    0x1000b0284 <+4>:  mov    w16, #0x14
-    0x1000b0288 <+8>:  svc    #0x80
-    0x1000b028c <+12>: ret
-
-(lldb) disass -n sorry_to_exit
-test_hook_address.dylib`sorry_to_exit:
-    0x1000b0290 <+0>:  mov    x0, #0x0
-    0x1000b0294 <+4>:  mov    w16, #0x1
-    0x1000b0298 <+8>:  svc    #0x80
-    0x1000b029c <+12>: ret
-
-(lldb) c
-Process 41414 resuming
-request(x16) is: 20
-x0 is: 0
-getpid() return at x0 is: 41414
-hack success -.0
-(lldb) disass -n hack_this_function
-test_hook_address.dylib`hack_this_function:
-    0x1000b0280 <+0>:  mov    x0, #0x0
-    0x1000b0284 <+4>:  mov    w16, #0x14
-    0x1000b0288 <+8>:  b      0x1001202cc
-    0x1000b028c <+12>: ret
-
-(lldb) disass -n sorry_to_exit
-test_hook_address.dylib`sorry_to_exit:
-    0x1000b0290 <+0>:  mov    x0, #0x0
-    0x1000b0294 <+4>:  mov    w16, #0x1
-    0x1000b0298 <+8>:  nop
-    0x1000b029c <+12>: ret
-*/

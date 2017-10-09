@@ -16,44 +16,30 @@
 
 #include "memory-linux.h"
 
-zsize ZzMemoryGetPageSzie()
-{
-    return zz_posix_vm_get_page_size();
-}
+zsize ZzMemoryGetPageSzie() { return zz_posix_vm_get_page_size(); }
 
-zpointer ZzMemoryAllocatePages(zsize n_pages)
-{
-    return zz_posix_vm_allocate_pages(n_pages);
-}
+zpointer ZzMemoryAllocatePages(zsize n_pages) { return zz_posix_vm_allocate_pages(n_pages); }
 
-zpointer ZzMemoryAllocateNearPages(zaddr address, zsize redirect_range_size, zsize n_pages)
-{
+zpointer ZzMemoryAllocateNearPages(zaddr address, zsize redirect_range_size, zsize n_pages) {
     return zz_posix_vm_allocate_near_pages(address, redirect_range_size, n_pages);
 }
 
-zpointer ZzMemoryAllocate(zsize size)
-{
-    return zz_posix_vm_allocate(size);
-}
+zpointer ZzMemoryAllocate(zsize size) { return zz_posix_vm_allocate(size); }
 
-zbool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size)
-{
+zbool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size) {
     return zz_posix_vm_patch_code(address, codedata, codedata_size);
 }
 
-zbool ZzMemoryProtectAsExecutable(const zaddr address, zsize size)
-{
+zbool ZzMemoryProtectAsExecutable(const zaddr address, zsize size) {
 
     return zz_posix_vm_protect_as_executable(address, size);
 }
 
-zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size)
-{
+zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size) {
     return zz_posxi_vm_protect_as_writable(address, size);
 }
 
-zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size)
-{
+zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size) {
     // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
     return zz_posix_vm_search_text_code_cave(address, redirect_range_size, size);
 }

@@ -42,8 +42,7 @@
         1. 跳转到 `leave_thunk`
  */
 
-typedef struct _ZzTrampoline
-{
+typedef struct _ZzTrampoline {
     ZzCodeSlice *code_slice;
 } ZzTrampoline;
 

@@ -18,8 +18,7 @@
 
 // --- about read function ---
 
-zbool zz_vm_read_data_via_task(task_t task, const zaddr address,
-                               zpointer buffer, zsize length) {
+zbool zz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer, zsize length) {
     vm_size_t dataCnt;
     dataCnt = 0;
     if (address <= 0) {
@@ -31,8 +30,8 @@ zbool zz_vm_read_data_via_task(task_t task, const zaddr address,
         return FALSE;
     }
     dataCnt = length;
-    kern_return_t kr = vm_read_overwrite(task, address, length, (zaddr)buffer,
-                                         (vm_size_t *)&dataCnt);
+    kern_return_t kr =
+        vm_read_overwrite(task, address, length, (zaddr)buffer, (vm_size_t *)&dataCnt);
 
     if (kr != KERN_SUCCESS) {
         // KR_ERROR_AT(kr, address);
@@ -52,14 +51,12 @@ char *zz_vm_read_string_via_task(task_t task, const zaddr address) {
     char *result = NULL;
 
     // string upper limit 0x1000
-    end_addr = zz_vm_search_data_via_task(task, address, address + 0x1000,
-                                          (zbyte *)&end_c, 1);
+    end_addr = zz_vm_search_data_via_task(task, address, address + 0x1000, (zbyte *)&end_c, 1);
     if (!end_addr) {
         return NULL;
     }
     result = (char *)malloc(end_addr - address + 1);
-    if (result && zz_vm_read_data_via_task(task, address, result,
-                                           end_addr - address + 1)) {
+    if (result && zz_vm_read_data_via_task(task, address, result, end_addr - address + 1)) {
         return result;
     }
     return NULL;
@@ -67,16 +64,14 @@ char *zz_vm_read_string_via_task(task_t task, const zaddr address) {
 
 // --- end ---
 
-zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr,
-                                 const zaddr end_addr, zbyte *data,
-                                 zsize data_len) {
+zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr, const zaddr end_addr,
+                                 zbyte *data, zsize data_len) {
     zaddr curr_addr;
     zbyte *temp_buf;
     if (start_addr <= 0)
         Xerror("search address start_addr(%p) < 0", (zpointer)start_addr);
     if (start_addr > end_addr)
-        Xerror("search start_add(%p) < end_addr(%p)", (zpointer)start_addr,
-               (zpointer)end_addr);
+        Xerror("search start_add(%p) < end_addr(%p)", (zpointer)start_addr, (zpointer)end_addr);
 
     curr_addr = (zaddr)start_addr;
     temp_buf = (zbyte *)malloc(data_len);
@@ -97,8 +92,8 @@ zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
 #define CHECK_LEN 1
     char n_read_bytes[1];
     zuint len;
-    kern_return_t kr = vm_read_overwrite(
-        task, address, CHECK_LEN, (zaddr)&n_read_bytes, (vm_size_t *)&len);
+    kern_return_t kr =
+        vm_read_overwrite(task, address, CHECK_LEN, (zaddr)&n_read_bytes, (vm_size_t *)&len);
 
     if (kr != KERN_SUCCESS || len != CHECK_LEN)
         KR_ERROR_AT(kr, address);
@@ -106,17 +101,16 @@ zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
     return TRUE;
 }
 
-zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address,
-                                   vm_prot_t *prot_p, vm_inherit_t *inherit_p) {
+zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p,
+                                   vm_inherit_t *inherit_p) {
 
     vm_address_t region = (zaddr)address;
     vm_size_t region_len = 0;
     struct vm_region_submap_short_info_64 info;
     mach_msg_type_number_t info_count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     natural_t max_depth = 99999;
-    kern_return_t kr =
-        vm_region_recurse_64(task, &region, &region_len, &max_depth,
-                             (vm_region_recurse_info_t)&info, &info_count);
+    kern_return_t kr = vm_region_recurse_64(task, &region, &region_len, &max_depth,
+                                            (vm_region_recurse_info_t)&info, &info_count);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
         return FALSE;
@@ -126,8 +120,7 @@ zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address,
     return TRUE;
 }
 
-zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
-                             vm_prot_t page_prot) {
+zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_prot_t page_prot) {
     kern_return_t kr;
 
     zsize page_size;
@@ -136,11 +129,9 @@ zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
 
     page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
-    aligned_size =
-        (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
+    aligned_size = (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
 
-    kr = mach_vm_protect(task, (vm_address_t)aligned_addr, aligned_size, FALSE,
-                         page_prot);
+    kr = mach_vm_protect(task, (vm_address_t)aligned_addr, aligned_size, FALSE, page_prot);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
         Xerror("kr = %d, at (%p) error!", kr, (zpointer)address);
@@ -149,18 +140,13 @@ zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size,
     return TRUE;
 }
 
-zbool zz_vm_protect_as_executable_via_task(task_t task, const zaddr address,
-                                           zsize size) {
-    return zz_vm_protect_via_task(task, address, size,
-                                  (VM_PROT_READ | VM_PROT_EXECUTE));
+zbool zz_vm_protect_as_executable_via_task(task_t task, const zaddr address, zsize size) {
+    return zz_vm_protect_via_task(task, address, size, (VM_PROT_READ | VM_PROT_EXECUTE));
 }
 
-zbool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address,
-                                         zsize size) {
-    if (!zz_vm_protect_via_task(task, address, size,
-                                (VM_PROT_ALL | VM_PROT_COPY))) {
-        return zz_vm_protect_via_task(task, address, size,
-                                      (VM_PROT_DEFAULT | VM_PROT_COPY));
+zbool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address, zsize size) {
+    if (!zz_vm_protect_via_task(task, address, size, (VM_PROT_ALL | VM_PROT_COPY))) {
+        return zz_vm_protect_via_task(task, address, size, (VM_PROT_DEFAULT | VM_PROT_COPY));
     }
     return FALSE;
 }
@@ -175,8 +161,7 @@ zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages) {
         n_pages = 1;
     }
 
-    kr =
-        mach_vm_allocate(task, &result, page_size * n_pages, VM_FLAGS_ANYWHERE);
+    kr = mach_vm_allocate(task, &result, page_size * n_pages, VM_FLAGS_ANYWHERE);
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR(kr);
@@ -202,8 +187,8 @@ zpointer zz_vm_allocate_via_task(task_t task, zsize size) {
     return (zpointer)result;
 }
 
-zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address,
-                                            zsize range_size, zsize n_pages) {
+zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize range_size,
+                                            zsize n_pages) {
     mach_vm_address_t aligned_addr;
     kern_return_t kr;
     mach_vm_address_t tmp_addr;
@@ -215,15 +200,11 @@ zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address,
     }
     aligned_addr = (zaddr)address & ~(page_size - 1);
 
-    vm_address_t target_start_addr =
-        zz_vm_align_floor(address - range_size, page_size);
-    vm_address_t target_end_addr =
-        zz_vm_align_floor(address + range_size, page_size);
+    vm_address_t target_start_addr = zz_vm_align_floor(address - range_size, page_size);
+    vm_address_t target_end_addr = zz_vm_align_floor(address + range_size, page_size);
 
-    for (tmp_addr = target_start_addr; tmp_addr < target_end_addr;
-         tmp_addr += page_size) {
-        kr = mach_vm_allocate(task, &tmp_addr, page_size * n_pages,
-                              VM_FLAGS_FIXED);
+    for (tmp_addr = target_start_addr; tmp_addr < target_end_addr; tmp_addr += page_size) {
+        kr = mach_vm_allocate(task, &tmp_addr, page_size * n_pages, VM_FLAGS_FIXED);
         if (kr == KERN_SUCCESS) {
             return (zpointer)tmp_addr;
         }
@@ -231,13 +212,11 @@ zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address,
     return NULL;
 }
 
-zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address,
-                                              zsize range_size,
+zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize range_size,
                                               zsize *size_ptr) {
     char zeroArray[128];
     char readZeroArray[128];
-    mach_vm_address_t aligned_addr, tmp_addr, target_search_start,
-        target_search_end;
+    mach_vm_address_t aligned_addr, tmp_addr, target_search_start, target_search_end;
     kern_return_t kr;
     zsize page_size;
 
@@ -250,13 +229,11 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address,
 
     Xdebug("searching for %p cave...", (zpointer)address);
     // TODO: check the memory region attributes
-    for (tmp_addr = target_search_start; tmp_addr < target_search_end;
-         tmp_addr += 0x1000) {
+    for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_vm_read_data_via_task(task, tmp_addr, readZeroArray, 128)) {
             if (!memcmp(readZeroArray, zeroArray, 128)) {
                 *size_ptr = 0x1000;
-                Xdebug("found a cave at %p, size %d", (zpointer)tmp_addr,
-                       0x1000);
+                Xdebug("found a cave at %p, size %d", (zpointer)tmp_addr, 0x1000);
                 return (void *)tmp_addr;
             }
         }
@@ -265,12 +242,10 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address,
 }
 
 // https://github.com/kpwn/935csbypass/blob/master/cs_bypass.m
-zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
-                                            zsize size) {
+zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsize size) {
     char zeroArray[128];
     char readZeroArray[128];
-    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit,
-        search_end_limit;
+    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit, search_end_limit;
     zsize page_size;
 
     zpointer result_ptr;
@@ -291,9 +266,8 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
         zuint32 nesting_depth;
 
         count = VM_REGION_SUBMAP_INFO_COUNT_64;
-        kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp,
-                                  &nesting_depth, (vm_region_info_64_t)&info,
-                                  &count);
+        kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp, &nesting_depth,
+                                  (vm_region_info_64_t)&info, &count);
         if (kr == KERN_INVALID_ADDRESS) {
             break;
         } else if (kr) {
@@ -312,8 +286,7 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
 
                 if (search_start < search_start_limit) {
 
-                    if (search_end > search_start_limit &&
-                        search_end < search_end_limit) {
+                    if (search_end > search_start_limit && search_end < search_end_limit) {
                         search_start = search_start_limit;
                     } else if (search_end > search_end_limit) {
                         search_start = search_start_limit;
@@ -321,10 +294,8 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
                     } else {
                         continue;
                     }
-                } else if (search_start >= search_start_limit &&
-                           search_start <= search_end_limit) {
-                    if (search_end > search_start_limit &&
-                        search_end < search_end_limit) {
+                } else if (search_start >= search_start_limit && search_start <= search_end_limit) {
+                    if (search_end > search_start_limit && search_end < search_end_limit) {
                     } else if (search_end > search_end_limit) {
                         search_end = search_end_limit;
                     } else {
@@ -334,8 +305,7 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
                     continue;
                 }
 
-                result_ptr = zz_vm_search_data((zpointer)search_start,
-                                               (zpointer)search_end,
+                result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end,
                                                (zbyte *)zeroArray, size);
                 if (result_ptr) {
                     return result_ptr;
@@ -347,12 +317,10 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size,
 }
 
 // TODO: vm_region_recurse_64 is better ?
-zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
-                                                zsize size) {
+zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size, zsize size) {
     char zeroArray[128];
     char readZeroArray[128];
-    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit,
-        search_end_limit;
+    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit, search_end_limit;
     zsize page_size;
 
     zpointer result_ptr;
@@ -365,10 +333,8 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
 
     zsize n_dylibs = _dyld_image_count();
     for (size_t i = 0; i < n_dylibs; i++) {
-        struct mach_header_64 *header =
-            (struct mach_header_64 *)_dyld_get_image_header(i);
-        struct segment_command_64 *seg_cmd_64 =
-            zz_macho_get_segment_64_via_name(header, "__TEXT");
+        struct mach_header_64 *header = (struct mach_header_64 *)_dyld_get_image_header(i);
+        struct segment_command_64 *seg_cmd_64 = zz_macho_get_segment_64_via_name(header, "__TEXT");
 
         // ATTENTION: as the __TEXT segment region is 'r-x', diffrent from
         // others, so it's page align.
@@ -381,8 +347,7 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
 
         if (search_start < search_start_limit) {
 
-            if (search_end > search_start_limit &&
-                search_end < search_end_limit) {
+            if (search_end > search_start_limit && search_end < search_end_limit) {
                 search_start = search_start_limit;
             } else if (search_end > search_end_limit) {
                 search_start = search_start_limit;
@@ -390,10 +355,8 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
             } else {
                 continue;
             }
-        } else if (search_start >= search_start_limit &&
-                   search_start <= search_end_limit) {
-            if (search_end > search_start_limit &&
-                search_end < search_end_limit) {
+        } else if (search_start >= search_start_limit && search_start <= search_end_limit) {
+            if (search_end > search_start_limit && search_end < search_end_limit) {
             } else if (search_end > search_end_limit) {
                 search_end = search_end_limit;
             } else {
@@ -403,9 +366,8 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
             continue;
         }
 
-        result_ptr =
-            zz_vm_search_data((zpointer)search_start, (zpointer)search_end,
-                              (zbyte *)zeroArray, size);
+        result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end,
+                                       (zbyte *)zeroArray, size);
         if (result_ptr) {
             return result_ptr;
         }
@@ -427,8 +389,8 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
-                                const zpointer codedata, zuint codedata_size) {
+zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata,
+                                zuint codedata_size) {
     zsize page_size;
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;
@@ -447,8 +409,7 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
     kern_return_t kr;
     mach_port_t task_self = mach_task_self();
 
-    if (!zz_vm_get_page_info_via_task(task_self, (const zaddr)start_page_addr,
-                                      &prot, &inherit)) {
+    if (!zz_vm_get_page_info_via_task(task_self, (const zaddr)start_page_addr, &prot, &inherit)) {
         return FALSE;
     }
 
@@ -464,8 +425,7 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
 
     zpointer code_mmap = zz_vm_allocate_via_task(task_self, range_size);
 
-    kr = vm_copy(task_self, start_page_addr, range_size,
-                 (vm_address_t)code_mmap);
+    kr = vm_copy(task_self, start_page_addr, range_size, (vm_address_t)code_mmap);
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, start_page_addr);
@@ -489,9 +449,8 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address,
 
     mach_vm_address_t target = (zaddr)start_page_addr;
     vm_prot_t c, m;
-    kr = mach_vm_remap(task_self, &target, range_size, 0, VM_FLAGS_OVERWRITE,
-                       task_self, (mach_vm_address_t)code_mmap, /*copy*/ TRUE,
-                       &c, &m, inherit);
+    kr = mach_vm_remap(task_self, &target, range_size, 0, VM_FLAGS_OVERWRITE, task_self,
+                       (mach_vm_address_t)code_mmap, /*copy*/ TRUE, &c, &m, inherit);
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR(kr);

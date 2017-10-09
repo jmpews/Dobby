@@ -1,14 +1,13 @@
 
 #include <errno.h>
-#include <sys/mman.h>
 #include <string.h>
+#include <sys/mman.h>
 // for : getpagesize,
 #include <unistd.h>
 
 #include "memory-utils-posix.h"
 // http://renatocunha.com/blog/2015/12/msync-pointer-validity/
-zbool zz_posix_vm_check_address_valid_via_msync(const zpointer p)
-{
+zbool zz_posix_vm_check_address_valid_via_msync(const zpointer p) {
     int ret = 0;
     zsize page_size;
     zpointer base;
@@ -26,18 +25,14 @@ zbool zz_posix_vm_check_address_valid_via_msync(const zpointer p)
 // https://www.cocoawithlove.com/2010/10/testing-if-arbitrary-pointer-is-valid.html
 // https://stackoverflow.com/questions/26829119/how-to-make-lldb-ignore-exc-bad-access-exception
 // ---check start---
-#include <signal.h>
 #include <setjmp.h>
+#include <signal.h>
 
 static sigjmp_buf sigjmp_env;
 
-void PointerReadFailedHandler(int signum)
-{
-    siglongjmp(sigjmp_env, 1);
-}
+void PointerReadFailedHandler(int signum) { siglongjmp(sigjmp_env, 1); }
 
-zbool zz_posix_vm_check_address_valid_via_signal(zpointer p)
-{
+zbool zz_posix_vm_check_address_valid_via_signal(zpointer p) {
     // Set up SIGSEGV and SIGBUS handlers
     struct sigaction new_segv_action, old_segv_action;
     struct sigaction new_bus_action, old_bus_action;
@@ -51,8 +46,7 @@ zbool zz_posix_vm_check_address_valid_via_signal(zpointer p)
     sigaction(SIGBUS, &new_bus_action, &old_bus_action);
 
     // The signal handler will return us to here if a signal is raised
-    if (sigsetjmp(sigjmp_env, 1))
-    {
+    if (sigsetjmp(sigjmp_env, 1)) {
         sigaction(SIGSEGV, &old_segv_action, NULL);
         sigaction(SIGBUS, &old_bus_action, NULL);
         return FALSE;
@@ -68,8 +62,7 @@ zbool zz_posix_vm_check_address_valid_via_signal(zpointer p)
 zsize zz_posix_vm_get_page_size() { return getpagesize(); }
 
 // int mprotect(void *addr, size_t len, int prot);
-zbool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot)
-{
+zbool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot) {
     int r;
 
     zsize page_size;
@@ -78,47 +71,41 @@ zbool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot)
 
     page_size = zz_posix_vm_get_page_size();
     aligned_addr = (zaddr)address & ~(page_size - 1);
-    aligned_size =
-        (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
+    aligned_size = (1 + ((address + size - 1 - aligned_addr) / page_size)) * page_size;
 
     r = mprotect((zpointer)aligned_addr, aligned_size, page_prot);
-    if (r == -1)
-    {
+    if (r == -1) {
         Xerror("r = %d, at (%p) error!", r, (zpointer)address);
         return FALSE;
     }
     return TRUE;
 }
 
-zbool zz_posix_vm_protect_as_executable(const zaddr address, zsize size)
-{
+zbool zz_posix_vm_protect_as_executable(const zaddr address, zsize size) {
     return zz_posix_vm_protect(address, size, (PROT_READ | PROT_EXEC | PROT_WRITE));
 }
 
-zbool zz_posxi_vm_protect_as_writable(const zaddr address, zsize size)
-{
+zbool zz_posxi_vm_protect_as_writable(const zaddr address, zsize size) {
     if (!zz_posix_vm_protect(address, size, (PROT_READ | PROT_EXEC | PROT_WRITE)))
         return FALSE;
     return TRUE;
 }
 
 //  void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
-zpointer zz_posix_vm_allocate_pages(zsize n_pages)
-{
+zpointer zz_posix_vm_allocate_pages(zsize n_pages) {
     zpointer page_mmap;
     int kr;
     zsize page_size;
     page_size = zz_posix_vm_get_page_size();
 
-    if (n_pages <= 0)
-    {
+    if (n_pages <= 0) {
         n_pages = 1;
     }
 
-    page_mmap = mmap(0, page_size * n_pages, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    page_mmap =
+        mmap(0, page_size * n_pages, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 
-    if (page_mmap == MAP_FAILED)
-    {
+    if (page_mmap == MAP_FAILED) {
         perror("mmap");
         return NULL;
     }
@@ -128,8 +115,7 @@ zpointer zz_posix_vm_allocate_pages(zsize n_pages)
     return (zpointer)page_mmap;
 }
 
-zpointer zz_posix_vm_allocate(zsize size)
-{
+zpointer zz_posix_vm_allocate(zsize size) {
     zsize page_size;
     zpointer result;
     zsize n_pages;
@@ -141,16 +127,14 @@ zpointer zz_posix_vm_allocate(zsize size)
     return (zpointer)result;
 }
 
-zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages)
-{
+zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages) {
     zaddr aligned_addr;
     zpointer page_mmap;
     zaddr t;
     zsize page_size;
     page_size = zz_posix_vm_get_page_size();
 
-    if (n_pages <= 0)
-    {
+    if (n_pages <= 0) {
         n_pages = 1;
     }
     aligned_addr = (zaddr)address & ~(page_size - 1);
@@ -158,20 +142,17 @@ zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize 
     zaddr target_start_addr = aligned_addr - range_size;
     zaddr target_end_addr = aligned_addr + range_size;
 
-    for (t = target_start_addr; t < target_end_addr; t += page_size)
-    {
+    for (t = target_start_addr; t < target_end_addr; t += page_size) {
         page_mmap = mmap((zpointer)t, page_size * n_pages, PROT_WRITE | PROT_READ,
                          MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
-        if (page_mmap != MAP_FAILED)
-        {
+        if (page_mmap != MAP_FAILED) {
             return (zpointer)page_mmap;
         }
     }
     return NULL;
 }
 
-zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size)
-{
+zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size) {
     char zeroArray[128];
     char readZeroArray[128];
     zaddr aligned_addr, tmp_addr, target_search_start, target_search_end;
@@ -185,13 +166,10 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
     target_search_end = aligned_addr + range_size;
 
     Xdebug("searching for %p cave, use 0x1000 interval.", (zpointer)address);
-    for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000)
-    {
+    for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_posix_vm_check_address_valid_via_signal((zpointer)tmp_addr))
-            if (memcpy(readZeroArray, (zpointer)tmp_addr, 128))
-            {
-                if (!memcmp(readZeroArray, zeroArray, 128))
-                {
+            if (memcpy(readZeroArray, (zpointer)tmp_addr, 128)) {
+                if (!memcmp(readZeroArray, zeroArray, 128)) {
                     return (void *)tmp_addr;
                 }
             }
@@ -213,8 +191,7 @@ zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsiz
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size)
-{
+zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size) {
     zsize page_size;
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;

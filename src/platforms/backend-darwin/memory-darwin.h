@@ -24,8 +24,8 @@
 // zzdeps
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 #include "zzdeps/darwin/memory-utils-darwin.h"
 #include "zzdeps/posix/memory-utils-posix.h"
+#include "zzdeps/zz.h"
 
 #endif
