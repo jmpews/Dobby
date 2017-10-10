@@ -49,29 +49,59 @@ zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg,
 
     zz_arm_register_describe(reg, &ri);
 
-    if (((zaddr)self->pc) % 4) {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+    // if (((zaddr)self->pc) % 4) {
+    //     zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+    //     if (ri.meta <= ZZ_ARM_R7) {
+    //         zz_thumb_writer_put_nop(self);
+    //     }
+    // } else {
+    //     if (ri.meta <= ZZ_ARM_R7) {
+    //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+    //     } else {
+    //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+    //         zz_thumb_writer_put_nop(self);
+    //     }
+    // }
+
+    if ((((zaddr)self->pc) % 4)) {
         if (ri.meta <= ZZ_ARM_R7) {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
             zz_thumb_writer_put_nop(self);
+        } else {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
         }
     } else {
         if (ri.meta <= ZZ_ARM_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-            zz_thumb_writer_put_nop(self);
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
         }
     }
+
     zz_thumb_writer_put_b_imm(self, 0x2);
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
     return self->pc;
 }
 
 zpointer zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address) {
+    ZzArmRegInfo ri;
+
+    zz_arm_register_describe(reg, &ri);
     if ((((zaddr)self->pc) % 4)) {
-        zz_thumb_writer_put_nop(self);
+        if (ri.meta <= ZZ_ARM_R7) {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+        } else {
+            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
+        }
+    } else {
+        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+        if (ri.meta <= ZZ_ARM_R7)
+            zz_thumb_writer_put_nop(self);
     }
-    zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+
+    // if ((((zaddr)self->pc) % 4)) {
+    //     zz_thumb_writer_put_nop(self);
+    // }
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
     return self->pc;
 }

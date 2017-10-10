@@ -93,6 +93,7 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
     entry->hook_type = hook_type;
     entry->id = hook_function_entry_set->size;
     entry->isEnabled = 0;
+    entry->try_near_jump = FALSE;
     entry->interceptor = interceptor;
 
     entry->target_ptr = target_ptr;
