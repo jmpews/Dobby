@@ -139,7 +139,12 @@ zpointer zz_thumb_writer_put_bx_reg(ZzThumbWriter *self, arm_reg reg) {
 
     zz_arm_register_describe(reg, &ri);
 
+    if ((((zaddr)self->pc) % 4)) {
+        zz_thumb_writer_put_nop(self);
+    }
+
     zz_thumb_writer_put_instruction(self, 0x4700 | (ri.index << 3));
+    zz_thumb_writer_put_nop(self);
     return self->pc;
 }
 

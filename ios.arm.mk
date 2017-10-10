@@ -87,6 +87,11 @@ test : ios.arm
 	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_address_thumb.dylib -Wl,-U,_func -framework Foundation -L$(OUTPUT_DIR) -lhookzz.static tests/arm-ios/test_hook_address_thumb.o -o $(OUTPUT_DIR)/test_hook_address_thumb.dylib
 	@echo "$(OK_COLOR)build [test_hook_address_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
 
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) -arch armv7 -I$(HOOKZZ_DIR)/include -c tests/arm-ios/test_hook_printf.c -o tests/arm-ios/test_hook_printf.o
+	@$(ZZ_GCC_BIN) -isysroot $(ZZ_SDK) $(CFLAGS) -arch armv7 -dynamiclib -install_name @executable_path/Frameworks/test_hook_printf.dylib -Wl,-U,_func -framework Foundation -L$(OUTPUT_DIR) -lhookzz.static tests/arm-ios/test_hook_printf.o -o $(OUTPUT_DIR)/test_hook_printf.dylib
+	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for armv7-ios! $(NO_COLOR)"
+
+
 	@echo "$(OK_COLOR)build [test] success for armv7-ios-hookzz! $(NO_COLOR)"
 
 clean:

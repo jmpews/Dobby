@@ -22,7 +22,11 @@ static void hack_this_function() {
 #ifdef __arm64__
     __asm__("mov X0, #0\n"
             "mov w16, #20\n"
-            "svc #0x80");
+            "svc #0x80\n"
+            "nop\n"
+            "nop\n"
+            "nop\n"
+            "nop");
 #endif
 }
 

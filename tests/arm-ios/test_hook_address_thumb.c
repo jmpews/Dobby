@@ -23,7 +23,13 @@ static void hack_this_function() {
     __asm__ volatile(".code 16\n"
                      "mov r0, #0\n"
                      "mov r12, #20\n"
-                     "svc #0x80");
+                     "svc #0x80\n"
+                     "nop\n"
+                     "nop\n"
+                     "nop\n"
+                     "nop\n"
+                     "nop\n"
+                     "nop");
 #endif
 }
 

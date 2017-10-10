@@ -160,8 +160,8 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
+
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
@@ -192,7 +192,6 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
 
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
@@ -209,7 +208,6 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
@@ -240,7 +238,6 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
 
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
@@ -256,7 +253,6 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
@@ -282,7 +278,6 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
 
     zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
-    zz_thumb_writer_put_nop(writer);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
