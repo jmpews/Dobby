@@ -19,21 +19,9 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
-LOCAL_MODULE    := capstone.x86
-LOCAL_SRC_FILES := $(LOCAL_PATH)/deps/capstone/libcapstone.x86.a
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/deps/capstone/include
-include $(PREBUILT_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
 
 ZZ_INCLUDE := $(LOCAL_PATH)/include \
 			$(LOCAL_PATH)/src \
-			$(LOCAL_PATH)/src/zzdeps \
-			$(LOCAL_PATH)/src/zzdeps/common \
-			$(LOCAL_PATH)/src/zzdeps/posix \
-			$(LOCAL_PATH)/src/platforms/backend-posix \
-			$(LOCAL_PATH)/src/platforms/backend-linux \
 			$(LOCAL_PATH)/deps/capstone/include
 
 ZZ_SRC := $(wildcard $(LOCAL_PATH)/src/*.c) \
@@ -43,25 +31,14 @@ ZZ_SRC := $(wildcard $(LOCAL_PATH)/src/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-posix/*.c)
 
 ifeq ($(TARGET_ARCH), arm)
-	ZZ_INCLUDE += $(LOCAL_PATH)/src/platforms/arch-arm
+
 	ZZ_SRC += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm/*.c)
 	ZZ_STATIC_LIB := capstone.armv7
 else ifeq ($(TARGET_ARCH), arm64)
-	ZZ_INCLUDE += $(LOCAL_PATH)/src/platforms/arch-arm64
 	ZZ_SRC += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm64/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.c)
 	ZZ_STATIC_LIB := capstone.arm64
-else ifeq ($(TARGET_ARCH), x86)
-	$(warning $(TARGET_ARCH_ABI))
-	ZZ_INCLUDE += $(LOCAL_PATH)/src/platforms/x86
-	ZZ_SRC += $(wildcard $(LOCAL_PATH)/src/platforms/x86/*.c)
-	ZZ_STATIC_LIB := capstone.x86
-else ifeq ($(TARGET_ARCH), x86_64)
-	$(warning $(TARGET_ARCH_ABI))
-	ZZ_INCLUDE += $(LOCAL_PATH)/src/platforms/x86
-	ZZ_SRC += $(wildcard $(LOCAL_PATH)/src/platforms/x86/*.c)
-	ZZ_STATIC_LIB := capstone.x86
 endif
 
 LOCAL_MODULE := hookzz
