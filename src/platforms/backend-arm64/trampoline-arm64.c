@@ -200,7 +200,6 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
         zz_arm64_writer_put_ldr_b_reg_address(arm64_writer, ARM64_REG_X17, (zaddr)entry);
         zz_arm64_writer_put_str_reg_reg_offset(arm64_writer, ARM64_REG_X17, ARM64_REG_SP, 0x0);
 
-        /* jump to enter thunk */
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17,
                                                (zaddr)self->half_thunk);
 

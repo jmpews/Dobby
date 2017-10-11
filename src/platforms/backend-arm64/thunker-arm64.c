@@ -361,5 +361,29 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
 
     self->leave_thunk = code_slice->data;
 
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+    code_slice = NULL;
+
+    do {
+        zz_arm64_thunker_build_half_thunk(arm64_writer);
+        if (code_slice) {
+            if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
+                return;
+            break;
+        }
+        code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
+        if (!code_slice) {
+#if defined(DEBUG_MODE)
+            debug_break();
+#endif
+            return;
+        } else {
+            zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+            arm64_writer->pc = code_slice->data;
+        }
+    } while (code_slice);
+
+    self->half_thunk = code_slice->data;
+
     return;
 }
