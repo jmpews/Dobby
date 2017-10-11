@@ -422,7 +422,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     return ZZ_DONE;
 }
 
-ZZSTATUS ZzActiveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
+ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice = 0;
 

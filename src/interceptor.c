@@ -218,5 +218,5 @@ ZZSTATUS ZzEnableHook(zpointer target_ptr) {
         return status;
     }
 
-    return ZzActiveTrampoline(interceptor->backend, entry);
+    return ZzActivateTrampoline(interceptor->backend, entry);
 }

@@ -26,7 +26,8 @@ int fake_printf(const char *restrict format, ...) {
     char *stack[16];
     va_list args;
     va_start(args, format);
-    memcpy(stack, args, sizeof(char *) * 16);
+    // *(void **)&args for android
+    memcpy(stack, *(void **)&args, sizeof(char *) * 16);
     va_end(args);
 
     // how to hook variadic function? fake a original copy stack.

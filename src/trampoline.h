@@ -48,7 +48,7 @@ typedef struct _ZzTrampoline {
 
 ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
-ZZSTATUS ZzActiveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzActivateTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 struct _ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator);
 
 ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);

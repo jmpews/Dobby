@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/mman.h>
-// for : getpagesize,
 #include <unistd.h>
 
 #include "memory-utils-posix.h"
