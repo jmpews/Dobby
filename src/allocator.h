@@ -26,10 +26,8 @@
 #include "memory.h"
 
 // zzdeps
-#include "hookzz.h"
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 typedef struct _codeslice {
     zpointer data;

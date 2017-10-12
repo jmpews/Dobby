@@ -71,7 +71,13 @@ ifeq ($(BACKEND), ios)
 	ZZ_GCC_SOURCE += $(ZZ_SRCS_INCLUDE) -arch $(ZZ_ARCH)
 	ZZ_GCC_TEST += $(ZZ_INCLUDE) -arch $(ZZ_ARCH) 
 
+	_ := $(shell rm -rf $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o)
+	_ := $(shell mkdir -p $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o)
+	_ := $(shell cp $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).a $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/)
+	_ := $(shell cd $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/; ar -x $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).a)
+
 	ZZ_CAPSTONE_DEPS_OBJS := $(wildcard $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/*.o)
+
 	ZZ_LIB := $(ZZ_CAPSTONE_LIB)
 
 	CFLAGS ?= -g
