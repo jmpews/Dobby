@@ -29,15 +29,17 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
-
     zz_thumb_writer_init(&backend->thumb_writer, NULL);
     zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
+
+    backend->enter_thunk = NULL;
+    backend->half_thunk = NULL;
+    backend->leave_thunk = NULL;
+
     ZzThunkerBuildThunk(backend);
     return backend;
 }
 
-// 1. confirm enter trampoline jump type. `abs jump` or `near jump`
-// 2. confirm relocator need length
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbool is_thumb = FALSE;
     zpointer target_addr = entry->target_ptr;
@@ -77,8 +79,8 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     ZzArmWriter *thumb_writer = NULL;
     ZzCodeSlice *code_slice = NULL;
     ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
-    ZZSTATUS status;
-    zbool is_thumb;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
     zpointer target_addr = entry->target_ptr;
 
     thumb_writer = &self->thumb_writer;
@@ -100,6 +102,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
         zz_thumb_writer_put_add_reg_imm(thumb_writer, ARM_REG_SP, 0x4);
 
+        /* jump to enter thunk */
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)self->enter_thunk);
 
         if (code_slice) {
@@ -138,8 +141,8 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
+
     entry->on_enter_trampoline = code_slice->data + 1;
-    status = ZZ_SUCCESS;
 
     return status;
 }
@@ -147,12 +150,11 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice = NULL;
-
     ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
-    ZZSTATUS status;
-    zbool is_thumb;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
     zpointer target_addr = entry->target_ptr;
-    zpointer target_end_addr;
+    zpointer target_end_addr = 0;
 
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)target_addr);
 
@@ -168,8 +170,8 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         thumb_writer = &self->thumb_writer;
 
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        code_slice = NULL;
 
+        code_slice = NULL;
         do {
             zz_thumb_relocator_reset(thumb_relocator, target_addr, thumb_writer);
             zsize tmp_relocator_insn_size = 0;
@@ -223,9 +225,10 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 thumb_writer->pc = code_slice->data;
             }
         } while (code_slice);
+
+        /* set thumb on_invoke_trampoline */
         entry->on_invoke_trampoline = code_slice->data + 1;
     } else {
-
         ZzArmRelocator *arm_relocator;
         ZzArmWriter *arm_writer;
         arm_relocator = &self->arm_relocator;
@@ -284,11 +287,13 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             }
 
         } while (code_slice);
+
+        /* set arm on_invoke_trampoline */
         entry->on_invoke_trampoline = code_slice->data;
     }
 
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
-
+        // update target_half_ret_addr
         entry->target_half_ret_addr += (zaddr)code_slice->data;
     }
 
@@ -301,8 +306,8 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     ZzArmWriter *thumb_writer = NULL;
     ZzCodeSlice *code_slice = NULL;
     ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
-    ZZSTATUS status;
-    zbool is_thumb;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
     zpointer target_addr = entry->target_ptr;
 
     thumb_writer = &self->thumb_writer;
@@ -362,8 +367,9 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
+
+    /* set thumb on_half_trampoline */
     entry->on_half_trampoline = code_slice->data + 1;
-    status = ZZ_SUCCESS;
 
     return status;
 }
@@ -371,8 +377,8 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
 ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzCodeSlice *code_slice = NULL;
-    ZZSTATUS status;
-    zbool is_thumb;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
     ZzArmWriter *thumb_writer;
 
     ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
@@ -417,6 +423,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         }
     } while (code_slice);
 
+    /* set thumb on_leave_trampoline */
     entry->on_leave_trampoline = code_slice->data + 1;
 
     return ZZ_DONE;
@@ -424,11 +431,10 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 
 ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
-    ZzCodeSlice *code_slice = 0;
-
+    ZzCodeSlice *code_slice = NULL;
     ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
-    ZZSTATUS status;
-    zbool is_thumb;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
     zpointer target_addr = entry->target_ptr;
 
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)target_addr);

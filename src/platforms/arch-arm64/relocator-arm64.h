@@ -32,8 +32,7 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef struct _ZzArm64Relocator
-{
+typedef struct _ZzArm64Relocator {
     csh capstone;
 
     zpointer input_start;

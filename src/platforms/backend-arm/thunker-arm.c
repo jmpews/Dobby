@@ -289,20 +289,21 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
 }
 
-void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
+ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zbyte temp_code_slice_data[512] = {0};
-    ZzThumbWriter *thumb_writer;
-    ZzCodeSlice *code_slice;
-    ZZSTATUS status;
-    thumb_writer = &self->thumb_writer;
+    ZzThumbWriter *thumb_writer = NULL;
+    ZzCodeSlice *code_slice = NULL;
+    ZZSTATUS status = ZZ_SUCCESS;
 
+    thumb_writer = &self->thumb_writer;
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+
     code_slice = NULL;
     do {
         zz_thumb_thunker_build_enter_thunk(thumb_writer);
         if (code_slice) {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
-                return;
+                return ZZ_FAILED;
             break;
         }
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
@@ -310,13 +311,14 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
 #if defined(DEBUG_MODE)
             debug_break();
 #endif
-            return;
+            return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
 
+    /* set thumb enter_thunk */
     self->enter_thunk = code_slice->data + 1;
 
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
@@ -325,7 +327,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         zz_thumb_thunker_build_leave_thunk(thumb_writer);
         if (code_slice) {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
-                return;
+                return ZZ_FAILED;
             break;
         }
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
@@ -333,13 +335,14 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
 #if defined(DEBUG_MODE)
             debug_break();
 #endif
-            return;
+            return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
 
+    /* set thumb leave_thunk */
     self->leave_thunk = code_slice->data + 1;
 
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
@@ -348,7 +351,7 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         zz_thumb_thunker_build_half_thunk(thumb_writer);
         if (code_slice) {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
-                return;
+                return ZZ_FAILED;
             break;
         }
         code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
@@ -356,13 +359,14 @@ void ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
 #if defined(DEBUG_MODE)
             debug_break();
 #endif
-            return;
+            return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
 
+    /* set thumb half_thunk */
     self->half_thunk = code_slice->data + 1;
-    return;
+    return status;
 }

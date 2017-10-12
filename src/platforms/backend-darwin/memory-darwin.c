@@ -14,11 +14,6 @@
  *    limitations under the License.
  */
 
-// #include <mach/error.h>
-// #include <mach/vm_map.h>
-// #include <sys/mman.h>
-// #include <mach-o/dyld.h>
-
 #include <mach/mach.h>
 
 #include "memory-darwin.h"
