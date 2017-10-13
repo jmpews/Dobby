@@ -96,7 +96,7 @@ $(HOOKZZ_NAME) : $(ZZ_OBJS)
 	@$(ZZ_GCC_SOURCE) -fPIC -shared -dynamiclib $(CFLAGS) $(LDFLAGS) $(ZZ_OBJS) -o $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).dylib
 	@ar -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(ZZ_OBJS) $(ZZ_CAPSTONE_DEPS_OBJS)
 
-	@echo "$(OK_COLOR)build success for armv7-ios-hookzz! $(NO_COLOR)"
+	@echo "$(OK_COLOR)build success for $(ARCH)-ios-hookzz! $(NO_COLOR)"
 
 $(ZZ_SRCS_OBJS): %.o : %.c
 	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@

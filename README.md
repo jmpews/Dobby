@@ -1,16 +1,18 @@
-**Do Not Compile!!!**
-
 # What is HookZz ?
 
 **a cute hook framwork for arm/arm64/ios/android**
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
-**special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat.**
+**special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat, but still with some tricks**
 
 **thanks to [capstone](https://github.com/aquynh/capstone), and the disassembly framework used is [Capstone](https://github.com/aquynh/capstone)**
 
 # Features
+
+- **inlinehook without Jailbreak [new]**
+
+- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM [new]**
 
 - [HookZz-Modules help you to hook.](https://github.com/jmpews/HookZzModules)
 
@@ -22,7 +24,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - hook **address(a piece of code)** with `pre_call` and `half_call`
 
-- (almost)only **one instruction** to hook(i.e.hook **short funciton, even only one instruction**)
+- (almost)only **one instruction** to hook(i.e. hook **short funciton, even only one instruction**) [arm64]
 
 - runtime code patch, without codesign limit
 
@@ -224,38 +226,59 @@ test_hook_address.dylib`sorry_to_exit:
 
 # Compile
 
-now only for `arm64/ios`.
-
-**build `libhookzz.static.a` and `libhookzz.dylib` for arm64(ios)**
+## build for arm64-ios
 
 ```
-λ : >>> make -f ios.arm64.mk ios.arm64
-generate [src/allocator.o]!
-generate [src/interceptor.o]!
-generate [src/memory.o]!
-generate [src/stack.o]!
-generate [src/thread.o]!
-generate [src/trampoline.o]!
-generate [src/platforms/posix/thread-posix.o]!
-generate [src/platforms/darwin/memory-darwin.o]!
-generate [src/platforms/arm64/reader.o]!
-generate [src/platforms/arm64/relocator-arm64.o]!
-generate [src/platforms/arm64/thunker-arm64.o]!
-generate [src/platforms/arm64/writer-arm64.o]!
-generate [src/zzdeps/darwin/macho-utils-darwin.o]!
-generate [src/zzdeps/darwin/memory-utils-darwin.o]!
-generate [src/zzdeps/common/memory-utils-common.o]!
-generate [src/zzdeps/posix/memory-utils-posix.o]!
-generate [src/zzdeps/posix/thread-utils-posix.o]!
-build success for arm64(IOS)!
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (development●) (normal)
+λ : >>> make -f ios.mk clean
+clean all *.o success!
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (development●) (normal)
+λ : >>> make -f ios.mk BACKEND=ios ARCH=arm64
+
+...ignore
+
+build success for arm64-ios-hookzz!
 ```
+
+check `build/ls build/ios-arm64`
 
 #### build test for arm64(ios)
 
 ```
-λ : >>> make -f darwin.ios.mk test
-build success for arm64(IOS)!
-build [test_hook_oc.dylib] success for arm64(ios)!
-build [test_hook_address.dylib] success for arm64(ios)!
-build [test] success for arm64(IOS)!
+λ : >>> cd tests/arm64-ios
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz/tests/arm64-ios (development●) (normal)
+λ : >>> make
+build [test_hook_oc.dylib] success for arm64-ios!
+build [test_hook_address.dylib] success for arm64-ios!
+build [test_hook_printf.dylib] success for arm64-ios!
+build [test] success for arm64-ios-hookzz!
 ```
+
+## build for arm-android
+
+```
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (development●) (normal)
+λ : >>> make -f ios.mk clean
+clean all *.o success!
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz (development●) (normal)
+λ : >>> make -f ios.mk BACKEND=ios ARCH=arm64
+
+...ignore
+
+build success for arm64-ios-hookzz!
+```
+
+check `build/ls build/ios-arm64`
+
+#### build test for arm64(ios)
+
+```
+λ : >>> cd tests/arm64-ios
+jmpews at localhost in ~/Desktop/SpiderZz/project/HookZz/tests/arm64-ios (development●) (normal)
+λ : >>> make
+build [test_hook_oc.dylib] success for arm64-ios!
+build [test_hook_address.dylib] success for arm64-ios!
+build [test_hook_printf.dylib] success for arm64-ios!
+build [test] success for arm64-ios-hookzz!
+```
+

@@ -54,6 +54,58 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     return ZZ_SUCCESS;
 }
 
+__attribute__((__naked__)) void on_enter_trampoline_template() {
+    __asm__ volatile(
+        /* store entry address and reserve space for next hop */
+        "sub sp, sp, 0x10\n"
+        "ldr x17, #0x8\n"
+        "b #0xc\n"
+        /* entry address */
+        ".long 0x0\n"
+        ".long 0x0\n"
+        "str x17, [sp]\n"
+        "ldr x17, #0x8\n"
+        "br x17\n"
+        /* enter_thunk address */
+        ".long 0x0\n"
+        ".long 0x0");
+}
+
+__attribute__((__naked__)) void on_inovke_trampoline_template() {
+    __asm__ volatile(
+        /* fixed instruction */
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "ldr x17, #8\n"
+        "br x17\n"
+        /* rest of orgin function address */
+        ".long 0x0\n"
+        ".long 0x0");
+}
+
+__attribute__((__naked__)) void on_leave_trampoline_template() {
+    __asm__ volatile(
+        /* store entry address and reserve space for next hop */
+        "sub sp, sp, 0x10\n"
+        "ldr x17, #0x8\n"
+        "b #0xc\n"
+        /* entry address */
+        ".long 0x0\n"
+        ".long 0x0\n"
+        "str x17, [sp]\n"
+        "ldr x17, #0x8\n"
+        "br x17\n"
+        /* leave_thunk address */
+        ".long 0x0\n"
+        ".long 0x0");
+}
+
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzArm64Writer *arm64_writer = NULL;
