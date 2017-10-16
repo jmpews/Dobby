@@ -131,11 +131,11 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *o
         ZzInitializeInterceptor();
         if (!g_interceptor)
             return ZZ_FAILED;
+        if (!g_interceptor->is_support_rx_page) {
+            return ZZ_FAILED;
+        }
     }
-    if (!interceptor->is_support_rx_page) {
-        return ZZ_FAILED;
-    }
-
+    
     interceptor = g_interceptor;
     hook_function_entry_set = &(interceptor->hook_function_entry_set);
 
@@ -169,11 +169,12 @@ ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL p
         ZzInitializeInterceptor();
         if (!g_interceptor)
             return ZZ_FAILED;
+        if (!g_interceptor->is_support_rx_page) {
+            return ZZ_FAILED;
+        }
     }
 
-    if (!interceptor->is_support_rx_page) {
-        return ZZ_FAILED;
-    }
+
 
     interceptor = g_interceptor;
     hook_function_entry_set = &(interceptor->hook_function_entry_set);

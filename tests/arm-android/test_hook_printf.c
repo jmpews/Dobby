@@ -40,8 +40,8 @@ int fake_printf(const char *restrict format, ...) {
 }
 
 void printf_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    puts((char *)rs->general.regs.x0);
-    STACK_SET(callstack, "format", rs->general.regs.x0, char *);
+    puts((char *)rs->general.regs.r0);
+    STACK_SET(callstack, "format", rs->general.regs.r0, char *);
     puts("printf-pre-call");
 }
 
@@ -61,4 +61,4 @@ __attribute__((constructor)) void test_hook_printf() {
     printf("HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d\n", 1, (void *)2, 3, (char)4, (char)5, (char)6, 7, 8, 9);
 }
 
-// int main(int args, char **argv) {}
+int main(int args, char **argv) {}

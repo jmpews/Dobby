@@ -513,7 +513,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     } while (code_slice);
 
     /* set arm64 enter_thunk */
-    self->enter_thunk = code_slice->data;
+    // self->enter_thunk = code_slice->data;
+    self->enter_thunk = (void *)enter_thunk_template;
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     code_slice = NULL;

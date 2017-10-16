@@ -53,7 +53,7 @@ ifeq ($(BACKEND), ios)
 	ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-darwin/*.c)
 	
 	ZZ_CFLAGS := -g -fPIC -shared -dynamiclib
-	ZZ_DLL := lib$(HOOKZZ_NAME).dyib
+	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
 
 	CFLAGS += -arch $(ZZ_ARCH)
 	
