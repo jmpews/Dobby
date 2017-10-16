@@ -43,3 +43,5 @@ zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize 
     // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
     return zz_posix_vm_search_text_code_cave(address, redirect_range_size, size);
 }
+
+zbool ZzMemoryIsSupportAllocateRXPage() { return TRUE; }

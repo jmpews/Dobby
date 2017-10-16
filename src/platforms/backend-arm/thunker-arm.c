@@ -41,7 +41,7 @@
 // 操作复杂, 耦合略强. 3. 把 ctx_save 进行拆分, 缺点: 模块化设计差, 耦合强
 // (frida-gum采用)
 
-__attribute__((__naked__)) static void ctx_save() {
+__attribute__((__naked__)) void ctx_save() {
     __asm__ volatile(".arm\n"
                      "sub sp, sp, #(14*4)\n"
 
@@ -63,7 +63,7 @@ __attribute__((__naked__)) static void ctx_save() {
                      "str r0, [sp, #(0*4)]\n");
 }
 
-__attribute__((__naked__)) static void ctx_restore() {
+__attribute__((__naked__)) void ctx_restore() {
     __asm__ volatile(".arm\n"
                      "ldr r0, [sp], #4\n"
                      "ldr r1, [sp], #4\n"
@@ -167,25 +167,21 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
     zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
 
     /* pass enter func args */
     /* entry */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP,
-                                           CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
     /* next hop*/
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     /* RegState */
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
     /* caller ret address */
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R3, ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
-                                          (zaddr)function_context_begin_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_begin_invocation);
     zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
 
     /* restore general registers and sp */
@@ -213,25 +209,21 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
     zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
 
     /* pass enter func args */
     /* entry */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP,
-                                           CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
     /* next hop*/
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     /* RegState */
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
     /* caller ret address */
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R3, ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_half_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
-                                          (zaddr)function_context_half_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_half_invocation);
     zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
 
     /* restore general registers and sp */
@@ -258,20 +250,16 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
 
     zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
     zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
 
     /* pass enter func args */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP,
-                                           CTX_SAVE_STACK_OFFSET + 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP,
-                                        CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR,
-                                          (zaddr)function_context_end_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_end_invocation);
     zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
 
     /* restore general registers and sp */

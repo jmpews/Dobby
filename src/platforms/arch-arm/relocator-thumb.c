@@ -20,8 +20,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code,
-                             ZzThumbWriter *writer) {
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *writer) {
     cs_err err;
     err = cs_open(CS_ARCH_ARM, CS_MODE_THUMB, &relocator->capstone);
     if (err) {
@@ -36,8 +35,7 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code,
     relocator->input_start = input_code;
     relocator->input_cur = input_code;
     relocator->input_pc = (zaddr)input_code;
-    relocator->input_insns =
-        (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
+    relocator->input_insns = (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
 }
 
@@ -181,20 +179,17 @@ zbool zz_thumb_relocator_rewrite_add(ZzThumbRelocator *self, ZzInstruction *insn
     else
         temp_reg = ARM_REG_R1;
 
-    Xerror("relocator at %p, rewrite <add> error.", (zpointer)insn_ctx->insn_cs->address);
 #if defined(DEBUG_MODE)
     debug_break();
 #endif
     return TRUE;
 }
 
-zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, cs_mode target_mode,
-                                   ZzInstruction *insn_ctx) {
+zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, cs_mode target_mode, ZzInstruction *insn_ctx) {
     const cs_arm_op *target = &insn_ctx->detail->operands[0];
 
     if (target->type != ARM_OP_IMM)
         return FALSE;
-    Xerror("relocator at %p, rewrite <b> error.", (zpointer)insn_ctx->insn_cs->address);
 #if defined(DEBUG_MODE)
     debug_break();
 #endif
@@ -213,8 +208,7 @@ zbool zz_thumb_relocator_rewrite_b_cond(ZzThumbRelocator *self, ZzInstruction *i
     return TRUE;
 }
 
-zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, cs_mode target_mode,
-                                    ZzInstruction *insn_ctx) {
+zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, cs_mode target_mode, ZzInstruction *insn_ctx) {
     const cs_arm_op *target = &insn_ctx->detail->operands[0];
 
     if (target->type != ARM_OP_IMM)

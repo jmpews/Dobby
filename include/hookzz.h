@@ -70,8 +70,8 @@ typedef struct _RegState {
     union {
         uint64_t x[29];
         struct {
-            uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17,
-                x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28;
+            uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21,
+                x22, x23, x24, x25, x26, x27, x28;
         } regs;
     } general;
 
@@ -134,14 +134,25 @@ zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr
 
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
-#define STACK_SET(callstack, key, value, type)                                                     \
-    ZzSetCallStackData(callstack, key, &(value), sizeof(type))
+#define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr,
-                     PRECALL pre_call_ptr, POSTCALL post_call_ptr);
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr,
-                            PRECALL pre_call_ptr, HALFCALL half_call_ptr);
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                     POSTCALL post_call_ptr);
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
+                            HALFCALL half_call_ptr);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_size);
+
+#if defined(__APPLE__) && defined(__MACH__)
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define TARGET_IS_IOS 1
+#endif
+#endif
+
+#ifdef TARGET_IS_IOS
+ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                        POSTCALL post_call_ptr);
+#endif
 
 #endif

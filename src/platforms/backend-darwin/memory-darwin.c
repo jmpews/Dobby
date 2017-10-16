@@ -20,13 +20,10 @@
 
 zsize ZzMemoryGetPageSzie() { return zz_posix_vm_get_page_size(); }
 
-zpointer ZzMemoryAllocatePages(zsize n_pages) {
-    return zz_vm_allocate_pages_via_task(mach_task_self(), n_pages);
-}
+zpointer ZzMemoryAllocatePages(zsize n_pages) { return zz_vm_allocate_pages_via_task(mach_task_self(), n_pages); }
 
 zpointer ZzMemoryAllocateNearPages(zaddr address, zsize redirect_range_size, zsize n_pages) {
-    return zz_vm_allocate_near_pages_via_task(mach_task_self(), address, redirect_range_size,
-                                              n_pages);
+    return zz_vm_allocate_near_pages_via_task(mach_task_self(), address, redirect_range_size, n_pages);
 }
 
 zpointer ZzMemoryAllocate(zsize size) { return zz_vm_allocate_via_task(mach_task_self(), size); }
@@ -48,3 +45,5 @@ zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize 
     // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
     return zz_vm_search_code_cave_via_recurse(address, redirect_range_size, size);
 }
+
+zbool ZzMemoryIsSupportAllocateRXPage() { return zz_vm_can_allocate_rx_page(); }

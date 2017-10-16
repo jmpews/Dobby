@@ -46,8 +46,7 @@ zbool zz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer
         return FALSE;
     }
     dataCnt = length;
-    kern_return_t kr =
-        vm_read_overwrite(task, address, length, (zaddr)buffer, (vm_size_t *)&dataCnt);
+    kern_return_t kr = vm_read_overwrite(task, address, length, (zaddr)buffer, (vm_size_t *)&dataCnt);
 
     if (kr != KERN_SUCCESS) {
         // KR_ERROR_AT(kr, address);
@@ -80,8 +79,8 @@ char *zz_vm_read_string_via_task(task_t task, const zaddr address) {
 
 // --- end ---
 
-zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr, const zaddr end_addr,
-                                 zbyte *data, zsize data_len) {
+zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr, const zaddr end_addr, zbyte *data,
+                                 zsize data_len) {
     zaddr curr_addr;
     zbyte *temp_buf;
     if (start_addr <= 0)
@@ -108,8 +107,7 @@ zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
 #define CHECK_LEN 1
     char n_read_bytes[1];
     zuint len;
-    kern_return_t kr =
-        vm_read_overwrite(task, address, CHECK_LEN, (zaddr)&n_read_bytes, (vm_size_t *)&len);
+    kern_return_t kr = vm_read_overwrite(task, address, CHECK_LEN, (zaddr)&n_read_bytes, (vm_size_t *)&len);
 
     if (kr != KERN_SUCCESS || len != CHECK_LEN)
         KR_ERROR_AT(kr, address);
@@ -117,16 +115,15 @@ zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address) {
     return TRUE;
 }
 
-zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p,
-                                   vm_inherit_t *inherit_p) {
+zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p, vm_inherit_t *inherit_p) {
 
     vm_address_t region = (zaddr)address;
     vm_size_t region_len = 0;
     struct vm_region_submap_short_info_64 info;
     mach_msg_type_number_t info_count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     natural_t max_depth = 99999;
-    kern_return_t kr = vm_region_recurse_64(task, &region, &region_len, &max_depth,
-                                            (vm_region_recurse_info_t)&info, &info_count);
+    kern_return_t kr =
+        vm_region_recurse_64(task, &region, &region_len, &max_depth, (vm_region_recurse_info_t)&info, &info_count);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
         return FALSE;
@@ -184,11 +181,33 @@ zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages) {
         return NULL;
     }
 
-    if (!zz_vm_protect_via_task(task, (zaddr)result, page_size * n_pages,
-                                (VM_PROT_DEFAULT | VM_PROT_COPY)))
+    if (!zz_vm_protect_via_task(task, (zaddr)result, page_size * n_pages, (VM_PROT_DEFAULT | VM_PROT_COPY)))
         return NULL;
 
     return (zpointer)result;
+}
+
+bool zz_vm_can_allocate_rx_page() {
+    vm_prot_t prot;
+    vm_inherit_t inherit;
+    kern_return_t kr;
+    mach_port_t task_self = mach_task_self();
+    mach_vm_address_t result;
+
+    unsigned long temp_page_addr = (unsigned long)zz_vm_allocate_pages_via_task(mach_task_self(), 1);
+    zz_vm_protect_as_executable_via_task(mach_task_self(), temp_page_addr, zz_posix_vm_get_page_size());
+    if (!zz_vm_get_page_info_via_task(task_self, temp_page_addr, &prot, &inherit)) {
+        return FALSE;
+    }
+    kr = mach_vm_deallocate(task_self, temp_page_addr, zz_posix_vm_get_page_size());
+    if (kr != KERN_SUCCESS) {
+        KR_ERROR(kr);
+        return FALSE;
+    }
+    if (prot & VM_PROT_EXECUTE) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 zpointer zz_vm_allocate_via_task(task_t task, zsize size) {
@@ -203,8 +222,7 @@ zpointer zz_vm_allocate_via_task(task_t task, zsize size) {
     return (zpointer)result;
 }
 
-zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize range_size,
-                                            zsize n_pages) {
+zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize range_size, zsize n_pages) {
     mach_vm_address_t aligned_addr;
     kern_return_t kr;
     mach_vm_address_t tmp_addr;
@@ -228,8 +246,7 @@ zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize ra
     return NULL;
 }
 
-zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize range_size,
-                                              zsize *size_ptr) {
+zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize range_size, zsize *size_ptr) {
     char zeroArray[128];
     char readZeroArray[128];
     mach_vm_address_t aligned_addr, tmp_addr, target_search_start, target_search_end;
@@ -282,8 +299,8 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsi
         zuint32 nesting_depth;
 
         count = VM_REGION_SUBMAP_INFO_COUNT_64;
-        kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp, &nesting_depth,
-                                  (vm_region_info_64_t)&info, &count);
+        kr = vm_region_recurse_64(mach_task_self(), &address_tmp, &size_tmp, &nesting_depth, (vm_region_info_64_t)&info,
+                                  &count);
         if (kr == KERN_INVALID_ADDRESS) {
             break;
         } else if (kr) {
@@ -321,8 +338,7 @@ zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsi
                     continue;
                 }
 
-                result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end,
-                                               (zbyte *)zeroArray, size);
+                result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end, (zbyte *)zeroArray, size);
                 if (result_ptr) {
                     return result_ptr;
                 }
@@ -382,8 +398,7 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
             continue;
         }
 
-        result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end,
-                                       (zbyte *)zeroArray, size);
+        result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end, (zbyte *)zeroArray, size);
         if (result_ptr) {
             return result_ptr;
         }
@@ -405,8 +420,7 @@ zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size,
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata,
-                                zuint codedata_size) {
+zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size) {
     zsize page_size;
     zaddr start_page_addr, end_page_addr;
     zsize page_offset, range_size;
@@ -465,8 +479,8 @@ zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer
 
     mach_vm_address_t target = (zaddr)start_page_addr;
     vm_prot_t c, m;
-    kr = mach_vm_remap(task_self, &target, range_size, 0, VM_FLAGS_OVERWRITE, task_self,
-                       (mach_vm_address_t)code_mmap, /*copy*/ TRUE, &c, &m, inherit);
+    kr = mach_vm_remap(task_self, &target, range_size, 0, VM_FLAGS_OVERWRITE, task_self, (mach_vm_address_t)code_mmap,
+                       /*copy*/ TRUE, &c, &m, inherit);
 
     if (kr != KERN_SUCCESS) {
         KR_ERROR(kr);

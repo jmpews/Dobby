@@ -23,10 +23,13 @@
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 
 ZzAllocator *ZzNewAllocator() {
+
+    if (!ZzMemoryIsSupportAllocateRXPage())
+        return NULL;
+
     ZzAllocator *allocator;
     allocator = (ZzAllocator *)malloc(sizeof(ZzAllocator));
-    allocator->memory_pages =
-        (ZzMemoryPage **)malloc(sizeof(ZzMemoryPage *) * DEFAULT_ALLOCATOR_CAPACITY);
+    allocator->memory_pages = (ZzMemoryPage **)malloc(sizeof(ZzMemoryPage *) * DEFAULT_ALLOCATOR_CAPACITY);
     if (!allocator->memory_pages)
         return NULL;
     allocator->size = 0;
@@ -83,8 +86,7 @@ ZzMemoryPage *ZzNewNearMemoryPage(zaddr address, zsize redirect_range_size) {
 
     page->base = page_ptr;
 
-    if ((zaddr)page_ptr > address &&
-        ((zaddr)page_ptr + page_size) > (address + redirect_range_size)) {
+    if ((zaddr)page_ptr > address && ((zaddr)page_ptr + page_size) > (address + redirect_range_size)) {
         page->size = (address + redirect_range_size) - (zaddr)page_ptr;
         page->used_size = 0;
         page->curr_pos = page_ptr;
@@ -125,8 +127,7 @@ ZZSTATUS ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
     if (!allocator)
         return ZZ_FAILED;
     if (allocator->size >= allocator->capacity) {
-        ZzMemoryPage **pages =
-            realloc(allocator->memory_pages, sizeof(ZzMemoryPage) * (allocator->capacity) * 2);
+        ZzMemoryPage **pages = realloc(allocator->memory_pages, sizeof(ZzMemoryPage) * (allocator->capacity) * 2);
         if (!pages) {
             return ZZ_FAILED;
         }
@@ -214,8 +215,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize red
                 } else if (address - redirect_range_size > (zaddr)page->curr_pos &&
                            (address - redirect_range_size) < ((zaddr)page->base + page->size)) {
                     // enough for code_slice_size
-                    if (((zaddr)page->base + page->size) - (address - redirect_range_size) <
-                        code_slice_size)
+                    if (((zaddr)page->base + page->size) - (address - redirect_range_size) < code_slice_size)
                         continue;
                     split_addr = address - redirect_range_size;
                     flag = 2;

@@ -36,6 +36,7 @@ zpointer ZzMemoryAllocate(zsize size);
 zbool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size);
 zbool ZzMemoryProtectAsExecutable(const zaddr address, zsize size);
 zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size);
+zbool ZzMemoryIsSupportAllocateRXPage();
 zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size);
 
 #endif

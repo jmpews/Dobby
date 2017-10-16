@@ -50,4 +50,11 @@ typedef struct _ZzArm64HookFuntionEntryBackend {
     zuint redirect_code_size;
 } ZzArm64HookFunctionEntryBackend;
 
+void ctx_save();
+void ctx_restore();
+void enter_thunk_template();
+void leave_thunk_template();
+void on_enter_trampoline_template();
+void on_invoke_trampoline_template();
+void on_leave_trampoline_template();
 #endif

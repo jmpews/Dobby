@@ -86,15 +86,10 @@ typedef struct {
 struct _ZzInterceptorBackend;
 
 typedef struct _ZzInterceptor {
+    zbool is_support_rx_page;
     ZzHookFunctionEntrySet hook_function_entry_set;
-
     struct _ZzInterceptorBackend *backend;
-
     ZzAllocator *allocator;
-
-    zpointer enter_thunk;
-    zpointer half_thunk;
-    zpointer leave_thunk;
 } ZzInterceptor;
 
 ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);

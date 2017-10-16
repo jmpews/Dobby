@@ -32,6 +32,9 @@ ZZ_SRCS := $(ZZ_COMMON_SRCS) \
 ZZ_DEPS_SRCS := $(wildcard $(ZZ_DEPS_PATH)/common/*.c) \
 		$(wildcard $(ZZ_DEPS_PATH)/posix/*.c) 
 
+BACKEND ?= ios
+ARCH ?= arm64
+
 ifeq ($(BACKEND), ios)
 	ifeq ($(ARCH), arm)
 		ZZ_ARCH := armv7
@@ -92,6 +95,10 @@ endif
 
 ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/arch-$(ARCH)/*.c) \
 		$(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.c)
+
+ifeq ($(ARCH), arm64)
+ZZ_SS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.s)
+endif
 	
 ZZ_EXPORT_INCLUDE := -I$(LOCAL_PATH)/include
 
@@ -117,8 +124,9 @@ ZZ_CAPSTONE_DEPS_OBJS := $(wildcard $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BA
 ZZ_LIB := $(ZZ_CAPSTONE_LIB)
 LDFLAGS += $(ZZ_LIB)
 
+ZZ_SS_OBJS := $(ZZ_SS:.s=.o)
 ZZ_SRCS_OBJS := $(ZZ_SRCS:.c=.o)
-ZZ_OBJS := $(ZZ_SRCS_OBJS) $(ZZ_DEPS_OBJS)
+ZZ_OBJS := $(ZZ_SRCS_OBJS) $(ZZ_DEPS_OBJS) $(ZZ_SS_OBJS)
 
 # ATTENTION !!!
 # 1. simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.ios.arm64.a` and then `ar rcs` to pack as `.a`
@@ -137,6 +145,10 @@ $(ZZ_SRCS_OBJS): %.o : %.c
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 $(ZZ_DEPS_OBJS): %.o : %.c
+	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
+	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
+
+$(ZZ_SS_OBJS): %.o : %.s
 	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
