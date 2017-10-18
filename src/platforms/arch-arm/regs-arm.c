@@ -16,19 +16,19 @@
 
 #include "regs-arm.h"
 
-void zz_arm_register_describe(arm_reg reg, ZzArmRegInfo *ri) {
-    if (reg >= ARM_REG_R0 && reg <= ARM_REG_R12) {
+void zz_arm_register_describe(ZzReg reg, ZzArmRegInfo *ri) {
+    if (reg >= ZZ_ARM_REG_R0 && reg <= ZZ_ARM_REG_R12) {
         ri->width = 32;
-        ri->meta = ZZ_ARM_R0 + (reg - ARM_REG_R0);
-    } else if (reg == ARM_REG_R13 || reg == ARM_REG_SP) {
+        ri->meta = reg;
+    } else if (reg == ZZ_ARM_REG_SP) {
         ri->width = 32;
-        ri->meta = ZZ_ARM_R13;
-    } else if (reg == ARM_REG_R14 || reg == ARM_REG_LR) {
+        ri->meta = reg;
+    } else if (reg == ZZ_ARM_REG_LR) {
         ri->width = 32;
-        ri->meta = ZZ_ARM_R14;
-    } else if (reg == ARM_REG_PC) {
+        ri->meta = reg;
+    } else if (reg == ZZ_ARM_REG_PC) {
         ri->width = 32;
-        ri->meta = ZZ_ARM_R15;
+        ri->meta = reg;
     } else {
         Serror("zz_arm64_register_describe error.");
 #if defined(DEBUG_MODE)
@@ -36,5 +36,5 @@ void zz_arm_register_describe(arm_reg reg, ZzArmRegInfo *ri) {
 #endif
         ri->index = 0;
     }
-    ri->index = ri->meta - ZZ_ARM_R0;
+    ri->index = reg;
 }

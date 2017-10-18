@@ -20,15 +20,23 @@
 
 // hookzz
 
-// capstone
-#include "capstone.h"
-
 // zzdeps
 #include "hookzz.h"
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-cs_insn *zz_arm_reader_disassemble_at(zpointer address);
+typedef enum _ARMInsnType {
+    ARM_INS_LDR_A1,
+    ARM_INS_ADR_A1,
+    ARM_INS_ADR_A2,
+    ARM_INS_B_A1,
+    ARM_INS_BLBLX_A1,
+    ARM_INS_BLBLX_A2,
+    ARM_UNDEF
+} ARMInsnType;
+
+ARMInsnType GetARMInsnType(zuint32 insn);
+zpointer zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
 
 #endif

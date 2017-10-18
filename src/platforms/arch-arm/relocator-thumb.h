@@ -19,6 +19,7 @@
 
 // platforms
 #include "instructions.h"
+#include "reader-thumb.h"
 #include "regs-arm.h"
 #include "writer-thumb.h"
 
@@ -31,8 +32,6 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzThumbRelocator {
-    csh capstone;
-
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
@@ -43,20 +42,16 @@ typedef struct _ZzThumbRelocator {
     zuint outpos;
 } ZzThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code,
-                             ZzThumbWriter *writer);
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *writer);
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, zpointer input_code, ZzThumbWriter *output);
 zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
 zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
 void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 
-zbool zz_arm_branch_is_unconditional(const cs_insn *insn);
 zbool zz_thumb_relocator_rewrite_ldr(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
 zbool zz_thumb_relocator_rewrite_add(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, cs_mode target_mode,
-                                   ZzInstruction *insn_ctx);
+zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
 zbool zz_thumb_relocator_rewrite_b_cond(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, cs_mode target_mode,
-                                    ZzInstruction *insn_ctx);
+zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
 #endif

@@ -19,6 +19,7 @@
 
 // platforms
 #include "instructions.h"
+#include "reader-arm.h"
 #include "regs-arm.h"
 #include "writer-arm.h"
 
@@ -32,8 +33,6 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzArmRelocator {
-    csh capstone;
-
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
@@ -44,18 +43,10 @@ typedef struct _ZzArmRelocator {
     zuint outpos;
 } ZzArmRelocator;
 
-void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *writer);
-void zz_arm_relocator_reset(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *writer);
-zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction);
-zbool zz_arm_relocator_write_one(ZzArmRelocator *self);
+void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *output);
+void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWriter *output);
 void zz_arm_relocator_write_all(ZzArmRelocator *self);
+zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction);
 void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
-
-static zbool zz_arm_branch_is_unconditional(const cs_insn *insn_ctx);
-static zbool zz_arm_relocator_rewrite_ldr(ZzArmRelocator *self, ZzInstruction *insn_ctx);
-static zbool zz_arm_relocator_rewrite_add(ZzArmRelocator *self, ZzInstruction *insn_ctx);
-static zbool zz_arm_relocator_rewrite_b(ZzArmRelocator *self, cs_mode target_mode,
-                                        ZzInstruction *insn_ctx);
-static zbool zz_arm_relocator_rewrite_bl(ZzArmRelocator *self, cs_mode target_mode,
-                                         ZzInstruction *insn_ctx);
+zbool zz_arm_relocator_write_one(ZzArmRelocator *self);
 #endif

@@ -17,15 +17,16 @@
 #ifndef platforms_arch_arm_instructions_h
 #define platforms_arch_arm_instructions_h
 
-#include "capstone.h"
 #include "hookzz.h"
 
 typedef struct _Instruction {
-    cs_insn *insn_cs;
     zaddr pc;
-    cs_arm *detail;
-    uint8_t size;
-    zbyte bytes[16];
+    zaddr address;
+    zuint8 size;
+    zuint32 insn;
 } ZzInstruction;
+
+zuint32 get_insn_sub(zuint32 insn, int start, int length);
+zbool insn_equal(zuint32 insn, char *opstr);
 
 #endif

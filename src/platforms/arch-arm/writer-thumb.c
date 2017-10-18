@@ -16,6 +16,8 @@
 
 #include "writer-thumb.h"
 
+#include <stdlib.h>
+
 // ATTENTION !!!:
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
 // `witer` REF: `ZzInstruction Set Encoding`
@@ -31,9 +33,7 @@ ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr) {
     return writer;
 }
 
-void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr) {
-    zz_thumb_writer_reset(self, data_ptr);
-}
+void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr) { zz_thumb_writer_reset(self, data_ptr); }
 
 void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
     int t = (zaddr)data_ptr % 4;
@@ -44,18 +44,18 @@ void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
     self->size = 0;
 }
 
-zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address) {
+zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, ZzReg reg, zaddr address) {
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
 
     // if (((zaddr)self->pc) % 4) {
     //     zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-    //     if (ri.meta <= ZZ_ARM_R7) {
+    //     if (ri.meta <= ZZ_ARM_REG_R7) {
     //         zz_thumb_writer_put_nop(self);
     //     }
     // } else {
-    //     if (ri.meta <= ZZ_ARM_R7) {
+    //     if (ri.meta <= ZZ_ARM_REG_R7) {
     //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
     //     } else {
     //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
@@ -64,14 +64,14 @@ zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg,
     // }
 
     if ((((zaddr)self->pc) % 4)) {
-        if (ri.meta <= ZZ_ARM_R7) {
+        if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
             zz_thumb_writer_put_nop(self);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
         }
     } else {
-        if (ri.meta <= ZZ_ARM_R7) {
+        if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
@@ -83,19 +83,19 @@ zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, arm_reg reg,
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, arm_reg reg, zaddr address) {
+zpointer zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, ZzReg reg, zaddr address) {
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
     if ((((zaddr)self->pc) % 4)) {
-        if (ri.meta <= ZZ_ARM_R7) {
+        if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x2);
         }
     } else {
         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-        if (ri.meta <= ZZ_ARM_R7)
+        if (ri.meta <= ZZ_ARM_REG_R7)
             zz_thumb_writer_put_nop(self);
     }
 
@@ -134,7 +134,7 @@ zpointer zz_thumb_writer_put_b_imm(ZzThumbWriter *self, zuint32 imm) {
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_bx_reg(ZzThumbWriter *self, arm_reg reg) {
+zpointer zz_thumb_writer_put_bx_reg(ZzThumbWriter *self, ZzReg reg) {
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
@@ -148,7 +148,7 @@ zpointer zz_thumb_writer_put_bx_reg(ZzThumbWriter *self, arm_reg reg) {
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_blx_reg(ZzThumbWriter *self, arm_reg reg) {
+zpointer zz_thumb_writer_put_blx_reg(ZzThumbWriter *self, ZzReg reg) {
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
@@ -175,8 +175,7 @@ zpointer zz_thumb_writer_put_branch_imm(ZzThumbWriter *self, zuint32 imm, zbool 
     imm11 = distance.u & ZZ_INT11_MASK;
 
     zz_thumb_writer_put_instruction(self, 0xf000 | (s << 10) | imm10);
-    zz_thumb_writer_put_instruction(self, 0x8000 | (link << 14) | (j1 << 13) | (thumb << 12) |
-                                              (j2 << 11) | imm11);
+    zz_thumb_writer_put_instruction(self, 0x8000 | (link << 14) | (j1 << 13) | (thumb << 12) | (j2 << 11) | imm11);
     return self->pc;
 }
 
@@ -197,15 +196,14 @@ zpointer zz_thumb_writer_put_b_imm32(ZzThumbWriter *self, zuint32 imm) {
 
 // PAGE: A8-410
 // A8.8.64 LDR (literal)
-zpointer zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, arm_reg reg, zint32 imm) {
+zpointer zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, ZzReg reg, zint32 imm) {
     ZzArmRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
 
-    if (ri.meta <= ZZ_ARM_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
+    if (ri.meta <= ZZ_ARM_REG_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
 
-        zz_thumb_writer_put_instruction(self,
-                                        0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
+        zz_thumb_writer_put_instruction(self, 0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
     } else if (imm < (1 << 12)) {
         zbool add = 0;
         if (imm >= 0)
@@ -220,22 +218,22 @@ zpointer zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, arm_reg reg, zint3
 // *self,
 //                                                         ZzThumbMemoryOperation
 //                                                         operation,
-//                                                         arm_reg left_reg,
-//                                                         arm_reg right_reg,
+//                                                         ZzReg left_reg,
+//                                                         ZzReg right_reg,
 //                                                         zint32 right_offset)
 //                                                         {
 //     zz_arm_register_describe(left_reg, &lr);
 //     zz_arm_register_describe(right_reg, &rr);
 
 //     if (right_offset >= 0) {
-//         if (lr.meta <= ZZ_ARM_R7 && (rr.meta <= ZZ_ARM_R7 || rr.meta ==
-//         ZZ_ARM_SP) &&
-//             ((rr.meta == ZZ_ARM_SP && right_offset <= 1020) ||
-//              (rr.meta != ZZ_ARM_SP && right_offset <= 124)) &&
+//         if (lr.meta <= ZZ_ARM_REG_R7 && (rr.meta <= ZZ_ARM_REG_R7 || rr.meta ==
+//         ZZ_ARM_REG_SP) &&
+//             ((rr.meta == ZZ_ARM_REG_SP && right_offset <= 1020) ||
+//              (rr.meta != ZZ_ARM_REG_SP && right_offset <= 124)) &&
 //             (right_offset % 4) == 0) {
 //             zuint16 insn;
 
-//             if (rr.meta == ZZ_ARM_SP)
+//             if (rr.meta == ZZ_ARM_REG_SP)
 //                 insn = 0x9000 | (lr.index << 8) | (right_offset / 4);
 //             else
 //                 insn = 0x6000 | (right_offset / 4) << 6 | (rr.index << 3) |
@@ -270,10 +268,8 @@ zpointer zz_thumb_writer_put_ldr_reg_imm(ZzThumbWriter *self, arm_reg reg, zint3
 //     }
 // }
 
-zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbWriter *self,
-                                                        ZzThumbMemoryOperation operation,
-                                                        arm_reg left_reg, arm_reg right_reg,
-                                                        zint32 right_offset) {
+zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbWriter *self, ZzThumbMemoryOperation operation,
+                                                        ZzReg left_reg, ZzReg right_reg, zint32 right_offset) {
     ZzArmRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
@@ -284,7 +280,7 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbWriter *self,
     if (right_offset < 0)
         return 0;
 
-    if (lr.meta <= ZZ_ARM_R7 && rr.meta <= ZZ_ARM_R7 && right_offset < ((1 << 5) << 2)) {
+    if (lr.meta <= ZZ_ARM_REG_R7 && rr.meta <= ZZ_ARM_REG_R7 && right_offset < ((1 << 5) << 2)) {
         insn = 0x6000 | (right_offset / 4) << 6 | (rr.index << 3) | lr.index;
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
@@ -294,10 +290,8 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbWriter *self,
     return 0;
 }
 
-zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self,
-                                                        ZzThumbMemoryOperation operation,
-                                                        arm_reg left_reg, arm_reg right_reg,
-                                                        zint32 right_offset) {
+zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self, ZzThumbMemoryOperation operation,
+                                                        ZzReg left_reg, ZzReg right_reg, zint32 right_offset) {
     ZzArmRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
@@ -308,7 +302,7 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self,
     if (right_offset < 0)
         return 0;
 
-    if (rr.meta == ZZ_ARM_SP && lr.meta <= ZZ_ARM_R7 && right_offset < ((1 << 8) << 2)) {
+    if (rr.meta == ZZ_ARM_REG_SP && lr.meta <= ZZ_ARM_REG_R7 && right_offset < ((1 << 8) << 2)) {
         insn = 0x9000 | (lr.index << 8) | (right_offset / 4);
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
@@ -318,10 +312,8 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self,
     return 0;
 }
 
-zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self,
-                                                        ZzThumbMemoryOperation operation,
-                                                        arm_reg left_reg, arm_reg right_reg,
-                                                        zint32 right_offset) {
+zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self, ZzThumbMemoryOperation operation,
+                                                        ZzReg left_reg, ZzReg right_reg, zint32 right_offset) {
     ZzArmRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
@@ -333,15 +325,15 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self,
         return 0;
 
     if (right_offset < (1 << 12)) {
-        // if (operation == ZZ_THUMB_MEMORY_LOAD && rr.meta == ZZ_ARM_PC &&
+        // if (operation == ZZ_THUMB_MEMORY_LOAD && rr.meta == ZZ_ARM_REG_PC &&
         // (self->pc % 4)) {
         //     zz_thumb_writer_put_nop(self);
         // }
-        if (rr.meta == ZZ_ARM_PC) {
+        if (rr.meta == ZZ_ARM_REG_PC) {
             zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         }
-        zz_thumb_writer_put_instruction(
-            self, 0xf8c0 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
+        zz_thumb_writer_put_instruction(self,
+                                        0xf8c0 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
         zz_thumb_writer_put_instruction(self, (lr.index << 12) | right_offset);
 
         return self->pc;
@@ -349,11 +341,9 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self,
     return 0;
 }
 
-zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self,
-                                                        ZzThumbMemoryOperation operation,
-                                                        arm_reg left_reg, arm_reg right_reg,
-                                                        zint32 right_offset, zbool index,
-                                                        zbool wback) {
+zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self, ZzThumbMemoryOperation operation,
+                                                        ZzReg left_reg, ZzReg right_reg, zint32 right_offset,
+                                                        zbool index, zbool wback) {
     ZzArmRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
@@ -362,17 +352,16 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self,
     zuint16 insn;
 
     if (ABS(right_offset) < (1 << 8)) {
-        if (rr.meta == ZZ_ARM_PC) {
+        if (rr.meta == ZZ_ARM_REG_PC) {
             zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         } else {
             zbool add = 0;
             if (right_offset > 0)
                 add = 1;
-            zz_thumb_writer_put_instruction(
-                self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
-            zz_thumb_writer_put_instruction(self, 0x0800 | (lr.index << 12) | (index << 10) |
-                                                      (add << 9) | (wback << 8) |
-                                                      (ABS(right_offset)));
+            zz_thumb_writer_put_instruction(self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) |
+                                                      rr.index);
+            zz_thumb_writer_put_instruction(self, 0x0800 | (lr.index << 12) | (index << 10) | (add << 9) |
+                                                      (wback << 8) | (ABS(right_offset)));
             return self->pc;
         }
     }
@@ -381,75 +370,61 @@ zpointer zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self,
 
 // PAGE: A8-406
 // PAGE: A8.8.203 STR (immediate, Thumb)
-static zpointer zz_thumb_writer_put_transfer_reg_reg_offset(ZzThumbWriter *self,
-                                                            ZzThumbMemoryOperation operation,
-                                                            arm_reg left_reg, arm_reg right_reg,
-                                                            zint32 right_offset) {
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T1(self, operation, left_reg, right_reg,
-                                                       right_offset))
+static zpointer zz_thumb_writer_put_transfer_reg_reg_offset(ZzThumbWriter *self, ZzThumbMemoryOperation operation,
+                                                            ZzReg left_reg, ZzReg right_reg, zint32 right_offset) {
+    if (zz_thumb_writer_put_transfer_reg_reg_offset_T1(self, operation, left_reg, right_reg, right_offset))
         return self->pc;
 
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T2(self, operation, left_reg, right_reg,
-                                                       right_offset))
+    if (zz_thumb_writer_put_transfer_reg_reg_offset_T2(self, operation, left_reg, right_reg, right_offset))
         return self->pc;
 
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T3(self, operation, left_reg, right_reg,
-                                                       right_offset))
+    if (zz_thumb_writer_put_transfer_reg_reg_offset_T3(self, operation, left_reg, right_reg, right_offset))
         return self->pc;
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, operation, left_reg, right_reg,
-                                                       right_offset, 1, 0))
+    if (zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, operation, left_reg, right_reg, right_offset, 1, 0))
         return self->pc;
     return 0;
 }
 
-zpointer zz_thumb_writer_put_ldr_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
-                                                arm_reg src_reg, zint32 src_offset) {
-    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg,
-                                                src_offset);
+zpointer zz_thumb_writer_put_ldr_reg_reg_offset(ZzThumbWriter *self, ZzReg dst_reg, ZzReg src_reg, zint32 src_offset) {
+    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_str_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
-                                                arm_reg dst_reg, zint32 dst_offset) {
-    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg,
-                                                dst_offset);
+zpointer zz_thumb_writer_put_str_reg_reg_offset(ZzThumbWriter *self, ZzReg src_reg, ZzReg dst_reg, zint32 dst_offset) {
+    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_ldr_index_reg_reg_offset(ZzThumbWriter *self, arm_reg dst_reg,
-                                                      arm_reg src_reg, zint32 src_offset,
-                                                      zbool index) {
-    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg,
-                                                   src_offset, index, 1);
+zpointer zz_thumb_writer_put_ldr_index_reg_reg_offset(ZzThumbWriter *self, ZzReg dst_reg, ZzReg src_reg,
+                                                      zint32 src_offset, zbool index) {
+    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset, index, 1);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_str_index_reg_reg_offset(ZzThumbWriter *self, arm_reg src_reg,
-                                                      arm_reg dst_reg, zint32 dst_offset,
-                                                      zbool index) {
-    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg,
-                                                   dst_offset, index, 1);
+zpointer zz_thumb_writer_put_str_index_reg_reg_offset(ZzThumbWriter *self, ZzReg src_reg, ZzReg dst_reg,
+                                                      zint32 dst_offset, zbool index) {
+    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset, index, 1);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_str_reg_reg(ZzThumbWriter *self, arm_reg src_reg, arm_reg dst_reg) {
+zpointer zz_thumb_writer_put_str_reg_reg(ZzThumbWriter *self, ZzReg src_reg, ZzReg dst_reg) {
     zz_thumb_writer_put_str_reg_reg_offset(self, src_reg, dst_reg, 0);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_ldr_reg_reg(ZzThumbWriter *self, arm_reg dst_reg, arm_reg src_reg) {
+zpointer zz_thumb_writer_put_ldr_reg_reg(ZzThumbWriter *self, ZzReg dst_reg, ZzReg src_reg) {
     zz_thumb_writer_put_ldr_reg_reg_offset(self, dst_reg, src_reg, 0);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_add_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, zint32 imm) {
+zpointer zz_thumb_writer_put_add_reg_imm(ZzThumbWriter *self, ZzReg dst_reg, zint32 imm) {
     ZzArmRegInfo dst;
     zuint16 sign_mask, insn;
 
     zz_arm_register_describe(dst_reg, &dst);
 
     sign_mask = 0x0000;
-    if (dst.meta == ZZ_ARM_SP) {
+    if (dst.meta == ZZ_ARM_REG_SP) {
 
         if (imm < 0)
             sign_mask = 0x0080;
@@ -466,13 +441,12 @@ zpointer zz_thumb_writer_put_add_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, z
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_sub_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, zint32 imm) {
+zpointer zz_thumb_writer_put_sub_reg_imm(ZzThumbWriter *self, ZzReg dst_reg, zint32 imm) {
     zz_thumb_writer_put_add_reg_imm(self, dst_reg, -imm);
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, arm_reg left_reg,
-                                             zint32 right_value) {
+zpointer zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzReg dst_reg, ZzReg left_reg, zint32 right_value) {
     ZzArmRegInfo dst, left;
     zuint16 insn;
 
@@ -483,13 +457,13 @@ zpointer zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, arm_reg dst_re
         return zz_thumb_writer_put_add_reg_imm(self, dst_reg, right_value);
     }
 
-    if (left.meta == ZZ_ARM_SP || left.meta == ZZ_ARM_PC) {
+    if (left.meta == ZZ_ARM_REG_SP || left.meta == ZZ_ARM_REG_PC) {
         zuint16 base_mask;
 
         if (right_value < 0 || right_value % 4 != 0)
             return 0;
 
-        if (left.meta == ZZ_ARM_SP)
+        if (left.meta == ZZ_ARM_REG_SP)
             base_mask = 0x0800;
         else
             base_mask = 0x0000;
@@ -512,8 +486,7 @@ zpointer zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, arm_reg dst_re
     return self->pc;
 }
 
-zpointer zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbWriter *self, arm_reg dst_reg, arm_reg left_reg,
-                                             zint32 right_value) {
+zpointer zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbWriter *self, ZzReg dst_reg, ZzReg left_reg, zint32 right_value) {
     zz_thumb_writer_put_add_reg_reg_imm(self, dst_reg, left_reg, -right_value);
     return self->pc;
 }

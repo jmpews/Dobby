@@ -31,25 +31,25 @@
 // A2.4 Registers
 
 typedef enum _ZzReg {
-    ZZ_ARM_R0 = 0,
-    ZZ_ARM_R1,
-    ZZ_ARM_R2,
-    ZZ_ARM_R3,
-    ZZ_ARM_R4,
-    ZZ_ARM_R5,
-    ZZ_ARM_R6,
-    ZZ_ARM_R7,
-    ZZ_ARM_R8,
-    ZZ_ARM_R9,
-    ZZ_ARM_R10,
-    ZZ_ARM_R11,
-    ZZ_ARM_R12,
-    ZZ_ARM_R13,
-    ZZ_ARM_R14,
-    ZZ_ARM_R15,
-    ZZ_ARM_SP = ZZ_ARM_R13,
-    ZZ_ARM_LR = ZZ_ARM_R14,
-    ZZ_ARM_PC = ZZ_ARM_R15
+    ZZ_ARM_REG_R0 = 0,
+    ZZ_ARM_REG_R1,
+    ZZ_ARM_REG_R2,
+    ZZ_ARM_REG_R3,
+    ZZ_ARM_REG_R4,
+    ZZ_ARM_REG_R5,
+    ZZ_ARM_REG_R6,
+    ZZ_ARM_REG_R7,
+    ZZ_ARM_REG_R8,
+    ZZ_ARM_REG_R9,
+    ZZ_ARM_REG_R10,
+    ZZ_ARM_REG_R11,
+    ZZ_ARM_REG_R12,
+    ZZ_ARM_REG_R13,
+    ZZ_ARM_REG_R14,
+    ZZ_ARM_REG_R15,
+    ZZ_ARM_REG_SP = ZZ_ARM_REG_R13,
+    ZZ_ARM_REG_LR = ZZ_ARM_REG_R14,
+    ZZ_ARM_REG_PC = ZZ_ARM_REG_R15
 } ZzReg;
 
 typedef struct _ZzArmRegInfo {
@@ -58,6 +58,6 @@ typedef struct _ZzArmRegInfo {
     zuint width;
 } ZzArmRegInfo;
 
-void zz_arm_register_describe(arm_reg reg, ZzArmRegInfo *ri);
+void zz_arm_register_describe(ZzReg reg, ZzArmRegInfo *ri);
 
 #endif

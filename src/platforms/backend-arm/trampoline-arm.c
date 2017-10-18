@@ -16,6 +16,8 @@
 
 #include "interceptor-arm.h"
 
+#include <stdlib.h>
+
 #define INSTRUCTION_IS_THUMB(insn_addr) ((insn_addr & 0x1) == 0x1)
 
 #define ZZ_THUMB_TINY_REDIRECT_SIZE 4
@@ -55,8 +57,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
         if (entry->try_near_jump) {
             entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
         } else {
-            zz_thumb_relocator_try_relocate(target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE,
-                                            &redirect_limit);
+            zz_thumb_relocator_try_relocate(target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
             entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
         }
     } else {
@@ -91,19 +92,19 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     code_slice = NULL;
     do {
         /* 2 stack space: 1. next_hop 2. entry arg */
-        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ARM_REG_SP, 0xc);
+        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
         /* push r7 */
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
 
-        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ARM_REG_R1, (zaddr)entry);
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ZZ_ARM_REG_R1, (zaddr)entry);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
         /* pop r7 */
-        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
-        zz_thumb_writer_put_add_reg_imm(thumb_writer, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_add_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0x4);
 
         /* jump to enter thunk */
-        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)self->enter_thunk);
+        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)self->enter_thunk);
 
         if (code_slice) {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
@@ -112,17 +113,15 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         }
         if (is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
 
-            code_slice =
-                ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                   zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
             if (!code_slice)
                 return ZZ_FAILED;
         }
 
         if (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            code_slice =
-                ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                   zz_arm_writer_near_jump_range_size(), thumb_writer->size);
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_arm_writer_near_jump_range_size(), thumb_writer->size);
             if (!code_slice)
                 return ZZ_FAILED;
         }
@@ -180,20 +179,17 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             if (entry->hook_type == HOOK_FUNCTION_TYPE) {
                 do {
                     zz_thumb_relocator_read_one(thumb_relocator, NULL);
-                    tmp_relocator_insn_size =
-                        thumb_relocator->input_cur - thumb_relocator->input_start;
+                    tmp_relocator_insn_size = thumb_relocator->input_cur - thumb_relocator->input_start;
                 } while (tmp_relocator_insn_size < entry_backend->redirect_code_size);
                 zz_thumb_relocator_write_all(thumb_relocator);
             } else if (entry->hook_type == HOOK_ADDRESS_TYPE) {
                 do {
                     zz_thumb_relocator_read_one(thumb_relocator, NULL);
                     zz_thumb_relocator_write_one(thumb_relocator);
-                    tmp_relocator_insn_size =
-                        thumb_relocator->input_cur - thumb_relocator->input_start;
-                    if (thumb_relocator->input_cur >= target_end_addr &&
-                        !entry->target_half_ret_addr) {
+                    tmp_relocator_insn_size = thumb_relocator->input_cur - thumb_relocator->input_start;
+                    if (thumb_relocator->input_cur >= target_end_addr && !entry->target_half_ret_addr) {
                         /* jump to rest target address */
-                        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
+                        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC,
                                                             (zaddr)entry->on_half_trampoline);
 
                         entry->target_half_ret_addr = (zpointer)(thumb_writer->size + 1);
@@ -205,12 +201,10 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
             /* jump to rest target address */
-            zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                                (zaddr)(restore_target_addr + 1));
+            zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)(restore_target_addr + 1));
 
             if (code_slice) {
-                if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base,
-                                       thumb_writer->size))
+                if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
                     return ZZ_FAILED;
                 break;
             }
@@ -253,11 +247,9 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                     zz_arm_relocator_read_one(arm_relocator, NULL);
                     zz_arm_relocator_write_one(arm_relocator);
                     tmp_relocator_insn_size = arm_relocator->input_cur - arm_relocator->input_start;
-                    if (arm_relocator->input_cur >= target_end_addr &&
-                        !entry->target_half_ret_addr) {
+                    if (arm_relocator->input_cur >= target_end_addr && !entry->target_half_ret_addr) {
                         /* jump to rest target address */
-                        zz_arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
-                                                          (zaddr)entry->on_half_trampoline);
+                        zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_half_trampoline);
 
                         entry->target_half_ret_addr = (zpointer)arm_writer->size;
                     }
@@ -268,7 +260,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
             /* jump to rest target address */
-            zz_arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zaddr)restore_target_addr);
+            zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)restore_target_addr);
 
             if (code_slice) {
                 if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size))
@@ -318,18 +310,18 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     code_slice = NULL;
     do {
         /* 2 stack space: 1. next_hop 2. entry arg */
-        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ARM_REG_SP, 0xc);
+        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
         /* push r7 */
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
 
-        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ARM_REG_R1, (zaddr)entry);
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ZZ_ARM_REG_R1, (zaddr)entry);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
         /* pop r7 */
-        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
-        zz_thumb_writer_put_add_reg_imm(thumb_writer, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_add_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0x4);
 
-        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)self->half_thunk);
+        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)self->half_thunk);
 
         if (code_slice) {
             if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
@@ -338,17 +330,15 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
         }
         if (is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
 
-            code_slice =
-                ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                   zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
             if (!code_slice)
                 return ZZ_FAILED;
         }
 
         if (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            code_slice =
-                ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                   zz_arm_writer_near_jump_range_size(), thumb_writer->size);
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_arm_writer_near_jump_range_size(), thumb_writer->size);
             if (!code_slice)
                 return ZZ_FAILED;
         }
@@ -392,18 +382,18 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     code_slice = NULL;
     do {
         /* 2 stack space: 1. next_hop 2. entry arg */
-        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ARM_REG_SP, 0xc);
+        zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
         /* push r7 */
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
 
-        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ARM_REG_R1, (zaddr)entry);
-        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_b_reg_address(thumb_writer, ZZ_ARM_REG_R1, (zaddr)entry);
+        zz_thumb_writer_put_str_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
         /* pop r7 */
-        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ARM_REG_R1, ARM_REG_SP, 0x0);
-        zz_thumb_writer_put_add_reg_imm(thumb_writer, ARM_REG_SP, 0x4);
+        zz_thumb_writer_put_ldr_reg_reg_offset(thumb_writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
+        zz_thumb_writer_put_add_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0x4);
 
-        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zaddr)self->leave_thunk);
+        zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)self->leave_thunk);
 
         if (code_slice) {
 
@@ -448,11 +438,9 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         thumb_writer->pc = target_addr;
 
         if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-            zz_thumb_writer_put_b_imm(thumb_writer,
-                                      (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
+            zz_thumb_writer_put_b_imm(thumb_writer, (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
         } else {
-            zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                                (zaddr)entry->on_enter_trampoline);
+            zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
         }
         if (!ZzMemoryPatchCode((zaddr)target_addr, thumb_writer->base, thumb_writer->size))
             return ZZ_FAILED;
@@ -463,11 +451,9 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         arm_writer->pc = target_addr;
 
         if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            zz_arm_writer_put_b_imm(arm_writer,
-                                    (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
+            zz_arm_writer_put_b_imm(arm_writer, (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
         } else {
-            zz_arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
-                                              (zaddr)entry->on_enter_trampoline);
+            zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
         }
         if (!ZzMemoryPatchCode((zaddr)target_addr, arm_writer->base, arm_writer->size))
             return ZZ_FAILED;

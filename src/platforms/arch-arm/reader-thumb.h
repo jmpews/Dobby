@@ -20,15 +20,28 @@
 
 // hookzz
 
-// capstone
-#include "capstone.h"
-
 // zzdeps
 #include "hookzz.h"
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-cs_insn *zz_thumb_reader_disassemble_at(zpointer address);
+typedef enum _THUMBInsnType {
+    THUMB_INS_LDR_T1,
+    THUMB_INS_LDR_T2,
+    THUMB_INS_ADR_T1,
+    THUMB_INS_ADR_T2,
+    THUMB_INS_ADR_T3,
+    THUMB_INS_B_T1,
+    THUMB_INS_B_T2,
+    THUMB_INS_B_T3,
+    THUMB_INS_B_T4,
+    THUMB_INS_BLBLX_T1,
+    THUMB_INS_BLBLX_T2,
+    THUMB_UNDEF
+} THUMBInsnType;
+
+THUMBInsnType GetTHUMBInsnType(zuint32 insn);
+zpointer zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
 
 #endif

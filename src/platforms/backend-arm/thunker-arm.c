@@ -161,120 +161,120 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
 
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
-    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ZZ_ARM_REG_R1);
 
-    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
-    zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_sub_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_str_reg_reg_offset(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
     /* pass enter func args */
     /* entry */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM_REG_R0, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
     /* next hop*/
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     /* RegState */
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R2, ZZ_ARM_REG_SP, 0x4);
     /* caller ret address */
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R3, ARM_REG_SP, 0x8 + 13 * 4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_begin_invocation);
-    zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_begin_invocation);
+    zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
 
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
     /* restore arg space */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x4);
 
     /* pop and jump to next hop */
     // use Post-indexed ldr to `pop`
-    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
+    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
 // A4.1.10 BX
 void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
-    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ZZ_ARM_REG_R1);
 
-    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
-    zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_sub_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_str_reg_reg_offset(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
     /* pass enter func args */
     /* entry */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM_REG_R0, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
     /* next hop*/
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
     /* RegState */
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R2, ZZ_ARM_REG_SP, 0x4);
     /* caller ret address */
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R3, ARM_REG_SP, 0x8 + 13 * 4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_half_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_half_invocation);
-    zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_half_invocation);
+    zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
 
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
     /* restore arg space */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x4);
 
     /* pop and jump to next hop */
     // use Post-indexed ldr to `pop`
-    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
+    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
 void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
-    zz_arm_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_PC, 1);
-    zz_arm_writer_put_bx_reg(writer, ARM_REG_R1);
+    zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
+    zz_arm_writer_put_bx_reg(writer, ZZ_ARM_REG_R1);
 
-    zz_thumb_writer_put_sub_reg_imm(writer, ARM_REG_SP, 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
-    zz_thumb_writer_put_str_reg_reg_offset(writer, ARM_REG_R1, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_sub_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x8);
+    zz_thumb_writer_put_str_reg_reg_offset(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
 
     /* pass enter func args */
-    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ARM_REG_R0, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R1, ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
-    zz_thumb_writer_put_add_reg_reg_imm(writer, ARM_REG_R2, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM_REG_R0, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, CTX_SAVE_STACK_OFFSET + 0x8 + 0x4);
+    zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R2, ZZ_ARM_REG_SP, 0x4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ARM_REG_LR, (zaddr)function_context_end_invocation);
-    zz_thumb_writer_put_blx_reg(writer, ARM_REG_LR);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_end_invocation);
+    zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x8);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x8);
 
-    zz_thumb_writer_put_bx_reg(writer, ARM_REG_PC);
+    zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_restore), 14 * 4);
     zz_arm_writer_put_bx_to_thumb(writer);
 
     /* restore arg space */
-    zz_thumb_writer_put_add_reg_imm(writer, ARM_REG_SP, 0x4);
+    zz_thumb_writer_put_add_reg_imm(writer, ZZ_ARM_REG_SP, 0x4);
 
     /* pop and jump to next hop */
     // use Post-indexed ldr to `pop`
-    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ARM_REG_PC, ARM_REG_SP, 4, 0);
+    zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {

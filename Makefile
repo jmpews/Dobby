@@ -103,25 +103,16 @@ endif
 ZZ_EXPORT_INCLUDE := -I$(LOCAL_PATH)/include
 
 ZZ_SRCS_INCLUDE := $(ZZ_EXPORT_INCLUDE) \
-		-I$(ZZ_CAPSTONE_DEPS_PATH)/include \
 		-I$(ZZ_SRCS_PATH)
 
 ZZ_DEPS_OBJS := $(ZZ_DEPS_SRCS:.c=.o)
 
-ZZ_CAPSTONE_LIB := -L$(ZZ_CAPSTONE_DEPS_PATH) -lcapstone.$(ZZ_BACKEND).$(ZZ_ARCH)
 OUTPUT_DIR := $(OUTPUT_DIR)/$(ZZ_BACKEND)-$(ZZ_ARCH)
 
 ZZ_GCC_SOURCE += $(ZZ_SRCS_INCLUDE)
 ZZ_GCC_TEST += $(ZZ_INCLUDE)
 
-_ := $(shell rm -rf $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o)
-_ := $(shell mkdir -p $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o)
-_ := $(shell cp $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).a $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/)
-_ := $(shell cd $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/; $(ZZ_AR_BIN) -x $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).a)
 
-ZZ_CAPSTONE_DEPS_OBJS := $(wildcard $(ZZ_CAPSTONE_DEPS_PATH)/libcapstone.$(ZZ_BACKEND).$(ZZ_ARCH).o/*.o)
-
-ZZ_LIB := $(ZZ_CAPSTONE_LIB)
 LDFLAGS += $(ZZ_LIB)
 
 ZZ_SS_OBJS := $(ZZ_SS:.s=.o)
@@ -136,7 +127,7 @@ $(HOOKZZ_NAME) : $(ZZ_OBJS)
 	@rm -rf $(OUTPUT_DIR)/*
 
 	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(ZZ_OBJS) -o $(OUTPUT_DIR)/$(ZZ_DLL)
-	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(ZZ_OBJS) $(ZZ_CAPSTONE_DEPS_OBJS)
+	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(ZZ_OBJS)
 
 	@echo "$(OK_COLOR)build success for $(ARCH)-$(BACKEND)-hookzz! $(NO_COLOR)"
 

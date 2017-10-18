@@ -143,10 +143,12 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_size);
 
+#if defined(__arm64__) || defined(__aarch64__)
 #if defined(__APPLE__) && defined(__MACH__)
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
 #define TARGET_IS_IOS 1
+#endif
 #endif
 #endif
 
