@@ -275,79 +275,81 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
 void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
     /* trick: use the `ctx_save` left [sp]*/
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X1, ARM64_REG_SP, 0 * 8);
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* pass enter func args */
     /* entry */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X0, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X0, ZZ_ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
     /* next hop*/
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
 
     /* RegState */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X2, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X2, ZZ_ARM64_REG_SP, 2 * 8);
     /* caller ret address */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X3, ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
     /* call function_context_begin_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ARM64_REG_X17, (zaddr)function_context_begin_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_begin_invocation);
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 21 * 4);
 
     /* load next hop to x17 */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0x8);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0x8);
 
     /* restore next hop and arg stack */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* jump to next hop */
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+    zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
 void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
     /* trick: use the `ctx_save` left [sp]*/
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X1, ARM64_REG_SP, 0 * 8);
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* pass enter func args */
     /* entry */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X0, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X0, ZZ_ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
     /* next hop*/
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
 
     /* RegState */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X2, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X2, ZZ_ARM64_REG_SP, 2 * 8);
     /* caller ret address */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X3, ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
     /* call function_context_half_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ARM64_REG_X17, (zaddr)function_context_half_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_half_invocation);
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 21 * 4);
 
     /* load next hop to x17 */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0x8);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0x8);
 
     /* restore next hop and arg stack */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* jump to next hop */
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+    zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
 // __attribute__((__naked__)) void leave_thunk_template() {
@@ -449,38 +451,39 @@ void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
 void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
     /* trick: use the `ctx_save` left [sp]*/
-    zz_arm64_writer_put_str_reg_reg_offset(writer, ARM64_REG_X1, ARM64_REG_SP, 0 * 8);
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_sub_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* pass enter func args */
     /* entry */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X0, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X0, ZZ_ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
     /* next hop*/
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X1, ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
 
     /* RegState */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_X2, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X2, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* call function_context_end_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ARM64_REG_X17, (zaddr)function_context_end_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_end_invocation);
     /* alignment padding + dummy PC */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 21 * 4);
 
     /* load next hop to x17 */
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0x8);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0x8);
 
     /* restore next hop and arg stack */
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 2 * 8);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* jump to next hop */
-    zz_arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+    zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {

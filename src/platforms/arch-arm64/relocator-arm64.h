@@ -19,6 +19,7 @@
 
 // platforms
 #include "instructions.h"
+#include "reader-arm64.h"
 #include "regs-arm64.h"
 #include "writer-arm64.h"
 
@@ -26,15 +27,12 @@
 #include "writer.h"
 
 // zzdeps
-#include "capstone.h"
 #include "hookzz.h"
 #include "zzdefs.h"
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
 typedef struct _ZzArm64Relocator {
-    csh capstone;
-
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
@@ -45,8 +43,7 @@ typedef struct _ZzArm64Relocator {
     zuint outpos;
 } ZzArm64Relocator;
 
-void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code,
-                             ZzArm64Writer *writer);
+void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code, ZzArm64Writer *writer);
 void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm64Writer *output);
 
 zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction);
@@ -55,7 +52,6 @@ void zz_arm64_relocator_write_all(ZzArm64Relocator *self);
 void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 
 /* rewrite */
-static zbool zz_arm64_branch_is_unconditional(const cs_insn *insn);
 static zbool zz_arm64_relocator_rewrite_ldr(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
 static zbool zz_arm64_relocator_rewrite_adr(ZzArm64Relocator *self, ZzInstruction *insn_ctx);
 static zbool zz_arm64_relocator_rewrite_b(ZzArm64Relocator *self, ZzInstruction *insn_ctx);

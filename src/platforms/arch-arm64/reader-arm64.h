@@ -28,6 +28,17 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-cs_insn *zz_arm64_reader_disassemble_at(zpointer address);
+typedef enum _ARM64InsnType {
+    ARM64_INS_LDR_A1,
+    ARM64_INS_ADR_A1,
+    ARM64_INS_ADR_A2,
+    ARM64_INS_B_A1,
+    ARM64_INS_BLBLX_A1,
+    ARM64_INS_BLBLX_A2,
+    ARM64_UNDEF
+} ARM64InsnType;
+
+ARM64InsnType GetARM64InsnType(zuint32 insn);
+zpointer zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
 
 #endif

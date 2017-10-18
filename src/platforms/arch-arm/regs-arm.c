@@ -16,7 +16,7 @@
 
 #include "regs-arm.h"
 
-void zz_arm_register_describe(ZzReg reg, ZzArmRegInfo *ri) {
+void zz_arm_register_describe(ZzARMReg reg, ZzArmRegInfo *ri) {
     if (reg >= ZZ_ARM_REG_R0 && reg <= ZZ_ARM_REG_R12) {
         ri->width = 32;
         ri->meta = reg;
@@ -36,5 +36,5 @@ void zz_arm_register_describe(ZzReg reg, ZzArmRegInfo *ri) {
 #endif
         ri->index = 0;
     }
-    ri->index = reg;
+    ri->index = reg - ZZ_ARM_REG_R0;
 }

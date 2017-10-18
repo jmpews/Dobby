@@ -50,7 +50,7 @@ typedef enum _ZzReg {
     ZZ_ARM_REG_SP = ZZ_ARM_REG_R13,
     ZZ_ARM_REG_LR = ZZ_ARM_REG_R14,
     ZZ_ARM_REG_PC = ZZ_ARM_REG_R15
-} ZzReg;
+} ZzARMReg;
 
 typedef struct _ZzArmRegInfo {
     zuint index;
@@ -58,6 +58,6 @@ typedef struct _ZzArmRegInfo {
     zuint width;
 } ZzArmRegInfo;
 
-void zz_arm_register_describe(ZzReg reg, ZzArmRegInfo *ri);
+void zz_arm_register_describe(ZzARMReg reg, ZzArmRegInfo *ri);
 
 #endif

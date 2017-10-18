@@ -43,33 +43,31 @@ zsize zz_arm64_writer_near_jump_range_size();
 
 // ======= user custom =======
 
-void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
-void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, arm64_reg reg, zaddr address);
-void zz_arm64_writer_put_ldr_b_reg_address(ZzArm64Writer *self, arm64_reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_b_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);
 
 // ======= default =======
 
-void zz_arm64_writer_put_ldr_br_b_reg_address(ZzArm64Writer *self, arm64_reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_br_b_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);
 
-void zz_arm64_writer_put_b_cond_imm(ZzArm64Writer *self, arm64_cc cc, zsize imm);
+void zz_arm64_writer_put_ldr_reg_reg_offset(ZzArm64Writer *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg,
+                                            zsize src_offset);
 
-void zz_arm64_writer_put_ldr_reg_reg_offset(ZzArm64Writer *self, arm64_reg dst_reg,
-                                            arm64_reg src_reg, zsize src_offset);
+void zz_arm64_writer_put_str_reg_reg_offset(ZzArm64Writer *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg,
+                                            zsize dst_offset);
 
-void zz_arm64_writer_put_str_reg_reg_offset(ZzArm64Writer *self, arm64_reg src_reg,
-                                            arm64_reg dst_reg, zsize dst_offset);
-
-void zz_arm64_writer_put_sub_reg_reg_imm(ZzArm64Writer *self, arm64_reg dst_reg, arm64_reg left_reg,
+void zz_arm64_writer_put_sub_reg_reg_imm(ZzArm64Writer *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
                                          zsize right_value);
 
-void zz_arm64_writer_put_add_reg_reg_imm(ZzArm64Writer *self, arm64_reg dst_reg, arm64_reg left_reg,
+void zz_arm64_writer_put_add_reg_reg_imm(ZzArm64Writer *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
                                          zsize right_value);
 
-void zz_arm64_writer_put_ldr_reg_imm(ZzArm64Writer *self, arm64_reg reg, zsize imm);
+void zz_arm64_writer_put_ldr_reg_imm(ZzArm64Writer *self, ZzARM64Reg reg, zsize imm);
 
-void zz_arm64_writer_put_br_reg(ZzArm64Writer *self, arm64_reg reg);
+void zz_arm64_writer_put_br_reg(ZzArm64Writer *self, ZzARM64Reg reg);
 
-void zz_arm64_writer_put_blr_reg(ZzArm64Writer *self, arm64_reg reg);
+void zz_arm64_writer_put_blr_reg(ZzArm64Writer *self, ZzARM64Reg reg);
 
 void zz_arm64_writer_put_bytes(ZzArm64Writer *self, zbyte *data, zuint data_size);
 

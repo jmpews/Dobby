@@ -16,23 +16,23 @@
 
 #include "regs-arm64.h"
 
-void zz_arm64_register_describe(arm64_reg reg, ZzArm64RegInfo *ri) {
-    if (reg >= ARM64_REG_X0 && reg <= ARM64_REG_X28) {
+void zz_arm64_register_describe(ZzARM64Reg reg, ZzArm64RegInfo *ri) {
+    if (reg >= ZZ_ARM64_REG_X0 && reg <= ZZ_ARM64_REG_X28) {
         ri->is_integer = TRUE;
         ri->width = 64;
-        ri->meta = ZZ_ARM64_X0 + (reg - ARM64_REG_X0);
-    } else if (reg == ARM64_REG_X29 || reg == ARM64_REG_FP) {
+        ri->meta = ZZ_ARM64_REG_X0 + (reg - ZZ_ARM64_REG_X0);
+    } else if (reg == ZZ_ARM64_REG_X29 || reg == ZZ_ARM64_REG_FP) {
         ri->is_integer = TRUE;
         ri->width = 64;
-        ri->meta = ZZ_ARM64_X29;
-    } else if (reg == ARM64_REG_X30 || reg == ARM64_REG_LR) {
+        ri->meta = ZZ_ARM64_REG_X29;
+    } else if (reg == ZZ_ARM64_REG_X30 || reg == ZZ_ARM64_REG_LR) {
         ri->is_integer = TRUE;
         ri->width = 64;
-        ri->meta = ZZ_ARM64_X30;
-    } else if (reg == ARM64_REG_SP) {
+        ri->meta = ZZ_ARM64_REG_X30;
+    } else if (reg == ZZ_ARM64_REG_SP) {
         ri->is_integer = TRUE;
         ri->width = 64;
-        ri->meta = ZZ_ARM64_X31;
+        ri->meta = ZZ_ARM64_REG_X31;
     } else {
         Serror("zz_arm64_register_describe error.");
 #if defined(DEBUG_MODE)
@@ -40,5 +40,5 @@ void zz_arm64_register_describe(arm64_reg reg, ZzArm64RegInfo *ri) {
 #endif
         ri->index = 0;
     }
-    ri->index = ri->meta - ZZ_ARM64_X0;
+    ri->index = ri->meta - ZZ_ARM64_REG_X0;
 }

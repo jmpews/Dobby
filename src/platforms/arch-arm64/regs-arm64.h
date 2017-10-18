@@ -28,43 +28,43 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-typedef enum _ZzReg {
-    ZZ_ARM64_X0 = 0,
-    ZZ_ARM64_X1,
-    ZZ_ARM64_X2,
-    ZZ_ARM64_X3,
-    ZZ_ARM64_X4,
-    ZZ_ARM64_X5,
-    ZZ_ARM64_X6,
-    ZZ_ARM64_X7,
-    ZZ_ARM64_X8,
-    ZZ_ARM64_X9,
-    ZZ_ARM64_X10,
-    ZZ_ARM64_X11,
-    ZZ_ARM64_X12,
-    ZZ_ARM64_X13,
-    ZZ_ARM64_X14,
-    ZZ_ARM64_X15,
-    ZZ_ARM64_X16,
-    ZZ_ARM64_X17,
-    ZZ_ARM64_X18,
-    ZZ_ARM64_X19,
-    ZZ_ARM64_X20,
-    ZZ_ARM64_X21,
-    ZZ_ARM64_X22,
-    ZZ_ARM64_X23,
-    ZZ_ARM64_X24,
-    ZZ_ARM64_X25,
-    ZZ_ARM64_X26,
-    ZZ_ARM64_X27,
-    ZZ_ARM64_X28,
-    ZZ_ARM64_X29,
-    ZZ_ARM64_X30,
-    ZZ_ARM64_X31,
-    ZZ_ARM64_FP = ZZ_ARM64_X29,
-    ZZ_ARM64_LR = ZZ_ARM64_X30,
-    ZZ_ARM64_SP = ZZ_ARM64_X31
-} ZzReg;
+typedef enum _ZzARM64Reg {
+    ZZ_ARM64_REG_X0 = 0,
+    ZZ_ARM64_REG_X1,
+    ZZ_ARM64_REG_X2,
+    ZZ_ARM64_REG_X3,
+    ZZ_ARM64_REG_X4,
+    ZZ_ARM64_REG_X5,
+    ZZ_ARM64_REG_X6,
+    ZZ_ARM64_REG_X7,
+    ZZ_ARM64_REG_X8,
+    ZZ_ARM64_REG_X9,
+    ZZ_ARM64_REG_X10,
+    ZZ_ARM64_REG_X11,
+    ZZ_ARM64_REG_X12,
+    ZZ_ARM64_REG_X13,
+    ZZ_ARM64_REG_X14,
+    ZZ_ARM64_REG_X15,
+    ZZ_ARM64_REG_X16,
+    ZZ_ARM64_REG_X17,
+    ZZ_ARM64_REG_X18,
+    ZZ_ARM64_REG_X19,
+    ZZ_ARM64_REG_X20,
+    ZZ_ARM64_REG_X21,
+    ZZ_ARM64_REG_X22,
+    ZZ_ARM64_REG_X23,
+    ZZ_ARM64_REG_X24,
+    ZZ_ARM64_REG_X25,
+    ZZ_ARM64_REG_X26,
+    ZZ_ARM64_REG_X27,
+    ZZ_ARM64_REG_X28,
+    ZZ_ARM64_REG_X29,
+    ZZ_ARM64_REG_X30,
+    ZZ_ARM64_REG_X31,
+    ZZ_ARM64_REG_FP = ZZ_ARM64_REG_X29,
+    ZZ_ARM64_REG_LR = ZZ_ARM64_REG_X30,
+    ZZ_ARM64_REG_SP = ZZ_ARM64_REG_X31
+} ZzARM64Reg;
 
 typedef struct _ZzArm64RegInfo {
     zuint index;
@@ -73,6 +73,6 @@ typedef struct _ZzArm64RegInfo {
     zbool is_integer;
 } ZzArm64RegInfo;
 
-void zz_arm64_register_describe(arm64_reg reg, ZzArm64RegInfo *ri);
+void zz_arm64_register_describe(ZzARM64Reg reg, ZzArm64RegInfo *ri);
 
 #endif
