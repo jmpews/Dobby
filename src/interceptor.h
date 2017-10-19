@@ -92,6 +92,8 @@ typedef struct _ZzInterceptor {
     ZzAllocator *allocator;
 } ZzInterceptor;
 
+zbool ZzIsEnableDebugMode(void);
+
 ZzHookFunctionEntry *ZzNewHookFunctionEntry(zpointer target_ptr, zpointer target_end_ptr);
 
 #endif

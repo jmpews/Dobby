@@ -51,6 +51,7 @@ void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *cal
     Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
     IMP oriImp = method_getImplementation(oriMethod);
 
+    ZzEnableDebugMode();
     ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
     ZzEnableHook((void *)oriImp);
 }

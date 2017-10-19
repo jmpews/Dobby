@@ -47,8 +47,14 @@
 
 zbool insn_is_thumb2(zuint32 insn) {
     // PAGE: A6-221
-    if (insn_equal(insn, "11101xxxxxxxxxxx") || insn_equal(insn, "11110xxxxxxxxxxx") ||
-        insn_equal(insn, "11110xxxxxxxxxxx")) {
+    // PAGE: A6-230
+    if (get_insn_sub(insn & 0x0000FFFF, 11, 2) == 0) {
+        return FALSE;
+    }
+    return TRUE;
+
+    if (insn_equal(insn & 0x0000FFFF, "11101xxxxxxxxxxx") || insn_equal(insn & 0x0000FFFF, "11110xxxxxxxxxxx") ||
+        insn_equal(insn & 0x0000FFFF, "11110xxxxxxxxxxx")) {
         return TRUE;
     } else {
         return FALSE;
@@ -59,18 +65,18 @@ zpointer zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer 
     // ZzInstruction *insn_ctx = (ZzInstruction *)malloc(sizeof(ZzInstruction));
     insn_ctx->pc = (zaddr)address;
     insn_ctx->insn = *(zuint32 *)address;
-    zuint16 insn1, insn2;
 
-    insn1 = insn_ctx->insn & 0x0000FFFF;
-    insn2 = (insn_ctx->insn & 0xFFFF0000) >> 16;
-
-    zuint16 t = get_insn_sub(insn1, 11, 5);
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
+        insn_ctx->type = THUMB2_INSN;
         insn_ctx->size = 4;
+        insn_ctx->insn1 = insn_ctx->insn & 0x0000FFFF;
+        insn_ctx->insn2 = (insn_ctx->insn & 0xFFFF0000) >> 16;
     } else {
+        insn_ctx->type = THUMB_INSN;
         insn_ctx->size = 2;
-        insn_ctx->insn = insn1;
+        insn_ctx->insn1 = insn_ctx->insn & 0x0000FFFF;
+        insn_ctx->insn2 = 0;
     }
     return (zpointer)insn_ctx->pc;
 }
@@ -89,15 +95,19 @@ THUMBInsnType GetTHUMBInsnType(zuint32 insn) {
     if (insn_is_thumb2(insn) && insn_equal(insn, "11111000x1011111xxxxxxxxxxxxxxxx")) {
         return THUMB_INS_LDR_T2;
     }
+
     if (!insn_is_thumb2(insn) && insn_equal(insn, "10100xxxxxxxxxxx")) {
         return THUMB_INS_ADR_T1;
     }
+
     if (insn_is_thumb2(insn) && insn_equal(insn, "11110x10101011110xxxxxxxxxxxxxxx")) {
         return THUMB_INS_ADR_T2;
     }
+
     if (insn_is_thumb2(insn) && insn_equal(insn, "11110x10000011110xxxxxxxxxxxxxxx")) {
         return THUMB_INS_ADR_T3;
     }
+
     if (!insn_is_thumb2(insn) && insn_equal(insn, "1101xxxxxxxxxxxx")) {
         return THUMB_INS_B_T1;
     }
@@ -113,11 +123,14 @@ THUMBInsnType GetTHUMBInsnType(zuint32 insn) {
     if (insn_is_thumb2(insn) && insn_equal(insn, "11110xxxxxxxxxxx10x0xxxxxxxxxxxx")) {
         return THUMB_INS_B_T4;
     }
+
     if (insn_is_thumb2(insn) && insn_equal(insn, "11110xxxxxxxxxxx11x1xxxxxxxxxxxx")) {
         return THUMB_INS_BLBLX_T1;
     }
+
     if (insn_is_thumb2(insn) && insn_equal(insn, "11110xxxxxxxxxxx11x0xxxxxxxxxxxx")) {
         return THUMB_INS_BLBLX_T2;
     }
+
     return THUMB_UNDEF;
 }

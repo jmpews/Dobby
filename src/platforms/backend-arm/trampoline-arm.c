@@ -141,6 +141,15 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         }
     } while (code_slice);
 
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildEnterTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_enter_trampoline at %p, length: %ld. hook-entry: %p. and will jump to enter_thunk(%p)\n",
+                code_slice->data, code_slice->size, (void *)entry, (void *)self->enter_thunk);
+        Xinfo("%s", buffer);
+    }
+
     entry->on_enter_trampoline = code_slice->data + 1;
 
     return status;
@@ -154,6 +163,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     zbool is_thumb = TRUE;
     zpointer target_addr = entry->target_ptr;
     zpointer target_end_addr = 0;
+    zpointer restore_target_addr;
 
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)target_addr);
 
@@ -198,7 +208,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                          thumb_relocator->input_cur < target_end_addr);
             }
 
-            zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
+            restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
             /* jump to rest target address */
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)(restore_target_addr + 1));
@@ -257,7 +267,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                          arm_relocator->input_cur < target_end_addr);
             }
 
-            zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
+            restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
             /* jump to rest target address */
             zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)restore_target_addr);
@@ -287,6 +297,43 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         // update target_half_ret_addr
         entry->target_half_ret_addr += (zaddr)code_slice->data;
+    }
+
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildInvokeTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p)\n", code_slice->data,
+                code_slice->size, restore_target_addr);
+        if (is_thumb) {
+            sprintf(
+                buffer + strlen(buffer),
+                "ThumbInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %ld\n",
+                (&self->thumb_relocator)->input_start, (&self->thumb_relocator)->input_cur,
+                (&self->thumb_relocator)->inpos);
+        } else {
+            sprintf(
+                buffer + strlen(buffer),
+                "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %ld\n",
+                (&self->arm_relocator)->input_start, (&self->arm_relocator)->input_cur, (&self->arm_relocator)->inpos);
+        }
+
+        char origin_prologue[64] = {0};
+        int t = 0;
+        if (is_thumb) {
+            for (zpointer p = (&self->thumb_relocator)->input_start; p < (&self->thumb_relocator)->input_cur;
+                 p++, t = t + 5) {
+                sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+            }
+        } else {
+            for (zpointer p = (&self->arm_relocator)->input_start; p < (&self->arm_relocator)->input_cur;
+                 p++, t = t + 5) {
+                sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+            }
+        }
+        sprintf(buffer + strlen(buffer), "origin_prologue:\n%s\n", origin_prologue);
+
+        Xinfo("%s", buffer);
     }
 
     return status;
@@ -412,6 +459,15 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
+
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildLeaveTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_leave_trampoline at %p, length: %ld. and will jump to leave_thunk(%p)\n", code_slice->data,
+                code_slice->size, self->leave_thunk);
+        Xinfo("%s", buffer);
+    }
 
     /* set thumb on_leave_trampoline */
     entry->on_leave_trampoline = code_slice->data + 1;

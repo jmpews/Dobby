@@ -86,15 +86,16 @@ void zz_arm_relocator_write_all(ZzArmRelocator *self) {
 
 // PAGE: A8-410
 static zbool zz_arm_relocator_rewrite_LDR_A1(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 imm12 = get_insn_sub(insn_ctx->insn, 0, 12);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm12 = get_insn_sub(insn, 0, 12);
     zuint32 imm32 = imm12 << 2;
-    zbool add = get_insn_sub(insn_ctx->insn, 7 + 16, 1) == 1;
+    zbool add = get_insn_sub(insn, 7 + 16, 1) == 1;
     zaddr target_address;
     if (add)
         target_address = insn_ctx->pc + imm32;
     else
         target_address = insn_ctx->pc - imm32;
-    int Rt_ndx = get_insn_sub(insn_ctx->insn, 12, 4);
+    int Rt_ndx = get_insn_sub(insn, 12, 4);
 
     zz_arm_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     zz_arm_writer_put_ldr_reg_reg_imm(self->output, Rt_ndx, Rt_ndx, 0);
@@ -103,29 +104,32 @@ static zbool zz_arm_relocator_rewrite_LDR_A1(ZzArmRelocator *self, ZzInstruction
 
 // PAGE: A8-322
 static zbool zz_arm_relocator_rewrite_ADR_A1(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 imm12 = get_insn_sub(insn_ctx->insn, 0, 12);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm12 = get_insn_sub(insn, 0, 12);
     zuint32 imm32 = imm12 << 2;
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;
-    int Rt_ndx = get_insn_sub(insn_ctx->insn, 12, 4);
+    int Rt_ndx = get_insn_sub(insn, 12, 4);
     zz_arm_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     return TRUE;
 }
 
 // PAGE: A8-322
 static zbool zz_arm_relocator_rewrite_ADR_A2(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 imm12 = get_insn_sub(insn_ctx->insn, 0, 12);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm12 = get_insn_sub(insn, 0, 12);
     zuint32 imm32 = imm12 << 2;
     zaddr target_address;
     target_address = insn_ctx->pc - imm32;
-    int Rt_ndx = get_insn_sub(insn_ctx->insn, 12, 4);
+    int Rt_ndx = get_insn_sub(insn, 12, 4);
     zz_arm_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     return TRUE;
 }
 
 // PAGE: A8-334
 static zbool zz_arm_relocator_rewrite_B_A1(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 imm24 = get_insn_sub(insn_ctx->insn, 0, 24);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm24 = get_insn_sub(insn, 0, 24);
     zuint32 imm32 = imm24 << 2;
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;
@@ -135,7 +139,8 @@ static zbool zz_arm_relocator_rewrite_B_A1(ZzArmRelocator *self, ZzInstruction *
 
 // PAGE: A8-348
 static zbool zz_arm_relocator_rewrite_BLBLX_A1(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 imm24 = get_insn_sub(insn_ctx->insn, 0, 24);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm24 = get_insn_sub(insn, 0, 24);
     zuint32 imm32 = imm24 << 2;
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;
@@ -146,8 +151,9 @@ static zbool zz_arm_relocator_rewrite_BLBLX_A1(ZzArmRelocator *self, ZzInstructi
 
 // PAGE: A8-348
 static zbool zz_arm_relocator_rewrite_BLBLX_A2(ZzArmRelocator *self, ZzInstruction *insn_ctx) {
-    zuint32 H = get_insn_sub(insn_ctx->insn, 24, 1);
-    zuint32 imm24 = get_insn_sub(insn_ctx->insn, 0, 24);
+    zuint32 insn = insn_ctx->insn;
+    zuint32 H = get_insn_sub(insn, 24, 1);
+    zuint32 imm24 = get_insn_sub(insn, 0, 24);
     zuint32 imm32 = imm24 << 2 | H << 1;
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;

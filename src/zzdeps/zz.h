@@ -44,7 +44,7 @@ typedef bool zbool;
 // --- log configuration ---
 
 #define GLOBAL_DEBUG 0
-#define GLOBAL_INFO 0
+#define GLOBAL_INFO 1
 #define SYSLOG 0
 #define COLOR_LOG 0
 
@@ -75,47 +75,47 @@ typedef bool zbool;
 
 #if (SYSLOG)
 #include <sys/syslog.h>
-#define Xinfo(fmt, ...)                                                                            \
-    do {                                                                                           \
-        if (GLOBAL_INFO)                                                                           \
-            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                           \
+#define Xinfo(fmt, ...)                                                                                                \
+    do {                                                                                                               \
+        if (GLOBAL_INFO)                                                                                               \
+            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                                               \
     } while (0)
 #define Sinfo(MSG) Xinfo("%s", MSG)
-#define Xdebug(fmt, ...)                                                                           \
-    do {                                                                                           \
-        if (GLOBAL_DEBUG)                                                                          \
-            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                           \
+#define Xdebug(fmt, ...)                                                                                               \
+    do {                                                                                                               \
+        if (GLOBAL_DEBUG)                                                                                              \
+            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                                               \
     } while (0)
 #define Sdebug(MSG) Xdebug("%s", MSG)
-#define Xerror(fmt, ...)                                                                           \
-    do {                                                                                           \
-        syslog(LOG_DEBUG,                                                                          \
-               RED "[!] "                                                                          \
-                   "%s:%d:%s(): " fmt RESET "\n",                                                  \
-               __FILE__, __LINE__, __func__, __VA_ARGS__);                                         \
+#define Xerror(fmt, ...)                                                                                               \
+    do {                                                                                                               \
+        syslog(LOG_DEBUG,                                                                                              \
+               RED "[!] "                                                                                              \
+                   "%s:%d:%s(): " fmt RESET "\n",                                                                      \
+               __FILE__, __LINE__, __func__, __VA_ARGS__);                                                             \
     } while (0)
 
 #define Serror(MSG) Xerror("%s", MSG)
 #else
-#define Xinfo(fmt, ...)                                                                            \
-    do {                                                                                           \
-        if (GLOBAL_INFO)                                                                           \
-            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                          \
+#define Xinfo(fmt, ...)                                                                                                \
+    do {                                                                                                               \
+        if (GLOBAL_INFO)                                                                                               \
+            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                              \
     } while (0)
 #define Sinfo(MSG) Xinfo("%s", MSG)
 
-#define Xdebug(fmt, ...)                                                                           \
-    do {                                                                                           \
-        if (GLOBAL_DEBUG)                                                                          \
-            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                          \
+#define Xdebug(fmt, ...)                                                                                               \
+    do {                                                                                                               \
+        if (GLOBAL_DEBUG)                                                                                              \
+            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                              \
     } while (0)
 #define Sdebug(MSG) Xdebug("%s", MSG)
-#define Xerror(fmt, ...)                                                                           \
-    do {                                                                                           \
-        fprintf(stderr,                                                                            \
-                RED "[!] "                                                                         \
-                    "%s:%d:%s(): " fmt RESET "\n",                                                 \
-                __FILE__, __LINE__, __func__, __VA_ARGS__);                                        \
+#define Xerror(fmt, ...)                                                                                               \
+    do {                                                                                                               \
+        fprintf(stderr,                                                                                                \
+                RED "[!] "                                                                                             \
+                    "%s:%d:%s(): " fmt RESET "\n",                                                                     \
+                __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
     } while (0)
 
 #define Serror(MSG) Xerror("%s", MSG)

@@ -305,6 +305,13 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: enter_thunk at %p, length: %ld.", code_slice->data,
+                code_slice->size);
+        Xinfo("%s", buffer);
+    }
 
     /* set thumb enter_thunk */
     self->enter_thunk = code_slice->data + 1;
@@ -329,6 +336,13 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: leave_thunk at %p, length: %ld.", code_slice->data,
+                code_slice->size);
+        Xinfo("%s", buffer);
+    }
 
     /* set thumb leave_thunk */
     self->leave_thunk = code_slice->data + 1;

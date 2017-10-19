@@ -19,11 +19,24 @@
 
 #include "hookzz.h"
 
+typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN } InsnType;
+
 typedef struct _Instruction {
+    InsnType type;
     zaddr pc;
     zaddr address;
     zuint8 size;
+    union {
+        zuint32 trick_insn;
+        struct {
+            zuint16 trick_insn1;
+            zuint16 trick_insn2;
+        };
+    };
+
     zuint32 insn;
+    zuint16 insn1;
+    zuint16 insn2;
 } ZzInstruction;
 
 zuint32 get_insn_sub(zuint32 insn, int start, int length);
