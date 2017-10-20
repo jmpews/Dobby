@@ -150,6 +150,12 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
 
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 
+ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                POSTCALL post_call_ptr);
+
+ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
+                       HALFCALL half_call_ptr);
+
 void ZzEnableDebugMode(void);
 
 ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_size);

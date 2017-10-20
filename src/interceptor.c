@@ -218,6 +218,20 @@ ZZSTATUS ZzEnableHook(zpointer target_ptr) {
     return ZzActivateTrampoline(interceptor->backend, entry);
 }
 
+ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                POSTCALL post_call_ptr) {
+    ZzBuildHook(target_ptr, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr);
+    ZzEnableHook(target_ptr);
+    return ZZ_SUCCESS;
+}
+
+ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
+                       HALFCALL half_call_ptr) {
+    ZzBuildHookAddress(target_start_ptr, target_end_ptr, pre_call_ptr, half_call_ptr);
+    ZzEnableHook(target_start_ptr);
+    return ZZ_SUCCESS;
+}
+
 #ifdef TARGET_IS_IOS
 
 ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
