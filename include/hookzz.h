@@ -24,19 +24,25 @@
 
 #ifndef zz_type
 #define zz_type
+
 typedef void *zpointer;
 typedef unsigned long zsize;
 typedef unsigned long zaddr;
+
+typedef uint64_t zuint64;
 typedef uint32_t zuint32;
 typedef uint16_t zuint16;
 typedef uint8_t zuint8;
+
 typedef int32_t zint32;
 typedef int16_t zint16;
 typedef int8_t zint8;
+
 typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
 typedef bool zbool;
+
 #endif
 
 #if defined(FALSE)

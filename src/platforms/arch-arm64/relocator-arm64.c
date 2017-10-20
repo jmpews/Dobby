@@ -118,31 +118,6 @@ void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
     return;
 }
 
-zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self) {
-    ZzInstruction *insn_ctx;
-    zbool rewritten = FALSE;
-
-    if (self->inpos != self->outpos) {
-        insn_ctx = &self->input_insns[self->outpos];
-        self->outpos++;
-    } else
-        return FALSE;
-
-    insn_ctx->pc = insn_ctx->address;
-
-    switch (GetARM64InsnType(insn_ctx->insn)) {
-    case ARM64_INS_B_A1:
-        break;
-
-    default:
-        rewritten = FALSE;
-        break;
-    }
-    if (!rewritten)
-        zz_arm64_writer_put_bytes(self->output, (zbyte *)&insn_ctx->insn, insn_ctx->size);
-    return TRUE;
-}
-
 // static zbool zz_arm64_branch_is_unconditional(const cs_insn *insn) {
 //     switch (insn->detail->arm64.cc) {
 //     case ARM64_CC_INVALID:
@@ -297,3 +272,155 @@ zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self) {
 //     zz_arm64_writer_put_ldr_reg_address(relocate_writer, dst.reg, label.imm);
 //     return TRUE;
 // }
+
+// PAGE: C6-673
+static zbool zz_arm64_relocator_rewrite_LDR_literal(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    // TODO: check opc == 10, with signed
+    zuint32 imm19 = get_insn_sub(insn, 5, 19);
+    zuint64 offset = imm19 << 2;
+
+    zaddr target_address;
+    target_address = insn_ctx->pc + offset;
+    int Rt_ndx = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    zz_arm64_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
+    return TRUE;
+}
+
+// PAGE: C6-535
+static zbool zz_arm64_relocator_rewrite_ADR(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    zuint32 immhi = get_insn_sub(insn, 5, 19);
+    zuint32 immlo = get_insn_sub(insn, 29, 2);
+    zuint64 imm = immhi << 2 | immlo;
+
+    zaddr target_address;
+    target_address = insn_ctx->pc + imm;
+    int Rt_ndx = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    return TRUE;
+}
+
+// PAGE: C6-536
+static zbool zz_arm64_relocator_rewrite_ADRP(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    zuint32 immhi = get_insn_sub(insn, 5, 19);
+    zuint32 immlo = get_insn_sub(insn, 29, 2);
+    // 12 is PAGE-SIZE
+    zuint64 imm = immhi << 2 << 12 | immlo << 12;
+
+    zaddr target_address;
+    target_address = (insn_ctx->pc & (1 << 12)) + imm;
+    int Rt_ndx = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    return TRUE;
+}
+
+// PAGE: C6-550
+static zbool zz_arm64_relocator_rewrite_B(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm26 = get_insn_sub(insn, 0, 26);
+
+    zuint64 offset = imm26 << 2;
+
+    zaddr target_address;
+    target_address = insn_ctx->pc + offset;
+    int Rt_ndx = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+    return TRUE;
+}
+
+// PAGE: C6-560
+static zbool zz_arm64_relocator_rewrite_BL(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm26 = get_insn_sub(insn, 0, 26);
+
+    zuint64 offset = imm26 << 2;
+
+    zaddr target_address;
+    target_address = insn_ctx->pc + offset;
+    int Rt_ndx = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_ldr_blr_b_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+    return TRUE;
+}
+
+/*
+    origin:
+        1. j.eq [3]
+
+        2. [...]
+        3. [...]
+
+    rwrite:
+        1. j.eq [1.2]
+        1.1 b [2]
+        1.2 abs_jmp [3]
+
+        2. [...]
+        3. [...]
+ */
+
+// PAGE: C6-549
+static zbool zz_arm64_relocator_rewrite_B_cond(ZzArm64Relocator *self, ZzInstruction *insn_ctx) {
+    zuint32 insn = insn_ctx->insn;
+    zuint32 imm19 = get_insn_sub(insn, 5, 19);
+
+    zuint64 offset = imm19 << 2;
+
+    zaddr target_address;
+    target_address = insn_ctx->pc + offset;
+
+    zuint32 cond = get_insn_sub(insn, 0, 4);
+
+    zz_arm64_writer_put_b_cond_imm(self->output, cond, 0x8);
+    zz_arm64_writer_put_b_imm(self->output, 0xc);
+    zz_arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+
+    return TRUE;
+}
+
+zbool zz_arm64_relocator_write_one(ZzArm64Relocator *self) {
+    ZzInstruction *insn_ctx;
+    zbool rewritten = FALSE;
+
+    if (self->inpos != self->outpos) {
+        insn_ctx = &self->input_insns[self->outpos];
+        self->outpos++;
+    } else
+        return FALSE;
+
+    insn_ctx->pc = insn_ctx->pc;
+
+    switch (GetARM64InsnType(insn_ctx->insn)) {
+    case ARM64_INS_LDR_literal:
+        rewritten = zz_arm64_relocator_rewrite_LDR_literal(self, insn_ctx);
+        break;
+    case ARM64_INS_ADR:
+        rewritten = zz_arm64_relocator_rewrite_ADR(self, insn_ctx);
+        break;
+    case ARM64_INS_ADRP:
+        rewritten = zz_arm64_relocator_rewrite_ADRP(self, insn_ctx);
+        break;
+    case ARM64_INS_B:
+        rewritten = zz_arm64_relocator_rewrite_B(self, insn_ctx);
+        break;
+    case ARM64_INS_BL:
+        rewritten = zz_arm64_relocator_rewrite_BL(self, insn_ctx);
+        break;
+    case ARM64_INS_B_cond:
+        rewritten = zz_arm64_relocator_rewrite_B_cond(self, insn_ctx);
+        break;
+    default:
+        rewritten = FALSE;
+        break;
+    }
+    if (!rewritten)
+        zz_arm64_writer_put_bytes(self->output, (zbyte *)&insn_ctx->insn, insn_ctx->size);
+    return TRUE;
+}

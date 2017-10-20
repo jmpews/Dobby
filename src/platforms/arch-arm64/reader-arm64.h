@@ -29,12 +29,12 @@
 #include "zzdeps/zz.h"
 
 typedef enum _ARM64InsnType {
-    ARM64_INS_LDR_A1,
-    ARM64_INS_ADR_A1,
-    ARM64_INS_ADR_A2,
-    ARM64_INS_B_A1,
-    ARM64_INS_BLBLX_A1,
-    ARM64_INS_BLBLX_A2,
+    ARM64_INS_LDR_literal,
+    ARM64_INS_ADR,
+    ARM64_INS_ADRP,
+    ARM64_INS_B,
+    ARM64_INS_BL,
+    ARM64_INS_B_cond,
     ARM64_UNDEF
 } ARM64InsnType;
 
