@@ -37,8 +37,8 @@ void open_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack
 __attribute__((constructor)) void test_hook_printf() {
     void *open_ptr = (void *)open;
 
-    ZzBuildHook((void *)open_ptr, NULL, NULL, open_pre_call, open_post_call);
-    ZzEnableHook((void *)open_ptr);
+    ZzEnableDebugMode();
+    ZzHook((void *)open_ptr, NULL, NULL, open_pre_call, open_post_call);
 
     open("/home/zz", O_RDONLY);
 }

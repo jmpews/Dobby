@@ -41,13 +41,13 @@ test:
 	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_open_arm.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_open_arm
 	@echo "$(OK_COLOR)build [test_hook_open_arm.dylib] success for armv7-ios! $(NO_COLOR)"
 
-	# @$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_address_thumb.c -o test_hook_address_thumb.o
-	# @$(ZZ_GCC_TEST) -Wl,-U,_func  -L$(HOOKZZ_LIB_DIR) -lhookzz.static test_hook_address_thumb.o -o $(HOOKZZ_LIB_DIR)/test_hook_address_thumb
-	# @echo "$(OK_COLOR)build [test_hook_address_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
+	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_address_thumb.c -o test_hook_address_thumb.o
+	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_address_thumb.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_address_thumb
+	@echo "$(OK_COLOR)build [test_hook_address_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
 
-	# @$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_printf.c -o test_hook_printf.o
-	# @$(ZZ_GCC_TEST) -Wl,-U,_func  -L$(HOOKZZ_LIB_DIR) -lhookzz.static test_hook_printf.o -o $(HOOKZZ_LIB_DIR)/test_hook_printf
-	# @echo "$(OK_COLOR)build [test_hook_printf.dylib] success for armv7-ios! $(NO_COLOR)"
+	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_printf.c -o test_hook_printf.o
+	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_printf.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_printf
+	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for armv7-android-hookzz! $(NO_COLOR)"
 

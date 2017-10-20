@@ -1,12 +1,10 @@
 # What is HookZz ?
 
-**a cute hook framwork for arm/arm64/ios/android**
+**a hook framwork for arm/arm64/ios/android**
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
 
 **special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat, but still with some tricks**
-
-**thanks to [capstone](https://github.com/aquynh/capstone), and the disassembly framework used is [Capstone](https://github.com/aquynh/capstone)**
 
 # Features
 

@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
-int (*orig_printf)(const char *restrict format, ...);
-int fake_printf(const char *restrict format, ...) {
+int (*orig_printf)(const char *format, ...);
+int fake_printf(const char *format, ...) {
     puts("call printf");
 
     char *stack[16];
@@ -56,8 +56,8 @@ void printf_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callsta
 __attribute__((constructor)) void test_hook_printf() {
     void *printf_ptr = (void *)printf;
 
-    ZzBuildHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call);
-    ZzEnableHook((void *)printf_ptr);
+    ZzEnableDebugMode();
+    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call);
     printf("HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d\n", 1, (void *)2, 3, (char)4, (char)5, (char)6, 7, 8, 9);
 }
 

@@ -18,9 +18,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
-static void hack_this_function() {
+__attribute__((__naked__)) static void hack_this_function() {
 #ifdef __arm__
-    __asm__ volatile(".code 16\n"
+    __asm__ volatile(".code 32\n"
                      "mov r0, #0\n"
                      "mov r12, #20\n"
                      "svc #0x80\n"
@@ -33,9 +33,9 @@ static void hack_this_function() {
 #endif
 }
 
-static void sorry_to_exit() {
+__attribute__((__naked__)) static void sorry_to_exit() {
 #ifdef __arm__
-    __asm__ volatile(".code 16\n"
+    __asm__ volatile(".code 32\n"
                      "mov r0, #0\n"
                      "mov r12, #1\n"
                      "svc #0x80");
@@ -64,12 +64,12 @@ __attribute__((constructor)) void test_hook_address() {
     // *)getpid_half_call);
 
     // hook address with both `half_call` and `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 10, getpid_pre_call, getpid_half_call);
-    ZzEnableHook((void *)hack_this_function_ptr + 8);
+    ZzEnableDebugMode();
+    ZzHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 8 + 4, getpid_pre_call, getpid_half_call);
 
     void *sorry_to_exit_ptr = (void *)sorry_to_exit;
-    unsigned long nop_bytes = 0x46c0;
-    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 2);
+    unsigned long nop_bytes = 0xE1A00000;
+    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 4);
 
     hack_this_function();
     sorry_to_exit();
