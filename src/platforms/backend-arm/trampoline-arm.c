@@ -318,7 +318,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 (&self->arm_relocator)->input_start, (&self->arm_relocator)->input_cur, (&self->arm_relocator)->inpos);
         }
 
-        char origin_prologue[64] = {0};
+        char origin_prologue[256] = {0};
         int t = 0;
         if (is_thumb) {
             for (zpointer p = (&self->thumb_relocator)->input_start; p < (&self->thumb_relocator)->input_cur;

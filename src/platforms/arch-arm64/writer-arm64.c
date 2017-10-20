@@ -110,8 +110,8 @@ zpointer zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_r
     zz_arm64_register_describe(dst_reg, &rd);
 
     zuint32 size, v = 0, opc = 0, Rn_ndx, Rt_ndx;
-    Rn_ndx = rs.index;
-    Rt_ndx = rd.index;
+    Rn_ndx = rd.index;
+    Rt_ndx = rs.index;
 
     if (rs.is_integer) {
         size = (rs.width == 64) ? 0b11 : 0b10;
@@ -164,7 +164,7 @@ zpointer zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
 
     Rn_ndx = ri.index;
 
-    zz_arm64_writer_put_instruction(self, 0xd63f0000 | op << 21 | Rn_ndx);
+    zz_arm64_writer_put_instruction(self, 0xd63f0000 | op << 21 | Rn_ndx << 5);
     return self->pc;
 }
 

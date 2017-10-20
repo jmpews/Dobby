@@ -38,7 +38,7 @@ ZZ_GXX_TEST := $(ZZ_GXX_BIN) --sysroot=$(ZZ_SDK_ROOT)
 
 test: 
 	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_open_arm.c -o test_hook_open_arm.o
-	$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -L$(HOOKZZ_LIB_DIR) -lhookzz.static test_hook_open_arm.o -o $(HOOKZZ_LIB_DIR)/test_hook_open_arm
+	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_open_arm.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_open_arm
 	@echo "$(OK_COLOR)build [test_hook_open_arm.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	# @$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_address_thumb.c -o test_hook_address_thumb.o

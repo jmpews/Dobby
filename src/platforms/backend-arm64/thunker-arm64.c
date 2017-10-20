@@ -15,6 +15,7 @@
  */
 
 #include "thunker-arm64.h"
+#include <string.h>
 
 /*
     Programmer’s Guide for ARMv8-A:
@@ -518,6 +519,13 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     /* set arm64 enter_thunk */
     // self->enter_thunk = code_slice->data;
     self->enter_thunk = (void *)enter_thunk_template;
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: enter_thunk at %p, use enter_thunk_template.",
+                (void *)enter_thunk_template);
+        Xinfo("%s", buffer);
+    }
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     code_slice = NULL;
@@ -539,6 +547,13 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             arm64_writer->pc = code_slice->data;
         }
     } while (code_slice);
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: leave_thunk at %p, length: %ld.", code_slice->data,
+                code_slice->size);
+        Xinfo("%s", buffer);
+    }
 
     /* set arm64 leave_thunk */
     self->leave_thunk = code_slice->data;

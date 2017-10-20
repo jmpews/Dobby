@@ -16,6 +16,7 @@
 
 #include "interceptor-arm64.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define ZZ_ARM64_TINY_REDIRECT_SIZE 4
 #define ZZ_ARM64_FULL_REDIRECT_SIZE 16
@@ -155,6 +156,14 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             arm64_writer->pc = code_slice->data;
         }
     } while (code_slice);
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildEnterTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_enter_trampoline at %p, length: %ld. hook-entry: %p. and will jump to enter_thunk(%p)\n",
+                code_slice->data, code_slice->size, (void *)entry, (void *)self->enter_thunk);
+        Xinfo("%s", buffer);
+    }
 
     entry->on_enter_trampoline = code_slice->data;
 
@@ -167,6 +176,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status = ZZ_SUCCESS;
     zpointer target_addr = entry->target_ptr;
+    zpointer restore_target_addr;
 
     ZzArm64Relocator *arm64_relocator;
     ZzArm64Writer *arm64_writer;
@@ -203,7 +213,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                      arm64_relocator->input_cur < entry->target_end_ptr);
         }
 
-        zpointer restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
+        restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
 
         /* jump to rest target address */
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zaddr)restore_target_addr);
@@ -224,6 +234,27 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             arm64_writer->pc = code_slice->data;
         }
     } while (code_slice);
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {0};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildInvokeTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p)\n", code_slice->data,
+                code_slice->size, restore_target_addr);
+        sprintf(buffer + strlen(buffer),
+                "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %ld\n",
+                (&self->arm64_relocator)->input_start, (&self->arm64_relocator)->input_cur,
+                (&self->arm64_relocator)->inpos);
+
+        char origin_prologue[256] = {0};
+        int t = 0;
+        for (zpointer p = (&self->arm64_relocator)->input_start; p < (&self->arm64_relocator)->input_cur;
+             p++, t = t + 5) {
+            sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+        }
+        sprintf(buffer + strlen(buffer), "origin_prologue:\n%s\n", origin_prologue);
+
+        Xinfo("%s", buffer);
+    }
 
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
         // update target_half_ret_addr
@@ -319,6 +350,15 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             arm64_writer->pc = code_slice->data;
         }
     } while (code_slice);
+
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildLeaveTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_leave_trampoline at %p, length: %ld. and will jump to leave_thunk(%p)\n", code_slice->data,
+                code_slice->size, self->leave_thunk);
+        Xinfo("%s", buffer);
+    }
 
     /* set arm64 on_leave_trampoline */
     entry->on_leave_trampoline = code_slice->data;
