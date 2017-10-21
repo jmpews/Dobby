@@ -38,7 +38,8 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Why I do this?
 
-For Arsenal - [zzdeps](https://github.com/jmpews/zzdeps)
+1. for arsenal - [zzdeps](https://github.com/jmpews/zzdeps)
+2. for low-level control
 
 # Docs
 

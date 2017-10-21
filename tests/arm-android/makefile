@@ -6,7 +6,7 @@ WARN_COLOR=\x1b[33;01m
 HOOKZZ_INCLUDE_DIR := $(abspath ../../include)
 HOOKZZ_LIB_DIR := $(abspath ../../build/android-armv7)
 
-CFLAGS ?= -O0 -g -std=c99
+CFLAGS ?= -O0 -g -std=c99 -pie -fPIE
 
 HOST ?= $(shell uname -s)
 HOST_ARCH ?= $(shell uname -m)
@@ -37,16 +37,16 @@ ZZ_GCC_TEST := $(ZZ_GCC_BIN) --sysroot=$(ZZ_SDK_ROOT)
 ZZ_GXX_TEST := $(ZZ_GXX_BIN) --sysroot=$(ZZ_SDK_ROOT)
 
 test: 
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_open_arm.c -o test_hook_open_arm.o
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_open_arm.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_open_arm
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_open_arm.c -o test_hook_open_arm.o
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) test_hook_open_arm.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_open_arm
 	@echo "$(OK_COLOR)build [test_hook_open_arm.dylib] success for armv7-ios! $(NO_COLOR)"
 
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_address_thumb.c -o test_hook_address_thumb.o
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_address_thumb.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_address_thumb
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_address_thumb.c -o test_hook_address_thumb.o
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) test_hook_address_thumb.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_address_thumb
 	@echo "$(OK_COLOR)build [test_hook_address_thumb.dylib] success for armv7-ios! $(NO_COLOR)"
 
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_printf.c -o test_hook_printf.o
-	@$(ZZ_GCC_TEST) -I$(HOOKZZ_INCLUDE_DIR) test_hook_printf.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_printf
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) -c test_hook_printf.c -o test_hook_printf.o
+	@$(ZZ_GCC_TEST) $(CFLAGS) -I$(HOOKZZ_INCLUDE_DIR) test_hook_printf.o  -L$(HOOKZZ_LIB_DIR) -lhookzz.static -o $(HOOKZZ_LIB_DIR)/test_hook_printf
 	@echo "$(OK_COLOR)build [test_hook_printf.dylib] success for armv7-ios! $(NO_COLOR)"
 
 	@echo "$(OK_COLOR)build [test] success for armv7-android-hookzz! $(NO_COLOR)"
