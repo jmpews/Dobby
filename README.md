@@ -1,6 +1,5 @@
-# HookZz
 
-> [Move to HookZzWebsite](https://jmpews.github.io/zzpp/)
+#### > [Move to Develoment(arm/arm64/ios/android)](https://github.com/jmpews/HookZz/tree/development)
 
 # What is HookZz ?
 
