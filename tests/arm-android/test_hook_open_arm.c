@@ -38,7 +38,7 @@ __attribute__((constructor)) void test_hook_printf() {
     void *open_ptr = (void *)open;
 
     ZzEnableDebugMode();
-    ZzHook((void *)open_ptr, NULL, NULL, open_pre_call, open_post_call);
+    ZzHookPrePost((void *)open_ptr, open_pre_call, open_post_call);
 
     open("/home/zz", O_RDONLY);
 }

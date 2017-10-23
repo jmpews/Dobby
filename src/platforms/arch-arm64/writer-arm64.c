@@ -71,12 +71,6 @@ void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 
-zsize ZzWriterNearJumpRangeSize() { return ((1 << 25) << 2); }
-
-zsize ZzWriterAbsJumpInstructionLength() { return 16; }
-
-zsize ZzWriterNearJumpInstructionLength() { return 4; }
-
 zsize zz_arm64_writer_near_jump_range_size() { return ((1 << 25) << 2); }
 
 void zz_arm64_writer_put_ldr_br_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {

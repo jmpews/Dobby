@@ -43,7 +43,7 @@ zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size) {
 
 zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size) {
     // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
-    return zz_vm_search_code_cave_via_recurse(address, redirect_range_size, size);
+    return zz_vm_search_code_cave(address, redirect_range_size, size);
 }
 
 zbool ZzMemoryIsSupportAllocateRXPage() { return zz_vm_can_allocate_rx_page(); }

@@ -130,6 +130,7 @@ zpointer zz_thumb_writer_put_instruction(ZzThumbWriter *self, uint16_t insn) {
 }
 
 zpointer zz_thumb_writer_put_b_imm(ZzThumbWriter *self, zuint32 imm) {
+
     zz_thumb_writer_put_instruction(self, 0xe000 | ((imm / 2) & ZZ_INT11_MASK));
     return self->pc;
 }
@@ -496,4 +497,4 @@ zpointer zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_r
     return self->pc;
 }
 
-zsize zz_thumb_writer_near_jump_range_size() { return 16; }
+zsize zz_thumb_writer_near_jump_range_size() { return ((1 << 23) << 1); }

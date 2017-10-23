@@ -117,8 +117,7 @@ zpointer zz_posix_vm_allocate_pages(zsize n_pages) {
         n_pages = 1;
     }
 
-    page_mmap =
-        mmap(0, page_size * n_pages, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    page_mmap = mmap(0, page_size * n_pages, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 
     if (page_mmap == MAP_FAILED) {
         perror("mmap");

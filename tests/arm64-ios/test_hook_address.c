@@ -60,8 +60,8 @@ __attribute__((constructor)) void test_hook_address() {
     // *)getpid_half_call);
 
     // hook address with both `half_call` and `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, getpid_pre_call,
-                       getpid_half_call);
+    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, getpid_pre_call, getpid_half_call,
+                       TRUE);
     ZzEnableHook((void *)hack_this_function_ptr + 8);
 
     void *sorry_to_exit_ptr = (void *)sorry_to_exit;

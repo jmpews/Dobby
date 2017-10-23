@@ -158,9 +158,9 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     } while (code_slice);
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildEnterTrampoline:");
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildEnterTrampoline:");
         sprintf(buffer + strlen(buffer),
-                "LogInfo: on_enter_trampoline at %p, length: %ld. hook-entry: %p. and will jump to enter_thunk(%p)\n",
+                "LogInfo: on_enter_trampoline at %p, length: %ld. hook-entry: %p. and will jump to enter_thunk(%p).\n",
                 code_slice->data, code_slice->size, (void *)entry, (void *)self->enter_thunk);
         Xinfo("%s", buffer);
     }
@@ -236,9 +236,9 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     } while (code_slice);
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {0};
-        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildInvokeTrampoline:");
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildInvokeTrampoline:");
         sprintf(buffer + strlen(buffer),
-                "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p)\n", code_slice->data,
+                "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p).\n", code_slice->data,
                 code_slice->size, restore_target_addr);
         sprintf(buffer + strlen(buffer),
                 "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %ld\n",
@@ -251,7 +251,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
              p++, t = t + 5) {
             sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
         }
-        sprintf(buffer + strlen(buffer), "origin_prologue:\n%s\n", origin_prologue);
+        sprintf(buffer + strlen(buffer), "origin_prologue: %s\n", origin_prologue);
 
         Xinfo("%s", buffer);
     }
@@ -353,10 +353,10 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzBuildLeaveTrampoline:");
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildLeaveTrampoline:");
         sprintf(buffer + strlen(buffer),
-                "LogInfo: on_leave_trampoline at %p, length: %ld. and will jump to leave_thunk(%p)\n", code_slice->data,
-                code_slice->size, self->leave_thunk);
+                "LogInfo: on_leave_trampoline at %p, length: %ld. and will jump to leave_thunk(%p).\n",
+                code_slice->data, code_slice->size, self->leave_thunk);
         Xinfo("%s", buffer);
     }
 

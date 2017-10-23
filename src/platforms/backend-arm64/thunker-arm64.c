@@ -521,8 +521,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     self->enter_thunk = (void *)enter_thunk_template;
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
-        sprintf(buffer + strlen(buffer), "LogInfo: enter_thunk at %p, use enter_thunk_template.",
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: enter_thunk at %p, use enter_thunk_template.\n",
                 (void *)enter_thunk_template);
         Xinfo("%s", buffer);
     }
@@ -549,8 +549,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     } while (code_slice);
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "%s\n", "Log-Func-ZzThunkerBuildThunk:");
-        sprintf(buffer + strlen(buffer), "LogInfo: leave_thunk at %p, length: %ld.", code_slice->data,
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: leave_thunk at %p, length: %ld.\n", code_slice->data,
                 code_slice->size);
         Xinfo("%s", buffer);
     }

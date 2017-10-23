@@ -82,6 +82,7 @@ else ifeq ($(BACKEND), android)
 	ZZ_AR_BIN := $(ZZ_NDK_HOME)/toolchains/$(ZZ_CROSS_PREFIX)4.9/prebuilt/$(HOST_DIR)/bin/$(ZZ_CROSS_PREFIX)ar
 	ZZ_RANLIB_BIN := $(ZZ_NDK_HOME)/toolchains/$(ZZ_CROSS_PREFIX)4.9/prebuilt/$(HOST_DIR)/bin/$(ZZ_CROSS_PREFIX)ranlib
 
+	ZZ_DEPS_SRCS += $(wildcard $(ZZ_DEPS_PATH)/linux/*.c)
 	ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-linux/*.c)
 
 	ZZ_CFLAGS := -g -fPIC -shared

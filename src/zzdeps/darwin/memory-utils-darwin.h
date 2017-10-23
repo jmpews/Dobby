@@ -75,7 +75,7 @@ zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize 
 
 zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size, zsize size);
 
-zpointer zz_vm_search_code_cave_via_recurse(zaddr address, zsize range_size, zsize size);
+zpointer zz_vm_search_code_cave(zaddr address, zsize range_size, zsize size);
 
 zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size);
 

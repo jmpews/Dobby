@@ -178,4 +178,5 @@ void zz_arm_writer_put_bx_reg(ZzArmWriter *self, ZzARMReg reg) {
 }
 
 void zz_arm_writer_put_nop(ZzArmWriter *self) { zz_arm_writer_put_instruction(self, 0xe320f000); }
-zsize zz_arm_writer_near_jump_range_size() { return 16; }
+
+zsize zz_arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }
