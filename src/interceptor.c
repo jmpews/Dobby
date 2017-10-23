@@ -93,14 +93,14 @@ ZZSTATUS ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
 
 void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zpointer target_ptr,
                                    zpointer target_end_ptr, zpointer replace_call, PRECALL pre_call, HALFCALL half_call,
-                                   POSTCALL post_call) {
+                                   POSTCALL post_call, zbool try_near_jump) {
     ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
 
     entry->hook_type = hook_type;
     entry->id = hook_function_entry_set->size;
     entry->isEnabled = 0;
-    entry->try_near_jump = FALSE;
+    entry->try_near_jump = try_near_jump;
     entry->interceptor = interceptor;
 
     entry->target_ptr = target_ptr;
@@ -126,7 +126,7 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
 }
 
 ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                     POSTCALL post_call_ptr) {
+                     POSTCALL post_call_ptr, zbool try_near_jump) {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
     ZzInterceptor *interceptor = g_interceptor;
@@ -154,7 +154,7 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *o
 
         entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
         ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
-                                      post_call_ptr);
+                                      post_call_ptr, try_near_jump);
 
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
@@ -163,8 +163,8 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *o
     return status;
 }
 
-ZZSTATUS
-ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr) {
+ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
+                            HALFCALL half_call_ptr, zbool try_near_jump) {
 
     ZZSTATUS status = ZZ_DONE_HOOK;
     ZzInterceptor *interceptor = g_interceptor;
@@ -192,7 +192,7 @@ ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL p
 
         entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
         ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE, target_start_ptr, target_end_ptr, NULL, pre_call_ptr,
-                                      half_call_ptr, NULL);
+                                      half_call_ptr, NULL, try_near_jump);
 
     } while (0);
     return status;
@@ -219,15 +219,28 @@ ZZSTATUS ZzEnableHook(zpointer target_ptr) {
 }
 
 ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                POSTCALL post_call_ptr) {
-    ZzBuildHook(target_ptr, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr);
+                POSTCALL post_call_ptr, zbool try_near_jump) {
+    ZzBuildHook(target_ptr, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr, try_near_jump);
+    ZzEnableHook(target_ptr);
+    return ZZ_SUCCESS;
+}
+
+ZZSTATUS ZzHookPrePost(zpointer target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
+    ZzBuildHook(target_ptr, NULL, NULL, pre_call_ptr, post_call_ptr, FALSE);
+    ZzEnableHook(target_ptr);
+    return ZZ_SUCCESS;
+}
+
+ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                       POSTCALL post_call_ptr) {
+    ZzBuildHook(target_ptr, replace_ptr, origin_ptr, NULL, NULL, FALSE);
     ZzEnableHook(target_ptr);
     return ZZ_SUCCESS;
 }
 
 ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
                        HALFCALL half_call_ptr) {
-    ZzBuildHookAddress(target_start_ptr, target_end_ptr, pre_call_ptr, half_call_ptr);
+    ZzBuildHookAddress(target_start_ptr, target_end_ptr, pre_call_ptr, half_call_ptr, FALSE);
     ZzEnableHook(target_start_ptr);
     return ZZ_SUCCESS;
 }

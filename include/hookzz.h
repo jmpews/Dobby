@@ -142,17 +142,17 @@ zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
 #define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                     POSTCALL post_call_ptr);
-
+ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                     POSTCALL post_call_ptr, zbool try_near_jump);
 ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
-                            HALFCALL half_call_ptr);
-
+                            HALFCALL half_call_ptr, zbool try_near_jump);
 ZZSTATUS ZzEnableHook(zpointer target_ptr);
 
 ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                POSTCALL post_call_ptr);
-
+                POSTCALL post_call_ptr, zbool try_near_jump);
+ZZSTATUS ZzHookPrePost(zpointer target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+                       POSTCALL post_call_ptr);
 ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
                        HALFCALL half_call_ptr);
 
