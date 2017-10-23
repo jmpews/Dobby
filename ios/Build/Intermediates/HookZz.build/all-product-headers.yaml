@@ -1,0 +1,33 @@
+{
+  'version': 0,
+  'case-sensitive': 'false',
+  'roots': [
+    {
+      'type': 'directory',
+      'name': "/Users/monkey/Documents/MacReverse/MonkeyDev/github/HookZz/ios/Build/Products/Debug-iphoneos/HookZz.framework/Headers",
+      'contents': [
+        {
+          'type': 'file',
+          'name': "HookZz-Swift.h",
+          'external-contents': "/Users/monkey/Documents/MacReverse/MonkeyDev/github/HookZz/ios/Build/Products/Debug-iphoneos/HookZz.framework/Headers/HookZz-Swift.h"
+        },
+        {
+          'type': 'file',
+          'name': "hookzz.h",
+          'external-contents': "/Users/monkey/Documents/MacReverse/MonkeyDev/github/HookZz/include/hookzz.h"
+        }
+      ]
+    },
+    {
+      'type': 'directory',
+      'name': "/Users/monkey/Documents/MacReverse/MonkeyDev/github/HookZz/ios/Build/Products/Debug-iphoneos/HookZz.framework/Modules",
+      'contents': [
+        {
+          'type': 'file',
+          'name': "module.modulemap",
+          'external-contents': "/Users/monkey/Documents/MacReverse/MonkeyDev/github/HookZz/ios/Build/Intermediates/HookZz.build/Debug-iphoneos/HookZz.build/module.modulemap"
+        }
+      ]
+    }
+  ]
+}

@@ -105,10 +105,8 @@
 		865F60E81F613A9E0000622F /* mach_vm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mach_vm.h; sourceTree = "<group>"; };
 		865F60E91F613A9E0000622F /* macho-utils-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "macho-utils-darwin.c"; sourceTree = "<group>"; };
 		865F60EA1F613A9E0000622F /* macho-utils-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "macho-utils-darwin.h"; sourceTree = "<group>"; };
-		865F60EB1F613A9E0000622F /* macho-utils-darwin.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "macho-utils-darwin.o"; sourceTree = "<group>"; };
 		865F60EC1F613A9E0000622F /* memory-utils-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-utils-darwin.c"; sourceTree = "<group>"; };
 		865F60ED1F613A9E0000622F /* memory-utils-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-utils-darwin.h"; sourceTree = "<group>"; };
-		865F60EE1F613A9E0000622F /* memory-utils-darwin.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "memory-utils-darwin.o"; sourceTree = "<group>"; };
 		865F60F01F613A9E0000622F /* memory-utils-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-utils-posix.c"; sourceTree = "<group>"; };
 		865F60F11F613A9E0000622F /* memory-utils-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-utils-posix.h"; sourceTree = "<group>"; };
 		865F60F21F613A9E0000622F /* memory-utils-posix.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "memory-utils-posix.o"; sourceTree = "<group>"; };
@@ -270,10 +268,8 @@
 				865F60E81F613A9E0000622F /* mach_vm.h */,
 				865F60E91F613A9E0000622F /* macho-utils-darwin.c */,
 				865F60EA1F613A9E0000622F /* macho-utils-darwin.h */,
-				865F60EB1F613A9E0000622F /* macho-utils-darwin.o */,
 				865F60EC1F613A9E0000622F /* memory-utils-darwin.c */,
 				865F60ED1F613A9E0000622F /* memory-utils-darwin.h */,
-				865F60EE1F613A9E0000622F /* memory-utils-darwin.o */,
 			);
 			path = darwin;
 			sourceTree = "<group>";
