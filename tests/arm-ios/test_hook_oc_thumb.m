@@ -52,8 +52,7 @@ void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *cal
     IMP oriImp = method_getImplementation(oriMethod);
 
     ZzEnableDebugMode();
-    ZzBuildHook((void *)oriImp, NULL, NULL, objcMethod_pre_call, objcMethod_post_call);
-    ZzEnableHook((void *)oriImp);
+    ZzHookPrePost((void *)oriImp, objcMethod_pre_call, objcMethod_post_call);
 }
 
 @end

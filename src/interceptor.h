@@ -69,6 +69,7 @@ typedef struct _ZzHookFunctionEntry {
 
     FunctionBackup origin_prologue;
 
+    zpointer on_enter_transfer_trampoline;
     zpointer on_enter_trampoline;
     zpointer on_half_trampoline;
     zpointer on_invoke_trampoline;

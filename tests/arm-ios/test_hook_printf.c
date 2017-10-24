@@ -57,7 +57,6 @@ __attribute__((constructor)) void test_hook_printf() {
     void *printf_ptr = (void *)printf;
 
     ZzEnableDebugMode();
-    ZzBuildHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call);
-    ZzEnableHook((void *)printf_ptr);
+    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, TRUE);
     printf("HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d\n", 1, (void *)2, 3, (char)4, (char)5, (char)6, 7, 8, 9);
 }

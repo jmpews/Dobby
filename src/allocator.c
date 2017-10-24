@@ -268,11 +268,15 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize red
         }
     }
 
+#if 0
     page = ZzNewNearMemoryPage(address, redirect_range_size);
     // try allocate again, avoid the boundary page
     if (page && (page->size - page->used_size) < code_slice_size) {
         page = ZzNewNearMemoryPage(address, redirect_range_size);
     }
+#endif
+    page = NULL;
+
     if (!page) {
         page = ZzNewNearCodeCave(address, redirect_range_size, code_slice_size);
         if (!page)

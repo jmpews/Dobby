@@ -309,9 +309,9 @@ MemoryLayout *zz_vm_get_memory_layout_via_task(task_t task) {
 
             mlayout->mem[mlayout->size].start = (zpointer)(address_tmp - size_tmp);
             mlayout->mem[mlayout->size].end = (zpointer)address_tmp;
-            mlayout->mem[mlayout->size++].flags = (info.protection & PROT_READ << 0) |
-                                                  (info.protection & PROT_WRITE << 1) |
-                                                  (info.protection & PROT_EXEC << 2);
+            mlayout->mem[mlayout->size++].flags = ((info.protection & PROT_READ) ? (1 << 0) : 0) |
+                                                  ((info.protection & PROT_WRITE) ? (1 << 1) : 0) |
+                                                  ((info.protection & PROT_EXEC) ? (1 << 2) : 0);
         }
     }
     return mlayout;

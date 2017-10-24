@@ -110,7 +110,47 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
 //         ".long 0x0\n"
 //         ".long 0x0");
 // }
+ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
+    zbyte temp_code_slice_data[256] = {0};
+    ZzArm64Writer *arm64_writer = NULL;
+    ZzCodeSlice *code_slice = NULL;
+    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zpointer target_addr = entry->target_ptr;
 
+    arm64_writer = &self->arm64_writer;
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+
+    code_slice = NULL;
+    do {
+        zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
+                                               (zaddr)entry->on_enter_transfer_trampoline);
+        if (code_slice) {
+            if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size))
+                return ZZ_FAILED;
+            break;
+        }
+        code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                        zz_arm64_writer_near_jump_range_size(), arm64_writer->size + 4);
+        if (!code_slice) {
+            return ZZ_FAILED;
+        } else {
+            zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+            arm64_writer->pc = code_slice->data;
+        }
+    } while (code_slice);
+    entry->on_enter_transfer_trampoline = code_slice->data;
+
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildEnterTransferTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_enter_transfer_trampoline at %p, length: %ld. and will jump to on_enter_trampoline(%p).\n",
+                code_slice->data, code_slice->size, entry->on_enter_trampoline);
+        Xinfo("%s", buffer);
+    }
+    return status;
+}
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzArm64Writer *arm64_writer = NULL;
@@ -138,14 +178,10 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 return ZZ_FAILED;
             break;
         }
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_arm64_writer_near_jump_range_size(), arm64_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
+
         if (!code_slice)
             code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
+
         if (!code_slice) {
 #if defined(DEBUG_MODE)
             debug_break();
@@ -166,6 +202,10 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     }
 
     entry->on_enter_trampoline = code_slice->data;
+
+    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+        ZzBuildEnterTransferTrampoline(self, entry);
+    }
 
     return status;
 }
@@ -290,12 +330,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
                 return ZZ_FAILED;
             break;
         }
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_arm64_writer_near_jump_range_size(), arm64_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
+
         if (!code_slice)
             code_slice = ZzNewCodeSlice(self->allocator, arm64_writer->size + 4);
         if (!code_slice) {
@@ -379,7 +414,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
     arm64_writer->pc = target_addr;
 
     if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-        zz_arm64_writer_put_b_imm(arm64_writer, (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
+        zz_arm64_writer_put_b_imm(arm64_writer, (zaddr)entry->on_enter_transfer_trampoline - (zaddr)target_addr);
     } else {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zaddr)entry->on_enter_trampoline);
     }

@@ -74,6 +74,76 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     return ZZ_SUCCESS;
 }
 
+ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
+    zbyte temp_code_slice_data[256] = {0};
+    ZzArmWriter *arm_writer = NULL;
+    ZzArmWriter *thumb_writer = NULL;
+    ZzCodeSlice *code_slice = NULL;
+    ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
+    ZZSTATUS status = ZZ_SUCCESS;
+    zbool is_thumb = TRUE;
+    zpointer target_addr = entry->target_ptr;
+
+    is_thumb = INSTRUCTION_IS_THUMB((zaddr)target_addr);
+    if (is_thumb) {
+        thumb_writer = &self->thumb_writer;
+        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+
+        code_slice = NULL;
+        do {
+            zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
+            if (code_slice) {
+                if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size))
+                    return ZZ_FAILED;
+                break;
+            }
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
+            if (!code_slice) {
+                return ZZ_FAILED;
+            } else {
+                zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+                thumb_writer->pc = code_slice->data + 4;
+            }
+        } while (code_slice);
+        entry->on_enter_transfer_trampoline = code_slice->data;
+    } else {
+        arm_writer = &self->arm_writer;
+        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
+
+        code_slice = NULL;
+        do {
+            zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
+
+            if (code_slice) {
+                if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size))
+                    return ZZ_FAILED;
+                break;
+            }
+            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
+                                            zz_arm_writer_near_jump_range_size(), arm_writer->size);
+            if (!code_slice) {
+                return ZZ_FAILED;
+            } else {
+                zz_arm_writer_reset(arm_writer, temp_code_slice_data);
+                arm_writer->pc = code_slice->data + 8;
+            }
+
+        } while (code_slice);
+        entry->on_enter_transfer_trampoline = code_slice->data;
+    }
+
+    if (ZzIsEnableDebugMode()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildEnterTransferTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: on_enter_transfer_trampoline at %p, length: %ld. and will jump to on_enter_trampoline(%p).\n",
+                code_slice->data, code_slice->size, entry->on_enter_trampoline);
+        Xinfo("%s", buffer);
+    }
+    return status;
+}
+
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbyte temp_code_slice_data[256] = {0};
     ZzArmWriter *arm_writer = NULL;
@@ -111,24 +181,8 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 return ZZ_FAILED;
             break;
         }
-        if (is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
 
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
-
-        if (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_arm_writer_near_jump_range_size(), thumb_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
-
-        if (entry_backend->redirect_code_size != ZZ_ARM_TINY_REDIRECT_SIZE &&
-            entry_backend->redirect_code_size != ZZ_THUMB_TINY_REDIRECT_SIZE)
-            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
+        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
 
         if (!code_slice) {
 #if defined(DEBUG_MODE)
@@ -137,7 +191,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data;
+            thumb_writer->pc = code_slice->data + 4;
         }
     } while (code_slice);
 
@@ -151,6 +205,10 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     }
 
     entry->on_enter_trampoline = code_slice->data + 1;
+    if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
+        (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE)) {
+        ZzBuildEnterTransferTrampoline(self, entry);
+    }
 
     return status;
 }
@@ -226,7 +284,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 return ZZ_FAILED;
             } else {
                 zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-                thumb_writer->pc = code_slice->data;
+                thumb_writer->pc = code_slice->data + 4;
             }
         } while (code_slice);
 
@@ -285,7 +343,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 return ZZ_FAILED;
             } else {
                 zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-                arm_writer->pc = code_slice->data;
+                arm_writer->pc = code_slice->data + 8;
             }
 
         } while (code_slice);
@@ -374,24 +432,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
                 return ZZ_FAILED;
             break;
         }
-        if (is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_thumb_writer_near_jump_range_size(), thumb_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
-
-        if (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            code_slice = ZzNewNearCodeSlice(self->allocator, (zaddr)entry->target_ptr,
-                                            zz_arm_writer_near_jump_range_size(), thumb_writer->size);
-            if (!code_slice)
-                return ZZ_FAILED;
-        }
-
-        if (entry_backend->redirect_code_size != ZZ_ARM_TINY_REDIRECT_SIZE &&
-            entry_backend->redirect_code_size != ZZ_THUMB_TINY_REDIRECT_SIZE)
-            code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
+        code_slice = ZzNewCodeSlice(self->allocator, thumb_writer->size + 4);
 
         if (!code_slice) {
 #if defined(DEBUG_MODE)
@@ -400,7 +441,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data;
+            thumb_writer->pc = code_slice->data + 4;
         }
     } while (code_slice);
 
@@ -455,7 +496,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data;
+            thumb_writer->pc = code_slice->data + 4;
         }
     } while (code_slice);
 
@@ -490,10 +531,11 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         ZzThumbWriter *thumb_writer;
         thumb_writer = &self->thumb_writer;
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        thumb_writer->pc = target_addr;
+        thumb_writer->pc = target_addr + 4;
 
         if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-            zz_thumb_writer_put_b_imm32(thumb_writer, (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
+            zz_thumb_writer_put_b_imm32(thumb_writer,
+                                        (zaddr)entry->on_enter_transfer_trampoline - (zaddr)thumb_writer->pc);
         } else {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
         }
@@ -503,10 +545,10 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         ZzArmWriter *arm_writer;
         arm_writer = &self->arm_writer;
         zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-        arm_writer->pc = target_addr;
+        arm_writer->pc = target_addr + 8;
 
         if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
-            zz_arm_writer_put_b_imm(arm_writer, (zaddr)target_addr - (zaddr)entry->on_enter_trampoline);
+            zz_arm_writer_put_b_imm(arm_writer, (zaddr)entry->on_enter_transfer_trampoline - (zaddr)arm_writer->pc);
         } else {
             zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)entry->on_enter_trampoline);
         }
