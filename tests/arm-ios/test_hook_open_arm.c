@@ -20,48 +20,18 @@
 #include <stdlib.h>
 
 void open_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    zpointer t = (void *)0x1234;
-    // STACK_SET(callstack ,"key_x", t, void *);
-    // STACK_SET(callstack ,"key_y", t, zpointer);
-    // NSLog(@"hookzz OC-Method: -[UIViewController %s]",
-    // (zpointer)(rs->general.regs.x1));
+    char *path = (char *)rs->general.regs.r0;
+    printf("open file: %s\n", path);
 }
 
-void open_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    // zpointer x = STACK_GET(callstack, "key_x", void *);
-    // zpointer y = STACK_GET(callstack, "key_y", zpointer);
-    // NSLog(@"function over, and get 'key_x' is: %p", x);
-    // NSLog(@"function over, and get 'key_y' is: %p", y);
-}
+void open_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {}
 
 __attribute__((constructor)) void test_hook_printf() {
     void *open_ptr = (void *)open;
 
-    ZzHookPrePost((void *)open_ptr, open_pre_call, open_post_call);
+    ZzEnableDebugMode();
+    // ZzHookPrePost((void *)open_ptr, open_pre_call, open_post_call);
+    ZzHook((void *)open_ptr, NULL, NULL, open_pre_call, open_post_call, TRUE);
 
     open("/home/zz", O_RDONLY);
 }
-
-/*
-(lldb) disass -n "-[UIViewController viewWillAppear:]" -c 3
-UIKit`-[UIViewController viewWillAppear:]:
-    0x18881c10c <+0>: adrp   x8, 126868
-    0x18881c110 <+4>: ldrsw  x8, [x8, #0x280]
-    0x18881c114 <+8>: ldr    x9, [x0, x8]
-
-(lldb) c
-Process 41637 resuming
-(lldb) c
-Process 41637 resuming
-(lldb) c
-Process 41637 resuming
-2017-08-30 02:01:58.954875+0800 T007[41637:10198806] hookzz OC-Method:
--[UIViewController viewWillAppear:] 2017-08-30 02:01:58.956558+0800
-T007[41637:10198806] function over, and get 'key_x' is: 0x1234 2017-08-30
-02:01:58.956654+0800 T007[41637:10198806] function over, and get 'key_y' is:
-0x1234 (lldb) disass -n "-[UIViewController viewWillAppear:]" -c 3
-UIKit`-[UIViewController viewWillAppear:]:
-    0x18881c10c <+0>: b      0x1810b0b4c
-    0x18881c110 <+4>: ldrsw  x8, [x8, #0x280]
-    0x18881c114 <+8>: ldr    x9, [x0, x8]
-*/
