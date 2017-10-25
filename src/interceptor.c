@@ -231,8 +231,7 @@ ZZSTATUS ZzHookPrePost(zpointer target_ptr, PRECALL pre_call_ptr, POSTCALL post_
     return ZZ_SUCCESS;
 }
 
-ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                       POSTCALL post_call_ptr) {
+ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr) {
     ZzBuildHook(target_ptr, replace_ptr, origin_ptr, NULL, NULL, FALSE);
     ZzEnableHook(target_ptr);
     return ZZ_SUCCESS;
