@@ -149,7 +149,7 @@ export 2 method user to get/set `callstack`
 zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
 
 // set value with key.
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
+zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
 ```
 
 but for convenience, the macro is better.

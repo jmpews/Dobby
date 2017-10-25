@@ -1,6 +1,25 @@
 # HookZz
 
-# HookFramework 架构设计
+画了一半的流程, 其实另一半还有 invoke trampoline, leave trampoline, 大致相同.
+
+```
+                 enter            enter
+function         trampoline       thunk
++------------+   +------------+   +------------+
+| hook patch +--->            +--->            |
++------------+   |            |   | storeReg   |
+|            |   |            |   |            |
+|            |   +------------+   | prep args  |
+|            |                    |            |
+|            |                    | call func  <---+begin_invocation_func()
+|            |                    |            |
++------------+                    | restoreReg |
+                                  |            |
+                                  +------------+
+
+```
+
+# HookFramework 架构设计 2.0
 
 一般来说可以分为以下几个模块
 
@@ -12,29 +31,39 @@
 6. 调度器 模块
 7. 栈 模块
 
-#### 1. 内存分配 模块
+## 1. 内存分配 模块
 
-需要分配部分内存用于写入指令, 这里需要关注两个函数都是关于内存属性相关的. 1. 如何使内存 `可写` 2. 如何使内存 `可执行` 3. 如何分配相近的内存来达到 `near jump`
+这里主要关注三个点:
 
-这一部分与具体的操作系统有关. 比如 `darwin` 下分配内存使用 `mmap` 实际使用的是 `mach_vm_allocate`. [move to detail]( https://github.com/bminor/glibc/blob/master/sysdeps/mach/hurd/mmap.c).
+1. 内存的分配
+2. 内存属性修改
+3. 内存布局获取
 
-在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
+#### 1.1 内存的分配
 
-当然这里也存在一个巨大的坑, IOS 下无法分配 `rwx` 属性的内存页. 这导致 inlinehook 无法在非越狱系统上使用, 并且只有 `MobileSafari` 才有 `VM_FLAGS_MAP_JIT` 权限. 具体解释请参下方 **[坑 - rwx 与 codesigning]**.
+**设计方面:** 1. 提供一个 allocator 去管理/分配内存 2. 需要封装成架构无关的 API.
 
-另一个坑就是如何在 hook 目标周围分配内存, 如果可以分配到周围的内存, 可以直接使用 `b` 指令进行相对地址跳(`near jump`), 从而可以可以实现单指令的 hook.
+通常使用 posix 标准的 `mmap`, darwin 下的 mach kernel 分配内存使用 `mmap` 实际使用的是 `mach_vm_allocate`. [move to detail]( https://github.com/bminor/glibc/blob/master/sysdeps/mach/hurd/mmap.c)
 
-举个例子比如 `b label`, 在 armv8 中的可以想在 `+-128MB` 范围内进行 `near jump`, 具体可以参考 `ARM Architecture Reference Manual ARMv8, for ARMv8-A architecture profile Page: C6-550`.
+在入口点的 patch, 通常会使用绝对地址跳到 `trampoline`, 如果使用绝对地址跳, 将会占用 4 条指令, 如下的形式.
 
-这里可以有三个尝试.
+```
+ldr x17, #0x8
+b #0xc
+.long 0x0
+.long 0x0
+br x17
+```
 
-1. 使用 `mmap` 的 `MAP_FIXED` 尝试在周围地址分配内存页, 成功几率小.
+但是如果可以使用 `B #0x?`, 实现相对地址跳(near jump), 将是最好的, 在 armv8 中的可以想在 `+-128MB` 范围内进行 `near jump`, 具体可以参考 `ARM Architecture Reference Manual ARMv8, for ARMv8-A architecture profile Page: C6-550`. 所以问题转换为找到一块 `rx-` 的内存写入 enter trampline. 
 
-2. 尝试使用 `vm_region_recurse_64` 搜索 `protection` 为 `PROT_EXEC` & `PROT_READ` 的 `code cave`. (通常用来暴力查找 `dyld` 的地址)
+大概有以下几种方法可以获取到 `rx-` 内存块.
 
-3. 尝试搜索内存空洞(`code cave`), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.
+1. 尝试使用 mmap 的 fixed flag 分配相近内存
 
-当然还可以有强制相对跳(`double jump`), 直接对 `+-128MB` 内选一个地址强制 code patch 并修复.
+2. 当时获取进程内的所有动态库列表, 之后搜索每一个动态库的 `__TEXT`, 查找是否存在 code cave.(尝试搜索内存空洞(`code cave`), 搜索 `__text` 这个 `section` 其实更准确来说是搜索 `__TEXT` 这个 `segment`. 由于内存页对齐的原因以及其他原因很容易出现 `code cave`. 所以只需要搜索这个区间内的 `00` 即可, `00` 本身就是无效指令, 所以可以判断该位置无指令使用.)
+
+3. 获取当前进程的内存布局, 对所有 `rx-` 属性内存页搜索 code cave. (内存布局的获取会在1.3详细提到)
 
 ```
 __asm__ {
@@ -54,6 +83,23 @@ __asm__ {
 }
 ```
 
+#### 1.2 内存属性修改
+
+通常使用 posix 标准的 `mprotect`, darwin 下的 mach kernel 修改内存属性使用的是 `mach_vm_protect`, 注意: ios 不允许引用 `#include <mach_vm.h>`, 可以用单独拷贝一份该头文件到项目下.
+
+这一部分与具体的操作系统有关. 比如 .
+
+在 lldb 中可以通过 `memory region address` 查看地址的内存属性.
+
+当然这里也存在一个巨大的坑, ios 下无法分配 `rwx` 属性的内存页. 这导致 inlinehook 无法在非越狱系统上使用, 并且只有 `MobileSafari` 才有 `VM_FLAGS_MAP_JIT` 权限. 具体解释请参下方 **[坑 - rwx 与 codesigning]**.
+
+#### 1.3 内存布局获取
+
+linux 下可以通过 `/proc/pid/maps` 获取当前进程的内存, 而且也仅有此方法.
+
+darwin 下有 `vmmap` 这个命令可以在 `macOS` 使用, darwin 下 pid 与 `task_t`, 所以具体的内存页管理都在 `task_t` 这个内核结构体里. 但是可以通过 `vm_region` 函数遍历获取当前进程的所有属性的内存页. 通常用来爆破 dyld 的地址
+
+
 #### 2. 指令写 模块
 
 先说坑,  非越狱状态下不允许设置 `rw-` 为 `r-x`, 或者  设置 `r-x` 为 `rx-`. 具体解释请参考下方坑 **[坑-rwx 与 codesigning]**.
@@ -67,26 +113,26 @@ __asm__ {
 ```
 // frida-gum/gum/arch-arm64/gumarm64writer.c
 void
-gum_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
-                                      arm64_reg reg,
+gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
+                                      ZzARM64Reg reg,
                                       GumAddress address)
 {
-  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (guint64) address);
+  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (zuint64) address);
 }
 
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
-                                  arm64_reg reg,
-                                  guint64 val)
+                                  ZzARM64Reg reg,
+                                  zuint64 val)
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_writer_describe_reg (self, reg, &ri);
+  gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
 
   g_assert_cmpuint (ri.width, ==, 64);
 
   gum_arm64_writer_add_literal_reference_here (self, val);
-  gum_arm64_writer_put_instruction (self,
+  gum_arm64_zz_arm64_writer_put_instruction (self,
       (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
 }
 
@@ -147,19 +193,19 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 {
 
     // pop x17
-    writer_put_ldr_reg_reg_offset(writer, ARM64_REG_X17, ARM64_REG_SP, 0);
-    writer_put_add_reg_reg_imm(writer, ARM64_REG_SP, ARM64_REG_SP, 16);
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 16);
 
-    writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
 
     // call `function_context_begin_invocation`
-    writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
-    writer_put_ldr_reg_address(
-        writer, ARM64_REG_X17,
+    zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
+    zz_arm64_writer_put_ldr_reg_address(
+        writer, ZZ_ARM64_REG_X17,
         (zaddr)(zpointer)function_context_begin_invocation);
-    writer_put_blr_reg(writer, ARM64_REG_X17);
+    zz_arm64_writer_put_blr_reg(writer, ZZ_ARM64_REG_X17);
 
-    writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
 ```
 
@@ -185,9 +231,9 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
   (void) self;
 
-  gum_arm64_writer_put_ldr_reg_address (ctx->output, ARM64_REG_X16,
+  gum_arm64_zz_arm64_writer_put_ldr_reg_address (ctx->output, ZZ_ARM64_REG_X16,
       target->imm);
-  gum_arm64_writer_put_br_reg (ctx->output, ARM64_REG_X16);
+  gum_arm64_zz_arm64_writer_put_br_reg (ctx->output, ZZ_ARM64_REG_X16);
 
   return TRUE;
 }
@@ -211,24 +257,24 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 ## `ldr` 指令
 
-在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `writer_put_ldr_reg_address(relocate_writer, ARM64_REG_X17, target_addr);`
+在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `zz_arm64_writer_put_ldr_reg_address(relocate_writer, ZZ_ARM64_REG_X17, target_addr);`
 
 `frida-gum` 的实现原理是, 有一个相对地址表, 在整体一段写完后进行修复.
 
 ```
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
-                                  arm64_reg reg,
-                                  guint64 val)
+                                  ZzARM64Reg reg,
+                                  zuint64 val)
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_writer_describe_reg (self, reg, &ri);
+  gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
 
   g_assert_cmpuint (ri.width, ==, 64);
 
   gum_arm64_writer_add_literal_reference_here (self, val);
-  gum_arm64_writer_put_instruction (self,
+  gum_arm64_zz_arm64_writer_put_instruction (self,
       (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
 }
 ```
@@ -236,11 +282,11 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
 
 ```
-void writer_put_ldr_reg_address(ZzWriter *self, arm64_reg reg, zaddr address)
+void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address)
 {
-    writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    writer_put_b_imm(self, (zaddr)0xc);
-    writer_put_bytes(self, (zpointer)&address, sizeof(address));
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    zz_arm64_writer_put_b_imm(self, (zaddr)0xc);
+    zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 ```
 

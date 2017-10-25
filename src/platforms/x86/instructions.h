@@ -15,9 +15,9 @@
 #ifndef instructions_h
 #define instructions_h
 
-#include "capstone.h"
-#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
+#include "../../../include/zz.h"
+#include "capstone.h"
 
 // Structs for writing x86/x64 instructions.
 
@@ -29,15 +29,15 @@ typedef struct _JMP_REL_SHORT {
 
 // 32-bit direct relative jump/call.
 typedef struct _JMP_REL {
-    uint8_t opcode;   // E9/E8 xxxxxxxx: JMP/CALL +5+xxxxxxxx
-    uint32_t operand; // Relative destination address
+    uint8_t opcode;  // E9/E8 xxxxxxxx: JMP/CALL +5+xxxxxxxx
+    zuint32 operand; // Relative destination address
 } __attribute__((packed)) JMP_REL, *PJMP_REL, CALL_REL;
 
 // 64-bit indirect absolute jump.
 typedef struct _JMP_ABS {
     uint8_t opcode0; // FF25 00000000: JMP [+6]
     uint8_t opcode1;
-    uint32_t dummy;
+    zuint32 dummy;
     uint64_t address; // Absolute destination address
 } __attribute__((packed)) JMP_ABS, *PJMP_ABS;
 
@@ -45,7 +45,7 @@ typedef struct _JMP_ABS {
 typedef struct _CALL_ABS {
     uint8_t opcode0; // FF15 00000002: CALL [+6]
     uint8_t opcode1;
-    uint32_t dummy0;
+    zuint32 dummy0;
     uint8_t dummy1; // EB 08:         JMP +10
     uint8_t dummy2;
     uint64_t address; // Absolute destination address
@@ -55,7 +55,7 @@ typedef struct _CALL_ABS {
 typedef struct _JCC_REL {
     uint8_t opcode0; // 0F8* xxxxxxxx: J** +6+xxxxxxxx
     uint8_t opcode1;
-    uint32_t operand; // Relative destination address
+    zuint32 operand; // Relative destination address
 } __attribute__((packed)) JCC_REL;
 
 /* must understand this, by jmpews */
@@ -69,7 +69,7 @@ typedef struct _JCC_ABS {
     uint8_t dummy0;
     uint8_t dummy1; // FF25 00000000: JMP [+6]
     uint8_t dummy2;
-    uint32_t dummy3;
+    zuint32 dummy3;
     uint64_t address; // Absolute destination address
 } __attribute__((packed)) JCC_ABS;
 
@@ -78,12 +78,12 @@ typedef struct _Instruction {
     cs_insn *ins_cs;
     uint8_t size;
     zbyte bytes[16];
-} Instruction;
+} ZzInstruction;
 
 // not use!!!
 typedef struct _RelocatedInstruction {
-    Instruction old_ins;
-    Instruction new_ins;
+    ZzInstruction old_ins;
+    ZzInstruction new_ins;
 } RelocatedInstruction;
 
 // not use!!!
@@ -94,8 +94,8 @@ typedef struct _RelocatedTrampoline {
     uint8_t old_size;
     uint8_t new_size;
 
-    Instruction old_inss[16];
-    Instruction new_inss[16];
+    ZzInstruction old_inss[16];
+    ZzInstruction new_inss[16];
 } RelocatedTrampoline;
 
 #endif
