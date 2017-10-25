@@ -8,9 +8,9 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Features
 
-- **inlinehook without Jailbreak [new]**
+- **inlinehook without Jailbreak [new-90%]**
 
-- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM [new]**
+- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM [new-0%]**
 
 - [HookZz-Modules help you to hook.](https://github.com/jmpews/HookZzModules)
 
@@ -30,11 +30,11 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Getting Started
 
-[Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/)
+[Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/) **[need update]**
 
 # How it works ?
 
-[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
+[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md) **[need update]**
 
 # Why I do this?
 
@@ -43,15 +43,15 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Docs
 
-[Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/)
+[Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/) **[need update]**
 
 # Example
 
-[Move to HookZz example](https://jmpews.github.io/zzpp/hookzz-example/)
+[Move to HookZz example](https://jmpews.github.io/zzpp/hookzz-example/) **[need update]**
 
 # Modules
 
-[Move to HookZzModules](https://github.com/jmpews/HookZzModules)
+[Move to HookZzModules](https://github.com/jmpews/HookZzModules) **[need update]**
 
 # Compile
 
@@ -157,23 +157,28 @@ and check `build/android-armv7/*`
 
 #### `test_hook_printf.c` output for arm64-ios
 
+test hook `printf` with `try_near_jump` option and `replace_call`, `pre_call`, `post_call`
+
 ```
 ZzThunkerBuildThunk:
-LogInfo: enter_thunk at 0x100112ca0, use enter_thunk_template.
+LogInfo: enter_thunk at 0x100162c20, use enter_thunk_template.
 
 ZzThunkerBuildThunk:
-LogInfo: leave_thunk at 0x1001ec0f4, length: 240.
+LogInfo: leave_thunk at 0x1001500f4, length: 240.
 
 ZzBuildEnterTrampoline:
-LogInfo: on_enter_trampoline at 0x179402a5c, length: 40. hook-entry: 0x14d60a3a0. and will jump to enter_thunk(0x100112ca0).
+LogInfo: on_enter_trampoline at 0x1001502d8, length: 44. hook-entry: 0x145e0c720. and will jump to enter_thunk(0x100162c20).
+
+ZzBuildEnterTransferTrampoline:
+LogInfo: on_enter_transfer_trampoline at 0x180f1f414, length: 20. and will jump to on_enter_trampoline(0x1001502d8).
 
 ZzBuildInvokeTrampoline:
-LogInfo: on_invoke_trampoline at 0x1001ec2d8, length: 24. and will jump to rest code(0x181402a60).
-ArmInstructionFix: origin instruction at 0x181402a5c, end at 0x181402a60, relocator instruction nums 1
+LogInfo: on_invoke_trampoline at 0x100150304, length: 24. and will jump to rest code(0x181402a60).
+ArmInstructionFix: origin instruction at 0x181402a5c, relocator end at 0x181402a60, relocator instruction nums 1
 origin_prologue: 0xf4 0x4f 0xbe 0xa9 
 
 ZzBuildLeaveTrampoline:
-LogInfo: on_leave_trampoline at 0x1001ec2f0, length: 44. and will jump to leave_thunk(0x1001ec0f4).
+LogInfo: on_leave_trampoline at 0x10015031c, length: 44. and will jump to leave_thunk(0x1001500f4).
 
 HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
 
@@ -181,4 +186,6 @@ printf-pre-call
 call printf
 HookZzzzzzz, 1, 0x2, 3, 4, 5, 6, 7, 8, 9
 HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d
+
+printf-post-call
 ```
