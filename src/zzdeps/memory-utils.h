@@ -9,7 +9,7 @@ typedef struct _MemoryLayout {
         int flags;
         zpointer start;
         zpointer end;
-    } mem[128];
+    } mem[4096];
 } MemoryLayout;
 
 #endif

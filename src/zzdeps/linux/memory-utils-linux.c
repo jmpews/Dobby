@@ -13,6 +13,7 @@ MemoryLayout *zz_linux_vm_get_memory_layout_via_pid(pid_t pid) {
     MemoryLayout *mlayout;
 
     mlayout = (MemoryLayout *)malloc(sizeof(MemoryLayout));
+    memset(mlayout, 0, sizeof(MemoryLayout));
 
     // given pid, open /proc/pid/maps; or not, open current maps.
     if (pid > 0) {
@@ -60,8 +61,9 @@ MemoryLayout *zz_linux_vm_get_memory_layout_via_pid(pid_t pid) {
         mlayout->mem[mlayout->size].start = (zpointer)start;
         mlayout->mem[mlayout->size].end = (zpointer)end;
         mlayout->mem[mlayout->size++].flags =
-            (prot[0] == 'r' ? (1 << 0) : 0) | (prot[0] == 'w' ? (1 << 1) : 0) | (prot[0] == 'x' ? (1 << 2) : 0);
+            (prot[0] == 'r' ? (1 << 0) : 0) | (prot[1] == 'w' ? (1 << 1) : 0) | (prot[2] == 'x' ? (1 << 2) : 0);
     }
+    return mlayout;
 }
 
 zpointer zz_linux_vm_search_code_cave(zaddr address, zsize range_size, zsize size) {
