@@ -36,7 +36,6 @@
 		865F61061F613A9F0000622F /* memory-darwin.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60D31F613A9E0000622F /* memory-darwin.h */; };
 		865F61081F613A9F0000622F /* thread-posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60D61F613A9E0000622F /* thread-posix.c */; };
 		865F61091F613A9F0000622F /* thread-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60D71F613A9E0000622F /* thread-posix.h */; };
-		865F61101F613A9F0000622F /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 865F60E01F613A9E0000622F /* .gitignore */; };
 		865F61111F613A9F0000622F /* debugbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60E21F613A9E0000622F /* debugbreak.h */; };
 		865F61121F613A9F0000622F /* LEB128.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60E31F613A9E0000622F /* LEB128.h */; };
 		865F61131F613A9F0000622F /* memory-utils-common.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60E41F613A9E0000622F /* memory-utils-common.c */; };
@@ -50,7 +49,6 @@
 		865F611E1F613A9F0000622F /* memory-utils-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F11F613A9E0000622F /* memory-utils-posix.h */; };
 		865F61201F613A9F0000622F /* thread-utils-posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60F31F613A9E0000622F /* thread-utils-posix.c */; };
 		865F61211F613A9F0000622F /* thread-utils-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F41F613A9E0000622F /* thread-utils-posix.h */; };
-		865F61231F613A9F0000622F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 865F60F61F613A9E0000622F /* README.md */; };
 		865F61241F613A9F0000622F /* zz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F71F613A9E0000622F /* zz.h */; };
 		865F61261F613B740000622F /* hookzz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F61251F613B740000622F /* hookzz.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		865F61281F613C2F0000622F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 865F61271F613C2F0000622F /* libcapstone.a */; };
@@ -59,8 +57,6 @@
 /* Begin PBXFileReference section */
 		865F5FD01F6123390000622F /* HookZz.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HookZz.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		865F5FD41F6123390000622F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		865F60941F61283D0000622F /* libcapstone.arm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.arm64.a; path = capstone/libcapstone.arm64.a; sourceTree = "<group>"; };
-		865F60961F612B0A0000622F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = capstone/libcapstone.a; sourceTree = "<group>"; };
 		865F60A21F613A470000622F /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = thread.h; path = ../../src/thread.h; sourceTree = "<group>"; };
 		865F60A31F613A470000622F /* trampoline.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = trampoline.c; path = ../../src/trampoline.c; sourceTree = "<group>"; };
 		865F60A41F613A470000622F /* interceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interceptor.h; path = ../../src/interceptor.h; sourceTree = "<group>"; };
@@ -80,28 +76,20 @@
 		865F60C41F613A9E0000622F /* instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
 		865F60C51F613A9E0000622F /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
 		865F60C61F613A9E0000622F /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
-		865F60C71F613A9E0000622F /* reader.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = reader.o; sourceTree = "<group>"; };
 		865F60C81F613A9E0000622F /* relocator-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "relocator-arm64.c"; sourceTree = "<group>"; };
 		865F60C91F613A9E0000622F /* relocator-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "relocator-arm64.h"; sourceTree = "<group>"; };
-		865F60CA1F613A9E0000622F /* relocator-arm64.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "relocator-arm64.o"; sourceTree = "<group>"; };
 		865F60CB1F613A9E0000622F /* thunker-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thunker-arm64.c"; sourceTree = "<group>"; };
 		865F60CC1F613A9E0000622F /* thunker-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thunker-arm64.h"; sourceTree = "<group>"; };
-		865F60CD1F613A9E0000622F /* thunker-arm64.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "thunker-arm64.o"; sourceTree = "<group>"; };
 		865F60CE1F613A9E0000622F /* writer-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "writer-arm64.c"; sourceTree = "<group>"; };
 		865F60CF1F613A9E0000622F /* writer-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "writer-arm64.h"; sourceTree = "<group>"; };
-		865F60D01F613A9E0000622F /* writer-arm64.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "writer-arm64.o"; sourceTree = "<group>"; };
 		865F60D21F613A9E0000622F /* memory-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-darwin.c"; sourceTree = "<group>"; };
 		865F60D31F613A9E0000622F /* memory-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-darwin.h"; sourceTree = "<group>"; };
-		865F60D41F613A9E0000622F /* memory-darwin.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "memory-darwin.o"; sourceTree = "<group>"; };
 		865F60D61F613A9E0000622F /* thread-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thread-posix.c"; sourceTree = "<group>"; };
 		865F60D71F613A9E0000622F /* thread-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thread-posix.h"; sourceTree = "<group>"; };
-		865F60D81F613A9E0000622F /* thread-posix.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "thread-posix.o"; sourceTree = "<group>"; };
-		865F60E01F613A9E0000622F /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		865F60E21F613A9E0000622F /* debugbreak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugbreak.h; sourceTree = "<group>"; };
 		865F60E31F613A9E0000622F /* LEB128.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEB128.h; sourceTree = "<group>"; };
 		865F60E41F613A9E0000622F /* memory-utils-common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-utils-common.c"; sourceTree = "<group>"; };
 		865F60E51F613A9E0000622F /* memory-utils-common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-utils-common.h"; sourceTree = "<group>"; };
-		865F60E61F613A9E0000622F /* memory-utils-common.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "memory-utils-common.o"; sourceTree = "<group>"; };
 		865F60E81F613A9E0000622F /* mach_vm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mach_vm.h; sourceTree = "<group>"; };
 		865F60E91F613A9E0000622F /* macho-utils-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "macho-utils-darwin.c"; sourceTree = "<group>"; };
 		865F60EA1F613A9E0000622F /* macho-utils-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "macho-utils-darwin.h"; sourceTree = "<group>"; };
@@ -109,11 +97,8 @@
 		865F60ED1F613A9E0000622F /* memory-utils-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-utils-darwin.h"; sourceTree = "<group>"; };
 		865F60F01F613A9E0000622F /* memory-utils-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-utils-posix.c"; sourceTree = "<group>"; };
 		865F60F11F613A9E0000622F /* memory-utils-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-utils-posix.h"; sourceTree = "<group>"; };
-		865F60F21F613A9E0000622F /* memory-utils-posix.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "memory-utils-posix.o"; sourceTree = "<group>"; };
 		865F60F31F613A9E0000622F /* thread-utils-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thread-utils-posix.c"; sourceTree = "<group>"; };
 		865F60F41F613A9E0000622F /* thread-utils-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thread-utils-posix.h"; sourceTree = "<group>"; };
-		865F60F51F613A9E0000622F /* thread-utils-posix.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = "thread-utils-posix.o"; sourceTree = "<group>"; };
-		865F60F61F613A9E0000622F /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		865F60F71F613A9E0000622F /* zz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zz.h; sourceTree = "<group>"; };
 		865F61251F613B740000622F /* hookzz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hookzz.h; path = ../../include/hookzz.h; sourceTree = "<group>"; };
 		865F61271F613C2F0000622F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = ../deps/capstone/libcapstone.a; sourceTree = "<group>"; };
@@ -178,9 +163,7 @@
 		865F60931F61283D0000622F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				865F60961F612B0A0000622F /* libcapstone.a */,
 				865F61271F613C2F0000622F /* libcapstone.a */,
-				865F60941F61283D0000622F /* libcapstone.arm64.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -202,16 +185,12 @@
 				865F60C41F613A9E0000622F /* instructions.h */,
 				865F60C51F613A9E0000622F /* reader.c */,
 				865F60C61F613A9E0000622F /* reader.h */,
-				865F60C71F613A9E0000622F /* reader.o */,
 				865F60C81F613A9E0000622F /* relocator-arm64.c */,
 				865F60C91F613A9E0000622F /* relocator-arm64.h */,
-				865F60CA1F613A9E0000622F /* relocator-arm64.o */,
 				865F60CB1F613A9E0000622F /* thunker-arm64.c */,
 				865F60CC1F613A9E0000622F /* thunker-arm64.h */,
-				865F60CD1F613A9E0000622F /* thunker-arm64.o */,
 				865F60CE1F613A9E0000622F /* writer-arm64.c */,
 				865F60CF1F613A9E0000622F /* writer-arm64.h */,
-				865F60D01F613A9E0000622F /* writer-arm64.o */,
 			);
 			path = arm64;
 			sourceTree = "<group>";
@@ -221,7 +200,6 @@
 			children = (
 				865F60D21F613A9E0000622F /* memory-darwin.c */,
 				865F60D31F613A9E0000622F /* memory-darwin.h */,
-				865F60D41F613A9E0000622F /* memory-darwin.o */,
 			);
 			path = darwin;
 			sourceTree = "<group>";
@@ -231,7 +209,6 @@
 			children = (
 				865F60D61F613A9E0000622F /* thread-posix.c */,
 				865F60D71F613A9E0000622F /* thread-posix.h */,
-				865F60D81F613A9E0000622F /* thread-posix.o */,
 			);
 			path = posix;
 			sourceTree = "<group>";
@@ -239,11 +216,9 @@
 		865F60DF1F613A9E0000622F /* zzdeps */ = {
 			isa = PBXGroup;
 			children = (
-				865F60E01F613A9E0000622F /* .gitignore */,
 				865F60E11F613A9E0000622F /* common */,
 				865F60E71F613A9E0000622F /* darwin */,
 				865F60EF1F613A9E0000622F /* posix */,
-				865F60F61F613A9E0000622F /* README.md */,
 				865F60F71F613A9E0000622F /* zz.h */,
 			);
 			name = zzdeps;
@@ -257,7 +232,6 @@
 				865F60E31F613A9E0000622F /* LEB128.h */,
 				865F60E41F613A9E0000622F /* memory-utils-common.c */,
 				865F60E51F613A9E0000622F /* memory-utils-common.h */,
-				865F60E61F613A9E0000622F /* memory-utils-common.o */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -279,10 +253,8 @@
 			children = (
 				865F60F01F613A9E0000622F /* memory-utils-posix.c */,
 				865F60F11F613A9E0000622F /* memory-utils-posix.h */,
-				865F60F21F613A9E0000622F /* memory-utils-posix.o */,
 				865F60F31F613A9E0000622F /* thread-utils-posix.c */,
 				865F60F41F613A9E0000622F /* thread-utils-posix.h */,
-				865F60F51F613A9E0000622F /* thread-utils-posix.o */,
 			);
 			path = posix;
 			sourceTree = "<group>";
@@ -381,8 +353,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				865F61231F613A9F0000622F /* README.md in Resources */,
-				865F61101F613A9F0000622F /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
