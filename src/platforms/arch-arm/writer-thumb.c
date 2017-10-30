@@ -435,6 +435,7 @@ zpointer zz_thumb_writer_put_push_reg(ZzThumbWriter *self, zint32 regs) {
     register_list = regs & 0xFF;
 
     zz_thumb_writer_put_instruction(self, 0b1011010000000000 | M << 8 | register_list);
+    return self->pc;
 }
 
 zpointer zz_thumb_writer_put_pop_reg(ZzThumbWriter *self, zint32 regs) {
@@ -443,6 +444,7 @@ zpointer zz_thumb_writer_put_pop_reg(ZzThumbWriter *self, zint32 regs) {
     register_list = regs & 0xFF;
 
     zz_thumb_writer_put_instruction(self, 0b1011110000000000 | P << 8 | register_list);
+    return self->pc;
 }
 
 zpointer zz_thumb_writer_put_add_reg_reg_reg(ZzThumbWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg,
@@ -458,4 +460,5 @@ zpointer zz_thumb_writer_put_add_reg_reg_reg(ZzThumbWriter *self, ZzARMReg dst_r
     Rn_ndx = left.index;
 
     zz_thumb_writer_put_instruction(self, 0b0001100000000000 | Rm_ndx << 6 | Rn_ndx << 3 | Rd_ndx);
+    return self->pc;
 }

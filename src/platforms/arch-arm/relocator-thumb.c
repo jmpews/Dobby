@@ -237,7 +237,7 @@ zbool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ZzInstructio
     if ((zaddr)self->output->pc % 4 == 0) {
         zz_thumb_writer_put_nop(self->output);
     }
-    zz_thumb_writer_put_instruction(self->output, (insn_ctx->insn1 & 0b1111101111000000);
+    zz_thumb_writer_put_instruction(self->output, insn_ctx->insn1 & 0b1111101111000000);
     zz_thumb_writer_put_instruction(self->output, (insn_ctx->insn2 & 0b1101000000000000) | 0b1);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
     zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
