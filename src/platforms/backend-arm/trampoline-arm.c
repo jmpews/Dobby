@@ -59,7 +59,11 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
             entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
         } else {
             zz_thumb_relocator_try_relocate(target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
+            target_addr = (zpointer)((zaddr)target_addr & ~(zaddr)1);
             entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
+            if ((zaddr)target_addr % 4) {
+                entry_backend->redirect_code_size += 2;
+            }
         }
     } else {
         if (entry->try_near_jump) {
