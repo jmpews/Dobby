@@ -48,22 +48,7 @@ zsize zz_thumb_writer_near_jump_range_size() { return ((1 << 23) << 1); }
 
 zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, ZzARMReg reg, zaddr address) {
     ZzArmRegInfo ri;
-
     zz_arm_register_describe(reg, &ri);
-
-    // if (((zaddr)self->pc) % 4) {
-    //     zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-    //     if (ri.meta <= ZZ_ARM_REG_R7) {
-    //         zz_thumb_writer_put_nop(self);
-    //     }
-    // } else {
-    //     if (ri.meta <= ZZ_ARM_REG_R7) {
-    //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-    //     } else {
-    //         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-    //         zz_thumb_writer_put_nop(self);
-    //     }
-    // }
 
     if ((((zaddr)self->pc) % 4)) {
         if (ri.meta <= ZZ_ARM_REG_R7) {
@@ -88,8 +73,8 @@ zpointer zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, ZzARMReg reg
 
 zpointer zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, ZzARMReg reg, zaddr address) {
     ZzArmRegInfo ri;
-
     zz_arm_register_describe(reg, &ri);
+
     if ((((zaddr)self->pc) % 4)) {
         if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
@@ -103,9 +88,6 @@ zpointer zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, ZzARMReg reg, 
             zz_thumb_writer_put_nop(self);
     }
 
-    // if ((((zaddr)self->pc) % 4)) {
-    //     zz_thumb_writer_put_nop(self);
-    // }
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
     return self->pc;
 }
