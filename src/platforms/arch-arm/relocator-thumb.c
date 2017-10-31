@@ -319,7 +319,7 @@ zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     } else
         return FALSE;
 
-    switch (GetTHUMBInsnType(insn_ctx->insn)) {
+    switch (GetTHUMBInsnType(insn_ctx->insn1, insn_ctx->insn2)) {
     case THUMB_INS_ADD_register_T2:
         rewritten = zz_thumb_relocator_rewrite_ADD_register_T2(self, insn_ctx);
         break;
