@@ -121,7 +121,7 @@ THUMBInsnType GetTHUMBInsnType(zuint16 insn1, zuint16 insn2) {
         return THUMB_INS_B_T3;
     }
 
-    if (insn_is_thumb2(insn1) && insn_equal(insn1, "11110xxxxxxxxxxx") && insn_equal(insn2, "10x0xxxxxxxxxxxx")) {
+    if (insn_is_thumb2(insn1) && insn_equal(insn1, "11110xxxxxxxxxxx") && insn_equal(insn2, "10x1xxxxxxxxxxxx")) {
         return THUMB_INS_B_T4;
     }
 
