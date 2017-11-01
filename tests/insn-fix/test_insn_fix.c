@@ -4,6 +4,7 @@
 
 static void thumb_insn_need_fix() {
     __asm__ volatile(".code 16\n"
+
                      "add r0, pc\n"
 
                      "ldr r0, [pc, #8]\n"
@@ -26,7 +27,7 @@ static void thumb_insn_need_fix() {
 #include "platforms/backend-arm/interceptor-arm.h"
 #include <stdlib.h>
 
-#if 0
+#if 1
 __attribute__((constructor)) void test_insn_fix_thumb() {
 
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
@@ -55,6 +56,7 @@ __attribute__((constructor)) void test_insn_fix_thumb() {
 }
 #endif
 
+#if 0
 __attribute__((__naked__)) void arm_insn_need_fix() {
     __asm__ volatile(".arm\n"
                      "add r0, pc, r0\n"
@@ -101,3 +103,4 @@ __attribute__((constructor)) void test_insn_fix_arm() {
         tmp_relocator_insn_size = arm_relocator->input_cur - arm_relocator->input_start;
     } while (tmp_relocator_insn_size < 36);
 }
+#endif
