@@ -102,7 +102,7 @@ zbool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const Zz
     zuint32 insn1 = insn_ctx->insn1;
     zuint32 imm8 = get_insn_sub(insn1, 0, 8);
     zuint32 imm32 = imm8 << 2;
-    zaddr target_address = insn_ctx->pc + imm32;
+    zaddr target_address = ALIGN_4(insn_ctx->pc) + imm32;
     int Rt_ndx = get_insn_sub(insn1, 8, 3);
     zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     zz_thumb_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
@@ -120,9 +120,9 @@ zbool zz_thumb_relocator_rewrite_LDR_literal_T2(ZzThumbRelocator *self, const Zz
     zbool add = get_insn_sub(insn_ctx->insn1, 7, 1) == 1;
     zaddr target_address;
     if (add)
-        target_address = insn_ctx->pc + imm32;
+        target_address = ALIGN_4(insn_ctx->pc) + imm32;
     else
-        target_address = insn_ctx->pc - imm32;
+        target_address = ALIGN_4(insn_ctx->pc) - imm32;
     int Rt_ndx = get_insn_sub(insn_ctx->insn2, 12, 4);
 
     zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
@@ -281,12 +281,12 @@ zbool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, cons
         imm11 << 1 | imm10 << (1 + 11) | I1 << (1 + 11 + 6) | I2 << (1 + 11 + 6 + 1) | S << (1 + 11 + 6 + 1 + 1);
     zaddr target_address;
 
+    // CurrentInstrSet = thumb
+    // targetInstrSet = arm
     target_address = insn_ctx->pc + imm32;
-    if ((zaddr)insn_ctx->pc % 4)
-        target_address -= 2;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR,
-                                          (insn_ctx->type == THUMB2_INSN) ? insn_ctx->pc : (insn_ctx->pc - 2));
+    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1
+                                          /*(insn_ctx->type == THUMB2_INSN) ? insn_ctx->pc : (insn_ctx->pc - 2)*/);
     zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }
@@ -308,9 +308,12 @@ zbool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ZzInstru
     zuint32 imm32 =
         imm10_2 << 2 | imm10_1 << (2 + 10) | I1 << (2 + 10 + 6) | I2 << (2 + 10 + 6 + 1) | S << (2 + 10 + 6 + 1 + 1);
     zaddr target_address;
-    target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc);
+    // CurrentInstrSet = thumb
+    // targetInstrSet = arm
+    target_address = ALIGN_4(insn_ctx->pc) + imm32;
+
+    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1);
     zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }

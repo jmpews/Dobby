@@ -175,7 +175,10 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A1(ZzArmRelocator *self, c
     zuint32 imm24 = get_insn_sub(insn, 0, 24);
     zuint32 imm32 = imm24 << 2;
     zaddr target_address;
-    target_address = insn_ctx->pc + imm32;
+    target_address = ALIGN_4(insn_ctx->pc) + imm32;
+
+    // CurrentInstrSet = thumb
+    // targetInstrSet = arm
 
     zz_arm_writer_put_instruction(self->output, (insn & 0xFF000000) | 0);
     zz_arm_writer_put_b_imm(self->output, 0x10);

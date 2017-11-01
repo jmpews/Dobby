@@ -39,3 +39,4 @@
 #define ZZ_INT28_MASK 0x0fffffff
 
 #define THUMB_FUNCTION_ADDRESS(target_addr) (void *)((unsigned long)target_addr & ~(unsigned long)1)
+#define ALIGN_4(target_addr) ((unsigned long)target_addr & ~(unsigned long)3)
