@@ -22,7 +22,7 @@
 typedef struct _ZzWriter {
     zpointer *codedata;
     zpointer base;
-    zpointer pc;
+    zaddr pc;
     zuint size;
 } ZzWriter;
 

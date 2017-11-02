@@ -28,7 +28,7 @@ ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
 
     writer->codedata = data_ptr + t;
     writer->base = data_ptr + t;
-    writer->pc = data_ptr + t;
+    writer->pc = (zaddr)data_ptr + t;
     writer->size = 0;
     return writer;
 }
@@ -40,7 +40,7 @@ void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
 
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
-    self->pc = data_ptr + t;
+    self->pc = (zaddr)data_ptr + t;
     self->size = 0;
 }
 
@@ -181,14 +181,14 @@ void zz_arm_writer_put_bx_reg(ZzArmWriter *self, ZzARMReg reg) {
 
 void zz_arm_writer_put_nop(ZzArmWriter *self) { zz_arm_writer_put_instruction(self, 0xe320f000); }
 
-zpointer zz_arm_writer_put_push_reg(ZzArmWriter *self, ZzARMReg reg) {
+zaddr zz_arm_writer_put_push_reg(ZzArmWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
     zz_arm_writer_put_instruction(self, 0b11100101001011010000000000000100 | ri.index << 12);
     return self->pc;
 }
 
-zpointer zz_arm_writer_put_pop_reg(ZzArmWriter *self, ZzARMReg reg) {
+zaddr zz_arm_writer_put_pop_reg(ZzArmWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 

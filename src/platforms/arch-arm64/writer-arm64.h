@@ -50,16 +50,16 @@ void zz_arm64_writer_put_ldr_br_b_reg_address(ZzArm64Writer *self, ZzARM64Reg re
 
 // ======= default =======
 
-zpointer zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 offset);
-zpointer zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, zuint64 offset);
-zpointer zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, zuint64 offset);
-zpointer zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg);
-zpointer zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg);
-zpointer zz_arm64_writer_put_b_imm(ZzWriter *self, zuint64 offset);
-zpointer zz_arm64_writer_put_b_cond_imm(ZzWriter *self, zuint32 condition, zuint64 imm);
-zpointer zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
-zpointer zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
-zpointer zz_arm64_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size);
-zpointer zz_arm64_writer_put_instruction(ZzWriter *self, zuint32 insn);
+zaddr zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 offset);
+zaddr zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, zuint64 offset);
+zaddr zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, zuint64 offset);
+zaddr zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg);
+zaddr zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg);
+zaddr zz_arm64_writer_put_b_imm(ZzWriter *self, zuint64 offset);
+zaddr zz_arm64_writer_put_b_cond_imm(ZzWriter *self, zuint32 condition, zuint64 imm);
+zaddr zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
+zaddr zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
+zaddr zz_arm64_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size);
+zaddr zz_arm64_writer_put_instruction(ZzWriter *self, zuint32 insn);
 
 #endif
