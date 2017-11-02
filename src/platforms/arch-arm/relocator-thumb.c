@@ -68,8 +68,7 @@ void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
     ZzInstruction insn_ctx;
     zbool early_end = false;
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)address);
-    if (is_thumb)
-        target_addr = (zpointer)((zaddr)address & ~(zaddr)1);
+    target_addr = (zpointer)address;
 
     do {
         zz_thumb_reader_read_one_instruction(&insn_ctx, target_addr);
@@ -81,7 +80,7 @@ void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *m
             early_end = TRUE;
             break;
         default:
-            continue;
+            ;
         }
         tmp_size += insn_ctx.size;
         target_addr = target_addr + insn_ctx.size;
