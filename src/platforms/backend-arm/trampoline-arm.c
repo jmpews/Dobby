@@ -19,8 +19,6 @@
 
 #include <stdlib.h>
 
-#define INSTRUCTION_IS_THUMB(insn_addr) ((insn_addr & 0x1) == 0x1)
-
 #define ZZ_THUMB_TINY_REDIRECT_SIZE 4
 #define ZZ_THUMB_FULL_REDIRECT_SIZE 8
 #define ZZ_ARM_TINY_REDIRECT_SIZE 4
@@ -389,14 +387,13 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 
         char origin_prologue[256] = {0};
         int t = 0;
+        zpointer p;
         if (is_thumb) {
-            for (zpointer p = (&self->thumb_relocator)->input_start; p < (&self->thumb_relocator)->input_cur;
-                 p++, t = t + 5) {
+            for (p = (&self->thumb_relocator)->input_start; p < (&self->thumb_relocator)->input_cur; p++, t = t + 5) {
                 sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
             }
         } else {
-            for (zpointer p = (&self->arm_relocator)->input_start; p < (&self->arm_relocator)->input_cur;
-                 p++, t = t + 5) {
+            for (p = (&self->arm_relocator)->input_start; p < (&self->arm_relocator)->input_cur; p++, t = t + 5) {
                 sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
             }
         }

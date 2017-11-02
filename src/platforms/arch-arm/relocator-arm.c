@@ -64,6 +64,33 @@ zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction
     return self->input_cur - self->input_start;
 }
 void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
+    int tmp_size = 0;
+    zpointer target_addr;
+    ZzInstruction insn_ctx;
+    zbool early_end = false;
+    target_addr = (zpointer)address;
+
+    do {
+        zz_arm_reader_read_one_instruction(&insn_ctx, target_addr);
+        switch (GetARMInsnType(insn_ctx.insn)) {
+        case ARM_INS_B_A1: {
+            zuint32 cond = get_insn_sub(insn_ctx.insn, 28, 4);
+            if (cond == 0xE)
+                early_end = TRUE;
+            else
+                early_end = FALSE;
+        }; break;
+        default:
+            continue;
+        }
+        tmp_size += insn_ctx.size;
+        target_addr = target_addr + insn_ctx.size;
+    } while (tmp_size < min_bytes);
+
+    if (early_end) {
+        *max_bytes = tmp_size;
+    }
+
     *max_bytes = 16;
     return;
 }

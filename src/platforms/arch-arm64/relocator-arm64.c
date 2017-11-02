@@ -70,6 +70,27 @@ void zz_arm64_relocator_write_all(ZzArm64Relocator *self) {
 }
 
 void zz_arm64_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
+    int tmp_size = 0;
+    zpointer target_addr;
+    ZzInstruction insn_ctx;
+    zbool early_end = false;
+    target_addr = (zpointer)address;
+
+    do {
+        zz_arm64_reader_read_one_instruction(&insn_ctx, target_addr);
+        switch (GetARMInsnType(insn_ctx.insn)) {
+        case ARM64_INS_B:
+            early_end = TRUE;
+            break;
+        }
+        tmp_size += insn_ctx.size;
+        target_addr = &(target_addr[insn_ctx.size]);
+    } while (tmp_size < min_bytes);
+
+    if (early_end) {
+        *max_bytes = tmp_size;
+    }
+
     *max_bytes = 16;
     return;
 }

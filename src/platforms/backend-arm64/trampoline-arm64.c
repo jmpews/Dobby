@@ -287,8 +287,8 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 
         char origin_prologue[256] = {0};
         int t = 0;
-        for (zpointer p = (&self->arm64_relocator)->input_start; p < (&self->arm64_relocator)->input_cur;
-             p++, t = t + 5) {
+        zpointer p;
+        for (p = (&self->arm64_relocator)->input_start; p < (&self->arm64_relocator)->input_cur; p++, t = t + 5) {
             sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
         }
         sprintf(buffer + strlen(buffer), "origin_prologue: %s\n", origin_prologue);
@@ -458,8 +458,8 @@ ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zaddr target_f
 
     ZzHookFunctionEntryNoJB *nojb_entry =
         (ZzHookFunctionEntryNoJB *)(data_seg_cmd->vmaddr + sizeof(ZzHookFunctionEntryNoJB) + aslr_slide);
-
-    for (unsigned long i = 0; i < nojb_backend->num_of_entry; i++) {
+    unsigned long i;
+    for (i = 0; i < nojb_backend->num_of_entry; i++) {
         nojb_entry = &nojb_entry[i];
         if ((zaddr)nojb_entry->target_fileoff == target_fileoff) {
             nojb_entry->entry_address = entry;

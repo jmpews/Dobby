@@ -62,6 +62,35 @@ zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruc
 }
 
 void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
+    int tmp_size = 0;
+    zbool is_thumb;
+    zpointer target_addr;
+    ZzInstruction insn_ctx;
+    zbool early_end = false;
+    is_thumb = INSTRUCTION_IS_THUMB((zaddr)address);
+    if (is_thumb)
+        target_addr = (zpointer)((zaddr)address & ~(zaddr)1);
+
+    do {
+        zz_thumb_reader_read_one_instruction(&insn_ctx, target_addr);
+        switch (GetTHUMBInsnType(insn_ctx.insn1, insn_ctx.insn2)) {
+        case THUMB_INS_B_T2:
+            early_end = TRUE;
+            break;
+        case THUMB_INS_B_T4:
+            early_end = TRUE;
+            break;
+        default:
+            continue;
+        }
+        tmp_size += insn_ctx.size;
+        target_addr = target_addr + insn_ctx.size;
+    } while (tmp_size < min_bytes);
+
+    if (early_end) {
+        *max_bytes = tmp_size;
+    }
+
     *max_bytes = 16;
     return;
 }
@@ -314,7 +343,7 @@ zbool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ZzInstru
     target_address = ALIGN_4(insn_ctx->pc) + imm32;
 
     zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
     return TRUE;
 }
 
