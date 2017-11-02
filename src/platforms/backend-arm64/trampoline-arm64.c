@@ -53,7 +53,14 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
         entry_backend->redirect_code_size = ZZ_ARM64_TINY_REDIRECT_SIZE;
     } else {
         zz_arm64_relocator_try_relocate(target_addr, ZZ_ARM64_FULL_REDIRECT_SIZE, &redirect_limit);
-        entry_backend->redirect_code_size = ZZ_ARM64_FULL_REDIRECT_SIZE;
+        if (redirect_limit > ZZ_ARM64_TINY_REDIRECT_SIZE && redirect_limit < ZZ_ARM64_FULL_REDIRECT_SIZE) {
+            entry->try_near_jump = TRUE;
+            entry_backend->redirect_code_size = ZZ_ARM64_TINY_REDIRECT_SIZE;
+        } else if (redirect_limit < ZZ_ARM64_TINY_REDIRECT_SIZE) {
+            return ZZ_FAILED;
+        } else {
+            entry_backend->redirect_code_size = ZZ_ARM64_FULL_REDIRECT_SIZE;
+        }
     }
 
     zz_arm64_relocator_init(&self->arm64_relocator, target_addr, &self->arm64_writer);

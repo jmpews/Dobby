@@ -40,7 +40,7 @@ void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
 
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
-    self->pc = data_ptr + t + 4;
+    self->pc = data_ptr + t;
     self->size = 0;
 }
 

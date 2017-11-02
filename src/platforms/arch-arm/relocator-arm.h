@@ -33,10 +33,12 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzArmRelocator {
+    zbool try_relocated_again;
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
     ZzInstruction *input_insns;
+    ZzRelocateInstruction *output_insns;
     ZzArmWriter *output;
 
     zuint inpos;

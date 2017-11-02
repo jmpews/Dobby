@@ -303,7 +303,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data + 4;
+            thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
     if (ZzIsEnableDebugMode()) {
@@ -334,7 +334,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data + 4;
+            thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
     if (ZzIsEnableDebugMode()) {
@@ -365,7 +365,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             return ZZ_FAILED;
         } else {
             zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-            thumb_writer->pc = code_slice->data + 4;
+            thumb_writer->pc = code_slice->data;
         }
     } while (code_slice);
 

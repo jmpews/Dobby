@@ -32,12 +32,13 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzThumbRelocator {
+    zbool try_relocated_again;
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
     ZzInstruction *input_insns;
+    ZzRelocateInstruction *output_insns;
     ZzThumbWriter *output;
-
     zuint inpos;
     zuint outpos;
 } ZzThumbRelocator;
@@ -49,9 +50,14 @@ zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
 void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 
-zbool zz_thumb_relocator_rewrite_ldr(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_add(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_b_cond(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
-zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, ZzInstruction *insn_ctx);
+zbool zz_thumb_relocator_rewrite_ldr(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                     ZzRelocateInstruction *re_insn_ctx);
+zbool zz_thumb_relocator_rewrite_add(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                     ZzRelocateInstruction *re_insn_ctx);
+zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                   ZzRelocateInstruction *re_insn_ctx);
+zbool zz_thumb_relocator_rewrite_b_cond(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                        ZzRelocateInstruction *re_insn_ctx);
+zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                    ZzRelocateInstruction *re_insn_ctx);
 #endif

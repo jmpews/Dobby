@@ -40,7 +40,7 @@ void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
 
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
-    self->pc = data_ptr + t + 8;
+    self->pc = data_ptr + t;
     self->size = 0;
 }
 
