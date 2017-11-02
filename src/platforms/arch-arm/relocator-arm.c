@@ -83,8 +83,7 @@ void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max
             if (cond == 0xE)
                 early_end = TRUE;
         }; break;
-        default:
-            continue;
+        default:;
         }
         tmp_size += insn_ctx.size;
         target_addr = target_addr + insn_ctx.size;
