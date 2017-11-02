@@ -559,7 +559,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         ZzThumbWriter *thumb_writer;
         thumb_writer = &self->thumb_writer;
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        thumb_writer->pc = target_addr;
+        thumb_writer->pc = target_addr + 4;
 
         if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
             zz_thumb_writer_put_b_imm32(thumb_writer,
@@ -573,7 +573,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         ZzArmWriter *arm_writer;
         arm_writer = &self->arm_writer;
         zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-        arm_writer->pc = target_addr;
+        arm_writer->pc = target_addr + 8;
 
         if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
             zz_arm_writer_put_b_imm(arm_writer, (zaddr)entry->on_enter_transfer_trampoline - (zaddr)arm_writer->pc);
