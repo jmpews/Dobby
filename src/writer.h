@@ -19,11 +19,16 @@
 
 #include "hookzz.h"
 
+#define MAX_REBASE_OFFSET_SIZE 128
+
 typedef struct _ZzWriter {
-    zpointer *codedata;
+    zpointer codedata;
     zpointer base;
     zaddr pc;
-    zuint size;
+    zsize size;
+    zpointer rebase_offset[MAX_REBASE_OFFSET_SIZE];
+    zsize rebase_size;
+
 } ZzWriter;
 
 #endif

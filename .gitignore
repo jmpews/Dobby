@@ -5,7 +5,6 @@ darwin.ios.release.mk
 .vscode/
 cmake-build-debug/
 MachoParser.xcworkspace/
-CMakeLists.txt
 
 # Prerequisites
 *.d

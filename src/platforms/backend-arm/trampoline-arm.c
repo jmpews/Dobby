@@ -51,6 +51,15 @@ ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator
     }
     if (!code_slice)
         return NULL;
+
+    if (thumb_writer->rebase_size) {
+        int i;
+        zaddr *rebase_ptr;
+        for (i = 0; i < thumb_writer->rebase_size; i++) {
+            rebase_ptr = thumb_writer->rebase_offset[i];
+            *rebase_ptr = *rebase_ptr + (zaddr)code_slice->data;
+        }
+    }
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size)) {
 
         free(code_slice);
@@ -69,6 +78,14 @@ ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allo
     }
     if (!code_slice)
         return NULL;
+    if (arm_writer->rebase_size) {
+        int i;
+        zaddr *rebase_ptr;
+        for (i = 0; i < arm_writer->rebase_size; i++) {
+            rebase_ptr = arm_writer->rebase_offset[i];
+            *rebase_ptr = *rebase_ptr + (zaddr)code_slice->data;
+        }
+    }
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size)) {
         free(code_slice);
         return NULL;
@@ -106,6 +123,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
                 }
             }
         }
+        self->thumb_relocator.try_relocated_length = entry_backend->redirect_code_size;
     } else {
         if (entry->try_near_jump) {
             entry_backend->redirect_code_size = ZZ_ARM_TINY_REDIRECT_SIZE;
@@ -120,6 +138,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
                 entry_backend->redirect_code_size = ZZ_ARM_FULL_REDIRECT_SIZE;
             }
         }
+        self->arm_relocator.try_relocated_length = entry_backend->redirect_code_size;
     }
 
     zz_arm_relocator_init(&self->arm_relocator, (zpointer)target_addr, &self->arm_writer);

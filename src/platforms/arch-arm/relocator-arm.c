@@ -95,15 +95,15 @@ void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max
     return;
 }
 
-zaddr zz_arm_relocator_get_insn_relocated_address(ZzArmRelocator *self, zaddr address) {
+zaddr zz_arm_relocator_get_insn_relocated_offset(ZzArmRelocator *self, zaddr address) {
     const ZzInstruction *insn_ctx;
     const ZzRelocateInstruction *re_insn_ctx;
     int i;
     for (i = 0; i < self->inpos; i++) {
         re_insn_ctx = &self->output_insns[i];
         insn_ctx = re_insn_ctx->insn_ctx;
-        if (insn_ctx->address == address && re_insn_ctx->relocated_address) {
-            return re_insn_ctx->relocated_address;
+        if (insn_ctx->address == address && re_insn_ctx->relocated_offset) {
+            return re_insn_ctx->relocated_offset - (self->output->pc - (zaddr)self->output->base);
         }
     }
     return 0;
@@ -240,15 +240,27 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A1(ZzArmRelocator *self, c
     // CurrentInstrSet = thumb
     // targetInstrSet = arm
 
-    zaddr lr_address = (zaddr)zz_arm_relocator_get_insn_relocated_address(self, (zaddr)insn_ctx->pc - 4);
-    if (lr_address == 0) {
-        lr_address = (zaddr)insn_ctx->pc - 4;
+    zz_arm_writer_put_instruction(self->output, (insn & 0xFF000000) | 0);
+
+    ZzArmWriter ouput_bak = *self->output;
+    zz_arm_writer_put_b_imm(self->output, 0);
+
+    if (((zaddr)insn_ctx->pc - 4) > ((zaddr)self->input_start + self->try_relocated_length)) {
+        zz_arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc - 4);
+    } else {
+        //  0: ldr lr, [pc, #0]
+        //  4: b #0
+        //  8: .long relocate_offset
+        //  c: ldr pc, [pc, #-4]
+        // 10: .long target_address
+        // 14: next insn
+        zz_arm_writer_put_ldr_b_reg_relocate_offset(self->output, ZZ_ARM_REG_LR, self->output->size + 0x14);
     }
 
-    zz_arm_writer_put_instruction(self->output, (insn & 0xFF000000) | 0);
-    zz_arm_writer_put_b_imm(self->output, 0x10);
-    zz_arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, lr_address);
     zz_arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+
+    // overwrite `zz_arm_writer_put_b_imm`
+    zz_arm_writer_put_b_imm(&ouput_bak, self->output->pc - ouput_bak.pc);
     return TRUE;
 }
 
@@ -262,12 +274,13 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A2(ZzArmRelocator *self, c
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;
 
-    zaddr lr_address = zz_arm_relocator_get_insn_relocated_address(self, (zaddr)insn_ctx->pc - 4);
-    if (lr_address == 0) {
-        lr_address = insn_ctx->pc - 4;
+    if (((zaddr)insn_ctx->pc - 4) > ((zaddr)self->input_start + self->try_relocated_length)) {
+        zz_arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc - 4);
+    } else {
+        zaddr relocated_offset = (zaddr)zz_arm_relocator_get_insn_relocated_offset(self, (zaddr)insn_ctx->pc - 4);
+        zz_arm_writer_put_add_reg_reg_imm(self->output, ZZ_ARM_REG_LR, ZZ_ARM_REG_PC, relocated_offset);
     }
 
-    zz_arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, lr_address);
     zz_arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
     return TRUE;
 }
@@ -285,7 +298,7 @@ zbool zz_arm_relocator_write_one(ZzArmRelocator *self) {
     } else
         return FALSE;
 
-    re_insn_ctx->relocated_address = (zaddr)self->output->pc;
+    re_insn_ctx->relocated_offset = (zaddr)self->output->pc - (zaddr)self->output->base;
 
     switch (GetARMInsnType(insn_ctx->insn)) {
     case ARM_INS_ADD_register_A1:
@@ -316,6 +329,7 @@ zbool zz_arm_relocator_write_one(ZzArmRelocator *self) {
     if (!rewritten)
         zz_arm_writer_put_bytes(self->output, (zbyte *)&insn_ctx->insn, insn_ctx->size);
 
-    re_insn_ctx->relocated_length = (zaddr)self->output->pc - (zaddr)re_insn_ctx->relocated_address;
+    re_insn_ctx->relocated_length =
+        (zaddr)self->output->pc - (zaddr)self->output->base - (zaddr)re_insn_ctx->relocated_offset;
     return TRUE;
 }

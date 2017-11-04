@@ -53,6 +53,14 @@ void zz_arm_writer_put_ldr_b_reg_address(ZzArmWriter *self, ZzARMReg reg, zaddr 
     zz_arm_writer_put_b_imm(self, 0x0);
     zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
+
+// another version ldr, maybe a better choice
+void zz_arm_writer_put_ldr_b_reg_relocate_offset(ZzArmWriter *self, ZzARMReg reg, zaddr offset) {
+    zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, 0);
+    zz_arm_writer_put_b_imm(self, 0x0);
+    self->rebase_offset[self->rebase_size++] = self->codedata;
+    zz_arm_writer_put_bytes(self, (zpointer)&offset, sizeof(zpointer));
+}
 void zz_arm_writer_put_bx_to_thumb(ZzArmWriter *self) {
     zz_arm_writer_put_sub_reg_reg_imm(self, ZZ_ARM_REG_SP, ZZ_ARM_REG_SP, 0x8);
     zz_arm_writer_put_str_reg_reg_imm(self, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
@@ -150,9 +158,17 @@ void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzAR
     zz_arm_writer_put_instruction(self, 0xe4000000 | rd.index << 12 | rs.index << 16 | P << 24 | U << 23 | W << 21 |
                                             (imm & ZZ_INT12_MASK));
 }
+
 void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, ZzARMReg reg, zaddr address) {
     zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, -4);
     zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
+}
+
+// another version ldr, maybe a better choice
+void zz_arm_writer_put_ldr_reg_relocate_offset(ZzArmWriter *self, ZzARMReg reg, zaddr offset) {
+    zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, -4);
+    self->rebase_offset[self->rebase_size++] = self->codedata;
+    zz_arm_writer_put_bytes(self, (zpointer)&offset, sizeof(zpointer));
 }
 
 void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, zuint32 imm) {
