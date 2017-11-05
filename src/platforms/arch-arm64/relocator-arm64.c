@@ -205,11 +205,20 @@ static zbool zz_arm64_relocator_rewrite_BL(ZzArm64Relocator *self, const ZzInstr
     int Rt_ndx = get_insn_sub(insn, 0, 4);
 
     zz_arm64_writer_put_ldr_blr_b_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
-    zaddr relocated_offset = (zaddr)zz_arm64_relocator_get_insn_relocated_offset(self, (zaddr)insn_ctx->pc + 4);
-    if (relocated_offset) {
-        zz_arm64_writer_put_b_imm(self->output, relocated_offset);
-    } else {
+
+    if (((zaddr)insn_ctx->pc + 4) > ((zaddr)self->input_start + self->try_relocated_length)) {
         zz_arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, insn_ctx->pc + 4);
+    } else {
+#if 1
+        zaddr relocated_offset = (zaddr)zz_arm64_relocator_get_insn_relocated_offset(self, (zaddr)insn_ctx->pc + 4);
+        zz_arm64_writer_put_b_imm(self->output, relocated_offset);
+#else
+        // 0: ldr x17, [pc, #8]
+        // 4: br #c
+        // 8: .long relocate_offset
+        // 10: next_insn
+        zz_arm64_writer_put_ldr_b_reg_address(self->output, ZZ_ARM64_REG_X17, self->output->size + 0x10)
+#endif
     }
     return TRUE;
 }

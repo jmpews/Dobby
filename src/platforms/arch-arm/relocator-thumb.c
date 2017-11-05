@@ -401,7 +401,7 @@ zbool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ZzInstru
         zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1);
     } else {
         zaddr relocated_offset = (zaddr)zz_thumb_relocator_get_insn_relocated_offset(self, insn_ctx->pc);
-        zz_thumb_writer_put_add_reg_reg_imm(self->output, ZZ_ARM_REG_LR, ZZ_ARM_REG_PC, relocated_offset + 1);
+        zz_thumb_writer_put_add_reg_reg_imm(self->output, ZZ_ARM_REG_LR, ZZ_ARM_REG_PC, relocated_offset - 4 + 1);
     }
 
     zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);

@@ -44,6 +44,7 @@ zsize zz_arm64_writer_near_jump_range_size();
 // ======= user custom =======
 
 void zz_arm64_writer_put_ldr_br_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);
+void zz_arm64_writer_put_ldr_br_reg_relocate_offset(ZzWriter *self, ZzARM64Reg reg, zaddr offset);
 void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);
 void zz_arm64_writer_put_ldr_b_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);
 void zz_arm64_writer_put_ldr_br_b_reg_address(ZzArm64Writer *self, ZzARM64Reg reg, zaddr address);

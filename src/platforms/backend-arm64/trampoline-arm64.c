@@ -51,6 +51,14 @@ ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator
     }
     if (!code_slice)
         return NULL;
+    if (arm64_writer->rebase_size) {
+        int i;
+        zaddr *rebase_ptr;
+        for (i = 0; i < arm64_writer->rebase_size; i++) {
+            rebase_ptr = arm64_writer->rebase_offset[i];
+            *rebase_ptr = *rebase_ptr + (zaddr)code_slice->data;
+        }
+    }
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm64_writer->base, arm64_writer->size)) {
         free(code_slice);
         return NULL;
@@ -80,6 +88,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
         }
     }
 
+    self->arm64_relocator.try_relocated_length = entry_backend->redirect_code_size;
     zz_arm64_relocator_init(&self->arm64_relocator, (zpointer)target_addr, &self->arm64_writer);
     return ZZ_SUCCESS;
 }

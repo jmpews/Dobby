@@ -58,6 +58,14 @@ void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zadd
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
+// another version ldr, maybe a better choice
+void zz_arm64_writer_put_ldr_br_reg_relocate_offset(ZzWriter *self, ZzARM64Reg reg, zaddr offset) {
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    zz_arm64_writer_put_br_reg(self, reg);
+    self->rebase_offset[self->rebase_size++] = self->codedata;
+    zz_arm64_writer_put_bytes(self, (zpointer)&offset, sizeof(zpointer));
+}
+
 void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
     zz_arm64_writer_put_blr_reg(self, reg);

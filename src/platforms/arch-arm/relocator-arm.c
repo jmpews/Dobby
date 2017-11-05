@@ -53,7 +53,9 @@ void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWrit
 
 zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction) {
     ZzInstruction *insn_ctx = &self->input_insns[self->inpos];
+    ZzRelocateInstruction *re_insn_ctx = &self->output_insns[self->inpos];
 
+    re_insn_ctx->insn_ctx = insn_ctx;
     zz_arm_reader_read_one_instruction(insn_ctx, self->input_cur);
 
     // switch (1) {}
@@ -240,7 +242,8 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A1(ZzArmRelocator *self, c
     // CurrentInstrSet = thumb
     // targetInstrSet = arm
 
-    zz_arm_writer_put_instruction(self->output, (insn & 0xFF000000) | 0);
+    // convert 'bl' to 'b', but save 'cond'
+    zz_arm_writer_put_instruction(self->output, (insn & 0xF0000000) | 0b1010 << 24 | 0);
 
     ZzArmWriter ouput_bak = *self->output;
     zz_arm_writer_put_b_imm(self->output, 0);
@@ -260,7 +263,7 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A1(ZzArmRelocator *self, c
     zz_arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
 
     // overwrite `zz_arm_writer_put_b_imm`
-    zz_arm_writer_put_b_imm(&ouput_bak, self->output->pc - ouput_bak.pc);
+    zz_arm_writer_put_b_imm(&ouput_bak, self->output->pc - ouput_bak.pc - 8);
     return TRUE;
 }
 
@@ -278,7 +281,7 @@ static zbool zz_arm_relocator_rewrite_BLBLX_immediate_A2(ZzArmRelocator *self, c
         zz_arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc - 4);
     } else {
         zaddr relocated_offset = (zaddr)zz_arm_relocator_get_insn_relocated_offset(self, (zaddr)insn_ctx->pc - 4);
-        zz_arm_writer_put_add_reg_reg_imm(self->output, ZZ_ARM_REG_LR, ZZ_ARM_REG_PC, relocated_offset);
+        zz_arm_writer_put_add_reg_reg_imm(self->output, ZZ_ARM_REG_LR, ZZ_ARM_REG_PC, relocated_offset - 8);
     }
 
     zz_arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);

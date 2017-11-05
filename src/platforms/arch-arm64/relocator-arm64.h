@@ -34,6 +34,7 @@
 
 typedef struct _ZzArm64Relocator {
     zbool try_relocated_again;
+    zsize try_relocated_length;
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
