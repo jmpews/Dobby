@@ -24,7 +24,7 @@ static void thumb_insn_need_fix() {
                      "nop");
 }
 
-#include "platforms/backend-arm/interceptor-arm.h"
+#include "platforms/backend-arm64/interceptor-arm64.h"
 #include <stdlib.h>
 
 #if 1

@@ -41,25 +41,38 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     return backend;
 }
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zaddr range_start,
+ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zaddr target_addr,
                                         zsize range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
-        code_slice = ZzNewNearCodeSlice(allocator, range_start, range_size, thumb_writer->size);
+        code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, thumb_writer->size);
     } else {
         code_slice = ZzNewCodeSlice(allocator, thumb_writer->size + 4);
     }
     if (!code_slice)
         return NULL;
 
-    if (thumb_writer->rebase_size) {
-        int i;
-        zaddr *rebase_ptr;
-        for (i = 0; i < thumb_writer->rebase_size; i++) {
-            rebase_ptr = thumb_writer->rebase_offset[i];
-            *rebase_ptr = *rebase_ptr + (zaddr)code_slice->data;
-        }
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size)) {
+
+        free(code_slice);
+        return NULL;
     }
+    return code_slice;
+}
+
+ZzCodeSlice *zz_code_patch_thumb_relocate_writer(ZzThumbRelocator *thumb_relocator, ZzThumbWriter *thumb_writer,
+                                                 ZzAllocator *allocator, zaddr target_addr, zsize range_size) {
+    ZzCodeSlice *code_slice = NULL;
+    if (range_size > 0) {
+        code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, thumb_writer->size);
+    } else {
+        code_slice = ZzNewCodeSlice(allocator, thumb_writer->size + 4);
+    }
+    if (!code_slice)
+        return NULL;
+
+    zz_thumb_relocator_relocate_writer(thumb_relocator, (zaddr)code_slice->data);
+
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, thumb_writer->base, thumb_writer->size)) {
 
         free(code_slice);
@@ -78,14 +91,27 @@ ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allo
     }
     if (!code_slice)
         return NULL;
-    if (arm_writer->rebase_size) {
-        int i;
-        zaddr *rebase_ptr;
-        for (i = 0; i < arm_writer->rebase_size; i++) {
-            rebase_ptr = arm_writer->rebase_offset[i];
-            *rebase_ptr = *rebase_ptr + (zaddr)code_slice->data;
-        }
+
+    if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size)) {
+        free(code_slice);
+        return NULL;
     }
+    return code_slice;
+}
+
+ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzArmRelocator *arm_relocator, ZzArmWriter *arm_writer,
+                                               ZzAllocator *allocator, zaddr target_addr, zsize range_size) {
+    ZzCodeSlice *code_slice = NULL;
+    if (range_size > 0) {
+        code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, arm_writer->size);
+    } else {
+        code_slice = ZzNewCodeSlice(allocator, arm_writer->size + 4);
+    }
+    if (!code_slice)
+        return NULL;
+
+    zz_arm_relocator_relocate_writer(arm_relocator, (zaddr)code_slice->data);
+
     if (!ZzMemoryPatchCode((zaddr)code_slice->data, arm_writer->base, arm_writer->size)) {
         free(code_slice);
         return NULL;
@@ -306,7 +332,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         /* jump to rest target address */
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zaddr)(restore_target_addr + 1));
 
-        code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+        code_slice = zz_code_patch_thumb_relocate_writer(thumb_relocator, thumb_writer, self->allocator, 0, 0);
         if (code_slice)
             entry->on_invoke_trampoline = code_slice->data + 1;
         else
@@ -348,7 +374,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         /* jump to rest target address */
         zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zaddr)restore_target_addr);
 
-        code_slice = zz_code_patch_arm_writer(arm_writer, self->allocator, 0, 0);
+        code_slice = zz_code_patch_arm_relocate_writer(arm_relocator, arm_writer, self->allocator, 0, 0);
         if (code_slice)
             entry->on_invoke_trampoline = code_slice->data;
         else

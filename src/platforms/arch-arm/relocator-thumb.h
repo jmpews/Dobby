@@ -48,17 +48,8 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, Z
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, zpointer input_code, ZzThumbWriter *output);
 zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
 zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
+void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zaddr code_address);
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
 void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 
-zbool zz_thumb_relocator_rewrite_ldr(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
-                                     ZzRelocateInstruction *re_insn_ctx);
-zbool zz_thumb_relocator_rewrite_add(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
-                                     ZzRelocateInstruction *re_insn_ctx);
-zbool zz_thumb_relocator_rewrite_b(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
-                                   ZzRelocateInstruction *re_insn_ctx);
-zbool zz_thumb_relocator_rewrite_b_cond(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
-                                        ZzRelocateInstruction *re_insn_ctx);
-zbool zz_thumb_relocator_rewrite_bl(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
-                                    ZzRelocateInstruction *re_insn_ctx);
 #endif

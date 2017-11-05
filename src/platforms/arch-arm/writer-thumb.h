@@ -81,5 +81,4 @@ zaddr zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg,
 zaddr zz_thumb_writer_put_push_reg(ZzThumbWriter *self, zint32 regs);
 zaddr zz_thumb_writer_put_pop_reg(ZzThumbWriter *self, zint32 regs);
 zaddr zz_thumb_writer_put_add_reg_reg_reg(ZzThumbWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, ZzARMReg right_reg);
-zaddr zz_thumb_writer_put_ldr_b_reg_relocate_offset(ZzThumbWriter *self, ZzARMReg reg, zaddr offset);
 #endif

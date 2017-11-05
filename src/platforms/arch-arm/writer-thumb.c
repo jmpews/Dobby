@@ -50,6 +50,8 @@ zaddr zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, ZzARMReg reg, z
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
+    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+
     if ((((zaddr)self->pc) % 4)) {
         if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
@@ -67,30 +69,8 @@ zaddr zz_thumb_writer_put_ldr_b_reg_address(ZzThumbWriter *self, ZzARMReg reg, z
     }
 
     zz_thumb_writer_put_b_imm(self, 0x2);
+    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
-    return self->pc;
-}
-
-// another version ldr, maybe a better choice
-zaddr zz_thumb_writer_put_ldr_b_reg_relocate_offset(ZzThumbWriter *self, ZzARMReg reg, zaddr offset) {
-    ZzArmRegInfo ri;
-    zz_arm_register_describe(reg, &ri);
-
-    if ((((zaddr)self->pc) % 4)) {
-        return 0;
-    } else {
-        if (ri.meta <= ZZ_ARM_REG_R7) {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-        } else {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-            zz_thumb_writer_put_nop(self);
-        }
-    }
-
-    zz_thumb_writer_put_b_imm(self, 0x2);
-
-    self->rebase_offset[self->rebase_size++] = self->codedata;
-    zz_thumb_writer_put_bytes(self, (zpointer)&offset, sizeof(zpointer));
     return self->pc;
 }
 
@@ -98,6 +78,8 @@ zaddr zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, ZzARMReg reg, zad
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
+    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+
     if ((((zaddr)self->pc) % 4)) {
         if (ri.meta <= ZZ_ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
@@ -111,27 +93,11 @@ zaddr zz_thumb_writer_put_ldr_reg_address(ZzThumbWriter *self, ZzARMReg reg, zad
             zz_thumb_writer_put_nop(self);
     }
 
+    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
     zz_thumb_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
     return self->pc;
 }
 
-// another version ldr, maybe a better choice
-zaddr zz_thumb_writer_put_ldr_reg_relocate_offset(ZzThumbWriter *self, ZzARMReg reg, zaddr offset) {
-    ZzArmRegInfo ri;
-    zz_arm_register_describe(reg, &ri);
-
-    if ((((zaddr)self->pc) % 4)) {
-        return 0;
-    } else {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-        if (ri.meta <= ZZ_ARM_REG_R7)
-            zz_thumb_writer_put_nop(self);
-    }
-
-    self->rebase_offset[self->rebase_size++] = self->codedata;
-    zz_thumb_writer_put_bytes(self, (zpointer)&offset, sizeof(zpointer));
-    return self->pc;
-}
 // ------- user custom -------
 
 // ------- architecture default -------

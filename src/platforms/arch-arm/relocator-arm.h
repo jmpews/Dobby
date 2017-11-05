@@ -52,4 +52,5 @@ void zz_arm_relocator_write_all(ZzArmRelocator *self);
 zsize zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction);
 void zz_arm_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
 zbool zz_arm_relocator_write_one(ZzArmRelocator *self);
+void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zaddr code_address);
 #endif

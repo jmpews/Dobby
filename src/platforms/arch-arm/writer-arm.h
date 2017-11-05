@@ -64,5 +64,4 @@ void zz_arm_writer_put_add_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzAR
 void zz_arm_writer_put_sub_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, zuint32 imm);
 zaddr zz_arm_writer_put_push_reg(ZzArmWriter *self, ZzARMReg reg);
 zaddr zz_arm_writer_put_pop_reg(ZzArmWriter *self, ZzARMReg reg);
-void zz_arm_writer_put_ldr_b_reg_relocate_offset(ZzArmWriter *self, ZzARMReg reg, zaddr offset);
 #endif
