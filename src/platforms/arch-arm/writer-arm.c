@@ -38,6 +38,9 @@ void zz_arm_writer_init(ZzArmWriter *self, zpointer data_ptr) { zz_arm_writer_re
 void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
     int t = (zaddr)data_ptr % 4;
 
+    ZzArmWriter tmp = {0};
+    *self = tmp;
+
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
     self->pc = (zaddr)data_ptr + t;
@@ -57,7 +60,6 @@ void zz_arm_writer_put_ldr_b_reg_address(ZzArmWriter *self, ZzARMReg reg, zaddr 
     self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
     zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
-
 
 void zz_arm_writer_put_bx_to_thumb(ZzArmWriter *self) {
     zz_arm_writer_put_sub_reg_reg_imm(self, ZZ_ARM_REG_SP, ZZ_ARM_REG_SP, 0x8);

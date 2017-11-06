@@ -44,6 +44,9 @@ void zz_arm64_writer_init(ZzArm64Writer *self, zpointer target_addr) { zz_arm64_
 void zz_arm64_writer_reset(ZzArm64Writer *self, zpointer data_ptr) {
     int t = (zaddr)data_ptr % 4;
 
+    ZzArm64Writer tmp = {0};
+    *self = tmp;
+
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
     self->pc = (zaddr)data_ptr + t;
@@ -59,8 +62,6 @@ void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zadd
     self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
-
-
 
 void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
     self->literal_insn_ptr[self->literal_insn_size] = self->codedata;

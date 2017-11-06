@@ -38,6 +38,9 @@ void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr) { zz_thumb_wri
 void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
     int t = (zaddr)data_ptr % 4;
 
+    ZzThumbWriter tmp = {0};
+    *self = tmp;
+
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
     self->pc = (zaddr)data_ptr + t;
