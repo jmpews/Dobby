@@ -23,30 +23,36 @@
 void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code, ZzArm64Writer *output) {
     relocator->inpos = 0;
     relocator->outpos = 0;
-
+    relocator->output = output;
     relocator->input_start = input_code;
     relocator->input_cur = input_code;
     relocator->input_pc = (zaddr)input_code;
+    relocator->relocate_literal_insns_size = 0;
+    relocator->try_relocated_length = 0;
+
     relocator->input_insns = (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     relocator->output_insns =
         (ZzRelocateInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
     memset(relocator->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
-
-    relocator->output = output;
+    relocator->relocate_literal_insns =
+        (ZzLiteralInstruction **)malloc(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
+    memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
 void zz_arm64_relocator_reset(ZzArm64Relocator *self, zpointer input_code, ZzArm64Writer *output) {
     self->input_cur = input_code;
     self->input_start = input_code;
     self->input_pc = (zaddr)input_code;
-
     self->inpos = 0;
     self->outpos = 0;
     self->output = output;
+    self->relocate_literal_insns_size = 0;
+    self->try_relocated_length = 0;
 
     memset(self->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(self->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
+    memset(self->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
 zsize zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction) {

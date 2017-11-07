@@ -24,10 +24,12 @@
 void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArmWriter *output) {
     relocator->inpos = 0;
     relocator->outpos = 0;
-
     relocator->input_start = input_code;
     relocator->input_cur = input_code;
     relocator->input_pc = (zaddr)input_code;
+    relocator->output = output;
+    relocator->relocate_literal_insns_size = 0;
+    relocator->try_relocated_length = 0;
 
     relocator->input_insns = (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
@@ -37,18 +39,17 @@ void zz_arm_relocator_init(ZzArmRelocator *relocator, zpointer input_code, ZzArm
     relocator->relocate_literal_insns =
         (ZzLiteralInstruction **)malloc(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
     memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
-
-    relocator->output = output;
 }
 
 void zz_arm_relocator_reset(ZzArmRelocator *self, zpointer input_code, ZzArmWriter *output) {
     self->input_cur = input_code;
     self->input_start = input_code;
     self->input_pc = (zaddr)input_code;
-
     self->inpos = 0;
     self->outpos = 0;
     self->output = output;
+    self->relocate_literal_insns_size = 0;
+    self->try_relocated_length = 0;
 
     memset(self->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(self->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
@@ -120,7 +121,6 @@ void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zaddr code_addr
     arm_writer = relocator->output;
     if (relocator->relocate_literal_insns_size) {
         int i;
-        zaddr *rebase_ptr;
         zaddr literal_address, relocated_offset, relocated_address, *literal_address_ptr;
         for (i = 0; i < relocator->relocate_literal_insns_size; i++) {
             literal_address_ptr = (zaddr *)relocator->relocate_literal_insns[i]->literal_address_ptr;

@@ -21,13 +21,16 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *writer) {
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *output) {
     relocator->inpos = 0;
     relocator->outpos = 0;
-
     relocator->input_start = input_code;
     relocator->input_cur = input_code;
     relocator->input_pc = (zaddr)input_code;
+    relocator->output = output;
+    relocator->relocate_literal_insns_size = 0;
+    relocator->try_relocated_length = 0;
+
     relocator->input_insns = (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     relocator->output_insns =
@@ -45,6 +48,8 @@ void zz_thumb_relocator_reset(ZzThumbRelocator *self, zpointer input_code, ZzThu
     self->inpos = 0;
     self->outpos = 0;
     self->output = output;
+    self->relocate_literal_insns_size = 0;
+    self->try_relocated_length = 0;
 
     memset(self->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(self->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
