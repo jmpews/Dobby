@@ -53,7 +53,7 @@ zsize zz_arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }
 
 ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzArmWriter *self, ZzARMReg reg, zaddr address,
                                                                    ZzLiteralInstruction **literal_insn_ptr) {
-    zz_arm_writer_put_ldr_reg_address(self, reg, address);
+    zz_arm_writer_put_ldr_b_reg_address(self, reg, address);
     ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
     *literal_insn_ptr = literal_insn;
     return literal_insn;
