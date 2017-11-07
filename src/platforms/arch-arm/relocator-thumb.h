@@ -39,6 +39,8 @@ typedef struct _ZzThumbRelocator {
     zaddr input_pc;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
+    ZzLiteralInstruction **relocate_literal_insns;
+    zsize relocate_literal_insns_size;
     ZzThumbWriter *output;
     zuint inpos;
     zuint outpos;

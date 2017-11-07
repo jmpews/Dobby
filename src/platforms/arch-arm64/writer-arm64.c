@@ -53,47 +53,58 @@ void zz_arm64_writer_reset(ZzArm64Writer *self, zpointer data_ptr) {
     self->size = 0;
 }
 
+// ======= relocator =======
+
+ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzWriter *self, ZzARM64Reg reg, zaddr address,
+                                                                      ZzLiteralInstruction **literal_insn_ptr) {
+
+    zz_arm64_writer_put_ldr_br_reg_address(self, reg, address);
+    ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
+    *literal_insn_ptr = literal_insn;
+    return literal_insn;
+}
+
 // ======= user custom =======
 
 void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
     zz_arm64_writer_put_br_reg(self, reg);
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
 void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
     zz_arm64_writer_put_blr_reg(self, reg);
     zz_arm64_writer_put_b_imm(self, 0xc);
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
 void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
     zz_arm64_writer_put_b_imm(self, 0xc);
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 
 zsize zz_arm64_writer_near_jump_range_size() { return ((1 << 25) << 2); }
 
 void zz_arm64_writer_put_ldr_br_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0xc);
     zz_arm64_writer_put_br_reg(self, reg);
     zz_arm64_writer_put_b_imm(self, 0xc);
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
 }
 
 // ======= default =======
 
-zaddr zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 offset) {
+void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 offset) {
     ZzArm64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
@@ -103,11 +114,11 @@ zaddr zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 of
     Rt_ndx = ri.index;
 
     zz_arm64_writer_put_instruction(self, 0x58000000 | imm19 << 5 | Rt_ndx);
-    return self->pc;
+    return;
 }
 
 // PAGE: C6-871
-zaddr zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, zuint64 offset) {
+void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, zuint64 offset) {
     ZzArm64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
@@ -124,10 +135,10 @@ zaddr zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg,
     zuint32 imm12 = offset >> size;
 
     zz_arm64_writer_put_instruction(self, 0x39000000 | size << 30 | opc << 22 | imm12 << 10 | Rn_ndx << 5 | Rt_ndx);
-    return self->pc;
+    return;
 }
 
-zaddr zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, zuint64 offset) {
+void zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, zuint64 offset) {
     ZzArm64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
@@ -144,22 +155,22 @@ zaddr zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg,
     zuint32 imm12 = offset >> size;
 
     zz_arm64_writer_put_instruction(self, 0x39000000 | size << 30 | opc << 22 | imm12 << 10 | Rn_ndx << 5 | Rt_ndx);
-    return self->pc;
+    return;
 }
 
 // C6-562
-zaddr zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg) {
+void zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg) {
     ZzArm64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     zuint32 op = 0, Rn_ndx;
     Rn_ndx = ri.index;
     zz_arm64_writer_put_instruction(self, 0xd61f0000 | op << 21 | Rn_ndx << 5);
-    return self->pc;
+    return;
 }
 
 // C6-561
-zaddr zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
+void zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
     ZzArm64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
@@ -168,29 +179,29 @@ zaddr zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
     Rn_ndx = ri.index;
 
     zz_arm64_writer_put_instruction(self, 0xd63f0000 | op << 21 | Rn_ndx << 5);
-    return self->pc;
+    return;
 }
 
 // C6-550
-zaddr zz_arm64_writer_put_b_imm(ZzWriter *self, zuint64 offset) {
+void zz_arm64_writer_put_b_imm(ZzWriter *self, zuint64 offset) {
     zuint32 op = 0b0, imm26;
     imm26 = (offset >> 2) & 0x03ffffff;
     zz_arm64_writer_put_instruction(self, 0x14000000 | op << 31 | imm26);
-    return self->pc;
+    return;
 }
 
 // TODO: standard form, need fix others
 // PAGE: C6-549
-zaddr zz_arm64_writer_put_b_cond_imm(ZzWriter *self, zuint32 condition, zuint64 imm) {
+void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, zuint32 condition, zuint64 imm) {
     zuint32 imm19, cond;
     cond = condition;
     imm19 = (imm >> 2) & 0x7ffff;
     zz_arm64_writer_put_instruction(self, 0x54000000 | imm19 << 5 | cond);
-    return self->pc;
+    return;
 }
 
 // C6-525
-zaddr zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm) {
+void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm) {
     ZzArm64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
@@ -204,11 +215,11 @@ zaddr zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, Zz
 
     zz_arm64_writer_put_instruction(self, 0x11000000 | sf << 31 | op << 30 | S << 29 | shift << 22 | imm12 << 10 |
                                               Rn_ndx << 5 | Rd_ndx);
-    return self->pc;
+    return;
 }
 
 // C6-930
-zaddr zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm) {
+void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm) {
     ZzArm64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
@@ -222,21 +233,21 @@ zaddr zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, Zz
 
     zz_arm64_writer_put_instruction(self, 0x11000000 | sf << 31 | op << 30 | S << 29 | shift << 22 | imm12 << 10 |
                                               Rn_ndx << 5 | Rd_ndx);
-    return self->pc;
+    return;
 }
 
-zaddr zz_arm64_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size) {
+void zz_arm64_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size) {
     memcpy(self->codedata, data, size);
     self->codedata = (zpointer)self->codedata + size;
     self->pc += size;
     self->size += size;
-    return self->pc;
+    return;
 }
 
-zaddr zz_arm64_writer_put_instruction(ZzWriter *self, zuint32 insn) {
+void zz_arm64_writer_put_instruction(ZzWriter *self, zuint32 insn) {
     *(zuint32 *)(self->codedata) = insn;
     self->codedata = (zpointer)self->codedata + sizeof(zuint32);
     self->pc += 4;
     self->size += 4;
-    return self->pc;
+    return;
 }

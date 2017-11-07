@@ -38,12 +38,13 @@ typedef struct _ZzArm64Relocator {
     zpointer input_start;
     zpointer input_cur;
     zaddr input_pc;
+    zuint inpos;
+    zuint outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzArm64Writer *output;
-
-    zuint inpos;
-    zuint outpos;
+    ZzLiteralInstruction **relocate_literal_insns;
+    zsize relocate_literal_insns_size;
 } ZzArm64Relocator;
 
 void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zpointer input_code, ZzArm64Writer *writer);

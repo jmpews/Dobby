@@ -49,15 +49,31 @@ void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
 
 zsize zz_arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }
 
+// ------- relocator -------
+
+ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzArmWriter *self, ZzARMReg reg, zaddr address,
+                                                                   ZzLiteralInstruction **literal_insn_ptr) {
+    zz_arm_writer_put_ldr_reg_address(self, reg, address);
+    ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
+    *literal_insn_ptr = literal_insn;
+    return literal_insn;
+}
+
+ZzLiteralInstruction *zz_arm_writer_put_ldr_reg_relocate_address(ZzArmWriter *self, ZzARMReg reg, zaddr address,
+                                                                 ZzLiteralInstruction **literal_insn_ptr) {
+    zz_arm_writer_put_ldr_reg_address(self, reg, address);
+    ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
+    *literal_insn_ptr = literal_insn;
+    return literal_insn;
+}
+
 // ------- user custom -------
 
 void zz_arm_writer_put_ldr_b_reg_address(ZzArmWriter *self, ZzARMReg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
-
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, 0);
     zz_arm_writer_put_b_imm(self, 0x0);
-
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
@@ -160,9 +176,9 @@ void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzAR
 }
 
 void zz_arm_writer_put_ldr_reg_address(ZzArmWriter *self, ZzARMReg reg, zaddr address) {
-    self->literal_insn_ptr[self->literal_insn_size] = self->codedata;
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, -4);
-    self->literal_address_ptr[self->literal_insn_size++] = self->codedata;
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm_writer_put_bytes(self, (zpointer)&address, sizeof(zpointer));
 }
 
@@ -192,17 +208,17 @@ void zz_arm_writer_put_bx_reg(ZzArmWriter *self, ZzARMReg reg) {
 
 void zz_arm_writer_put_nop(ZzArmWriter *self) { zz_arm_writer_put_instruction(self, 0xe320f000); }
 
-zaddr zz_arm_writer_put_push_reg(ZzArmWriter *self, ZzARMReg reg) {
+void zz_arm_writer_put_push_reg(ZzArmWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
     zz_arm_writer_put_instruction(self, 0b11100101001011010000000000000100 | ri.index << 12);
-    return self->pc;
+    return;
 }
 
-zaddr zz_arm_writer_put_pop_reg(ZzArmWriter *self, ZzARMReg reg) {
+void zz_arm_writer_put_pop_reg(ZzArmWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
     zz_arm_writer_put_instruction(self, 0b11100100100111010000000000000100 | ri.index << 12);
-    return self->pc;
+    return;
 }
