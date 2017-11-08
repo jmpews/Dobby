@@ -181,8 +181,9 @@ static zbool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const Z
     zz_thumb_writer_put_b_imm(self->output, 0x6);
 
     ZzLiteralInstruction **literal_insn_ptr = &(self->relocate_literal_insns[self->relocate_literal_insns_size++]);
-    zz_thumb_writer_put_ldr_reg_relocate_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1, literal_insn_ptr);
-    // zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_relocate_address(self->output, ZZ_ARM_REG_PC, target_address + 1, literal_insn_ptr);
+    // zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    return TRUE;
 }
 
 // PAGE: A8-310
@@ -317,7 +318,7 @@ zbool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ZzInstructio
     }
     zz_thumb_writer_put_instruction(self->output, (insn1 & 0xFF00) | 0);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
@@ -330,7 +331,7 @@ zbool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ZzInstructio
     zuint32 imm32 = imm11 << 1;
     zaddr target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
@@ -364,7 +365,7 @@ zbool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ZzInstructio
     zz_thumb_writer_put_instruction(self->output, insn_ctx->insn1 & 0b1111101111000000);
     zz_thumb_writer_put_instruction(self->output, (insn_ctx->insn2 & 0b1101000000000000) | 0b1);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
@@ -386,7 +387,7 @@ zbool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ZzInstructio
     zaddr target_address;
     target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
