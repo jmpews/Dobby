@@ -148,9 +148,46 @@ void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
         count++;
 }
 
-// PAGE: A8-310
-zbool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+// A8-357
+// 0: cbz #0
+// 2: b #6
+// 4: ldr pc, #0
+// 8: .long ?
+// c: next insn
+static zbool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                  ZzRelocateInstruction *re_insn_ctx) {
+
+    zuint32 insn1 = insn_ctx->insn1;
+    zuint16 op, i, imm5, Rn_ndx;
+    zuint32 imm32, nonzero;
+
+    op = get_insn_sub(insn1, 11, 1);
+    i = get_insn_sub(insn1, 9, 1);
+    imm5 = get_insn_sub(insn1, 3, 5);
+    Rn_ndx = get_insn_sub(insn1, 0, 3);
+
+    imm32 = imm5 << 1 | i << (5 + 1);
+    nonzero = (op == 1);
+
+    zaddr target_address = insn_ctx->pc + imm32;
+
+    /* for align , simple solution, maybe the correct solution is get `ldr_reg_address` length and adjust the immediate
+     * of `b_imm`. */
+    if ((zaddr)self->output->pc % 4) {
+        zz_thumb_writer_put_nop(self->output);
+    }
+
+    zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111110100000111) | 0);
+    zz_thumb_writer_put_b_imm(self->output, 0x6);
+
+    ZzLiteralInstruction **literal_insn_ptr = &(self->relocate_literal_insns[self->relocate_literal_insns_size++]);
+    zz_thumb_writer_put_ldr_reg_relocate_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1, literal_insn_ptr);
+    // zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+}
+
+// PAGE: A8-310
+static zbool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
+                                                        ZzRelocateInstruction *re_insn_ctx) {
     zuint32 insn1 = insn_ctx->insn1;
 
     zuint16 Rm_ndx, Rdn_ndx, DN, Rd_ndx;
@@ -424,6 +461,9 @@ zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     re_insn_ctx->relocated_offset = (zaddr)self->output->pc - (zaddr)self->output->base;
 
     switch (GetTHUMBInsnType(insn_ctx->insn1, insn_ctx->insn2)) {
+    case THUMB_INS_CBNZ_CBZ:
+        rewritten = zz_thumb_relocator_rewrite_CBNZ_CBZ(self, insn_ctx, re_insn_ctx);
+        break;
     case THUMB_INS_ADD_register_T2:
         rewritten = zz_thumb_relocator_rewrite_ADD_register_T2(self, insn_ctx, re_insn_ctx);
         break;
