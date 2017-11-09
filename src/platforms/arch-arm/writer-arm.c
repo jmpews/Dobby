@@ -30,13 +30,17 @@ ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
     writer->base = data_ptr + t;
     writer->pc = (zaddr)data_ptr + t;
     writer->size = 0;
+
+    writer->literal_insn_size = 0;
+    memset(writer->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
+
     return writer;
 }
 
 void zz_arm_writer_init(ZzArmWriter *self, zpointer data_ptr) { zz_arm_writer_reset(self, data_ptr); }
 
 void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
-    int t = (zaddr)data_ptr % 4;
+    int t = 4 - (zaddr)data_ptr % 4;
 
     ZzArmWriter tmp = {0};
     *self = tmp;
@@ -44,6 +48,10 @@ void zz_arm_writer_reset(ZzArmWriter *self, zpointer data_ptr) {
     self->codedata = data_ptr + t;
     self->base = data_ptr + t;
     self->pc = (zaddr)data_ptr + t;
+
+    self->literal_insn_size = 0;
+    memset(self->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
+
     self->size = 0;
 }
 
