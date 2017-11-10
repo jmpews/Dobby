@@ -293,8 +293,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         return ZZ_FAILED;
 
     if (ZzIsEnableDebugMode()) {
-        char buffer[1024] = {};
-        char thunk_buffer[1024] = {};
+        char buffer[2048] = {};
+        char thunk_buffer[2048] = {};
         int t = 0;
         zpointer p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
@@ -319,8 +319,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         return ZZ_FAILED;
 
     if (ZzIsEnableDebugMode()) {
-        char buffer[1024] = {};
-        char thunk_buffer[1024] = {};
+        char buffer[2048] = {};
+        char thunk_buffer[2048] = {};
         int t = 0;
         zpointer p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");

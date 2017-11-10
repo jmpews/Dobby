@@ -24,6 +24,7 @@
 
 ZzArmWriter *zz_arm_writer_new(zpointer data_ptr) {
     ZzArmWriter *writer = (ZzArmWriter *)malloc(sizeof(ZzArmWriter));
+    memset(writer, 0, sizeof(ZzArmWriter));
 
     zaddr align_address = (zaddr)data_ptr & ~(zaddr)3;
     writer->codedata = (zpointer)align_address;

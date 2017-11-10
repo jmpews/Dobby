@@ -30,10 +30,14 @@ ZzInitializeInterceptor(void) {
 
     if (NULL == interceptor) {
         interceptor = (ZzInterceptor *)malloc(sizeof(ZzInterceptor));
+        memset(interceptor, 0, sizeof(ZzInterceptor));
+
         hook_function_entry_set = &(interceptor->hook_function_entry_set);
         hook_function_entry_set->capacity = ZZHOOKENTRIES_DEFAULT;
         hook_function_entry_set->entries =
             (ZzHookFunctionEntry **)malloc(sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity);
+        memset(hook_function_entry_set->entries, 0, sizeof(ZzHookFunctionEntry *) * hook_function_entry_set->capacity);
+
         if (!hook_function_entry_set->entries) {
             return ZZ_FAILED;
         }
@@ -147,6 +151,8 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *o
         }
 
         entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
+        memset(entry, 0, sizeof(ZzHookFunctionEntry));
+
         ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
                                       post_call_ptr, try_near_jump);
 
@@ -185,6 +191,8 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
         }
 
         entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
+        memset(entry, 0, sizeof(ZzHookFunctionEntry));
+
         ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE, target_start_ptr, target_end_ptr, NULL, pre_call_ptr,
                                       half_call_ptr, NULL, try_near_jump);
 

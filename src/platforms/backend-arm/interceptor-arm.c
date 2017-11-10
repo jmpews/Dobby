@@ -27,6 +27,8 @@
 ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     ZZSTATUS status;
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    memset(backend, 0, sizeof(ZzInterceptorBackend));
+
     backend->allocator = allocator;
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
@@ -128,10 +130,12 @@ ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzArmRelocator *arm_relocator, Zz
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zbool is_thumb = FALSE;
     zaddr target_addr = (zaddr)entry->target_ptr;
-    zuint redirect_limit;
+    zuint redirect_limit = 0;
 
     ZzArmHookFunctionEntryBackend *entry_backend;
     entry_backend = (ZzArmHookFunctionEntryBackend *)malloc(sizeof(ZzArmHookFunctionEntryBackend));
+    memset(entry_backend, 0, sizeof(ZzArmHookFunctionEntryBackend));
+
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
 
     is_thumb = INSTRUCTION_IS_THUMB((zaddr)entry->target_ptr);
@@ -143,10 +147,11 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
             entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
         } else {
             zz_thumb_relocator_try_relocate((zpointer)target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
-            if (redirect_limit > ZZ_THUMB_TINY_REDIRECT_SIZE && redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE) {
+            if (redirect_limit != 0 && redirect_limit > ZZ_THUMB_TINY_REDIRECT_SIZE &&
+                redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE) {
                 entry->try_near_jump = TRUE;
                 entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
-            } else if (redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
+            } else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 return ZZ_FAILED;
             } else {
                 entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
@@ -161,10 +166,11 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
             entry_backend->redirect_code_size = ZZ_ARM_TINY_REDIRECT_SIZE;
         } else {
             zz_arm_relocator_try_relocate((zpointer)target_addr, ZZ_ARM_FULL_REDIRECT_SIZE, &redirect_limit);
-            if (redirect_limit > ZZ_ARM_TINY_REDIRECT_SIZE && redirect_limit < ZZ_ARM_FULL_REDIRECT_SIZE) {
+            if (redirect_limit != 0 && redirect_limit > ZZ_ARM_TINY_REDIRECT_SIZE &&
+                redirect_limit < ZZ_ARM_FULL_REDIRECT_SIZE) {
                 entry->try_near_jump = TRUE;
                 entry_backend->redirect_code_size = ZZ_ARM_TINY_REDIRECT_SIZE;
-            } else if (redirect_limit < ZZ_ARM_TINY_REDIRECT_SIZE) {
+            } else if (redirect_limit != 0 && redirect_limit < ZZ_ARM_TINY_REDIRECT_SIZE) {
                 return ZZ_FAILED;
             } else {
                 entry_backend->redirect_code_size = ZZ_ARM_FULL_REDIRECT_SIZE;

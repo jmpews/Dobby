@@ -24,6 +24,7 @@
 
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr) {
     ZzThumbWriter *writer = (ZzThumbWriter *)malloc(sizeof(ZzThumbWriter));
+    memset(writer, 0, sizeof(ZzThumbWriter));
 
     zaddr align_address = (zaddr)data_ptr & ~(zaddr)3;
     writer->codedata = (zpointer)align_address;

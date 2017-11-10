@@ -30,6 +30,7 @@
 
 ZzArm64Writer *zz_arm64_writer_new(zpointer data_ptr) {
     ZzArm64Writer *writer = (ZzArm64Writer *)malloc(sizeof(ZzArm64Writer));
+    memset(writer, 0, sizeof(ZzArm64Writer));
 
     zaddr align_address = (zaddr)data_ptr & ~(zaddr)3;
     writer->codedata = (zpointer)align_address;
