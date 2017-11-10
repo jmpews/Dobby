@@ -18,6 +18,7 @@
 
 #include "interceptor.h"
 #include "trampoline.h"
+#include <string.h>
 
 #define ZZHOOKENTRIES_DEFAULT 100
 ZzInterceptor *g_interceptor = NULL;
@@ -93,27 +94,24 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
     ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
 
+    memset(entry, 0, sizeof(ZzHookFunctionEntry));
+
     entry->hook_type = hook_type;
     entry->id = hook_function_entry_set->size;
     entry->isEnabled = 0;
     entry->try_near_jump = try_near_jump;
     entry->interceptor = interceptor;
-
     entry->target_ptr = target_ptr;
     entry->target_end_ptr = target_end_ptr;
-
     entry->replace_call = replace_call;
     entry->pre_call = (zpointer)pre_call;
     entry->half_call = (zpointer)half_call;
     entry->post_call = (zpointer)post_call;
-
     entry->on_enter_trampoline = NULL;
     entry->on_invoke_trampoline = NULL;
     entry->on_half_trampoline = NULL;
     entry->on_leave_trampoline = NULL;
-
     entry->origin_prologue.address = target_ptr;
-
     entry->thread_local_key = ZzThreadNewThreadLocalKeyPtr();
 
     /* key function */

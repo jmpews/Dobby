@@ -22,6 +22,9 @@
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *output) {
+
+    memset(relocator, 0, sizeof(ZzThumbRelocator));
+
     relocator->inpos = 0;
     relocator->outpos = 0;
     relocator->input_start = input_code;
@@ -143,7 +146,6 @@ void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
     zuint count = 0;
     zuint outpos = self->outpos;
     ZzThumbWriter thumb_writer = *self->output;
-
     while (zz_thumb_relocator_write_one(self))
         count++;
 }

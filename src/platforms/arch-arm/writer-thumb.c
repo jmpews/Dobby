@@ -24,11 +24,11 @@
 
 ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr) {
     ZzThumbWriter *writer = (ZzThumbWriter *)malloc(sizeof(ZzThumbWriter));
-    int t = 4 - (zaddr)data_ptr % 4;
 
-    writer->codedata = data_ptr + t;
-    writer->base = data_ptr + t;
-    writer->pc = (zaddr)data_ptr + t;
+    zaddr align_address = (zaddr)data_ptr & ~(zaddr)3;
+    writer->codedata = (zpointer)align_address;
+    writer->base = (zpointer)align_address;
+    writer->pc = align_address;
     writer->size = 0;
 
     writer->literal_insn_size = 0;
@@ -40,14 +40,11 @@ ZzThumbWriter *zz_thumb_writer_new(zpointer data_ptr) {
 void zz_thumb_writer_init(ZzThumbWriter *self, zpointer data_ptr) { zz_thumb_writer_reset(self, data_ptr); }
 
 void zz_thumb_writer_reset(ZzThumbWriter *self, zpointer data_ptr) {
-    int t = 4 - (zaddr)data_ptr % 4;
+    zaddr align_address = (zaddr)data_ptr & ~(zaddr)3;
 
-    ZzThumbWriter tmp = {0};
-    *self = tmp;
-
-    self->codedata = data_ptr + t;
-    self->base = data_ptr + t;
-    self->pc = (zaddr)data_ptr + t;
+    self->codedata = (zpointer)align_address;
+    self->base = (zpointer)align_address;
+    self->pc = align_address;
     self->size = 0;
 
     self->literal_insn_size = 0;
