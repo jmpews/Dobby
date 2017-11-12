@@ -303,7 +303,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
 
-        sprintf(buffer + strlen(buffer), "enter_thunk: %s\n", thunk_buffer);
+        ZzInfoLog("%s", thunk_buffer);
+        // sprintf(buffer + strlen(buffer), "enter_thunk: %s\n", thunk_buffer);
 
         sprintf(buffer + strlen(buffer), "LogInfo: enter_thunk at %p, length: %ld.\n", code_slice->data,
                 code_slice->size);
@@ -329,7 +330,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
 
-        sprintf(buffer + strlen(buffer), "enter_thunk: %s\n", thunk_buffer);
+        ZzInfoLog("%s", thunk_buffer);
+        // sprintf(buffer + strlen(buffer), "enter_thunk: %s\n", thunk_buffer);
 
         sprintf(buffer + strlen(buffer), "LogInfo: leave_thunk at %p, length: %ld.\n", code_slice->data,
                 code_slice->size);
