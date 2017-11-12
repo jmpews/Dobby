@@ -25,17 +25,20 @@
 #define ZZ_ARM_FULL_REDIRECT_SIZE 8
 
 ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
+    if (!ZzMemoryIsSupportAllocateRXPage()) {
+        return NULL;
+        // return backend;
+    }
     ZZSTATUS status;
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
     memset(backend, 0, sizeof(ZzInterceptorBackend));
-
-    backend->allocator = allocator;
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
     zz_thumb_writer_init(&backend->thumb_writer, NULL);
     zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
 
+    backend->allocator = allocator;
     backend->enter_thunk = NULL;
     backend->half_thunk = NULL;
     backend->leave_thunk = NULL;
@@ -498,7 +501,6 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         entry->on_leave_trampoline = code_slice->data + 1;
     else
         return ZZ_FAILED;
-    /* set thumb on_leave_trampoline */
 
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
@@ -509,6 +511,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         ZzInfoLog("%s", buffer);
     }
 
+    free(code_slice);
     return ZZ_DONE;
 }
 

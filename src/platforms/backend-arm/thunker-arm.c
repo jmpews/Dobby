@@ -146,21 +146,18 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(threadstack);
-
     if (entry->post_call) {
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack);
     }
     *(zpointer *)next_hop = callstack->caller_ret_addr;
-
     ZzFreeCallStack(callstack);
 }
 
 void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 
     /* save general registers and sp */
-
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
@@ -345,5 +342,6 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         self->half_thunk = code_slice->data + 1;
     else
         return ZZ_FAILED;
+
     return status;
 }

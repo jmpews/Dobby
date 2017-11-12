@@ -30,16 +30,16 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
     memset(backend, 0, sizeof(ZzInterceptorBackend));
 
-    backend->allocator = allocator;
-
     zz_arm64_writer_init(&backend->arm64_writer, NULL);
     zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);
 
+    backend->allocator = allocator;
     backend->enter_thunk = NULL;
     backend->half_thunk = NULL;
     backend->leave_thunk = NULL;
 
     ZzThunkerBuildThunk(backend);
+
     return backend;
 }
 
@@ -119,9 +119,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zaddr)entry->on_enter_trampoline);
-
     code_slice =
         zz_code_patch_arm64_writer(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
     if (code_slice)
@@ -137,6 +135,8 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
                 code_slice->data, code_slice->size, entry->on_enter_trampoline);
         ZzInfoLog("%s", buffer);
     }
+
+    free(code_slice);
     return status;
 }
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
@@ -177,6 +177,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         ZzBuildEnterTransferTrampoline(self, entry);
     }
 
+    free(code_slice);
     return status;
 }
 
@@ -194,7 +195,6 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     arm64_writer = &self->arm64_writer;
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-
     zz_arm64_relocator_reset(arm64_relocator, (zpointer)target_addr, arm64_writer);
     zsize tmp_relocator_insn_size = 0;
     entry->target_half_ret_addr = 0;
@@ -222,7 +222,6 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     }
 
     restore_target_addr = (zpointer)((zaddr)target_addr + tmp_relocator_insn_size);
-
     /* jump to rest target address */
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zaddr)restore_target_addr);
 
@@ -231,6 +230,12 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         entry->on_invoke_trampoline = code_slice->data;
     else
         return ZZ_FAILED;
+
+    if (entry->hook_type == HOOK_ADDRESS_TYPE) {
+        // update target_half_ret_addr
+        entry->target_half_ret_addr += (zaddr)code_slice->data;
+    }
+
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {0};
         sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildInvokeTrampoline:");
@@ -253,10 +258,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         ZzInfoLog("%s", buffer);
     }
 
-    if (entry->hook_type == HOOK_ADDRESS_TYPE) {
-        // update target_half_ret_addr
-        entry->target_half_ret_addr += (zaddr)code_slice->data;
-    }
+    free(code_slice);
     return status;
 }
 
@@ -322,6 +324,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         ZzInfoLog("%s", buffer);
     }
 
+    free(code_slice);
     return ZZ_DONE;
 }
 
@@ -338,7 +341,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
     arm64_writer->pc = target_addr;
 
     if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-        zz_arm64_writer_put_b_imm(arm64_writer, (zaddr)entry->on_enter_transfer_trampoline - (zaddr)target_addr);
+        zz_arm64_writer_put_b_imm(arm64_writer, (zaddr)entry->on_enter_transfer_trampoline - (zaddr)arm64_writer->pc);
     } else {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zaddr)entry->on_enter_trampoline);
     }

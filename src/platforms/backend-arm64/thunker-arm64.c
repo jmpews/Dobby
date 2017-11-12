@@ -164,14 +164,12 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
-
     if (entry->post_call) {
         POSTCALL post_call;
         post_call = entry->post_call;
         (*post_call)(rs, (ThreadStack *)stack, (CallStack *)callstack);
     }
     *(zpointer *)next_hop = callstack->caller_ret_addr;
-
     ZzFreeCallStack(callstack);
 }
 
@@ -489,16 +487,14 @@ void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    zbyte temp_code_slice_data[256] = {0};
+    zbyte temp_code_slice_data[512] = {0};
     ZzArm64Writer *arm64_writer = NULL;
     ZzCodeSlice *code_slice = NULL;
     ZZSTATUS status = ZZ_SUCCESS;
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
-
     code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->enter_thunk = (void *)enter_thunk_template;
@@ -515,12 +511,12 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     zz_arm64_thunker_build_leave_thunk(arm64_writer);
-
     code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->leave_thunk = code_slice->data;
     else
         return ZZ_FAILED;
+
     if (ZzIsEnableDebugMode()) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
@@ -528,9 +524,9 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 code_slice->size);
         ZzInfoLog("%s", buffer);
     }
+
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     zz_arm64_thunker_build_half_thunk(arm64_writer);
-
     code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->half_thunk = code_slice->data;
