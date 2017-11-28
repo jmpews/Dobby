@@ -11,7 +11,6 @@
 		865F60B31F613A4A0000622F /* trampoline.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60A31F613A470000622F /* trampoline.c */; };
 		865F60B41F613A4A0000622F /* interceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60A41F613A470000622F /* interceptor.h */; };
 		865F60B51F613A4A0000622F /* stack.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60A51F613A480000622F /* stack.h */; };
-		865F60B61F613A4A0000622F /* thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60A61F613A480000622F /* thread.c */; };
 		865F60B71F613A4A0000622F /* interceptor.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60A71F613A480000622F /* interceptor.c */; };
 		865F60B81F613A4A0000622F /* allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60A81F613A480000622F /* allocator.h */; };
 		865F60B91F613A4A0000622F /* zzdefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60A91F613A480000622F /* zzdefs.h */; };
@@ -23,19 +22,6 @@
 		865F60BF1F613A4A0000622F /* trampoline.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60AF1F613A490000622F /* trampoline.h */; };
 		865F60C01F613A4A0000622F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60B01F613A4A0000622F /* memory.h */; };
 		865F60C11F613A4A0000622F /* thunker.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60B11F613A4A0000622F /* thunker.h */; };
-		865F60F81F613A9F0000622F /* instructions.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60C41F613A9E0000622F /* instructions.h */; };
-		865F60F91F613A9F0000622F /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60C51F613A9E0000622F /* reader.c */; };
-		865F60FA1F613A9F0000622F /* reader.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60C61F613A9E0000622F /* reader.h */; };
-		865F60FC1F613A9F0000622F /* relocator-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60C81F613A9E0000622F /* relocator-arm64.c */; };
-		865F60FD1F613A9F0000622F /* relocator-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60C91F613A9E0000622F /* relocator-arm64.h */; };
-		865F60FF1F613A9F0000622F /* thunker-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60CB1F613A9E0000622F /* thunker-arm64.c */; };
-		865F61001F613A9F0000622F /* thunker-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60CC1F613A9E0000622F /* thunker-arm64.h */; };
-		865F61021F613A9F0000622F /* writer-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60CE1F613A9E0000622F /* writer-arm64.c */; };
-		865F61031F613A9F0000622F /* writer-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60CF1F613A9E0000622F /* writer-arm64.h */; };
-		865F61051F613A9F0000622F /* memory-darwin.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60D21F613A9E0000622F /* memory-darwin.c */; };
-		865F61061F613A9F0000622F /* memory-darwin.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60D31F613A9E0000622F /* memory-darwin.h */; };
-		865F61081F613A9F0000622F /* thread-posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60D61F613A9E0000622F /* thread-posix.c */; };
-		865F61091F613A9F0000622F /* thread-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60D71F613A9E0000622F /* thread-posix.h */; };
 		865F61111F613A9F0000622F /* debugbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60E21F613A9E0000622F /* debugbreak.h */; };
 		865F61121F613A9F0000622F /* LEB128.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60E31F613A9E0000622F /* LEB128.h */; };
 		865F61131F613A9F0000622F /* memory-utils-common.c in Sources */ = {isa = PBXBuildFile; fileRef = 865F60E41F613A9E0000622F /* memory-utils-common.c */; };
@@ -51,7 +37,27 @@
 		865F61211F613A9F0000622F /* thread-utils-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F41F613A9E0000622F /* thread-utils-posix.h */; };
 		865F61241F613A9F0000622F /* zz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F60F71F613A9E0000622F /* zz.h */; };
 		865F61261F613B740000622F /* hookzz.h in Headers */ = {isa = PBXBuildFile; fileRef = 865F61251F613B740000622F /* hookzz.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		865F61281F613C2F0000622F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 865F61271F613C2F0000622F /* libcapstone.a */; };
+		86E5A6691FCCFB9000AF071B /* instructions.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A65F1FCCFB9000AF071B /* instructions.c */; };
+		86E5A66A1FCCFB9000AF071B /* instructions.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6601FCCFB9000AF071B /* instructions.h */; };
+		86E5A66B1FCCFB9000AF071B /* reader-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6611FCCFB9000AF071B /* reader-arm64.c */; };
+		86E5A66C1FCCFB9000AF071B /* reader-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6621FCCFB9000AF071B /* reader-arm64.h */; };
+		86E5A66D1FCCFB9000AF071B /* regs-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6631FCCFB9000AF071B /* regs-arm64.c */; };
+		86E5A66E1FCCFB9000AF071B /* regs-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6641FCCFB9000AF071B /* regs-arm64.h */; };
+		86E5A66F1FCCFB9000AF071B /* relocator-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6651FCCFB9000AF071B /* relocator-arm64.c */; };
+		86E5A6701FCCFB9000AF071B /* relocator-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6661FCCFB9000AF071B /* relocator-arm64.h */; };
+		86E5A6711FCCFB9000AF071B /* writer-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6671FCCFB9000AF071B /* writer-arm64.c */; };
+		86E5A6721FCCFB9000AF071B /* writer-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6681FCCFB9000AF071B /* writer-arm64.h */; };
+		86E5A6791FCCFB9A00AF071B /* interceptor-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6741FCCFB9A00AF071B /* interceptor-arm64.c */; };
+		86E5A67A1FCCFB9A00AF071B /* interceptor-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6751FCCFB9A00AF071B /* interceptor-arm64.h */; };
+		86E5A67B1FCCFB9A00AF071B /* interceptor-template-arm64.s in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6761FCCFB9A00AF071B /* interceptor-template-arm64.s */; };
+		86E5A67C1FCCFB9A00AF071B /* thunker-arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6771FCCFB9A00AF071B /* thunker-arm64.c */; };
+		86E5A67D1FCCFB9A00AF071B /* thunker-arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6781FCCFB9A00AF071B /* thunker-arm64.h */; };
+		86E5A6811FCCFC0100AF071B /* memory-darwin.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A67F1FCCFC0000AF071B /* memory-darwin.c */; };
+		86E5A6821FCCFC0100AF071B /* memory-darwin.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6801FCCFC0000AF071B /* memory-darwin.h */; };
+		86E5A6861FCCFC1F00AF071B /* thread-posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6841FCCFC1F00AF071B /* thread-posix.c */; };
+		86E5A6871FCCFC1F00AF071B /* thread-posix.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6851FCCFC1F00AF071B /* thread-posix.h */; };
+		86E5A68A1FCCFC5A00AF071B /* zzinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E5A6881FCCFC5900AF071B /* zzinfo.h */; };
+		86E5A68B1FCCFC5A00AF071B /* zzinfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 86E5A6891FCCFC5900AF071B /* zzinfo.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,7 +67,6 @@
 		865F60A31F613A470000622F /* trampoline.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = trampoline.c; path = ../../src/trampoline.c; sourceTree = "<group>"; };
 		865F60A41F613A470000622F /* interceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interceptor.h; path = ../../src/interceptor.h; sourceTree = "<group>"; };
 		865F60A51F613A480000622F /* stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stack.h; path = ../../src/stack.h; sourceTree = "<group>"; };
-		865F60A61F613A480000622F /* thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = thread.c; path = ../../src/thread.c; sourceTree = "<group>"; };
 		865F60A71F613A480000622F /* interceptor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = interceptor.c; path = ../../src/interceptor.c; sourceTree = "<group>"; };
 		865F60A81F613A480000622F /* allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = allocator.h; path = ../../src/allocator.h; sourceTree = "<group>"; };
 		865F60A91F613A480000622F /* zzdefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zzdefs.h; path = ../../src/zzdefs.h; sourceTree = "<group>"; };
@@ -73,19 +78,6 @@
 		865F60AF1F613A490000622F /* trampoline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trampoline.h; path = ../../src/trampoline.h; sourceTree = "<group>"; };
 		865F60B01F613A4A0000622F /* memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = memory.h; path = ../../src/memory.h; sourceTree = "<group>"; };
 		865F60B11F613A4A0000622F /* thunker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = thunker.h; path = ../../src/thunker.h; sourceTree = "<group>"; };
-		865F60C41F613A9E0000622F /* instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
-		865F60C51F613A9E0000622F /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
-		865F60C61F613A9E0000622F /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
-		865F60C81F613A9E0000622F /* relocator-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "relocator-arm64.c"; sourceTree = "<group>"; };
-		865F60C91F613A9E0000622F /* relocator-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "relocator-arm64.h"; sourceTree = "<group>"; };
-		865F60CB1F613A9E0000622F /* thunker-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thunker-arm64.c"; sourceTree = "<group>"; };
-		865F60CC1F613A9E0000622F /* thunker-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thunker-arm64.h"; sourceTree = "<group>"; };
-		865F60CE1F613A9E0000622F /* writer-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "writer-arm64.c"; sourceTree = "<group>"; };
-		865F60CF1F613A9E0000622F /* writer-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "writer-arm64.h"; sourceTree = "<group>"; };
-		865F60D21F613A9E0000622F /* memory-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-darwin.c"; sourceTree = "<group>"; };
-		865F60D31F613A9E0000622F /* memory-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-darwin.h"; sourceTree = "<group>"; };
-		865F60D61F613A9E0000622F /* thread-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thread-posix.c"; sourceTree = "<group>"; };
-		865F60D71F613A9E0000622F /* thread-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thread-posix.h"; sourceTree = "<group>"; };
 		865F60E21F613A9E0000622F /* debugbreak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugbreak.h; sourceTree = "<group>"; };
 		865F60E31F613A9E0000622F /* LEB128.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEB128.h; sourceTree = "<group>"; };
 		865F60E41F613A9E0000622F /* memory-utils-common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-utils-common.c"; sourceTree = "<group>"; };
@@ -101,7 +93,27 @@
 		865F60F41F613A9E0000622F /* thread-utils-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thread-utils-posix.h"; sourceTree = "<group>"; };
 		865F60F71F613A9E0000622F /* zz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zz.h; sourceTree = "<group>"; };
 		865F61251F613B740000622F /* hookzz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hookzz.h; path = ../../include/hookzz.h; sourceTree = "<group>"; };
-		865F61271F613C2F0000622F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = ../deps/capstone/libcapstone.a; sourceTree = "<group>"; };
+		86E5A65F1FCCFB9000AF071B /* instructions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = instructions.c; sourceTree = "<group>"; };
+		86E5A6601FCCFB9000AF071B /* instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
+		86E5A6611FCCFB9000AF071B /* reader-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "reader-arm64.c"; sourceTree = "<group>"; };
+		86E5A6621FCCFB9000AF071B /* reader-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "reader-arm64.h"; sourceTree = "<group>"; };
+		86E5A6631FCCFB9000AF071B /* regs-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "regs-arm64.c"; sourceTree = "<group>"; };
+		86E5A6641FCCFB9000AF071B /* regs-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "regs-arm64.h"; sourceTree = "<group>"; };
+		86E5A6651FCCFB9000AF071B /* relocator-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "relocator-arm64.c"; sourceTree = "<group>"; };
+		86E5A6661FCCFB9000AF071B /* relocator-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "relocator-arm64.h"; sourceTree = "<group>"; };
+		86E5A6671FCCFB9000AF071B /* writer-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "writer-arm64.c"; sourceTree = "<group>"; };
+		86E5A6681FCCFB9000AF071B /* writer-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "writer-arm64.h"; sourceTree = "<group>"; };
+		86E5A6741FCCFB9A00AF071B /* interceptor-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "interceptor-arm64.c"; sourceTree = "<group>"; };
+		86E5A6751FCCFB9A00AF071B /* interceptor-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "interceptor-arm64.h"; sourceTree = "<group>"; };
+		86E5A6761FCCFB9A00AF071B /* interceptor-template-arm64.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = "interceptor-template-arm64.s"; sourceTree = "<group>"; };
+		86E5A6771FCCFB9A00AF071B /* thunker-arm64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thunker-arm64.c"; sourceTree = "<group>"; };
+		86E5A6781FCCFB9A00AF071B /* thunker-arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thunker-arm64.h"; sourceTree = "<group>"; };
+		86E5A67F1FCCFC0000AF071B /* memory-darwin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "memory-darwin.c"; sourceTree = "<group>"; };
+		86E5A6801FCCFC0000AF071B /* memory-darwin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "memory-darwin.h"; sourceTree = "<group>"; };
+		86E5A6841FCCFC1F00AF071B /* thread-posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "thread-posix.c"; sourceTree = "<group>"; };
+		86E5A6851FCCFC1F00AF071B /* thread-posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "thread-posix.h"; sourceTree = "<group>"; };
+		86E5A6881FCCFC5900AF071B /* zzinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zzinfo.h; path = ../../src/zzinfo.h; sourceTree = "<group>"; };
+		86E5A6891FCCFC5900AF071B /* zzinfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = zzinfo.c; path = ../../src/zzinfo.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,7 +121,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				865F61281F613C2F0000622F /* libcapstone.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,7 +132,6 @@
 			children = (
 				865F5FD21F6123390000622F /* HookZz */,
 				865F5FD11F6123390000622F /* Products */,
-				865F60931F61283D0000622F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -147,70 +157,30 @@
 				865F60AD1F613A490000622F /* relocator.h */,
 				865F60AE1F613A490000622F /* stack.c */,
 				865F60A51F613A480000622F /* stack.h */,
-				865F60A61F613A480000622F /* thread.c */,
 				865F60A21F613A470000622F /* thread.h */,
 				865F60B11F613A4A0000622F /* thunker.h */,
 				865F60A31F613A470000622F /* trampoline.c */,
 				865F60AF1F613A490000622F /* trampoline.h */,
 				865F60AC1F613A490000622F /* writer.h */,
 				865F60A91F613A480000622F /* zzdefs.h */,
+				86E5A6891FCCFC5900AF071B /* zzinfo.c */,
+				86E5A6881FCCFC5900AF071B /* zzinfo.h */,
 				865F61251F613B740000622F /* hookzz.h */,
 				865F5FD41F6123390000622F /* Info.plist */,
 			);
 			path = HookZz;
 			sourceTree = "<group>";
 		};
-		865F60931F61283D0000622F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				865F61271F613C2F0000622F /* libcapstone.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		865F60C21F613A9E0000622F /* platforms */ = {
 			isa = PBXGroup;
 			children = (
-				865F60C31F613A9E0000622F /* arm64 */,
-				865F60D11F613A9E0000622F /* darwin */,
-				865F60D51F613A9E0000622F /* posix */,
+				86E5A6831FCCFC1F00AF071B /* backend-posix */,
+				86E5A67E1FCCFC0000AF071B /* backend-darwin */,
+				86E5A6731FCCFB9A00AF071B /* backend-arm64 */,
+				86E5A65E1FCCFB9000AF071B /* arch-arm64 */,
 			);
 			name = platforms;
 			path = ../../src/platforms;
-			sourceTree = "<group>";
-		};
-		865F60C31F613A9E0000622F /* arm64 */ = {
-			isa = PBXGroup;
-			children = (
-				865F60C41F613A9E0000622F /* instructions.h */,
-				865F60C51F613A9E0000622F /* reader.c */,
-				865F60C61F613A9E0000622F /* reader.h */,
-				865F60C81F613A9E0000622F /* relocator-arm64.c */,
-				865F60C91F613A9E0000622F /* relocator-arm64.h */,
-				865F60CB1F613A9E0000622F /* thunker-arm64.c */,
-				865F60CC1F613A9E0000622F /* thunker-arm64.h */,
-				865F60CE1F613A9E0000622F /* writer-arm64.c */,
-				865F60CF1F613A9E0000622F /* writer-arm64.h */,
-			);
-			path = arm64;
-			sourceTree = "<group>";
-		};
-		865F60D11F613A9E0000622F /* darwin */ = {
-			isa = PBXGroup;
-			children = (
-				865F60D21F613A9E0000622F /* memory-darwin.c */,
-				865F60D31F613A9E0000622F /* memory-darwin.h */,
-			);
-			path = darwin;
-			sourceTree = "<group>";
-		};
-		865F60D51F613A9E0000622F /* posix */ = {
-			isa = PBXGroup;
-			children = (
-				865F60D61F613A9E0000622F /* thread-posix.c */,
-				865F60D71F613A9E0000622F /* thread-posix.h */,
-			);
-			path = posix;
 			sourceTree = "<group>";
 		};
 		865F60DF1F613A9E0000622F /* zzdeps */ = {
@@ -259,6 +229,53 @@
 			path = posix;
 			sourceTree = "<group>";
 		};
+		86E5A65E1FCCFB9000AF071B /* arch-arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				86E5A65F1FCCFB9000AF071B /* instructions.c */,
+				86E5A6601FCCFB9000AF071B /* instructions.h */,
+				86E5A6611FCCFB9000AF071B /* reader-arm64.c */,
+				86E5A6621FCCFB9000AF071B /* reader-arm64.h */,
+				86E5A6631FCCFB9000AF071B /* regs-arm64.c */,
+				86E5A6641FCCFB9000AF071B /* regs-arm64.h */,
+				86E5A6651FCCFB9000AF071B /* relocator-arm64.c */,
+				86E5A6661FCCFB9000AF071B /* relocator-arm64.h */,
+				86E5A6671FCCFB9000AF071B /* writer-arm64.c */,
+				86E5A6681FCCFB9000AF071B /* writer-arm64.h */,
+			);
+			path = "arch-arm64";
+			sourceTree = "<group>";
+		};
+		86E5A6731FCCFB9A00AF071B /* backend-arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				86E5A6741FCCFB9A00AF071B /* interceptor-arm64.c */,
+				86E5A6751FCCFB9A00AF071B /* interceptor-arm64.h */,
+				86E5A6761FCCFB9A00AF071B /* interceptor-template-arm64.s */,
+				86E5A6771FCCFB9A00AF071B /* thunker-arm64.c */,
+				86E5A6781FCCFB9A00AF071B /* thunker-arm64.h */,
+			);
+			path = "backend-arm64";
+			sourceTree = "<group>";
+		};
+		86E5A67E1FCCFC0000AF071B /* backend-darwin */ = {
+			isa = PBXGroup;
+			children = (
+				86E5A67F1FCCFC0000AF071B /* memory-darwin.c */,
+				86E5A6801FCCFC0000AF071B /* memory-darwin.h */,
+			);
+			path = "backend-darwin";
+			sourceTree = "<group>";
+		};
+		86E5A6831FCCFC1F00AF071B /* backend-posix */ = {
+			isa = PBXGroup;
+			children = (
+				86E5A6841FCCFC1F00AF071B /* thread-posix.c */,
+				86E5A6851FCCFC1F00AF071B /* thread-posix.h */,
+			);
+			path = "backend-posix";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -266,33 +283,36 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86E5A68A1FCCFC5A00AF071B /* zzinfo.h in Headers */,
 				865F61261F613B740000622F /* hookzz.h in Headers */,
 				865F61211F613A9F0000622F /* thread-utils-posix.h in Headers */,
+				86E5A6721FCCFB9000AF071B /* writer-arm64.h in Headers */,
 				865F61241F613A9F0000622F /* zz.h in Headers */,
-				865F61061F613A9F0000622F /* memory-darwin.h in Headers */,
 				865F60B41F613A4A0000622F /* interceptor.h in Headers */,
-				865F61001F613A9F0000622F /* thunker-arm64.h in Headers */,
-				865F60FD1F613A9F0000622F /* relocator-arm64.h in Headers */,
-				865F60F81F613A9F0000622F /* instructions.h in Headers */,
 				865F60B81F613A4A0000622F /* allocator.h in Headers */,
 				865F60BD1F613A4A0000622F /* relocator.h in Headers */,
+				86E5A66A1FCCFB9000AF071B /* instructions.h in Headers */,
+				86E5A6821FCCFC0100AF071B /* memory-darwin.h in Headers */,
 				865F60B91F613A4A0000622F /* zzdefs.h in Headers */,
-				865F60FA1F613A9F0000622F /* reader.h in Headers */,
 				865F60B51F613A4A0000622F /* stack.h in Headers */,
 				865F60B21F613A4A0000622F /* thread.h in Headers */,
 				865F611E1F613A9F0000622F /* memory-utils-posix.h in Headers */,
+				86E5A67D1FCCFB9A00AF071B /* thunker-arm64.h in Headers */,
 				865F61111F613A9F0000622F /* debugbreak.h in Headers */,
 				865F611B1F613A9F0000622F /* memory-utils-darwin.h in Headers */,
-				865F61091F613A9F0000622F /* thread-posix.h in Headers */,
 				865F60BF1F613A4A0000622F /* trampoline.h in Headers */,
 				865F60C01F613A4A0000622F /* memory.h in Headers */,
 				865F61181F613A9F0000622F /* macho-utils-darwin.h in Headers */,
-				865F61031F613A9F0000622F /* writer-arm64.h in Headers */,
 				865F61161F613A9F0000622F /* mach_vm.h in Headers */,
+				86E5A6701FCCFB9000AF071B /* relocator-arm64.h in Headers */,
 				865F61121F613A9F0000622F /* LEB128.h in Headers */,
+				86E5A66C1FCCFB9000AF071B /* reader-arm64.h in Headers */,
+				86E5A66E1FCCFB9000AF071B /* regs-arm64.h in Headers */,
 				865F60C11F613A4A0000622F /* thunker.h in Headers */,
 				865F60BC1F613A4A0000622F /* writer.h in Headers */,
 				865F61141F613A9F0000622F /* memory-utils-common.h in Headers */,
+				86E5A67A1FCCFB9A00AF071B /* interceptor-arm64.h in Headers */,
+				86E5A6871FCCFC1F00AF071B /* thread-posix.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,20 +385,24 @@
 			files = (
 				865F60BE1F613A4A0000622F /* stack.c in Sources */,
 				865F611A1F613A9F0000622F /* memory-utils-darwin.c in Sources */,
+				86E5A66F1FCCFB9000AF071B /* relocator-arm64.c in Sources */,
+				86E5A6711FCCFB9000AF071B /* writer-arm64.c in Sources */,
+				86E5A66B1FCCFB9000AF071B /* reader-arm64.c in Sources */,
+				86E5A66D1FCCFB9000AF071B /* regs-arm64.c in Sources */,
+				86E5A6791FCCFB9A00AF071B /* interceptor-arm64.c in Sources */,
 				865F61131F613A9F0000622F /* memory-utils-common.c in Sources */,
 				865F60B31F613A4A0000622F /* trampoline.c in Sources */,
+				86E5A67C1FCCFB9A00AF071B /* thunker-arm64.c in Sources */,
 				865F60B71F613A4A0000622F /* interceptor.c in Sources */,
-				865F60FF1F613A9F0000622F /* thunker-arm64.c in Sources */,
+				86E5A68B1FCCFC5A00AF071B /* zzinfo.c in Sources */,
+				86E5A67B1FCCFB9A00AF071B /* interceptor-template-arm64.s in Sources */,
+				86E5A6811FCCFC0100AF071B /* memory-darwin.c in Sources */,
 				865F611D1F613A9F0000622F /* memory-utils-posix.c in Sources */,
 				865F60BA1F613A4A0000622F /* memory.c in Sources */,
-				865F60FC1F613A9F0000622F /* relocator-arm64.c in Sources */,
-				865F60B61F613A4A0000622F /* thread.c in Sources */,
-				865F61021F613A9F0000622F /* writer-arm64.c in Sources */,
-				865F61051F613A9F0000622F /* memory-darwin.c in Sources */,
+				86E5A6861FCCFC1F00AF071B /* thread-posix.c in Sources */,
+				86E5A6691FCCFB9000AF071B /* instructions.c in Sources */,
 				865F60BB1F613A4A0000622F /* allocator.c in Sources */,
-				865F60F91F613A9F0000622F /* reader.c in Sources */,
 				865F61201F613A9F0000622F /* thread-utils-posix.c in Sources */,
-				865F61081F613A9F0000622F /* thread-posix.c in Sources */,
 				865F61171F613A9F0000622F /* macho-utils-darwin.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
