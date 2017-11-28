@@ -104,7 +104,11 @@
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
                                        zpointer caller_ret_addr) {
-    Xinfo("target %p call begin-invocation", entry->target_ptr);
+    Xdebug("target %p call begin-invocation", entry->target_ptr);
+
+    // for easy debug
+    // if (!strcmp((char *)(rs->general.regs.x1), "_beginBackgroundTaskWithName:expirationHandler:")) {
+    // }
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {

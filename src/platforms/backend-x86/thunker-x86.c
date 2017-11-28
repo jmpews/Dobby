@@ -18,11 +18,10 @@
 #include "zzinfo.h"
 #include <string.h>
 
-
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
                                        zpointer caller_ret_addr) {
-    Xinfo("target %p call begin-invocation", entry->target_ptr);
+    Xdebug("target %p call begin-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -101,15 +100,10 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
     ZzFreeCallStack(callstack);
 }
 
-void zz_x86_thunker_build_enter_thunk(ZzWriter *writer) {
-}
+void zz_x86_thunker_build_enter_thunk(ZzWriter *writer) {}
 
-void zz_x86_thunker_build_half_thunk(ZzWriter *writer) {
-}
+void zz_x86_thunker_build_half_thunk(ZzWriter *writer) {}
 
-void zz_x86_thunker_build_leave_thunk(ZzWriter *writer) {
-}
+void zz_x86_thunker_build_leave_thunk(ZzWriter *writer) {}
 
-ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    return ZZ_FAILED;
-}
+ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) { return ZZ_FAILED; }
