@@ -1,16 +1,16 @@
 /* Copyright (c) 2011-2015, Scott Tsai
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,24 +42,31 @@ extern "C" {
 enum {
     /* gcc optimizers consider code after __builtin_trap() dead.
      * Making __builtin_trap() unsuitable for breaking into the debugger */
-            DEBUG_BREAK_PREFER_BUILTIN_TRAP_TO_SIGTRAP = 0,
+    DEBUG_BREAK_PREFER_BUILTIN_TRAP_TO_SIGTRAP = 0,
 };
 
 #if defined(__i386__) || defined(__x86_64__)
-enum { HAVE_TRAP_INSTRUCTION = 1, };
-__attribute__((gnu_inline, always_inline))
-__inline__ static void trap_instruction(void)
-{
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline)) __inline__ static void trap_instruction(void) {
     __asm__ volatile("int $0x03");
 }
+#elif defined(__thumb__) && defined(__APPLE__)
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
+    __builtin_trap();
+}
 #elif defined(__thumb__)
-enum { HAVE_TRAP_INSTRUCTION = 1, };
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
 /* FIXME: handle __THUMB_INTERWORK__ */
-__attribute__((gnu_inline, always_inline))
-__inline__ static void trap_instruction(void)
-{
-    /* See 'arm-linux-tdep.c' in GDB source.
-     * Both instruction sequences below work. */
+__attribute__((gnu_inline, always_inline)) __inline__ static void trap_instruction(void) {
+/* See 'arm-linux-tdep.c' in GDB source.
+ * Both instruction sequences below work. */
 #if 1
     /* 'eabi_linux_thumb_le_breakpoint' */
     __asm__ volatile(".inst 0xde01");
@@ -80,11 +87,18 @@ __inline__ static void trap_instruction(void)
      * (gdb) jump   *($pc + $instruction_len)
      */
 }
+#elif defined(__arm__) && !defined(__thumb__) && defined(__APPLE__)
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
+    __builtin_trap();
+}
 #elif defined(__arm__) && !defined(__thumb__)
-enum { HAVE_TRAP_INSTRUCTION = 1, };
-__attribute__((gnu_inline, always_inline))
-__inline__ static void trap_instruction(void)
-{
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline)) __inline__ static void trap_instruction(void) {
     /* See 'arm-linux-tdep.c' in GDB source,
      * 'eabi_linux_arm_le_breakpoint' */
     __asm__ volatile(".inst 0xe7f001f0");
@@ -95,15 +109,14 @@ __inline__ static void trap_instruction(void)
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
 };
-__attribute__((gnu_inline, always_inline))
-static void __inline__ trap_instruction(void) {
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
     __builtin_trap();
 }
 #elif defined(__aarch64__)
-enum { HAVE_TRAP_INSTRUCTION = 1, };
-__attribute__((gnu_inline, always_inline))
-__inline__ static void trap_instruction(void)
-{
+enum {
+    HAVE_TRAP_INSTRUCTION = 1,
+};
+__attribute__((gnu_inline, always_inline)) __inline__ static void trap_instruction(void) {
     /* See 'aarch64-tdep.c' in GDB source,
      * 'aarch64_default_breakpoint' */
     __asm__ volatile(".inst 0xd4200000");
@@ -114,8 +127,7 @@ enum {
 };
 #endif
 
-__attribute__((gnu_inline, always_inline))
-__inline__ static void debug_break(void) {
+__attribute__((gnu_inline, always_inline)) __inline__ static void debug_break(void) {
     if (HAVE_TRAP_INSTRUCTION) {
         trap_instruction();
     } else if (DEBUG_BREAK_PREFER_BUILTIN_TRAP_TO_SIGTRAP) {

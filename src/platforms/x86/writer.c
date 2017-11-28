@@ -17,13 +17,14 @@
 #include "writer.h"
 #include <string.h>
 
-Instruction *writer_put_jmp(zpointer address) {
+ZzInstruction *writer_put_jmp(zpointer address)
+{
 
     JMP_ABS jmp = {
-            0xFF, 0x25, 0x00000000, // FF25 00000000: JMP [RIP+6]
-            0x0000000000000000ULL   // Absolute destination address
+        0xFF, 0x25, 0x00000000, // FF25 00000000: JMP [RIP+6]
+        0x0000000000000000ULL   // Absolute destination address
     };
-    Instruction *ins = (Instruction *) malloc(sizeof(Instruction));
+    ZzInstruction *ins = (ZzInstruction *)malloc(sizeof(ZzInstruction));
     jmp.address = address;
     ins->size = sizeof(jmp);
     memcpy(ins->bytes, &jmp, sizeof(jmp));
