@@ -17,6 +17,9 @@
 #ifndef hook_zz_h
 #define hook_zz_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -179,4 +182,7 @@ ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpoi
                         POSTCALL post_call_ptr);
 #endif
 
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 #endif
