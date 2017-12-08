@@ -1,13 +1,22 @@
 // .section	__TEXT,__text,regular,pure_instructions
 // .ios_version_min 11, 0
+
+#if defined(__WIN32__) || defined(__APPLE__)
+#define cdecl(s) _##s
+#else
+#define cdecl(s) s
+#endif
+
 .align 4
-.globl _ctx_save
-.globl _ctx_restore
-.globl _enter_thunk_template
-.globl _leave_thunk_template
-.globl _on_enter_trampoline_template
-.globl _on_invoke_trampoline_template
-.globl _on_leave_trampoline_template
+
+.globl cdecl(ctx_save)
+.globl cdecl(ctx_restore)
+.globl cdecl(enter_thunk_template)
+.globl cdecl(leave_thunk_template)
+.globl cdecl(on_enter_trampoline_template)
+.globl cdecl(on_invoke_trampoline_template)
+.globl cdecl(on_leave_trampoline_template)
+
 
 _ctx_save:
 	// save {q0-q7}
