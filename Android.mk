@@ -22,7 +22,6 @@ ifeq ($(TARGET_ARCH), arm)
 else ifeq ($(TARGET_ARCH), arm64)
 	ZZ_SRC += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm64/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.c) \
-			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.s) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.S)
 
 else ifeq ($(TARGET_ARCH), x86)
