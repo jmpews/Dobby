@@ -132,7 +132,7 @@ ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/arch-$(ARCH)/*.c) \
 		$(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.c)
 
 ifeq ($(ARCH), arm64)
-ZZ_SS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.s)
+ZZ_SS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.S)
 endif
 	
 ZZ_EXPORT_INCLUDE := -I$(LOCAL_PATH)/include
@@ -150,7 +150,7 @@ ZZ_GCC_TEST += $(ZZ_INCLUDE)
 
 LDFLAGS += $(ZZ_LIB)
 
-ZZ_SS_OBJS := $(ZZ_SS:.s=.o)
+ZZ_SS_OBJS := $(ZZ_SS:.S=.o)
 ZZ_SRCS_OBJS := $(ZZ_SRCS:.c=.o)
 ZZ_OBJS := $(ZZ_SRCS_OBJS) $(ZZ_DEPS_OBJS) $(ZZ_SS_OBJS)
 
@@ -174,7 +174,7 @@ $(ZZ_DEPS_OBJS): %.o : %.c
 	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
-$(ZZ_SS_OBJS): %.o : %.s
+$(ZZ_SS_OBJS): %.o : %.S
 	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 

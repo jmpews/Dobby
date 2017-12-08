@@ -131,6 +131,7 @@ cdecl(enter_thunk_template):
 	add x2, sp, #0x10
 	add x3, sp, #0x108
 	// call function_context_begin_invocation
+	.long cdecl(function_context_begin_invocation)
 	bl cdecl(function_context_begin_invocation)
 
 	// restore alignment padding
