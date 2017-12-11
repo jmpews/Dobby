@@ -14,48 +14,17 @@
  *    limitations under the License.
  */
 
-#ifndef hook_zz_h
-#define hook_zz_h
+#ifndef hookzz_h
+#define hookzz_h
 
+// clang-format off
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
+
 #include <stdbool.h>
 #include <stdint.h>
 
-#define DEBUG_MODE 0
-
-#ifndef zz_type
-#define zz_type
-
-typedef void *zpointer;
-typedef unsigned long zsize;
-typedef unsigned long zaddr;
-
-typedef uint64_t zuint64;
-typedef uint32_t zuint32;
-typedef uint16_t zuint16;
-typedef uint8_t zuint8;
-
-typedef int32_t zint32;
-typedef int16_t zint16;
-typedef int8_t zint8;
-
-typedef unsigned long zuint;
-typedef long zint;
-typedef unsigned char zbyte;
-typedef bool zbool;
-
-#endif
-
-#if defined(FALSE)
-#else
-#define FALSE 0
-#define TRUE 1
-#endif
-
-#ifndef zz_register_type
-#define zz_register_type
 #if defined(__arm64__) || defined(__aarch64__)
 typedef union FPReg_ {
     __int128_t q;
@@ -110,7 +79,6 @@ typedef struct _RegState {
 typedef struct _RegState {
 } RegState;
 #endif
-#endif
 
 typedef enum _ZZSTATUS {
     ZZ_UNKOWN = -1,
@@ -128,13 +96,13 @@ typedef enum _ZZSTATUS {
 } ZZSTATUS;
 
 typedef struct _CallStack {
-    zsize call_id;
+    unsigned long call_id;
     struct _ThreadStack *threadstack;
 } CallStack;
 
 typedef struct _ThreadStack {
-    zsize thread_id;
-    zsize size;
+    unsigned long thread_id;
+    unsigned long size;
 } ThreadStack;
 
 typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
@@ -143,31 +111,28 @@ typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *call
 
 // ------- export API -------
 
-zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
-zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
-
 #define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
 #define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
 #define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
+void *ZzGetCallStackData(CallStack *callstack_ptr, char *key);
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, void *value_ptr, unsigned long value_size);
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                     POSTCALL post_call_ptr, zbool try_near_jump);
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
-                            HALFCALL half_call_ptr, zbool try_near_jump);
-ZZSTATUS ZzEnableHook(zpointer target_ptr);
+ZZSTATUS ZzBuildHook(void *target_ptr, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
+ZZSTATUS ZzBuildHookAddress(void *target_start_ptr, void *target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr, bool try_near_jump);
+ZZSTATUS ZzEnableHook(void *target_ptr);
 
-ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                POSTCALL post_call_ptr, zbool try_near_jump);
-ZZSTATUS ZzHookPrePost(zpointer target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
-ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr);
-ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
-                       HALFCALL half_call_ptr);
+ZZSTATUS ZzHook(void *target_ptr, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
+ZZSTATUS ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+ZZSTATUS ZzHookReplace(void *target_ptr, void *replace_ptr, void **origin_ptr);
+ZZSTATUS ZzHookAddress(void *target_start_ptr, void *target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 
+// enable debug info
 void ZzEnableDebugMode(void);
 
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_size);
+// runtime code patch
+ZZSTATUS ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_length);
 
-// ------- export API -------
+// ------- export API end -------
 
 #if defined(__arm64__) || defined(__aarch64__)
 #if defined(__APPLE__) && defined(__MACH__)
@@ -178,7 +143,7 @@ ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zsize codedata_siz
 #endif
 #endif
 #ifdef TARGET_IS_IOS
-ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+ZZSTATUS ZzSolidifyHook(void *target_fileoff, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);
 #endif
 
