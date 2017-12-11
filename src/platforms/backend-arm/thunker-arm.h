@@ -17,22 +17,17 @@
 #ifndef platforms_backend_arm_thunker_arm
 #define platforms_backend_arm_thunker_arm
 
-// platforms
+#include "hookzz.h"
+#include "kitzz.h"
+
+#include "stack.h"
+#include "thunker.h"
+
 #include "platforms/arch-arm/relocator-arm.h"
 #include "platforms/arch-arm/relocator-thumb.h"
 #include "platforms/arch-arm/writer-arm.h"
 #include "platforms/arch-arm/writer-thumb.h"
 
 #include "interceptor-arm.h"
-
-// hookzz
-#include "stack.h"
-#include "thunker.h"
-#include "zzdefs.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 #endif

@@ -37,12 +37,12 @@
 
 #define KR_ERROR(kr)                                                                                                   \
     {                                                                                                                  \
-        Xerror("kr = %d, reason: %s!", kr, mach_error_string(kr));                                                     \
+        ZZ_ERROR_LOG("kr = %d, reason: %s!", kr, mach_error_string(kr));                                               \
         debug_break();                                                                                                 \
     }
 #define KR_ERROR_AT(kr, address)                                                                                       \
     {                                                                                                                  \
-        Xerror("kr = %d, at %p, reason: %s!", kr, (zz_ptr_t)address, mach_error_string(kr));                           \
+        ZZ_ERROR_LOG("kr = %d, at %p, reason: %s!", kr, (zz_ptr_t)address, mach_error_string(kr));                     \
         debug_break();                                                                                                 \
     }
 
@@ -50,8 +50,8 @@ bool zz_vm_read_data_via_task(task_t task, const zz_addr_t address, zz_ptr_t buf
 
 char *zz_vm_read_string_via_task(task_t task, const zz_addr_t address);
 
-zz_addr_t zz_vm_search_data_via_task(task_t task, const zz_addr_t start_addr, const zz_addr_t end_addr, zbyte *data,
-                                 zz_size_t data_len);
+zz_addr_t zz_vm_search_data_via_task(task_t task, const zz_addr_t start_addr, const zz_addr_t end_addr, char *data,
+                                     zz_size_t data_len);
 
 bool zz_vm_check_address_valid_via_task(task_t task, const zz_addr_t address);
 
@@ -71,12 +71,13 @@ zz_ptr_t zz_vm_allocate_near_pages_via_task(task_t task, zz_addr_t address, zz_s
 
 zz_ptr_t zz_vm_allocate_via_task(task_t task, zz_size_t size);
 
-zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz_size_t range_size, zz_size_t *size_ptr);
+zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz_size_t range_size,
+                                              zz_size_t *size_ptr);
 
 zz_ptr_t zz_vm_search_text_code_cave_via_dylibs(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
 zz_ptr_t zz_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
-bool zz_vm_patch_code_via_task(task_t task, const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size);
+bool zz_vm_patch_code_via_task(task_t task, const zz_addr_t address, const zz_ptr_t codedata, zz_uint_t codedata_size);
 
 #endif

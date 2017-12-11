@@ -31,7 +31,7 @@ static void thumb_insn_need_fix() {
 __attribute__((constructor)) void test_insn_fix_thumb() {
 
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
-    zbyte temp_code_slice_data[256] = {0};
+    char temp_code_slice_data[256] = {0};
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
@@ -80,7 +80,7 @@ __attribute__((__naked__)) void arm_insn_need_fix() {
 __attribute__((constructor)) void test_insn_fix_arm() {
 
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
-    zbyte temp_code_slice_data[256] = {0};
+    char temp_code_slice_data[256] = {0};
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);

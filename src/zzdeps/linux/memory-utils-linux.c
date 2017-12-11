@@ -107,7 +107,7 @@ zz_ptr_t zz_linux_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, z
                 continue;
             }
 
-            result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (zbyte *)zeroArray, size);
+            result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (char *)zeroArray, size);
             if (result_ptr) {
                 free(mlayout);
                 return result_ptr;

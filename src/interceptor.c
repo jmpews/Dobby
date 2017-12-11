@@ -214,13 +214,13 @@ ZZSTATUS ZzEnableHook(zz_ptr_t target_ptr) {
 
     if (!entry) {
         status = ZZ_NO_BUILD_HOOK;
-        Xinfo(" %p not build HookFunctionEntry!", target_ptr);
+        ZZ_INFO_LOG(" %p not build HookFunctionEntry!", target_ptr);
         return status;
     }
 
     if (entry->isEnabled) {
         status = ZZ_ALREADY_ENABLED;
-        Xinfo("HookFunctionEntry %p already enable!", target_ptr);
+        ZZ_INFO_LOG("HookFunctionEntry %p already enable!", target_ptr);
         return status;
     }
 

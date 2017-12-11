@@ -15,16 +15,10 @@
 #ifndef platforms_arch_arm_regs_h
 #define platforms_arch_arm_regs_h
 
-// platforms
-#include "instructions.h"
-
-// hookzz
-
-// zzdeps
 #include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "kitzz.h"
+
+#include "instructions.h"
 
 // REF:
 // ARM Architecture Reference Manual
@@ -53,9 +47,9 @@ typedef enum _ZzReg {
 } ZzARMReg;
 
 typedef struct _ZzArmRegInfo {
-    zuint index;
-    zuint meta;
-    zuint width;
+    zz_uint_t index;
+    zz_uint_t meta;
+    zz_uint_t width;
 } ZzArmRegInfo;
 
 void zz_arm_register_describe(ZzARMReg reg, ZzArmRegInfo *ri);

@@ -16,7 +16,7 @@
 
 #include "reader-thumb.h"
 
-bool insn_is_thumb2(zuint32 insn) {
+bool insn_is_thumb2(uint32_t insn) {
     // PAGE: A6-221
     // PAGE: A6-230
 
@@ -32,7 +32,7 @@ zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t 
     // ZzInstruction *insn_ctx = (ZzInstruction *)malloc(sizeof(ZzInstruction));
     insn_ctx->pc = (zz_addr_t)address + 4;
     insn_ctx->address = (zz_addr_t)address;
-    insn_ctx->insn = *(zuint32 *)address;
+    insn_ctx->insn = *(uint32_t *)address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -52,7 +52,7 @@ zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t 
 // ARM Manual
 // A5 ARM Instruction Set Encoding
 // A5.3 Load/store word and unsigned byte
-THUMBInsnType GetTHUMBInsnType(zuint16 insn1, zuint16 insn2) {
+THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2) {
 
     if (!insn_is_thumb2(insn1) && insn_equal(insn1, "1011x0x1xxxxxxxx")) {
         return THUMB_INS_CBNZ_CBZ;

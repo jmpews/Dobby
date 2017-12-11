@@ -21,7 +21,7 @@
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                        zz_ptr_t caller_ret_addr) {
-    Xdebug("target %p call begin-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -53,7 +53,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
 // just like post_call, wow!
 void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                       zz_ptr_t caller_ret_addr) {
-    Xdebug("target %p call half-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -78,7 +78,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
 
 // just like post_call, wow!
 void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
-    Xdebug("%p call end-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {

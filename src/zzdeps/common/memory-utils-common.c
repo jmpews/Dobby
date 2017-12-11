@@ -40,13 +40,12 @@ char *zz_vm_read_string(const zz_ptr_t address) {
     }
 }
 
-zz_ptr_t zz_vm_search_data(const zz_ptr_t start_addr, zz_ptr_t end_addr, zbyte *data,
-                           zz_size_t data_len) {
+zz_ptr_t zz_vm_search_data(const zz_ptr_t start_addr, zz_ptr_t end_addr, char *data, zz_size_t data_len) {
     zz_ptr_t curr_addr;
     if (start_addr <= 0)
-        Xerror("search address start_addr(%p) < 0", (zz_ptr_t)start_addr);
+        ZZ_ERROR_LOG("search address start_addr(%p) < 0", (zz_ptr_t)start_addr);
     if (start_addr > end_addr)
-        Xerror("search start_add(%p) < end_addr(%p)", (zz_ptr_t)start_addr, (zz_ptr_t)end_addr);
+        ZZ_ERROR_LOG("search start_add(%p) < end_addr(%p)", (zz_ptr_t)start_addr, (zz_ptr_t)end_addr);
 
     curr_addr = start_addr;
 

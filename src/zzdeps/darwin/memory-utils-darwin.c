@@ -40,11 +40,11 @@ bool zz_vm_read_data_via_task(task_t task, const zz_addr_t address, zz_ptr_t buf
     vm_size_t dataCnt;
     dataCnt = 0;
     if (address <= 0) {
-        Xerror("read address %p< 0", (zz_ptr_t)address);
+        ZZ_ERROR_LOG("read address %p< 0", (zz_ptr_t)address);
         return FALSE;
     }
     if (length <= 0) {
-        Xerror("read length %p <0", (zz_ptr_t)address);
+        ZZ_ERROR_LOG("read length %p <0", (zz_ptr_t)address);
         return FALSE;
     }
     dataCnt = length;
@@ -68,7 +68,7 @@ char *zz_vm_read_string_via_task(task_t task, const zz_addr_t address) {
     char *result = NULL;
 
     // string upper limit 0x1000
-    end_addr = zz_vm_search_data_via_task(task, address, address + 0x1000, (zbyte *)&end_c, 1);
+    end_addr = zz_vm_search_data_via_task(task, address, address + 0x1000, (char *)&end_c, 1);
     if (!end_addr) {
         return NULL;
     }
@@ -81,17 +81,17 @@ char *zz_vm_read_string_via_task(task_t task, const zz_addr_t address) {
 
 // --- end ---
 
-zz_addr_t zz_vm_search_data_via_task(task_t task, const zz_addr_t start_addr, const zz_addr_t end_addr, zbyte *data,
-                                 zz_size_t data_len) {
+zz_addr_t zz_vm_search_data_via_task(task_t task, const zz_addr_t start_addr, const zz_addr_t end_addr, char *data,
+                                     zz_size_t data_len) {
     zz_addr_t curr_addr;
-    zbyte *temp_buf;
+    char *temp_buf;
     if (start_addr <= 0)
-        Xerror("search address start_addr(%p) < 0", (zz_ptr_t)start_addr);
+        ZZ_ERROR_LOG("search address start_addr(%p) < 0", (zz_ptr_t)start_addr);
     if (start_addr > end_addr)
-        Xerror("search start_add(%p) < end_addr(%p)", (zz_ptr_t)start_addr, (zz_ptr_t)end_addr);
+        ZZ_ERROR_LOG("search start_add(%p) < end_addr(%p)", (zz_ptr_t)start_addr, (zz_ptr_t)end_addr);
 
     curr_addr = (zz_addr_t)start_addr;
-    temp_buf = (zbyte *)malloc(data_len);
+    temp_buf = (char *)malloc(data_len);
 
     while (end_addr > curr_addr) {
         if (zz_vm_read_data_via_task(task, curr_addr, temp_buf, data_len))
@@ -108,7 +108,7 @@ bool zz_vm_check_address_valid_via_task(task_t task, const zz_addr_t address) {
         return FALSE;
 #define CHECK_LEN 1
     char n_read_bytes[1];
-    zuint len;
+    zz_uint_t len;
     kern_return_t kr = vm_read_overwrite(task, address, CHECK_LEN, (zz_addr_t)&n_read_bytes, (vm_size_t *)&len);
 
     if (kr != KERN_SUCCESS || len != CHECK_LEN)
@@ -149,7 +149,7 @@ bool zz_vm_protect_via_task(task_t task, const zz_addr_t address, zz_size_t size
     kr = mach_vm_protect(task, (vm_address_t)aligned_addr, aligned_size, FALSE, page_prot);
     if (kr != KERN_SUCCESS) {
         KR_ERROR_AT(kr, address);
-        Xerror("kr = %d, at (%p) error!", kr, (zz_ptr_t)address);
+        ZZ_ERROR_LOG("kr = %d, at (%p) error!", kr, (zz_ptr_t)address);
         return FALSE;
     }
     return TRUE;
@@ -248,7 +248,8 @@ zz_ptr_t zz_vm_allocate_near_pages_via_task(task_t task, zz_addr_t address, zz_s
     return NULL;
 }
 
-zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz_size_t range_size, zz_size_t *size_ptr) {
+zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz_size_t range_size,
+                                              zz_size_t *size_ptr) {
     char zeroArray[128];
     char readZeroArray[128];
     mach_vm_address_t aligned_addr, tmp_addr, target_search_start, target_search_end;
@@ -262,13 +263,13 @@ zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz
     target_search_start = aligned_addr - range_size;
     target_search_end = aligned_addr + range_size;
 
-    Xdebug("searching for %p cave...", (zz_ptr_t)address);
+    ZZ_DEBUG_LOG("searching for %p cave...", (zz_ptr_t)address);
     // TODO: check the memory region attributes
     for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_vm_read_data_via_task(task, tmp_addr, readZeroArray, 128)) {
             if (!memcmp(readZeroArray, zeroArray, 128)) {
                 *size_ptr = 0x1000;
-                Xdebug("found a cave at %p, size %d", (zz_ptr_t)tmp_addr, 0x1000);
+                ZZ_DEBUG_LOG("found a cave at %p, size %d", (zz_ptr_t)tmp_addr, 0x1000);
                 return (void *)tmp_addr;
             }
         }
@@ -279,7 +280,7 @@ zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz
 MemoryLayout *zz_vm_get_memory_layout_via_task(task_t task) {
     mach_msg_type_number_t count;
     struct vm_region_submap_info_64 info;
-    zuint32 nesting_depth;
+    uint32_t nesting_depth;
 
     kern_return_t kr = KERN_SUCCESS;
     vm_address_t address_tmp = 0;
@@ -291,7 +292,7 @@ MemoryLayout *zz_vm_get_memory_layout_via_task(task_t task) {
     while (1) {
         mach_msg_type_number_t count;
         struct vm_region_submap_info_64 info;
-        zuint32 nesting_depth;
+        uint32_t nesting_depth;
 
         count = VM_REGION_SUBMAP_INFO_COUNT_64;
         kr = vm_region_recurse_64(task, &address_tmp, &size_tmp, &nesting_depth, (vm_region_info_64_t)&info, &count);
@@ -359,7 +360,7 @@ zz_ptr_t zz_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, zz_size
                 continue;
             }
 
-            result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (zbyte *)zeroArray, size);
+            result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (char *)zeroArray, size);
             if (result_ptr) {
                 free(mlayout);
                 return result_ptr;
@@ -420,7 +421,7 @@ zz_ptr_t zz_vm_search_text_code_cave_via_dylibs(zz_addr_t address, zz_size_t ran
             continue;
         }
 
-        result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (zbyte *)zeroArray, size);
+        result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (char *)zeroArray, size);
         if (result_ptr) {
             return result_ptr;
         }
@@ -442,7 +443,7 @@ zz_ptr_t zz_vm_search_text_code_cave_via_dylibs(zz_addr_t address, zz_size_t ran
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-bool zz_vm_patch_code_via_task(task_t task, const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size) {
+bool zz_vm_patch_code_via_task(task_t task, const zz_addr_t address, const zz_ptr_t codedata, zz_uint_t codedata_size) {
     zz_size_t page_size;
     zz_addr_t start_page_addr, end_page_addr;
     zz_size_t page_offset, range_size;

@@ -14,7 +14,7 @@ static void arm64_insn_need_fix() {
 __attribute__((constructor)) void test_insn_fix_arm64() {
 
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
-    zbyte temp_code_slice_data[256] = {0};
+    char temp_code_slice_data[256] = {0};
 
     zz_arm64_writer_init(&backend->arm64_writer, NULL);
     zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);

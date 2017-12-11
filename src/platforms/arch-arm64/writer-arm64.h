@@ -17,19 +17,14 @@
 #ifndef platforms_arch_arm64_writer_h
 #define platforms_arch_arm64_writer_h
 
-// platforms
+#include "hookzz.h"
+#include "kitzz.h"
+
+#include "writer.h"
+
 #include "instructions.h"
 #include "regs-arm64.h"
 #include "writer-arm64.h"
-
-// hookzz
-#include "writer.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 typedef ZzWriter ZzArm64Writer;
 
@@ -50,17 +45,17 @@ void zz_arm64_writer_put_ldr_br_b_reg_address(ZzArm64Writer *self, ZzARM64Reg re
 
 // ======= default =======
 
-void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, zuint32 offset);
-void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, zuint64 offset);
-void zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, zuint64 offset);
+void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, uint32_t offset);
+void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, uint64_t offset);
+void zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, uint64_t offset);
 void zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg);
 void zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg);
-void zz_arm64_writer_put_b_imm(ZzWriter *self, zuint64 offset);
-void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, zuint32 condition, zuint64 imm);
-void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
-void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, zuint64 imm);
-void zz_arm64_writer_put_bytes(ZzWriter *self, zbyte *data, zz_size_t size);
-void zz_arm64_writer_put_instruction(ZzWriter *self, zuint32 insn);
+void zz_arm64_writer_put_b_imm(ZzWriter *self, uint64_t offset);
+void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, uint32_t condition, uint64_t imm);
+void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, uint64_t imm);
+void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, uint64_t imm);
+void zz_arm64_writer_put_bytes(ZzWriter *self, char *data, zz_size_t size);
+void zz_arm64_writer_put_instruction(ZzWriter *self, uint32_t insn);
 
 // ======= relocator =======
 

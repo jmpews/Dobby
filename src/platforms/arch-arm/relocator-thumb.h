@@ -17,19 +17,15 @@
 #ifndef platforms_arch_arm_relocator_thumb_h
 #define platforms_arch_arm_relocator_thumb_h
 
-// platforms
+#include "hookzz.h"
+#include "kitzz.h"
+
+#include "writer.h"
+
 #include "instructions.h"
 #include "reader-thumb.h"
 #include "regs-arm.h"
 #include "writer-thumb.h"
-
-// hookzz
-#include "writer.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 typedef struct _ZzThumbRelocator {
     bool try_relocated_again;
@@ -42,8 +38,8 @@ typedef struct _ZzThumbRelocator {
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
     ZzThumbWriter *output;
-    zuint inpos;
-    zuint outpos;
+    zz_uint_t inpos;
+    zz_uint_t outpos;
 } ZzThumbRelocator;
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *writer);
@@ -52,6 +48,6 @@ zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *ins
 bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
 void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t code_address);
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zuint min_bytes, zuint *max_bytes);
+void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
 
 #endif

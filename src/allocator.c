@@ -15,7 +15,6 @@
  */
 
 #include "allocator.h"
-#include "zzdeps/zz.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,7 +47,7 @@ ZzMemoryPage *ZzNewMemoryPage() {
         return NULL;
     }
     if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        Xerror("ZzMemoryProtectAsExecutable error at %p", page_ptr);
+        ZZ_ERROR_LOG("ZzMemoryProtectAsExecutable error at %p", page_ptr);
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
@@ -75,7 +74,7 @@ ZzMemoryPage *ZzNewNearMemoryPage(zz_addr_t address, zz_size_t redirect_range_si
     }
 
     if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        Xerror("ZzMemoryProtectAsExecutable error at %p", page_ptr);
+        ZZ_ERROR_LOG("ZzMemoryProtectAsExecutable error at %p", page_ptr);
 #if defined(DEBUG_MODE)
         debug_break();
 #endif

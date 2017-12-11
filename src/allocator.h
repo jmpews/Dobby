@@ -19,15 +19,10 @@
 
 #include <stdint.h>
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
-#include "memory.h"
+#include "kitzz.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
+#include "memory.h"
 
 typedef struct _codeslice {
     zz_ptr_t data;

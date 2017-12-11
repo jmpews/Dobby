@@ -59,7 +59,7 @@ runtime code patch without codesign limit, and will work better with [MachoParse
 @codedata: code patch data
 @codedata: code ptach data size
 
-ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zuint codedata_size);
+ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zz_uint_t codedata_size);
 ```
 
 **[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm#L270)**

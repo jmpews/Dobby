@@ -17,8 +17,9 @@
 #ifndef thread_h
 #define thread_h
 
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
 
 zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
 

@@ -90,7 +90,7 @@ bool zz_posix_vm_protect(const zz_addr_t address, zz_size_t size, int page_prot)
 
     r = mprotect((zz_ptr_t)aligned_addr, aligned_size, page_prot);
     if (r == -1) {
-        Xerror("r = %d, at (%p) error!", r, (zz_ptr_t)address);
+        ZZ_ERROR_LOG("r = %d, at (%p) error!", r, (zz_ptr_t)address);
         return FALSE;
     }
     return TRUE;
@@ -179,7 +179,7 @@ zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_si
     target_search_start = aligned_addr - range_size;
     target_search_end = aligned_addr + range_size;
 
-    Xdebug("searching for %p cave, use 0x1000 interval.", (zz_ptr_t)address);
+    ZZ_DEBUG_LOG("searching for %p cave, use 0x1000 interval.", (zz_ptr_t)address);
     for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_posix_vm_check_address_valid_via_signal((zz_ptr_t)tmp_addr))
             if (memcpy(readZeroArray, (zz_ptr_t)tmp_addr, 128)) {
@@ -205,7 +205,7 @@ zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_si
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
 
-bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size) {
+bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zz_uint_t codedata_size) {
     zz_size_t page_size;
     zz_addr_t start_page_addr, end_page_addr;
     zz_size_t page_offset, range_size;

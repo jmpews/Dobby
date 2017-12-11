@@ -17,17 +17,13 @@
 #ifndef platforms_backend_linux_memory_h
 #define platforms_backend_linux_memory_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
 #include "memory.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/linux/memory-utils-linux.h"
-#include "zzdeps/posix/memory-utils-posix.h"
-#include "zzdeps/zz.h"
+#include "CommonKit/memory/memory_kit.h"
+#include "LinuxKit/memory/memory_kit.h"
+#include "PoisxKit/memory/memory_kit.h"
 
 #endif

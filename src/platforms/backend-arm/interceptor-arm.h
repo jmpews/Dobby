@@ -17,22 +17,17 @@
 #ifndef platforms_backend_arm_intercetor_arm
 #define platforms_backend_arm_intercetor_arm
 
-// platforms
-#include "platforms/arch-arm/relocator-arm.h"
-#include "platforms/arch-arm/relocator-thumb.h"
-#include "platforms/arch-arm/writer-arm.h"
-#include "platforms/arch-arm/writer-thumb.h"
+#include "hookzz.h"
+#include "kitzz.h"
 
-// hookzz
 #include "allocator.h"
 #include "interceptor.h"
 #include "thunker.h"
 
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "platforms/arch-arm/relocator-arm.h"
+#include "platforms/arch-arm/relocator-thumb.h"
+#include "platforms/arch-arm/writer-arm.h"
+#include "platforms/arch-arm/writer-thumb.h"
 
 // (next_hop + general_regs + sp)
 #define CTX_SAVE_STACK_OFFSET (4 * 14)
@@ -52,7 +47,7 @@ typedef struct _ZzInterceptorBackend {
 
 typedef struct _ZzArmHookFuntionEntryBackend {
     bool is_thumb;
-    zuint redirect_code_size;
+    zz_uint_t redirect_code_size;
 } ZzArmHookFunctionEntryBackend;
 
 ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,

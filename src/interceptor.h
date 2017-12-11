@@ -17,25 +17,19 @@
 #ifndef interceptor_h
 #define interceptor_h
 
-// platforms
-
-// hookzz
-#include "allocator.h"
 #include "hookzz.h"
+#include "kitzz.h"
+
+#include "allocator.h"
 #include "stack.h"
 #include "thread.h"
 #include "thunker.h"
 #include "writer.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
-
 typedef struct _FunctionBackup {
     zz_ptr_t address;
     zz_size_t size;
-    zbyte data[32];
+    char data[32];
 } FunctionBackup;
 
 struct _ZzInterceptor;

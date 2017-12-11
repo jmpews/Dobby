@@ -15,15 +15,10 @@
 #ifndef zzinfo_h
 #define zzinfo_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
 
-// zzdeps
 #include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 typedef struct _ZzInfo {
     bool g_enable_debug_flag;
@@ -38,7 +33,7 @@ bool ZzIsEnableDebugMode();
     { __android_log_print(ANDROID_LOG_INFO, "zzinfo", fmt, __VA_ARGS__); }
 #else
 #define ZzInfoLog(fmt, ...)                                                                                            \
-    { Xinfo(fmt, __VA_ARGS__); }
+    { ZZ_INFO_LOG(fmt, __VA_ARGS__); }
 #endif
 
 #endif

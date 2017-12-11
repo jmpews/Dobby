@@ -117,13 +117,13 @@ gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
                                       ZzARM64Reg reg,
                                       GumAddress address)
 {
-  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (zuint64) address);
+  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (uint64_t) address);
 }
 
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
                                   ZzARM64Reg reg,
-                                  zuint64 val)
+                                  uint64_t val)
 {
   GumArm64RegInfo ri;
 
@@ -265,7 +265,7 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
                                   ZzARM64Reg reg,
-                                  zuint64 val)
+                                  uint64_t val)
 {
   GumArm64RegInfo ri;
 
@@ -284,7 +284,7 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 ```
 void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address)
 {
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0x8);
     zz_arm64_writer_put_b_imm(self, (zz_addr_t)0xc);
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
 }

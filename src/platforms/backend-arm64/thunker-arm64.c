@@ -104,7 +104,7 @@
 // just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                        zz_ptr_t caller_ret_addr) {
-    Xdebug("target %p call begin-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
     // for easy debug
     // if (!strcmp((char *)(rs->general.regs.x1), "_beginBackgroundTaskWithName:expirationHandler:")) {
@@ -140,7 +140,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
 // just like post_call, wow!
 void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                       zz_ptr_t caller_ret_addr) {
-    Xdebug("target %p call half-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -165,7 +165,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
 
 // just like post_call, wow!
 void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
-    Xdebug("%p call end-invocation", entry->target_ptr);
+    ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
     if (!stack) {
@@ -506,7 +506,7 @@ void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    zbyte temp_code_slice_data[512] = {0};
+    char temp_code_slice_data[512] = {0};
     ZzArm64Writer *arm64_writer = NULL;
     ZzCodeSlice *code_slice = NULL;
     ZZSTATUS status = ZZ_SUCCESS;

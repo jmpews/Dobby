@@ -79,7 +79,7 @@ zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *ins
     return self->input_cur - self->input_start;
 }
 
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zuint min_bytes, zuint *max_bytes) {
+void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes) {
     int tmp_size = 0;
     bool is_thumb;
     zz_ptr_t target_addr;
@@ -143,8 +143,8 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t c
 }
 
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
-    zuint count = 0;
-    zuint outpos = self->outpos;
+    zz_uint_t count = 0;
+    zz_uint_t outpos = self->outpos;
     ZzThumbWriter thumb_writer = *self->output;
     while (zz_thumb_relocator_write_one(self))
         count++;
@@ -159,9 +159,9 @@ void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
 static bool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                 ZzRelocateInstruction *re_insn_ctx) {
 
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint16 op, i, imm5, Rn_ndx;
-    zuint32 imm32, nonzero;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint16_t op, i, imm5, Rn_ndx;
+    uint32_t imm32, nonzero;
 
     op = get_insn_sub(insn1, 11, 1);
     i = get_insn_sub(insn1, 9, 1);
@@ -197,9 +197,9 @@ static bool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const Zz
 // PAGE: A8-310
 static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                        ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
+    uint32_t insn1 = insn_ctx->insn1;
 
-    zuint16 Rm_ndx, Rdn_ndx, DN, Rd_ndx;
+    uint16_t Rm_ndx, Rdn_ndx, DN, Rd_ndx;
     Rm_ndx = get_insn_sub(insn1, 3, 4);
     Rdn_ndx = get_insn_sub(insn1, 0, 3);
     DN = get_insn_sub(insn1, 7, 1);
@@ -220,9 +220,9 @@ static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, c
 // PAGE: A8-410
 bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 imm8 = get_insn_sub(insn1, 0, 8);
-    zuint32 imm32 = imm8 << 2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t imm8 = get_insn_sub(insn1, 0, 8);
+    uint32_t imm32 = imm8 << 2;
     zz_addr_t target_address = ALIGN_4(insn_ctx->pc) + imm32;
     int Rt_ndx = get_insn_sub(insn1, 8, 3);
 
@@ -235,11 +235,11 @@ bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ZzI
 // PAGE: A8-410
 bool zz_thumb_relocator_rewrite_LDR_literal_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 imm12 = get_insn_sub(insn2, 0, 12);
-    zuint32 imm32 = imm12;
+    uint32_t imm12 = get_insn_sub(insn2, 0, 12);
+    uint32_t imm32 = imm12;
 
     bool add = get_insn_sub(insn_ctx->insn1, 7, 1) == 1;
     zz_addr_t target_address;
@@ -258,10 +258,10 @@ bool zz_thumb_relocator_rewrite_LDR_literal_T2(ZzThumbRelocator *self, const ZzI
 // PAGE: A8-322
 bool zz_thumb_relocator_rewrite_ADR_T1(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                        ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
+    uint32_t insn1 = insn_ctx->insn1;
 
-    zuint32 imm8 = get_insn_sub(insn1, 0, 8);
-    zuint32 imm32 = imm8 << 2;
+    uint32_t imm8 = get_insn_sub(insn1, 0, 8);
+    uint32_t imm32 = imm8 << 2;
     zz_addr_t target_address = insn_ctx->pc + imm32;
     int Rt_ndx = get_insn_sub(insn1, 8, 3);
 
@@ -272,10 +272,10 @@ bool zz_thumb_relocator_rewrite_ADR_T1(ZzThumbRelocator *self, const ZzInstructi
 // PAGE: A8-322
 bool zz_thumb_relocator_rewrite_ADR_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                        ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 imm32 =
+    uint32_t imm32 =
         get_insn_sub(insn2, 0, 8) | (get_insn_sub(insn2, 12, 3) << 8) | ((get_insn_sub(insn1, 10, 1) << (3 + 8)));
 
     zz_addr_t target_address;
@@ -288,10 +288,10 @@ bool zz_thumb_relocator_rewrite_ADR_T2(ZzThumbRelocator *self, const ZzInstructi
 // PAGE: A8-322
 bool zz_thumb_relocator_rewrite_ADR_T3(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                        ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 imm32 =
+    uint32_t imm32 =
         get_insn_sub(insn2, 0, 8) | (get_insn_sub(insn2, 12, 3) << 8) | ((get_insn_sub(insn1, 10, 1) << (3 + 8)));
 
     zz_addr_t target_address;
@@ -311,11 +311,11 @@ bool zz_thumb_relocator_rewrite_ADR_T3(ZzThumbRelocator *self, const ZzInstructi
 // PAGE: A8-334
 bool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                      ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    // zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    // uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 imm8 = get_insn_sub(insn1, 0, 8);
-    zuint32 imm32 = imm8 << 1;
+    uint32_t imm8 = get_insn_sub(insn1, 0, 8);
+    uint32_t imm32 = imm8 << 1;
     zz_addr_t target_address = insn_ctx->pc + imm32;
 
     /* for align , simple solution, maybe the correct solution is get `ldr_reg_address` length and adjust the immediate
@@ -332,10 +332,10 @@ bool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ZzInstruction
 // PAGE: A8-334
 bool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                      ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
+    uint32_t insn1 = insn_ctx->insn1;
 
-    zuint32 imm11 = get_insn_sub(insn1, 0, 11);
-    zuint32 imm32 = imm11 << 1;
+    uint32_t imm11 = get_insn_sub(insn1, 0, 11);
+    uint32_t imm32 = imm11 << 1;
     zz_addr_t target_address = insn_ctx->pc + imm32;
 
     zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
@@ -351,15 +351,15 @@ bool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ZzInstruction
 // PAGE: A8-334
 bool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                      ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
     int S = get_insn_sub(insn_ctx->insn1, 10, 1);
     int J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
     int J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
     int imm6 = get_insn_sub(insn_ctx->insn1, 0, 6);
     int imm11 = get_insn_sub(insn_ctx->insn2, 0, 11);
-    zuint32 imm32 =
+    uint32_t imm32 =
         imm11 << 1 | imm6 << (1 + 11) | J1 << (1 + 11 + 6) | J2 << (1 + 11 + 6 + 1) | S << (1 + 11 + 6 + 1 + 1);
     zz_addr_t target_address;
     target_address = insn_ctx->pc + imm32;
@@ -379,17 +379,17 @@ bool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ZzInstruction
 // PAGE: A8-334
 bool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                      ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 S = get_insn_sub(insn_ctx->insn1, 10 + 16, 1);
-    zuint32 J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
-    zuint32 J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
-    zuint32 imm10 = get_insn_sub(insn_ctx->insn1, 0, 10);
-    zuint32 imm11 = get_insn_sub(insn_ctx->insn2, 0, 11);
-    zuint32 I1 = (~(J1 ^ S)) & 0x1;
-    zuint32 I2 = (~(J2 ^ S)) & 0x1;
-    zuint32 imm32 =
+    uint32_t S = get_insn_sub(insn_ctx->insn1, 10 + 16, 1);
+    uint32_t J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
+    uint32_t J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
+    uint32_t imm10 = get_insn_sub(insn_ctx->insn1, 0, 10);
+    uint32_t imm11 = get_insn_sub(insn_ctx->insn2, 0, 11);
+    uint32_t I1 = (~(J1 ^ S)) & 0x1;
+    uint32_t I2 = (~(J2 ^ S)) & 0x1;
+    uint32_t imm32 =
         imm11 << 1 | imm10 << (1 + 11) | I1 << (1 + 11 + 6) | I2 << (1 + 11 + 6 + 1) | S << (1 + 11 + 6 + 1 + 1);
     zz_addr_t target_address;
     target_address = insn_ctx->pc + imm32;
@@ -401,17 +401,17 @@ bool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ZzInstruction
 // PAGE: A8-348
 bool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                                    ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 S = get_insn_sub(insn_ctx->insn1, 10, 1);
-    zuint32 J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
-    zuint32 J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
-    zuint32 imm10 = get_insn_sub(insn_ctx->insn1, 0, 10);
-    zuint32 imm11 = get_insn_sub(insn_ctx->insn2, 0, 11);
-    zuint32 I1 = (~(J1 ^ S)) & 0x1;
-    zuint32 I2 = (~(J2 ^ S)) & 0x1;
-    zuint32 imm32 =
+    uint32_t S = get_insn_sub(insn_ctx->insn1, 10, 1);
+    uint32_t J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
+    uint32_t J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
+    uint32_t imm10 = get_insn_sub(insn_ctx->insn1, 0, 10);
+    uint32_t imm11 = get_insn_sub(insn_ctx->insn2, 0, 11);
+    uint32_t I1 = (~(J1 ^ S)) & 0x1;
+    uint32_t I2 = (~(J2 ^ S)) & 0x1;
+    uint32_t imm32 =
         imm11 << 1 | imm10 << (1 + 11) | I1 << (1 + 11 + 6) | I2 << (1 + 11 + 6 + 1) | S << (1 + 11 + 6 + 1 + 1);
     zz_addr_t target_address;
 
@@ -428,19 +428,19 @@ bool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, const
 // PAGE: A8-348
 bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ZzInstruction *insn_ctx,
                                          ZzRelocateInstruction *re_insn_ctx) {
-    zuint32 insn1 = insn_ctx->insn1;
-    zuint32 insn2 = insn_ctx->insn2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t insn2 = insn_ctx->insn2;
 
-    zuint32 S = get_insn_sub(insn_ctx->insn1, 10, 1);
-    zuint32 J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
-    zuint32 J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
-    zuint32 imm10_1 = get_insn_sub(insn_ctx->insn1, 0, 10);
-    zuint32 imm10_2 = get_insn_sub(insn_ctx->insn2, 1, 10);
-    zuint32 I1 = (~(J1 ^ S)) & 0x1;
-    zuint32 I2 = (~(J2 ^ S)) & 0x1;
+    uint32_t S = get_insn_sub(insn_ctx->insn1, 10, 1);
+    uint32_t J2 = get_insn_sub(insn_ctx->insn2, 11, 1);
+    uint32_t J1 = get_insn_sub(insn_ctx->insn2, 13, 1);
+    uint32_t imm10_1 = get_insn_sub(insn_ctx->insn1, 0, 10);
+    uint32_t imm10_2 = get_insn_sub(insn_ctx->insn2, 1, 10);
+    uint32_t I1 = (~(J1 ^ S)) & 0x1;
+    uint32_t I2 = (~(J2 ^ S)) & 0x1;
     ;
-    zuint32 H = get_insn_sub(insn_ctx->insn2, 0, 1);
-    zuint32 imm32 =
+    uint32_t H = get_insn_sub(insn_ctx->insn2, 0, 1);
+    uint32_t imm32 =
         imm10_2 << 2 | imm10_1 << (2 + 10) | I1 << (2 + 10 + 6) | I2 << (2 + 10 + 6 + 1) | S << (2 + 10 + 6 + 1 + 1);
     zz_addr_t target_address;
 
@@ -513,7 +513,7 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
         break;
     }
     if (!rewritten)
-        zz_thumb_writer_put_bytes(self->output, (zbyte *)&insn_ctx->insn, insn_ctx->size);
+        zz_thumb_writer_put_bytes(self->output, (char *)&insn_ctx->insn, insn_ctx->size);
 
     re_insn_ctx->relocated_length =
         (zz_addr_t)self->output->pc - (zz_addr_t)self->output->base - (zz_addr_t)re_insn_ctx->relocated_offset;

@@ -17,32 +17,10 @@
 #ifndef trampoline_h
 #define trampoline_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
 #include "interceptor.h"
-
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
-
-/*
-    prepare_trampline:
-        1. 判断跳板类型
-        2. 初始化
-
-    enter_trampoline:
-        1. 跳转到 `enter_thunk`
-
-    invoke_trampoline:
-        1. 之前保存的指令(涉及到指令修复)
-        2. 跳转到剩余的指令
-
-    leave_trampoline
-        1. 跳转到 `leave_thunk`
- */
 
 typedef struct _ZzTrampoline {
     ZzCodeSlice *code_slice;

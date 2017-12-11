@@ -132,7 +132,7 @@ void zz_thumb_writer_put_nop(ZzThumbWriter *self) {
     return;
 }
 
-void zz_thumb_writer_put_bytes(ZzThumbWriter *self, zbyte *data, zuint data_size) {
+void zz_thumb_writer_put_bytes(ZzThumbWriter *self, char *data, zz_uint_t data_size) {
     memcpy(self->codedata, data, data_size);
     self->codedata = (zz_ptr_t)self->codedata + data_size;
     self->pc += data_size;
@@ -148,7 +148,7 @@ void zz_thumb_writer_put_instruction(ZzThumbWriter *self, uint16_t insn) {
     return;
 }
 
-void zz_thumb_writer_put_b_imm(ZzThumbWriter *self, zuint32 imm) {
+void zz_thumb_writer_put_b_imm(ZzThumbWriter *self, uint32_t imm) {
 
     zz_thumb_writer_put_instruction(self, 0xe000 | ((imm / 2) & ZZ_INT11_MASK));
     return;
@@ -178,12 +178,12 @@ void zz_thumb_writer_put_blx_reg(ZzThumbWriter *self, ZzARMReg reg) {
 }
 
 // A8.8.18
-void zz_thumb_writer_put_branch_imm(ZzThumbWriter *self, zuint32 imm, bool link, bool thumb) {
+void zz_thumb_writer_put_branch_imm(ZzThumbWriter *self, uint32_t imm, bool link, bool thumb) {
     union {
         zint32 i;
-        zuint32 u;
+        uint32_t u;
     } distance;
-    zuint16 s, j1, j2, imm10, imm11;
+    uint16_t s, j1, j2, imm10, imm11;
 
     distance.i = (zint32)(imm) / 2;
 
@@ -199,17 +199,17 @@ void zz_thumb_writer_put_branch_imm(ZzThumbWriter *self, zuint32 imm, bool link,
     return;
 }
 
-void zz_thumb_writer_put_bl_imm(ZzThumbWriter *self, zuint32 imm) {
+void zz_thumb_writer_put_bl_imm(ZzThumbWriter *self, uint32_t imm) {
     zz_thumb_writer_put_branch_imm(self, imm, TRUE, TRUE);
     return;
 }
 
-void zz_thumb_writer_put_blx_imm(ZzThumbWriter *self, zuint32 imm) {
+void zz_thumb_writer_put_blx_imm(ZzThumbWriter *self, uint32_t imm) {
     zz_thumb_writer_put_branch_imm(self, imm, TRUE, FALSE);
     return;
 }
 
-void zz_thumb_writer_put_b_imm32(ZzThumbWriter *self, zuint32 imm) {
+void zz_thumb_writer_put_b_imm32(ZzThumbWriter *self, uint32_t imm) {
     zz_thumb_writer_put_branch_imm(self, imm, FALSE, TRUE);
     return;
 }
@@ -241,7 +241,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbWriter *self, ZzThumb
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
 
-    zuint16 insn;
+    uint16_t insn;
 
     if (right_offset < 0)
         return FALSE;
@@ -263,7 +263,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbWriter *self, ZzThumb
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
 
-    zuint16 insn;
+    uint16_t insn;
 
     if (right_offset < 0)
         return FALSE;
@@ -285,7 +285,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbWriter *self, ZzThumb
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
 
-    zuint16 insn;
+    uint16_t insn;
 
     if (right_offset < 0)
         return FALSE;
@@ -311,7 +311,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbWriter *self, ZzThumb
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
 
-    zuint16 insn;
+    uint16_t insn;
 
     if (ABS(right_offset) < (1 << 8)) {
         if (rr.meta == ZZ_ARM_REG_PC) {
@@ -383,7 +383,7 @@ void zz_thumb_writer_put_ldr_reg_reg(ZzThumbWriter *self, ZzARMReg dst_reg, ZzAR
 
 void zz_thumb_writer_put_add_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, zint32 imm) {
     ZzArmRegInfo dst;
-    zuint16 sign_mask, insn;
+    uint16_t sign_mask, insn;
 
     zz_arm_register_describe(dst_reg, &dst);
 
@@ -412,7 +412,7 @@ void zz_thumb_writer_put_sub_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, zint
 
 void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, zint32 right_value) {
     ZzArmRegInfo dst, left;
-    zuint16 insn;
+    uint16_t insn;
 
     zz_arm_register_describe(dst_reg, &dst);
     zz_arm_register_describe(left_reg, &left);
@@ -422,7 +422,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, 
     }
 
     if (dst.meta <= ZZ_ARM_REG_R7 && left.meta <= ZZ_ARM_REG_R7 && ABS(right_value) < (1 << 3)) {
-        zuint32 sign_mask = 0;
+        uint32_t sign_mask = 0;
 
         if (right_value < 0)
             sign_mask = 1 << 9;
@@ -431,7 +431,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, 
         zz_thumb_writer_put_instruction(self, insn);
     } else if ((left.meta == ZZ_ARM_REG_SP || left.meta == ZZ_ARM_REG_PC) && dst.meta <= ZZ_ARM_REG_R7 &&
                right_value > 0 && (right_value % 4 == 0) && right_value < (1 << 8)) {
-        zuint16 base_mask;
+        uint16_t base_mask;
 
         if (left.meta == ZZ_ARM_REG_SP)
             base_mask = 0x0800;
@@ -441,8 +441,8 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, 
         insn = 0xa000 | base_mask | (dst.index << 8) | (right_value / 4);
         zz_thumb_writer_put_instruction(self, insn);
     } else {
-        zuint16 insn1, insn2;
-        zuint i, imm3, imm8;
+        uint16_t insn1, insn2;
+        zz_uint_t i, imm3, imm8;
         i = (ABS(right_value) >> (3 + 8)) & 0x1;
         imm3 = (ABS(right_value) >> 8) & 0b111;
         imm8 = ABS(right_value) & 0b11111111;
@@ -468,7 +468,7 @@ void zz_thumb_writer_put_push_reg(ZzThumbWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
-    zuint16 M, register_list;
+    uint16_t M, register_list;
     M = 0;
 
     zz_thumb_writer_put_instruction(self, 0b1011010000000000 | M << 8 | 1 << ri.index);
@@ -479,7 +479,7 @@ void zz_thumb_writer_put_pop_reg(ZzThumbWriter *self, ZzARMReg reg) {
     ZzArmRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
-    zuint16 P, register_list;
+    uint16_t P, register_list;
     P = 0;
 
     zz_thumb_writer_put_instruction(self, 0b1011110000000000 | P << 8 | 1 << ri.index);
@@ -492,7 +492,7 @@ void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbWriter *self, ZzARMReg dst_reg, 
     zz_arm_register_describe(left_reg, &left);
     zz_arm_register_describe(right_reg, &right);
 
-    zuint16 Rm_ndx, Rn_ndx, Rd_ndx;
+    uint16_t Rm_ndx, Rn_ndx, Rd_ndx;
     Rd_ndx = dst.index;
     Rm_ndx = right.index;
     Rn_ndx = left.index;

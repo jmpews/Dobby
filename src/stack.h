@@ -17,16 +17,10 @@
 #ifndef stack_h
 #define stack_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
-#include "thread.h"
+#include "kitzz.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "thread.h"
 
 typedef struct _ZzCallStackItem {
     char *key;
@@ -52,10 +46,15 @@ typedef struct _ZzThreadStack {
 } ZzThreadStack;
 
 ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr);
+
 ZzCallStack *ZzNewCallStack();
+
 ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr);
+
 bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
+
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
+
 void ZzFreeCallStack(ZzCallStack *callstack);
 
 #endif

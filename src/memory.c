@@ -16,7 +16,7 @@
 
 #include "memory.h"
 
-ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zuint codedata_size) {
+ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zz_uint_t codedata_size) {
     zz_addr_t address_fixed = address & ~(zz_addr_t)1;
     if (!ZzMemoryPatchCode(address_fixed, codedata, codedata_size))
         return ZZ_FAILED;

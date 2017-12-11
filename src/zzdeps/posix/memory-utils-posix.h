@@ -45,6 +45,6 @@ zz_ptr_t zz_posix_vm_allocate_near_pages(zz_addr_t address, zz_size_t range_size
 
 zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
-bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size);
+bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zz_uint_t codedata_size);
 
 #endif
