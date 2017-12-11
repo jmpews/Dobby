@@ -102,8 +102,8 @@
 // }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                       zpointer caller_ret_addr) {
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                       zz_ptr_t caller_ret_addr) {
     Xdebug("target %p call begin-invocation", entry->target_ptr);
 
     // for easy debug
@@ -126,20 +126,20 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next
 
     /* set next hop */
     if (entry->replace_call) {
-        *(zpointer *)next_hop = entry->replace_call;
+        *(zz_ptr_t *)next_hop = entry->replace_call;
     } else {
-        *(zpointer *)next_hop = entry->on_invoke_trampoline;
+        *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
     if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-        callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
-        *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
+        callstack->caller_ret_addr = *(zz_ptr_t *)caller_ret_addr;
+        *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
 // just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                      zpointer caller_ret_addr) {
+void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                      zz_ptr_t caller_ret_addr) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -158,13 +158,13 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_
     }
 
     /*  set next hop */
-    *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
+    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
 
     ZzFreeCallStack(callstack);
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
     Xdebug("%p call end-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -183,7 +183,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
     }
 
     /* set next hop */
-    *(zpointer *)next_hop = callstack->caller_ret_addr;
+    *(zz_ptr_t *)next_hop = callstack->caller_ret_addr;
     ZzFreeCallStack(callstack);
 }
 
@@ -309,7 +309,7 @@ void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
     /* call function_context_begin_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_begin_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_begin_invocation);
 
     /* alignment padding + dummy PC */
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
@@ -351,7 +351,7 @@ void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
     /* call function_context_half_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_half_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_half_invocation);
 
     /* alignment padding + dummy PC */
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
@@ -487,7 +487,7 @@ void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X2, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* call function_context_end_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zaddr)function_context_end_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_end_invocation);
 
     /* alignment padding + dummy PC */
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);

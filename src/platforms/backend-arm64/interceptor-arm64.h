@@ -40,13 +40,13 @@ typedef struct _ZzInterceptorBackend {
 
     ZzArm64Writer arm64_writer;
 
-    zpointer enter_thunk;
-    zpointer half_thunk;
-    zpointer leave_thunk;
+    zz_ptr_t enter_thunk;
+    zz_ptr_t half_thunk;
+    zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
 typedef struct _ZzArm64HookFuntionEntryBackend {
-    zbool is_thumb;
+    bool is_thumb;
     zuint redirect_code_size;
 } ZzArm64HookFunctionEntryBackend;
 
@@ -58,6 +58,6 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator *allocator, zaddr target_addr,
-                                        zsize range_size);
+ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                        zz_size_t range_size);
 #endif

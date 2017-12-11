@@ -24,8 +24,8 @@ typedef struct _ZzInstruction {
 
 typedef struct _ZzRelocateInstruction {
     const ZzInstruction *insn_ctx;
-    zaddr relocated_offset;
-    zsize relocated_length;
+    zz_addr_t relocated_offset;
+    zz_size_t relocated_length;
 } ZzRelocateInstruction;
 
 #endif

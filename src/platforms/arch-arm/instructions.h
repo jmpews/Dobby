@@ -23,8 +23,8 @@ typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN } InsnType;
 
 typedef struct _Instruction {
     InsnType type;
-    zaddr pc;
-    zaddr address;
+    zz_addr_t pc;
+    zz_addr_t address;
     zuint8 size;
     union {
         zuint32 trick_insn;
@@ -41,11 +41,11 @@ typedef struct _Instruction {
 
 typedef struct _ZzRelocateInstruction {
     const ZzInstruction *insn_ctx;
-    zaddr relocated_offset;
-    zsize relocated_length;
+    zz_addr_t relocated_offset;
+    zz_size_t relocated_length;
 } ZzRelocateInstruction;
 
 zuint32 get_insn_sub(zuint32 insn, int start, int length);
-zbool insn_equal(zuint32 insn, char *opstr);
+bool insn_equal(zuint32 insn, char *opstr);
 
 #endif

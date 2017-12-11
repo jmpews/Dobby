@@ -16,13 +16,13 @@
 
 #include "reader-arm.h"
 
-zpointer zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address) {
+zz_ptr_t zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
     insn_ctx->type = ARM_INSN;
-    insn_ctx->address = (zaddr)address;
-    insn_ctx->pc = (zaddr)address + 8;
+    insn_ctx->address = (zz_addr_t)address;
+    insn_ctx->pc = (zz_addr_t)address + 8;
     insn_ctx->insn = *(zuint32 *)address;
     insn_ctx->size = 4;
-    return (zpointer)insn_ctx->pc;
+    return (zz_ptr_t)insn_ctx->pc;
 }
 
 // ARM Manual

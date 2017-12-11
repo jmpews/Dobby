@@ -21,6 +21,6 @@
 
 #include "../../trampoline.h"
 
-ZzInstruction *writer_put_jmp(zpointer address);
+ZzInstruction *writer_put_jmp(zz_ptr_t address);
 
 #endif

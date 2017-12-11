@@ -22,18 +22,18 @@
 #define MAX_LITERAL_INSN_SIZE 128
 
 typedef struct _ZzLiteralInstruction {
-    zpointer literal_insn_ptr;
-    zaddr *literal_address_ptr;
+    zz_ptr_t literal_insn_ptr;
+    zz_addr_t *literal_address_ptr;
 } ZzLiteralInstruction;
 
 typedef struct _ZzWriter {
-    zpointer codedata;
-    zpointer base;
-    zaddr pc;
-    zsize size;
+    zz_ptr_t codedata;
+    zz_ptr_t base;
+    zz_addr_t pc;
+    zz_size_t size;
 
     ZzLiteralInstruction literal_insns[MAX_LITERAL_INSN_SIZE];
-    zsize literal_insn_size;
+    zz_size_t literal_insn_size;
 
 } ZzWriter;
 

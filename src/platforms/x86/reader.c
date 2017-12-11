@@ -36,7 +36,7 @@ void capstone_init(void)
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-static cs_insn *zz_arm64_reader_disassemble_at(zpointer address)
+static cs_insn *zz_arm64_reader_disassemble_at(zz_ptr_t address)
 {
     if (!handle)
         capstone_init();
@@ -60,7 +60,7 @@ void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins)
     old_ins->size = ins_cs->size;
     uint8_t needFix = 0;
 
-    zpointer copy_ins_start;
+    zz_ptr_t copy_ins_start;
     uint8_t copy_ins_size;
 
     // https://c9x.me/x86/html/file_module_x86_id_146.html
@@ -91,14 +91,14 @@ void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins)
         (ins_csd.opcode[1] & 0xF0) == 0x80)
     {
         // the imm is calculate by capstone, so the imm is dest;
-        zpointer dest = (zpointer)ins_csd.operands[0].imm;
-        zpointer offset = (zpointer)ins_csd.operands[0].imm - old_ins->address - old_ins->size;
+        zz_ptr_t dest = (zz_ptr_t)ins_csd.operands[0].imm;
+        zz_ptr_t offset = (zz_ptr_t)ins_csd.operands[0].imm - old_ins->address - old_ins->size;
 
-        zpointer new_offset = dest - new_ins->address + sizeof(JMP_ABS);
+        zz_ptr_t new_offset = dest - new_ins->address + sizeof(JMP_ABS);
 
         if (dest > new_ins->address && dest < (new_ins->address + sizeof(JMP_ABS)))
         {
-            zpointer internal_jmp_dest = 0;
+            zz_ptr_t internal_jmp_dest = 0;
             if (internal_jmp_dest < dest)
             {
                 internal_jmp_dest = dest;
@@ -136,6 +136,6 @@ void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins)
     memcpy(old_ins->bytes, old_ins->address, old_ins->size);
 }
 
-void relocator_invoke_trampoline(ZzTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup)
+void relocator_invoke_trampoline(ZzTrampoline *trampoline, zz_ptr_t target, uint8_t *read_size, zz_ptr_t read_backup)
 {
 }

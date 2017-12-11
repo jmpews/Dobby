@@ -70,7 +70,7 @@ __attribute__((constructor)) void test_hook_address() {
 
     void *sorry_to_exit_ptr = (void *)sorry_to_exit;
     unsigned long nop_bytes = 0x46c0;
-    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zpointer)&nop_bytes, 2);
+    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zz_ptr_t)&nop_bytes, 2);
 
     hack_this_function();
     sorry_to_exit();

@@ -19,8 +19,8 @@
 #include <string.h>
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                       zpointer caller_ret_addr) {
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                       zz_ptr_t caller_ret_addr) {
     Xdebug("target %p call begin-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -39,20 +39,20 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next
 
     /* set next hop */
     if (entry->replace_call) {
-        *(zpointer *)next_hop = entry->replace_call;
+        *(zz_ptr_t *)next_hop = entry->replace_call;
     } else {
-        *(zpointer *)next_hop = entry->on_invoke_trampoline;
+        *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
     if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-        callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
-        *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
+        callstack->caller_ret_addr = *(zz_ptr_t *)caller_ret_addr;
+        *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
 // just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                      zpointer caller_ret_addr) {
+void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                      zz_ptr_t caller_ret_addr) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -71,13 +71,13 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_
     }
 
     /*  set next hop */
-    *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
+    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
 
     ZzFreeCallStack(callstack);
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
     Xdebug("%p call end-invocation", entry->target_ptr);
 
     ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -96,7 +96,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
     }
 
     /* set next hop */
-    *(zpointer *)next_hop = callstack->caller_ret_addr;
+    *(zz_ptr_t *)next_hop = callstack->caller_ret_addr;
     ZzFreeCallStack(callstack);
 }
 

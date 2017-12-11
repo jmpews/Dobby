@@ -202,7 +202,7 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
     zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
     zz_arm64_writer_put_ldr_reg_address(
         writer, ZZ_ARM64_REG_X17,
-        (zaddr)(zpointer)function_context_begin_invocation);
+        (zz_addr_t)(zz_ptr_t)function_context_begin_invocation);
     zz_arm64_writer_put_blr_reg(writer, ZZ_ARM64_REG_X17);
 
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
@@ -282,11 +282,11 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
 
 ```
-void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address)
+void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address)
 {
     zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    zz_arm64_writer_put_b_imm(self, (zaddr)0xc);
-    zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
+    zz_arm64_writer_put_b_imm(self, (zz_addr_t)0xc);
+    zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
 }
 ```
 

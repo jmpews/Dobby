@@ -20,11 +20,11 @@
 // hookzz
 #include "hookzz.h"
 
-zpointer ZzThreadNewThreadLocalKeyPtr();
+zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
 
-zpointer ZzThreadGetCurrentThreadData(zpointer key_ptr);
+zz_ptr_t ZzThreadGetCurrentThreadData(zz_ptr_t key_ptr);
 
-zbool ZzThreadSetCurrentThreadData(zpointer key_ptr, zpointer data);
+bool ZzThreadSetCurrentThreadData(zz_ptr_t key_ptr, zz_ptr_t data);
 
 long ZzThreadGetCurrentThreadID();
 

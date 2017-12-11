@@ -19,14 +19,14 @@
 
 #include "stack.h"
 
-ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr) {
+ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr) {
     ZzThreadStack *stack = (ZzThreadStack *)ZzThreadGetCurrentThreadData(key_ptr);
     if (!stack)
         return NULL;
     return stack;
 }
 
-ZzThreadStack *ZzNewThreadStack(zpointer key_ptr) {
+ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr) {
     ZzThreadStack *stack;
     stack = (ZzThreadStack *)malloc(sizeof(ZzThreadStack));
     stack->capacity = 4;
@@ -37,7 +37,7 @@ ZzThreadStack *ZzNewThreadStack(zpointer key_ptr) {
     stack->size = 0;
     stack->key_ptr = key_ptr;
     stack->thread_id = ZzThreadGetCurrentThreadID();
-    ZzThreadSetCurrentThreadData(key_ptr, (zpointer)stack);
+    ZzThreadSetCurrentThreadData(key_ptr, (zz_ptr_t)stack);
     return stack;
 }
 
@@ -70,7 +70,7 @@ ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {
     return callstack;
 }
 
-zbool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
+bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
     if (!stack)
         return FALSE;
 
@@ -90,7 +90,7 @@ zbool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
     return TRUE;
 }
 
-zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
+zz_ptr_t ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
     ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
     if (!callstack)
         return NULL;
@@ -117,7 +117,7 @@ ZzCallStackItem *ZzNewCallStackData(ZzCallStack *callstack) {
     return &(callstack->items[callstack->size++]);
 }
 
-zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size) {
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size) {
     ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
     if (!callstack)
         return FALSE;
@@ -127,7 +127,7 @@ zbool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr
     char *key_tmp = (char *)malloc(strlen(key) + 1);
     strncpy(key_tmp, key, strlen(key) + 1);
 
-    zpointer value_tmp = (zpointer)malloc(value_size);
+    zz_ptr_t value_tmp = (zz_ptr_t)malloc(value_size);
     memcpy(value_tmp, value_ptr, value_size);
     item->key = key_tmp;
     item->value = value_tmp;

@@ -38,16 +38,16 @@ ZzAllocator *ZzNewAllocator() {
 }
 
 ZzMemoryPage *ZzNewMemoryPage() {
-    zsize page_size = ZzMemoryGetPageSzie();
-    zpointer page_ptr = NULL;
-    zpointer cave_ptr = NULL;
+    zz_size_t page_size = ZzMemoryGetPageSzie();
+    zz_ptr_t page_ptr = NULL;
+    zz_ptr_t cave_ptr = NULL;
     ZzMemoryPage *page = NULL;
 
     page_ptr = ZzMemoryAllocatePages(1);
     if (!page_ptr) {
         return NULL;
     }
-    if (!ZzMemoryProtectAsExecutable((zaddr)page_ptr, page_size)) {
+    if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
         Xerror("ZzMemoryProtectAsExecutable error at %p", page_ptr);
 #if defined(DEBUG_MODE)
         debug_break();
@@ -63,10 +63,10 @@ ZzMemoryPage *ZzNewMemoryPage() {
     return page;
 }
 
-ZzMemoryPage *ZzNewNearMemoryPage(zaddr address, zsize redirect_range_size) {
-    zsize page_size = ZzMemoryGetPageSzie();
-    zpointer page_ptr = NULL;
-    zpointer cave_ptr = NULL;
+ZzMemoryPage *ZzNewNearMemoryPage(zz_addr_t address, zz_size_t redirect_range_size) {
+    zz_size_t page_size = ZzMemoryGetPageSzie();
+    zz_ptr_t page_ptr = NULL;
+    zz_ptr_t cave_ptr = NULL;
     ZzMemoryPage *page = NULL;
 
     page_ptr = ZzMemoryAllocateNearPages(address, redirect_range_size, 1);
@@ -74,7 +74,7 @@ ZzMemoryPage *ZzNewNearMemoryPage(zaddr address, zsize redirect_range_size) {
         return NULL;
     }
 
-    if (!ZzMemoryProtectAsExecutable((zaddr)page_ptr, page_size)) {
+    if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
         Xerror("ZzMemoryProtectAsExecutable error at %p", page_ptr);
 #if defined(DEBUG_MODE)
         debug_break();
@@ -86,14 +86,14 @@ ZzMemoryPage *ZzNewNearMemoryPage(zaddr address, zsize redirect_range_size) {
 
     page->base = page_ptr;
 
-    if ((zaddr)page_ptr > address && ((zaddr)page_ptr + page_size) > (address + redirect_range_size)) {
-        page->size = (address + redirect_range_size) - (zaddr)page_ptr;
+    if ((zz_addr_t)page_ptr > address && ((zz_addr_t)page_ptr + page_size) > (address + redirect_range_size)) {
+        page->size = (address + redirect_range_size) - (zz_addr_t)page_ptr;
         page->used_size = 0;
         page->curr_pos = page_ptr;
-    } else if ((zaddr)page_ptr < address && (zaddr)page_ptr < (address - redirect_range_size)) {
+    } else if ((zz_addr_t)page_ptr < address && (zz_addr_t)page_ptr < (address - redirect_range_size)) {
         page->size = page_size;
-        page->used_size = (address - redirect_range_size) - (zaddr)page_ptr;
-        page->curr_pos = (zpointer)(address - redirect_range_size);
+        page->used_size = (address - redirect_range_size) - (zz_addr_t)page_ptr;
+        page->curr_pos = (zz_ptr_t)(address - redirect_range_size);
     } else {
         page->size = page_size;
         page->used_size = 0;
@@ -103,11 +103,11 @@ ZzMemoryPage *ZzNewNearMemoryPage(zaddr address, zsize redirect_range_size) {
     return page;
 }
 
-ZzMemoryPage *ZzNewNearCodeCave(zaddr address, zsize redirect_range_size, zsize code_slice_size) {
-    zsize page_size = ZzMemoryGetPageSzie();
-    zpointer cave_ptr = NULL;
+ZzMemoryPage *ZzNewNearCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t code_slice_size) {
+    zz_size_t page_size = ZzMemoryGetPageSzie();
+    zz_ptr_t cave_ptr = NULL;
     ZzMemoryPage *page = NULL;
-    zsize cave_size = code_slice_size;
+    zz_size_t cave_size = code_slice_size;
 
     cave_ptr = ZzMemorySearchCodeCave(address, redirect_range_size, cave_size);
 
@@ -141,7 +141,7 @@ ZZSTATUS ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
 //  1. try allocate from the history pages
 //  2. try allocate a new page
 //  3. add it to the page manager
-ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize code_slice_size) {
+ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t code_slice_size) {
     ZzCodeSlice *code_slice = NULL;
     ZzMemoryPage *page = NULL;
     int i;
@@ -153,8 +153,8 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize code_slice_size) {
         // 3. the rest memory of this page is enough for code_slice_size
         // 4. the page address is near
 
-        if ((zaddr)page->curr_pos % 4) {
-            int t = 4 - (zaddr)page->curr_pos % 4;
+        if ((zz_addr_t)page->curr_pos % 4) {
+            int t = 4 - (zz_addr_t)page->curr_pos % 4;
             page->used_size += t;
             page->curr_pos += t;
         }
@@ -173,8 +173,8 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize code_slice_size) {
     page = ZzNewMemoryPage();
     ZzAddMemoryPage(allocator, page);
 
-    if ((zaddr)page->curr_pos % 4) {
-        int t = 4 - (zaddr)page->curr_pos % 4;
+    if ((zz_addr_t)page->curr_pos % 4) {
+        int t = 4 - (zz_addr_t)page->curr_pos % 4;
         page->used_size += t;
         page->curr_pos += t;
     }
@@ -192,8 +192,8 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize code_slice_size) {
 //  1. try allocate from the history pages
 //  2. try allocate a new near page
 //  3. add it to the page manager
-ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize redirect_range_size,
-                                zsize code_slice_size) {
+ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_size_t redirect_range_size,
+                                zz_size_t code_slice_size) {
     ZzCodeSlice *code_slice = NULL;
     ZzMemoryPage *page = NULL;
     int i;
@@ -205,31 +205,31 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize red
         // 4. the page address is near
         if (page->base && !page->isCodeCave) {
             int flag = 0;
-            zaddr split_addr = 0;
+            zz_addr_t split_addr = 0;
 
-            if ((zaddr)page->curr_pos < address) {
-                if (address - redirect_range_size < (zaddr)page->curr_pos) {
+            if ((zz_addr_t)page->curr_pos < address) {
+                if (address - redirect_range_size < (zz_addr_t)page->curr_pos) {
                     // enough for code_slice_size
                     if ((page->size - page->used_size) < code_slice_size)
                         continue;
                     flag = 1;
-                } else if (address - redirect_range_size > (zaddr)page->curr_pos &&
-                           (address - redirect_range_size) < ((zaddr)page->base + page->size)) {
+                } else if (address - redirect_range_size > (zz_addr_t)page->curr_pos &&
+                           (address - redirect_range_size) < ((zz_addr_t)page->base + page->size)) {
                     // enough for code_slice_size
-                    if (((zaddr)page->base + page->size) - (address - redirect_range_size) < code_slice_size)
+                    if (((zz_addr_t)page->base + page->size) - (address - redirect_range_size) < code_slice_size)
                         continue;
                     split_addr = address - redirect_range_size;
                     flag = 2;
                 }
             } else {
-                if (address + redirect_range_size > ((zaddr)page->base + page->size)) {
+                if (address + redirect_range_size > ((zz_addr_t)page->base + page->size)) {
                     // enough for code_slice_size
                     if ((page->size - page->used_size) < code_slice_size)
                         continue;
                     flag = 1;
-                } else if ((address + redirect_range_size) > (zaddr)page->curr_pos &&
-                           (address + redirect_range_size) < ((zaddr)page->base + page->size)) {
-                    if ((address + redirect_range_size) - (zaddr)page->curr_pos > code_slice_size)
+                } else if ((address + redirect_range_size) > (zz_addr_t)page->curr_pos &&
+                           (address + redirect_range_size) < ((zz_addr_t)page->base + page->size)) {
+                    if ((address + redirect_range_size) - (zz_addr_t)page->curr_pos > code_slice_size)
                         continue;
                     flag = 1;
                 }
@@ -248,14 +248,14 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize red
 
                 // new page
                 ZzMemoryPage *new_page = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
-                new_page->base = (zpointer)split_addr;
-                new_page->size = ((zaddr)page->base + page->size) - split_addr;
+                new_page->base = (zz_ptr_t)split_addr;
+                new_page->size = ((zz_addr_t)page->base + page->size) - split_addr;
                 new_page->used_size = 0;
-                new_page->curr_pos = (zpointer)split_addr;
+                new_page->curr_pos = (zz_ptr_t)split_addr;
                 ZzAddMemoryPage(allocator, new_page);
 
                 // origin page
-                page->size = split_addr - (zaddr)page->base;
+                page->size = split_addr - (zz_addr_t)page->base;
 
                 code_slice = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
                 code_slice->isCodeCave = FALSE;

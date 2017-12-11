@@ -20,6 +20,6 @@ ZzInfo g_zz;
 
 void ZzEnableDebugMode() { g_zz.g_enable_debug_flag = TRUE; }
 
-zbool ZzIsEnableDebugMode() { return g_zz.g_enable_debug_flag; }
+bool ZzIsEnableDebugMode() { return g_zz.g_enable_debug_flag; }
 
 ZzInfo *ZzInfoObtain(void) { return &g_zz; }

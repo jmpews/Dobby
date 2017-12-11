@@ -85,8 +85,8 @@ __attribute__((__naked__)) void ctx_restore() {
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                       zpointer caller_ret_addr) {
+void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                       zz_ptr_t caller_ret_addr) {
 
     Xdebug("target %p call begin-invocation", entry->target_ptr);
 
@@ -106,19 +106,19 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zpointer next
 
     /* set next hop */
     if (entry->replace_call) {
-        *(zpointer *)next_hop = entry->replace_call;
+        *(zz_ptr_t *)next_hop = entry->replace_call;
     } else {
-        *(zpointer *)next_hop = entry->on_invoke_trampoline;
+        *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
     if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-        callstack->caller_ret_addr = *(zpointer *)caller_ret_addr;
-        *(zpointer *)caller_ret_addr = entry->on_leave_trampoline;
+        callstack->caller_ret_addr = *(zz_ptr_t *)caller_ret_addr;
+        *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
 
-void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs,
-                                      zpointer caller_ret_addr) {
+void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                      zz_ptr_t caller_ret_addr) {
     Xdebug("target %p call half-invocation", entry->target_ptr);
 
     ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -137,13 +137,13 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zpointer next_
     }
 
     /* set next hop */
-    *(zpointer *)next_hop = (zpointer)entry->target_half_ret_addr;
+    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
 
     ZzFreeCallStack(callstack);
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_hop, RegState *rs) {
+void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
     Xdebug("%p call end-invocation", entry->target_ptr);
 
     ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -162,7 +162,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zpointer next_h
     }
 
     /* set next hop */
-    *(zpointer *)next_hop = callstack->caller_ret_addr;
+    *(zz_ptr_t *)next_hop = callstack->caller_ret_addr;
 
     ZzFreeCallStack(callstack);
 }
@@ -190,7 +190,7 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_begin_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zz_addr_t)function_context_begin_invocation);
     zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
@@ -231,7 +231,7 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
     /* call function_context_half_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_half_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zz_addr_t)function_context_half_invocation);
     zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
@@ -269,7 +269,7 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R2, ZZ_ARM_REG_SP, 0x4);
 
     /* call function_context_begin_invocation */
-    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zaddr)function_context_end_invocation);
+    zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zz_addr_t)function_context_end_invocation);
     zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
     /* restore general registers and sp */
@@ -310,7 +310,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048] = {};
         char thunk_buffer[2048] = {};
         int t = 0;
-        zpointer p;
+        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
 
         for (p = thumb_writer->base; p < thumb_writer->base + thumb_writer->size; p++, t = t + 5) {
@@ -342,7 +342,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048] = {};
         char thunk_buffer[2048] = {};
         int t = 0;
-        zpointer p;
+        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
 
         for (p = thumb_writer->base; p < thumb_writer->base + thumb_writer->size; p++, t = t + 5) {
@@ -374,7 +374,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048] = {};
         char thunk_buffer[2048] = {};
         int t = 0;
-        zpointer p;
+        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
 
         for (p = thumb_writer->base; p < thumb_writer->base + thumb_writer->size; p++, t = t + 5) {

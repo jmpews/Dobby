@@ -18,12 +18,12 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-zpointer zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address) {
-    insn_ctx->address = (zaddr)address;
+zz_ptr_t zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
+    insn_ctx->address = (zz_addr_t)address;
     insn_ctx->size = 4;
-    insn_ctx->pc = (zaddr)address;
+    insn_ctx->pc = (zz_addr_t)address;
     insn_ctx->insn = *(zuint32 *)address;
-    return (zpointer)insn_ctx->pc;
+    return (zz_ptr_t)insn_ctx->pc;
 }
 
 ARM64InsnType GetARM64InsnType(zuint32 insn) {

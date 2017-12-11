@@ -59,7 +59,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunct
 ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 #ifdef TARGET_IS_IOS
-ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zaddr target_fileoff);
+ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff);
 #endif
 
 #endif

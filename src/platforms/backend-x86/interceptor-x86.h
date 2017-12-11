@@ -49,6 +49,6 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ZzAllocator *allocator, zaddr target_addr,
-                                      zsize range_size);
+ZzCodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                      zz_size_t range_size);
 #endif

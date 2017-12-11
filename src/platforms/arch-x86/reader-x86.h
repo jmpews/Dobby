@@ -32,6 +32,6 @@ typedef enum _X86InsnType { X86_UNDEF } X86InsnType;
 
 X86InsnType GetX86InsnType(zuint32 insn);
 
-zpointer zz_x86_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
+zz_ptr_t zz_x86_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
 
 #endif

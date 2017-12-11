@@ -33,8 +33,8 @@
 #include "zzdeps/zz.h"
 
 typedef struct _FunctionBackup {
-    zpointer address;
-    zsize size;
+    zz_ptr_t address;
+    zz_size_t size;
     zbyte data[32];
 } FunctionBackup;
 
@@ -51,42 +51,42 @@ struct _ZzHookFunctionEntryBackend;
 typedef struct _ZzHookFunctionEntry {
     int hook_type;
     unsigned long id;
-    zbool isEnabled;
-    zbool try_near_jump;
+    bool isEnabled;
+    bool try_near_jump;
 
-    zpointer thread_local_key;
+    zz_ptr_t thread_local_key;
     struct _ZzHookFunctionEntryBackend *backend;
 
-    zpointer target_ptr;
-    zpointer target_end_ptr;
-    zpointer target_half_ret_addr;
+    zz_ptr_t target_ptr;
+    zz_ptr_t target_end_ptr;
+    zz_ptr_t target_half_ret_addr;
 
-    zpointer pre_call;
-    zpointer half_call;
-    zpointer post_call;
-    zpointer replace_call;
+    zz_ptr_t pre_call;
+    zz_ptr_t half_call;
+    zz_ptr_t post_call;
+    zz_ptr_t replace_call;
 
     FunctionBackup origin_prologue;
 
-    zpointer on_enter_transfer_trampoline;
-    zpointer on_enter_trampoline;
-    zpointer on_half_trampoline;
-    zpointer on_invoke_trampoline;
-    zpointer on_leave_trampoline;
+    zz_ptr_t on_enter_transfer_trampoline;
+    zz_ptr_t on_enter_trampoline;
+    zz_ptr_t on_half_trampoline;
+    zz_ptr_t on_invoke_trampoline;
+    zz_ptr_t on_leave_trampoline;
 
     struct _ZzInterceptor *interceptor;
 } ZzHookFunctionEntry;
 
 typedef struct {
     ZzHookFunctionEntry **entries;
-    zsize size;
-    zsize capacity;
+    zz_size_t size;
+    zz_size_t capacity;
 } ZzHookFunctionEntrySet;
 
 struct _ZzInterceptorBackend;
 
 typedef struct _ZzInterceptor {
-    zbool is_support_rx_page;
+    bool is_support_rx_page;
     ZzHookFunctionEntrySet hook_function_entry_set;
     struct _ZzInterceptorBackend *backend;
     ZzAllocator *allocator;

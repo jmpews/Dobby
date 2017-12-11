@@ -7,6 +7,6 @@
 
 #include "../zz.h"
 
-zpointer zz_linux_vm_search_code_cave(zaddr address, zsize range_size, zsize size);
+zz_ptr_t zz_linux_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
 #endif

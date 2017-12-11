@@ -45,8 +45,8 @@ __attribute__((constructor)) void test_insn_fix_thumb() {
 
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
-    zz_thumb_relocator_reset(thumb_relocator, (zpointer)((zaddr)thumb_insn_need_fix & ~(zaddr)1), thumb_writer);
-    zsize tmp_relocator_insn_size = 0;
+    zz_thumb_relocator_reset(thumb_relocator, (zz_ptr_t)((zz_addr_t)thumb_insn_need_fix & ~(zz_addr_t)1), thumb_writer);
+    zz_size_t tmp_relocator_insn_size = 0;
 
     do {
         zz_thumb_relocator_read_one(thumb_relocator, NULL);
@@ -94,8 +94,8 @@ __attribute__((constructor)) void test_insn_fix_arm() {
 
     zz_arm_writer_reset(arm_writer, temp_code_slice_data);
 
-    zz_arm_relocator_reset(arm_relocator, (zpointer)((zaddr)arm_insn_need_fix & ~(zaddr)1), arm_writer);
-    zsize tmp_relocator_insn_size = 0;
+    zz_arm_relocator_reset(arm_relocator, (zz_ptr_t)((zz_addr_t)arm_insn_need_fix & ~(zz_addr_t)1), arm_writer);
+    zz_size_t tmp_relocator_insn_size = 0;
 
     do {
         zz_arm_relocator_read_one(arm_relocator, NULL);

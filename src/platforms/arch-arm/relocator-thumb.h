@@ -32,26 +32,26 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzThumbRelocator {
-    zbool try_relocated_again;
-    zsize try_relocated_length;
-    zpointer input_start;
-    zpointer input_cur;
-    zaddr input_pc;
+    bool try_relocated_again;
+    zz_size_t try_relocated_length;
+    zz_ptr_t input_start;
+    zz_ptr_t input_cur;
+    zz_addr_t input_pc;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzLiteralInstruction **relocate_literal_insns;
-    zsize relocate_literal_insns_size;
+    zz_size_t relocate_literal_insns_size;
     ZzThumbWriter *output;
     zuint inpos;
     zuint outpos;
 } ZzThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zpointer input_code, ZzThumbWriter *writer);
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, zpointer input_code, ZzThumbWriter *output);
-zsize zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
-zbool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
-void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zaddr code_address);
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *writer);
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbWriter *output);
+zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
+bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
+void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t code_address);
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
-void zz_thumb_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
+void zz_thumb_relocator_try_relocate(zz_ptr_t address, zuint min_bytes, zuint *max_bytes);
 
 #endif

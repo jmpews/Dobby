@@ -31,18 +31,18 @@ typedef struct _ThreadLocalKey {
 } ThreadLocalKey;
 
 typedef struct _ThreadLocalKeyList {
-    zsize size;
-    zsize capacity;
+    zz_size_t size;
+    zz_size_t capacity;
     ThreadLocalKey **keys;
 } ThreadLocalKeyList;
 
 void zz_posix_thread_initialize_thread_local_key_list();
 
-zpointer zz_posix_thread_new_thread_local_key_ptr();
+zz_ptr_t zz_posix_thread_new_thread_local_key_ptr();
 
-zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr);
+zz_ptr_t zz_posix_thread_get_current_thread_data(zz_ptr_t key_ptr);
 
-zbool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data);
+bool zz_posix_thread_set_current_thread_data(zz_ptr_t key_ptr, zz_ptr_t data);
 
 long zz_posix_get_current_thread_id();
 

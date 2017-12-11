@@ -12,16 +12,16 @@
 
 // --- custom type ---
 
-// 1. zpointer and zaddr is different
+// 1. zz_ptr_t and zz_addr_t is different
 
 #define DEBUG_MODE 0
 
 #ifndef zz_type
 #define zz_type
 
-typedef void *zpointer;
-typedef unsigned long zsize;
-typedef unsigned long zaddr;
+typedef void *zz_ptr_t;
+typedef unsigned long zz_size_t;
+typedef unsigned long zz_addr_t;
 
 typedef uint64_t zuint64;
 typedef uint32_t zuint32;
@@ -35,7 +35,7 @@ typedef int8_t zint8;
 typedef unsigned long zuint;
 typedef long zint;
 typedef unsigned char zbyte;
-typedef bool zbool;
+typedef bool bool;
 
 #endif
 

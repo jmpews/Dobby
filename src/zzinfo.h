@@ -26,11 +26,11 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzInfo {
-    zbool g_enable_debug_flag;
+    bool g_enable_debug_flag;
 } ZzInfo;
 
 ZzInfo *ZzInfoObtain(void);
-zbool ZzIsEnableDebugMode();
+bool ZzIsEnableDebugMode();
 
 #if defined(__ANDROID__)
 #include <android/log.h>

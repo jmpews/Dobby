@@ -56,7 +56,7 @@ ZZSTATUS ZzInitializeInterceptor(void) {
     return ZZ_ALREADY_INIT;
 }
 
-ZzHookFunctionEntry *ZzFindHookFunctionEntry(zpointer target_ptr) {
+ZzHookFunctionEntry *ZzFindHookFunctionEntry(zz_ptr_t target_ptr) {
     ZzInterceptor *interceptor = g_interceptor;
     if (!interceptor)
         return NULL;
@@ -92,9 +92,9 @@ ZZSTATUS ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
     return ZZ_SUCCESS;
 }
 
-void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zpointer target_ptr,
-                                   zpointer target_end_ptr, zpointer replace_call, PRECALL pre_call, HALFCALL half_call,
-                                   POSTCALL post_call, zbool try_near_jump) {
+void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz_ptr_t target_ptr,
+                                   zz_ptr_t target_end_ptr, zz_ptr_t replace_call, PRECALL pre_call, HALFCALL half_call,
+                                   POSTCALL post_call, bool try_near_jump) {
     ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
 
@@ -108,9 +108,9 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
     entry->target_ptr = target_ptr;
     entry->target_end_ptr = target_end_ptr;
     entry->replace_call = replace_call;
-    entry->pre_call = (zpointer)pre_call;
-    entry->half_call = (zpointer)half_call;
-    entry->post_call = (zpointer)post_call;
+    entry->pre_call = (zz_ptr_t)pre_call;
+    entry->half_call = (zz_ptr_t)half_call;
+    entry->post_call = (zz_ptr_t)post_call;
     entry->on_enter_trampoline = NULL;
     entry->on_invoke_trampoline = NULL;
     entry->on_half_trampoline = NULL;
@@ -123,8 +123,8 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zp
     ZzAddHookFunctionEntry(entry);
 }
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                     POSTCALL post_call_ptr, zbool try_near_jump) {
+ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+                     POSTCALL post_call_ptr, bool try_near_jump) {
 #if defined(__i386__) || defined(__x86_64__)
     ZzInfoLog("%s", "x86 & x86_64 arch not support");
     return ZZ_FAILED;
@@ -167,8 +167,8 @@ ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_call_ptr, zpointer *o
     return status;
 }
 
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
-                            HALFCALL half_call_ptr, zbool try_near_jump) {
+ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr,
+                            HALFCALL half_call_ptr, bool try_near_jump) {
 #if defined(__i386__) || defined(__x86_64__)
     ZzInfoLog("%s", "x86 & x86_64 arch not support");
     return ZZ_FAILED;
@@ -207,7 +207,7 @@ ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, 
     return status;
 }
 
-ZZSTATUS ZzEnableHook(zpointer target_ptr) {
+ZZSTATUS ZzEnableHook(zz_ptr_t target_ptr) {
     ZZSTATUS status = ZZ_DONE_ENABLE;
     ZzInterceptor *interceptor = g_interceptor;
     ZzHookFunctionEntry *entry = ZzFindHookFunctionEntry(target_ptr);
@@ -227,26 +227,26 @@ ZZSTATUS ZzEnableHook(zpointer target_ptr) {
     return ZzActivateTrampoline(interceptor->backend, entry);
 }
 
-ZZSTATUS ZzHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
-                POSTCALL post_call_ptr, zbool try_near_jump) {
+ZZSTATUS ZzHook(zz_ptr_t target_ptr, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+                POSTCALL post_call_ptr, bool try_near_jump) {
     ZzBuildHook(target_ptr, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr, try_near_jump);
     ZzEnableHook(target_ptr);
     return ZZ_SUCCESS;
 }
 
-ZZSTATUS ZzHookPrePost(zpointer target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
+ZZSTATUS ZzHookPrePost(zz_ptr_t target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
     ZzBuildHook(target_ptr, NULL, NULL, pre_call_ptr, post_call_ptr, FALSE);
     ZzEnableHook(target_ptr);
     return ZZ_SUCCESS;
 }
 
-ZZSTATUS ZzHookReplace(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr) {
+ZZSTATUS ZzHookReplace(zz_ptr_t target_ptr, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr) {
     ZzBuildHook(target_ptr, replace_ptr, origin_ptr, NULL, NULL, FALSE);
     ZzEnableHook(target_ptr);
     return ZZ_SUCCESS;
 }
 
-ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr,
+ZZSTATUS ZzHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr,
                        HALFCALL half_call_ptr) {
     ZzBuildHookAddress(target_start_ptr, target_end_ptr, pre_call_ptr, half_call_ptr, FALSE);
     ZzEnableHook(target_start_ptr);
@@ -255,7 +255,7 @@ ZZSTATUS ZzHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECA
 
 #ifdef TARGET_IS_IOS
 
-ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr,
+ZZSTATUS ZzSolidifyHook(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr) {
     ZZSTATUS status = ZZ_DONE_HOOK;
     ZzInterceptor *interceptor = g_interceptor;
@@ -273,10 +273,10 @@ ZZSTATUS ZzSolidifyHook(zpointer target_fileoff, zpointer replace_call_ptr, zpoi
     entry = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
     entry->target_ptr = target_fileoff;
     entry->replace_call = replace_call_ptr;
-    entry->pre_call = (zpointer)pre_call_ptr;
-    entry->post_call = (zpointer)post_call_ptr;
+    entry->pre_call = (zz_ptr_t)pre_call_ptr;
+    entry->post_call = (zz_ptr_t)post_call_ptr;
 
-    ZzActivateSolidifyTrampoline(entry, (zaddr)target_fileoff);
+    ZzActivateSolidifyTrampoline(entry, (zz_addr_t)target_fileoff);
 
     if (origin_ptr)
         *origin_ptr = entry->on_invoke_trampoline;

@@ -30,30 +30,30 @@
 #include "zzdeps/common/debugbreak.h"
 
 typedef struct _codeslice {
-    zpointer data;
-    zsize size;
-    zbool is_used;
-    zbool isCodeCave;
+    zz_ptr_t data;
+    zz_size_t size;
+    bool is_used;
+    bool isCodeCave;
 } ZzCodeSlice;
 
 typedef struct _ZzMemoryPage {
-    zpointer base;
-    zpointer curr_pos;
-    zsize size;
-    zsize used_size;
-    zbool isCodeCave;
+    zz_ptr_t base;
+    zz_ptr_t curr_pos;
+    zz_size_t size;
+    zz_size_t used_size;
+    bool isCodeCave;
 } ZzMemoryPage;
 
 typedef struct _allocator {
     ZzMemoryPage **memory_pages;
-    zsize size;
-    zsize capacity;
+    zz_size_t size;
+    zz_size_t capacity;
 } ZzAllocator;
 
-ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zaddr address, zsize redirect_range_size,
-                                zsize codeslice_size);
+ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_size_t redirect_range_size,
+                                zz_size_t codeslice_size);
 
-ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zsize codeslice_size);
+ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t codeslice_size);
 
 ZzAllocator *ZzNewAllocator();
 

@@ -28,8 +28,8 @@ __attribute__((constructor)) void test_insn_fix_arm64() {
 
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
 
-    zz_arm64_relocator_reset(arm64_relocator, (zpointer)((zaddr)arm64_insn_need_fix & ~(zaddr)1), arm64_writer);
-    zsize tmp_relocator_insn_size = 0;
+    zz_arm64_relocator_reset(arm64_relocator, (zz_ptr_t)((zz_addr_t)arm64_insn_need_fix & ~(zz_addr_t)1), arm64_writer);
+    zz_size_t tmp_relocator_insn_size = 0;
 
     do {
         zz_arm64_relocator_read_one(arm64_relocator, NULL);

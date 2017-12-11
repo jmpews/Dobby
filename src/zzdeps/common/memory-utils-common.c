@@ -21,7 +21,7 @@
 
 #include "memory-utils-common.h"
 
-char *zz_vm_read_string(const zpointer address) {
+char *zz_vm_read_string(const zz_ptr_t address) {
     const char *start_addr = (const char *)address;
     unsigned int string_limit = 1024;
     unsigned int i;
@@ -35,18 +35,18 @@ char *zz_vm_read_string(const zpointer address) {
         return NULL;
     else {
         result = (char *)malloc(i + 1);
-        memcpy(result, (const zpointer)start_addr, i + 1);
+        memcpy(result, (const zz_ptr_t)start_addr, i + 1);
         return result;
     }
 }
 
-zpointer zz_vm_search_data(const zpointer start_addr, zpointer end_addr, zbyte *data,
-                           zsize data_len) {
-    zpointer curr_addr;
+zz_ptr_t zz_vm_search_data(const zz_ptr_t start_addr, zz_ptr_t end_addr, zbyte *data,
+                           zz_size_t data_len) {
+    zz_ptr_t curr_addr;
     if (start_addr <= 0)
-        Xerror("search address start_addr(%p) < 0", (zpointer)start_addr);
+        Xerror("search address start_addr(%p) < 0", (zz_ptr_t)start_addr);
     if (start_addr > end_addr)
-        Xerror("search start_add(%p) < end_addr(%p)", (zpointer)start_addr, (zpointer)end_addr);
+        Xerror("search start_add(%p) < end_addr(%p)", (zz_ptr_t)start_addr, (zz_ptr_t)end_addr);
 
     curr_addr = start_addr;
 
@@ -59,14 +59,14 @@ zpointer zz_vm_search_data(const zpointer start_addr, zpointer end_addr, zbyte *
     return 0;
 }
 
-zaddr zz_vm_align_floor(zaddr address, zsize range_size) {
-    zaddr result;
+zz_addr_t zz_vm_align_floor(zz_addr_t address, zz_size_t range_size) {
+    zz_addr_t result;
     result = address & ~(range_size - 1);
     return result;
 }
 
-zaddr zz_vm_align_ceil(zaddr address, zsize range_size) {
-    zaddr result;
+zz_addr_t zz_vm_align_ceil(zz_addr_t address, zz_size_t range_size) {
+    zz_addr_t result;
     result = (address + range_size - 1) & ~(range_size - 1);
     return result;
 }

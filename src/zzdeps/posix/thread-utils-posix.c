@@ -30,7 +30,7 @@ ThreadLocalKeyList *zz_posix_thread_new_thread_local_key_list() {
     return keylist_tmp;
 }
 
-zbool zz_posix_thread_add_thread_local_key(ThreadLocalKeyList *keylist, ThreadLocalKey *key) {
+bool zz_posix_thread_add_thread_local_key(ThreadLocalKeyList *keylist, ThreadLocalKey *key) {
     if (!keylist)
         return FALSE;
 
@@ -52,7 +52,7 @@ void zz_posix_thread_initialize_thread_local_key_list() {
     }
 }
 
-zpointer zz_posix_thread_new_thread_local_key_ptr() {
+zz_ptr_t zz_posix_thread_new_thread_local_key_ptr() {
     if (!g_thread_local_key_list) {
         zz_posix_thread_initialize_thread_local_key_list();
     }
@@ -60,25 +60,25 @@ zpointer zz_posix_thread_new_thread_local_key_ptr() {
     zz_posix_thread_add_thread_local_key(g_thread_local_key_list, key);
 
     pthread_key_create(&(key->key), NULL);
-    return (zpointer)key;
+    return (zz_ptr_t)key;
 }
 
-zpointer zz_posix_thread_get_current_thread_data(zpointer key_ptr) {
+zz_ptr_t zz_posix_thread_get_current_thread_data(zz_ptr_t key_ptr) {
     ThreadLocalKeyList *g_keys = g_thread_local_key_list;
-    zsize i;
+    zz_size_t i;
 
     if (!key_ptr)
         return NULL;
     for (i = 0; i < g_keys->size; i++) {
         if (g_keys->keys[i] == key_ptr)
-            return (zpointer)pthread_getspecific(g_keys->keys[i]->key);
+            return (zz_ptr_t)pthread_getspecific(g_keys->keys[i]->key);
     }
     return NULL;
 }
 
-zbool zz_posix_thread_set_current_thread_data(zpointer key_ptr, zpointer data) {
+bool zz_posix_thread_set_current_thread_data(zz_ptr_t key_ptr, zz_ptr_t data) {
     ThreadLocalKeyList *g_keys = g_thread_local_key_list;
-    zsize i;
+    zz_size_t i;
 
     for (i = 0; i < g_keys->size; i++) {
         if (g_keys->keys[i] == key_ptr)

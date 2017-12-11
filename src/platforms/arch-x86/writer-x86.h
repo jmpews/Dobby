@@ -33,14 +33,14 @@
 
 typedef ZzWriter ZzX86Writer;
 
-ZzX86Writer *zz_x86_writer_new(zpointer data_ptr);
+ZzX86Writer *zz_x86_writer_new(zz_ptr_t data_ptr);
 
-void zz_x86_writer_reset(ZzX86Writer *self, zpointer data_ptr);
+void zz_x86_writer_reset(ZzX86Writer *self, zz_ptr_t data_ptr);
 
-void zz_x86_writer_init(ZzX86Writer *self, zpointer target_addr);
+void zz_x86_writer_init(ZzX86Writer *self, zz_ptr_t target_addr);
 
-zsize zz_x86_writer_near_jump_range_size();
-void zz_x86_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size);
+zz_size_t zz_x86_writer_near_jump_range_size();
+void zz_x86_writer_put_bytes(ZzWriter *self, zbyte *data, zz_size_t size);
 void zz_x86_writer_put_instruction(ZzWriter *self, zuint32 insn);
 
 // ======= user custom =======

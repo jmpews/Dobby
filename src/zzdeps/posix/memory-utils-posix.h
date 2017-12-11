@@ -25,26 +25,26 @@
 #include "../common/memory-utils-common.h"
 #include "../zz.h"
 
-zsize zz_posix_vm_get_page_size();
+zz_size_t zz_posix_vm_get_page_size();
 
-zbool zz_posix_vm_check_address_valid_via_msync(const zpointer p);
+bool zz_posix_vm_check_address_valid_via_msync(const zz_ptr_t p);
 
-zbool zz_posix_vm_check_address_valid_via_signal(zpointer p);
+bool zz_posix_vm_check_address_valid_via_signal(zz_ptr_t p);
 
-zbool zz_posix_vm_protect(const zaddr address, zsize size, int page_prot);
+bool zz_posix_vm_protect(const zz_addr_t address, zz_size_t size, int page_prot);
 
-zbool zz_posix_vm_protect_as_executable(const zaddr address, zsize size);
+bool zz_posix_vm_protect_as_executable(const zz_addr_t address, zz_size_t size);
 
-zbool zz_posxi_vm_protect_as_writable(const zaddr address, zsize size);
+bool zz_posxi_vm_protect_as_writable(const zz_addr_t address, zz_size_t size);
 
-zpointer zz_posix_vm_allocate_pages(zsize n_pages);
+zz_ptr_t zz_posix_vm_allocate_pages(zz_size_t n_pages);
 
-zpointer zz_posix_vm_allocate(zsize size);
+zz_ptr_t zz_posix_vm_allocate(zz_size_t size);
 
-zpointer zz_posix_vm_allocate_near_pages(zaddr address, zsize range_size, zsize n_pages);
+zz_ptr_t zz_posix_vm_allocate_near_pages(zz_addr_t address, zz_size_t range_size, zz_size_t n_pages);
 
-zpointer zz_posix_vm_search_text_code_cave(zaddr address, zsize range_size, zsize size);
+zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
-zbool zz_posix_vm_patch_code(const zaddr address, const zpointer codedata, zuint codedata_size);
+bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size);
 
 #endif

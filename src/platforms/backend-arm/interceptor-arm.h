@@ -45,19 +45,19 @@ typedef struct _ZzInterceptorBackend {
     ZzArmWriter arm_writer;
     ZzThumbWriter thumb_writer;
 
-    zpointer enter_thunk;
-    zpointer half_thunk;
-    zpointer leave_thunk;
+    zz_ptr_t enter_thunk;
+    zz_ptr_t half_thunk;
+    zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
 typedef struct _ZzArmHookFuntionEntryBackend {
-    zbool is_thumb;
+    bool is_thumb;
     zuint redirect_code_size;
 } ZzArmHookFunctionEntryBackend;
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zaddr target_addr,
-                                        zsize range_size);
-ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zaddr target_addr,
-                                      zsize range_size);
+ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                        zz_size_t range_size);
+ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                      zz_size_t range_size);
 
 #endif

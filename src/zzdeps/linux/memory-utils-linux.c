@@ -28,7 +28,7 @@ MemoryLayout *zz_linux_vm_get_memory_layout_via_pid(pid_t pid) {
     }
 
     while (fgets(buf, sizeof(buf), fp) != NULL) {
-        zaddr start, end;
+        zz_addr_t start, end;
         unsigned dev, sdev;
         unsigned long inode;
         unsigned long long offset;
@@ -58,21 +58,21 @@ MemoryLayout *zz_linux_vm_get_memory_layout_via_pid(pid_t pid) {
          */
         if (sscanf(buf, "%lx-%lx %s %llx %x:%x %lu %s", &start, &end, prot, &offset, &dev, &sdev, &inode, path) != 8)
             continue;
-        mlayout->mem[mlayout->size].start = (zpointer)start;
-        mlayout->mem[mlayout->size].end = (zpointer)end;
+        mlayout->mem[mlayout->size].start = (zz_ptr_t)start;
+        mlayout->mem[mlayout->size].end = (zz_ptr_t)end;
         mlayout->mem[mlayout->size++].flags =
             (prot[0] == 'r' ? (1 << 0) : 0) | (prot[1] == 'w' ? (1 << 1) : 0) | (prot[2] == 'x' ? (1 << 2) : 0);
     }
     return mlayout;
 }
 
-zpointer zz_linux_vm_search_code_cave(zaddr address, zsize range_size, zsize size) {
+zz_ptr_t zz_linux_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size) {
     char zeroArray[128];
     char readZeroArray[128];
-    zaddr aligned_addr, tmp_addr, search_start, search_end, search_start_limit, search_end_limit;
-    zsize page_size;
+    zz_addr_t aligned_addr, tmp_addr, search_start, search_end, search_start_limit, search_end_limit;
+    zz_size_t page_size;
 
-    zpointer result_ptr;
+    zz_ptr_t result_ptr;
     memset(zeroArray, 0, 128);
 
     search_start_limit = address - range_size;
@@ -83,8 +83,8 @@ zpointer zz_linux_vm_search_code_cave(zaddr address, zsize range_size, zsize siz
     int i;
     for (i = 0; i < mlayout->size; i++) {
         if (mlayout->mem[i].flags == (1 << 0 | 1 << 2)) {
-            search_start = (zaddr)mlayout->mem[i].start;
-            search_end = (zaddr)mlayout->mem[i].end;
+            search_start = (zz_addr_t)mlayout->mem[i].start;
+            search_end = (zz_addr_t)mlayout->mem[i].end;
 
             if (search_start < search_start_limit) {
 
@@ -107,7 +107,7 @@ zpointer zz_linux_vm_search_code_cave(zaddr address, zsize range_size, zsize siz
                 continue;
             }
 
-            result_ptr = zz_vm_search_data((zpointer)search_start, (zpointer)search_end, (zbyte *)zeroArray, size);
+            result_ptr = zz_vm_search_data((zz_ptr_t)search_start, (zz_ptr_t)search_end, (zbyte *)zeroArray, size);
             if (result_ptr) {
                 free(mlayout);
                 return result_ptr;

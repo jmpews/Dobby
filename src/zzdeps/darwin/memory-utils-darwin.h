@@ -42,41 +42,41 @@
     }
 #define KR_ERROR_AT(kr, address)                                                                                       \
     {                                                                                                                  \
-        Xerror("kr = %d, at %p, reason: %s!", kr, (zpointer)address, mach_error_string(kr));                           \
+        Xerror("kr = %d, at %p, reason: %s!", kr, (zz_ptr_t)address, mach_error_string(kr));                           \
         debug_break();                                                                                                 \
     }
 
-zbool zz_vm_read_data_via_task(task_t task, const zaddr address, zpointer buffer, zsize length);
+bool zz_vm_read_data_via_task(task_t task, const zz_addr_t address, zz_ptr_t buffer, zz_size_t length);
 
-char *zz_vm_read_string_via_task(task_t task, const zaddr address);
+char *zz_vm_read_string_via_task(task_t task, const zz_addr_t address);
 
-zaddr zz_vm_search_data_via_task(task_t task, const zaddr start_addr, const zaddr end_addr, zbyte *data,
-                                 zsize data_len);
+zz_addr_t zz_vm_search_data_via_task(task_t task, const zz_addr_t start_addr, const zz_addr_t end_addr, zbyte *data,
+                                 zz_size_t data_len);
 
-zbool zz_vm_check_address_valid_via_task(task_t task, const zaddr address);
+bool zz_vm_check_address_valid_via_task(task_t task, const zz_addr_t address);
 
-zbool zz_vm_can_allocate_rx_page();
+bool zz_vm_can_allocate_rx_page();
 
-zbool zz_vm_protect_via_task(task_t task, const zaddr address, zsize size, vm_prot_t page_prot);
+bool zz_vm_protect_via_task(task_t task, const zz_addr_t address, zz_size_t size, vm_prot_t page_prot);
 
-zbool zz_vm_protect_as_executable_via_task(task_t task, const zaddr address, zsize size);
+bool zz_vm_protect_as_executable_via_task(task_t task, const zz_addr_t address, zz_size_t size);
 
-zbool zz_vm_protect_as_writable_via_task(task_t task, const zaddr address, zsize size);
+bool zz_vm_protect_as_writable_via_task(task_t task, const zz_addr_t address, zz_size_t size);
 
-zbool zz_vm_get_page_info_via_task(task_t task, const zaddr address, vm_prot_t *prot_p, vm_inherit_t *inherit_p);
+bool zz_vm_get_page_info_via_task(task_t task, const zz_addr_t address, vm_prot_t *prot_p, vm_inherit_t *inherit_p);
 
-zpointer zz_vm_allocate_pages_via_task(task_t task, zsize n_pages);
+zz_ptr_t zz_vm_allocate_pages_via_task(task_t task, zz_size_t n_pages);
 
-zpointer zz_vm_allocate_near_pages_via_task(task_t task, zaddr address, zsize range_size, zsize n_pages);
+zz_ptr_t zz_vm_allocate_near_pages_via_task(task_t task, zz_addr_t address, zz_size_t range_size, zz_size_t n_pages);
 
-zpointer zz_vm_allocate_via_task(task_t task, zsize size);
+zz_ptr_t zz_vm_allocate_via_task(task_t task, zz_size_t size);
 
-zpointer zz_vm_search_text_code_cave_via_task(task_t task, zaddr address, zsize range_size, zsize *size_ptr);
+zz_ptr_t zz_vm_search_text_code_cave_via_task(task_t task, zz_addr_t address, zz_size_t range_size, zz_size_t *size_ptr);
 
-zpointer zz_vm_search_text_code_cave_via_dylibs(zaddr address, zsize range_size, zsize size);
+zz_ptr_t zz_vm_search_text_code_cave_via_dylibs(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
-zpointer zz_vm_search_code_cave(zaddr address, zsize range_size, zsize size);
+zz_ptr_t zz_vm_search_code_cave(zz_addr_t address, zz_size_t range_size, zz_size_t size);
 
-zbool zz_vm_patch_code_via_task(task_t task, const zaddr address, const zpointer codedata, zuint codedata_size);
+bool zz_vm_patch_code_via_task(task_t task, const zz_addr_t address, const zz_ptr_t codedata, zuint codedata_size);
 
 #endif

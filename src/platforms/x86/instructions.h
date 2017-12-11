@@ -74,7 +74,7 @@ typedef struct _JCC_ABS {
 } __attribute__((packed)) JCC_ABS;
 
 typedef struct _Instruction {
-    zpointer address;
+    zz_ptr_t address;
     cs_insn *ins_cs;
     uint8_t size;
     zbyte bytes[16];
@@ -88,8 +88,8 @@ typedef struct _RelocatedInstruction {
 
 // not use!!!
 typedef struct _RelocatedTrampoline {
-    zpointer old_target;
-    zpointer new_target;
+    zz_ptr_t old_target;
+    zz_ptr_t new_target;
 
     uint8_t old_size;
     uint8_t new_size;

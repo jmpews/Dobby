@@ -31,16 +31,16 @@
 }
 
 void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    zpointer t = (void *)0x1234;
+    zz_ptr_t t = (void *)0x1234;
     // STACK_SET(callstack ,"key_x", t, void *);
-    // STACK_SET(callstack ,"key_y", t, zpointer);
+    // STACK_SET(callstack ,"key_y", t, zz_ptr_t);
     // NSLog(@"hookzz OC-Method: -[UIViewController %s]",
-    // (zpointer)(rs->general.regs.x1));
+    // (zz_ptr_t)(rs->general.regs.x1));
 }
 
 void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    // zpointer x = STACK_GET(callstack, "key_x", void *);
-    // zpointer y = STACK_GET(callstack, "key_y", zpointer);
+    // zz_ptr_t x = STACK_GET(callstack, "key_x", void *);
+    // zz_ptr_t y = STACK_GET(callstack, "key_y", zz_ptr_t);
     // NSLog(@"function over, and get 'key_x' is: %p", x);
     // NSLog(@"function over, and get 'key_y' is: %p", y);
 }

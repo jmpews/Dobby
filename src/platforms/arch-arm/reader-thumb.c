@@ -16,7 +16,7 @@
 
 #include "reader-thumb.h"
 
-zbool insn_is_thumb2(zuint32 insn) {
+bool insn_is_thumb2(zuint32 insn) {
     // PAGE: A6-221
     // PAGE: A6-230
 
@@ -28,10 +28,10 @@ zbool insn_is_thumb2(zuint32 insn) {
     }
 }
 
-zpointer zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address) {
+zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
     // ZzInstruction *insn_ctx = (ZzInstruction *)malloc(sizeof(ZzInstruction));
-    insn_ctx->pc = (zaddr)address + 4;
-    insn_ctx->address = (zaddr)address;
+    insn_ctx->pc = (zz_addr_t)address + 4;
+    insn_ctx->address = (zz_addr_t)address;
     insn_ctx->insn = *(zuint32 *)address;
 
     // PAGE: A6-221
@@ -46,7 +46,7 @@ zpointer zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer 
         insn_ctx->insn1 = insn_ctx->insn & 0x0000FFFF;
         insn_ctx->insn2 = 0;
     }
-    return (zpointer)insn_ctx->pc;
+    return (zz_ptr_t)insn_ctx->pc;
 }
 
 // ARM Manual

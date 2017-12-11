@@ -23,13 +23,13 @@
 
 #include "../zz.h"
 
-char *zz_vm_read_string(const zpointer address);
+char *zz_vm_read_string(const zz_ptr_t address);
 
-zpointer zz_vm_search_data(const zpointer start_addr, const zpointer end_addr, zbyte *data,
-                           zsize data_len);
+zz_ptr_t zz_vm_search_data(const zz_ptr_t start_addr, const zz_ptr_t end_addr, zbyte *data,
+                           zz_size_t data_len);
 
-zaddr zz_vm_align_floor(zaddr address, zsize range_size);
+zz_addr_t zz_vm_align_floor(zz_addr_t address, zz_size_t range_size);
 
-zaddr zz_vm_align_ceil(zaddr address, zsize range_size);
+zz_addr_t zz_vm_align_ceil(zz_addr_t address, zz_size_t range_size);
 
 #endif
