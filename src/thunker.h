@@ -22,7 +22,6 @@
 
 #include "interceptor.h"
 
-struct _ZzInterceptorBackend;
 ZZSTATUS ZzThunkerBuildThunk(struct _ZzInterceptorBackend *backend);
 
 #endif

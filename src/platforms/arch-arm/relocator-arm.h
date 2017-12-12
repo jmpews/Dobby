@@ -43,10 +43,17 @@ typedef struct _ZzArmRelocator {
 } ZzArmRelocator;
 
 void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzArmWriter *output);
+
 void zz_arm_relocator_reset(ZzArmRelocator *self, zz_ptr_t input_code, ZzArmWriter *output);
+
 void zz_arm_relocator_write_all(ZzArmRelocator *self);
+
 zz_size_t zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction);
+
 void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
+
 bool zz_arm_relocator_write_one(ZzArmRelocator *self);
+
 void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zz_addr_t code_address);
+
 #endif

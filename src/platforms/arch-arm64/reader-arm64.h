@@ -33,6 +33,7 @@ typedef enum _ARM64InsnType {
 } ARM64InsnType;
 
 ARM64InsnType GetARM64InsnType(uint32_t insn);
+
 zz_ptr_t zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
 
 #endif

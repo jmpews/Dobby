@@ -22,6 +22,7 @@
 
 #include "stack.h"
 #include "thunker.h"
+#include "tools.h"
 
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"

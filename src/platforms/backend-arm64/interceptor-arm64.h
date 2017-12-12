@@ -26,6 +26,7 @@
 #include "allocator.h"
 #include "interceptor.h"
 #include "thunker.h"
+#include "tools.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 

@@ -14,7 +14,7 @@ bool insn_equal(uint32_t insn, char *opstr) {
             mask = mask | (1 << j);
         } else if (opstr[i] == '1') {
             value = value | (1 << j);
-            mask = mask | (1 << j);
+            mask  = mask | (1 << j);
         }
     }
     return (insn & mask) == value;

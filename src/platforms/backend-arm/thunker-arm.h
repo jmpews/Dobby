@@ -22,6 +22,7 @@
 
 #include "stack.h"
 #include "thunker.h"
+#include "tools.h"
 
 #include "platforms/arch-arm/relocator-arm.h"
 #include "platforms/arch-arm/relocator-thumb.h"

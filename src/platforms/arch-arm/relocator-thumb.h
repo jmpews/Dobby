@@ -43,11 +43,17 @@ typedef struct _ZzThumbRelocator {
 } ZzThumbRelocator;
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *writer);
+
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbWriter *output);
+
 zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
+
 bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
+
 void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t code_address);
+
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
+
 void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
 
 #endif

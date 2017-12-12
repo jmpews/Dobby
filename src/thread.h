@@ -20,7 +20,6 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
-
 zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
 
 zz_ptr_t ZzThreadGetCurrentThreadData(zz_ptr_t key_ptr);

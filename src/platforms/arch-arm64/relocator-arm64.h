@@ -43,22 +43,30 @@ typedef struct _ZzArm64Relocator {
 } ZzArm64Relocator;
 
 void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzArm64Writer *writer);
+
 void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzArm64Writer *output);
 
 zz_size_t zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction);
+
 bool zz_arm64_relocator_write_one(ZzArm64Relocator *self);
+
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self);
+
 void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
 
 /* rewrite */
 static bool zz_arm64_relocator_rewrite_ldr(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
                                            ZzRelocateInstruction *re_insn_ctx);
+
 static bool zz_arm64_relocator_rewrite_adr(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
                                            ZzRelocateInstruction *re_insn_ctx);
+
 static bool zz_arm64_relocator_rewrite_b(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
                                          ZzRelocateInstruction *re_insn_ctx);
+
 static bool zz_arm64_relocator_rewrite_b_cond(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
                                               ZzRelocateInstruction *re_insn_ctx);
+
 static bool zz_arm64_relocator_rewrite_bl(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
                                           ZzRelocateInstruction *re_insn_ctx);
 #endif

@@ -33,10 +33,10 @@ ZzArm64Writer *zz_arm64_writer_new(zz_ptr_t data_ptr) {
     memset(writer, 0, sizeof(ZzArm64Writer));
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    writer->codedata = (zz_ptr_t)align_address;
-    writer->base = (zz_ptr_t)align_address;
-    writer->pc = align_address;
-    writer->size = 0;
+    writer->codedata        = (zz_ptr_t)align_address;
+    writer->base            = (zz_ptr_t)align_address;
+    writer->pc              = align_address;
+    writer->size            = 0;
 
     writer->literal_insn_size = 0;
     memset(writer->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
@@ -50,9 +50,9 @@ void zz_arm64_writer_reset(ZzArm64Writer *self, zz_ptr_t data_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
 
     self->codedata = (zz_ptr_t)align_address;
-    self->base = (zz_ptr_t)align_address;
-    self->pc = align_address;
-    self->size = 0;
+    self->base     = (zz_ptr_t)align_address;
+    self->pc       = align_address;
+    self->size     = 0;
 
     self->literal_insn_size = 0;
     memset(self->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
@@ -65,7 +65,7 @@ ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzWriter *
 
     zz_arm64_writer_put_ldr_br_reg_address(self, reg, address);
     ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
-    *literal_insn_ptr = literal_insn;
+    *literal_insn_ptr                  = literal_insn;
     return literal_insn;
 }
 
@@ -115,7 +115,7 @@ void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, uint32_t of
 
     uint32_t imm19, Rt_ndx;
 
-    imm19 = offset >> 2;
+    imm19  = offset >> 2;
     Rt_ndx = ri.index;
 
     zz_arm64_writer_put_instruction(self, 0x58000000 | imm19 << 5 | Rt_ndx);
@@ -169,7 +169,7 @@ void zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg) {
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t op = 0, Rn_ndx;
-    Rn_ndx = ri.index;
+    Rn_ndx      = ri.index;
     zz_arm64_writer_put_instruction(self, 0xd61f0000 | op << 21 | Rn_ndx << 5);
     return;
 }
@@ -190,7 +190,7 @@ void zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
 // C6-550
 void zz_arm64_writer_put_b_imm(ZzWriter *self, uint64_t offset) {
     uint32_t op = 0b0, imm26;
-    imm26 = (offset >> 2) & 0x03ffffff;
+    imm26       = (offset >> 2) & 0x03ffffff;
     zz_arm64_writer_put_instruction(self, 0x14000000 | op << 31 | imm26);
     return;
 }
@@ -199,7 +199,7 @@ void zz_arm64_writer_put_b_imm(ZzWriter *self, uint64_t offset) {
 // PAGE: C6-549
 void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, uint32_t condition, uint64_t imm) {
     uint32_t imm19, cond;
-    cond = condition;
+    cond  = condition;
     imm19 = (imm >> 2) & 0x7ffff;
     zz_arm64_writer_put_instruction(self, 0x54000000 | imm19 << 5 | cond);
     return;
@@ -216,7 +216,7 @@ void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzA
 
     Rd_ndx = rd.index;
     Rn_ndx = rl.index;
-    imm12 = imm & 0xFFF;
+    imm12  = imm & 0xFFF;
 
     zz_arm64_writer_put_instruction(self, 0x11000000 | sf << 31 | op << 30 | S << 29 | shift << 22 | imm12 << 10 |
                                               Rn_ndx << 5 | Rd_ndx);
@@ -234,7 +234,7 @@ void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzA
 
     Rd_ndx = rd.index;
     Rn_ndx = rl.index;
-    imm12 = imm & 0xFFF;
+    imm12  = imm & 0xFFF;
 
     zz_arm64_writer_put_instruction(self, 0x11000000 | sf << 31 | op << 30 | S << 29 | shift << 22 | imm12 << 10 |
                                               Rn_ndx << 5 | Rd_ndx);
@@ -251,7 +251,7 @@ void zz_arm64_writer_put_bytes(ZzWriter *self, char *data, zz_size_t size) {
 
 void zz_arm64_writer_put_instruction(ZzWriter *self, uint32_t insn) {
     *(uint32_t *)(self->codedata) = insn;
-    self->codedata = (zz_ptr_t)self->codedata + sizeof(uint32_t);
+    self->codedata                = (zz_ptr_t)self->codedata + sizeof(uint32_t);
     self->pc += 4;
     self->size += 4;
     return;

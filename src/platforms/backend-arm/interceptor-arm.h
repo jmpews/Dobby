@@ -23,6 +23,7 @@
 #include "allocator.h"
 #include "interceptor.h"
 #include "thunker.h"
+#include "tools.h"
 
 #include "platforms/arch-arm/relocator-arm.h"
 #include "platforms/arch-arm/relocator-thumb.h"
@@ -52,6 +53,7 @@ typedef struct _ZzArmHookFuntionEntryBackend {
 
 ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
                                         zz_size_t range_size);
+
 ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
                                       zz_size_t range_size);
 
