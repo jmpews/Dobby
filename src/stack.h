@@ -20,7 +20,9 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "memory.h"
 #include "thread.h"
+
 
 typedef struct _ZzCallStackItem {
     char *key;
@@ -51,7 +53,7 @@ ZzCallStack *ZzNewCallStack();
 
 ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr);
 
-bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
+bool ZzPushCallStack(ZzThreadStack *theadstack, ZzCallStack *callstack);
 
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
 
