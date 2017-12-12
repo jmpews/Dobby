@@ -22,6 +22,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "CommonKit/log/log_kit.h"
+
 #include "memory.h"
 
 typedef struct _codeslice {
