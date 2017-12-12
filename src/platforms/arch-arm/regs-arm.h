@@ -18,6 +18,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "CommonKit/log/log_kit.h"
+
 #include "instructions.h"
 
 // REF:

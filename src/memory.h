@@ -18,6 +18,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+void *zz_malloc_with_zero(zz_size_t size);
+
 zz_size_t ZzMemoryGetPageSzie();
 
 zz_ptr_t ZzMemoryAllocatePages(zz_size_t n_pages);

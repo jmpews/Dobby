@@ -18,8 +18,8 @@
 
 ZzDebugInfo g_zz_debug_info;
 
-void ZzEnableDebugMode() { g_zz.g_enable_debug_flag = TRUE; }
+void ZzEnableDebugMode() { g_zz_debug_info.g_enable_debug_flag = TRUE; }
 
 bool ZzIsEnableDebugMode() { return g_zz_debug_info.g_enable_debug_flag; }
 
-ZzInfo *ZzObtainDebugInfo(void) { return &g_zz_debug_info; }
+ZzDebugInfo *ZzObtainDebugInfo(void) { return &g_zz_debug_info; }

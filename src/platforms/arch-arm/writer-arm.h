@@ -23,6 +23,7 @@
 #include "kitzz.h"
 
 #include "writer.h"
+#include "macros.h"
 
 #include "instructions.h"
 #include "reader-arm.h"
@@ -52,13 +53,13 @@ void zz_arm_writer_put_bx_reg(ZzArmWriter *self, ZzARMReg reg);
 
 void zz_arm_writer_put_nop(ZzArmWriter *self);
 
-void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, zint32 imm);
+void zz_arm_writer_put_ldr_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, int32_t imm);
 
-void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, zint32 imm);
+void zz_arm_writer_put_str_reg_reg_imm(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, int32_t imm);
 
-void zz_arm_writer_put_ldr_reg_imm_literal(ZzArmWriter *self, ZzARMReg dst_reg, zint32 imm);
+void zz_arm_writer_put_ldr_reg_imm_literal(ZzArmWriter *self, ZzARMReg dst_reg, int32_t imm);
 
-void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, zint32 imm,
+void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, int32_t imm,
                                              bool index);
 
 void zz_arm_writer_put_ldr_reg_reg_imm_A1(ZzArmWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, uint32_t imm, bool P,

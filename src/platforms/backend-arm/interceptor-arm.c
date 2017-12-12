@@ -43,7 +43,7 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     status = ZzThunkerBuildThunk(backend);
 
     if (status == ZZ_FAILED) {
-        ZzInfoLog("%s", "ZzThunkerBuildThunk return ZZ_FAILED\n");
+        ZzDebugInfoLog("%s", "ZzThunkerBuildThunk return ZZ_FAILED\n");
         return NULL;
     }
 
@@ -236,7 +236,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
                 "LogInfo: on_enter_transfer_trampoline at %p, length: %ld. and will jump to "
                 "on_enter_trampoline(%p).\n",
                 code_slice->data, code_slice->size, entry->on_enter_trampoline);
-        ZzInfoLog("%s", buffer);
+        ZzDebugInfoLog("%s", buffer);
     }
 
     free(code_slice);
@@ -283,7 +283,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
                 "LogInfo: on_enter_trampoline at %p, length: %ld. hook-entry: %p. and will jump to "
                 "enter_thunk(%p)\n",
                 code_slice->data, code_slice->size, (void *)entry, (void *)self->enter_thunk);
-        ZzInfoLog("%s", buffer);
+        ZzDebugInfoLog("%s", buffer);
     }
 
     if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
@@ -436,7 +436,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         }
         sprintf(buffer + strlen(buffer), "origin_prologue: %s\n", origin_prologue);
 
-        ZzInfoLog("%s", buffer);
+        ZzDebugInfoLog("%s", buffer);
     }
 
     free(code_slice);
@@ -510,7 +510,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         sprintf(buffer + strlen(buffer),
                 "LogInfo: on_leave_trampoline at %p, length: %ld. and will jump to leave_thunk(%p).\n",
                 code_slice->data, code_slice->size, self->leave_thunk);
-        ZzInfoLog("%s", buffer);
+        ZzDebugInfoLog("%s", buffer);
     }
 
     free(code_slice);

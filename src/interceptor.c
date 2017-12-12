@@ -3,7 +3,6 @@
 
 #include "interceptor.h"
 #include "trampoline.h"
-#include "zzinfo.h"
 
 #define ZZHOOKENTRIES_DEFAULT 100
 ZzInterceptor *g_interceptor = NULL;
@@ -111,7 +110,7 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
 ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                      POSTCALL post_call_ptr, bool try_near_jump) {
 #if defined(__i386__) || defined(__x86_64__)
-    ZzInfoLog("%s", "x86 & x86_64 arch not support");
+    ZzDebugInfoLog("%s", "x86 & x86_64 arch not support");
     return ZZ_FAILED;
 #endif
 
@@ -155,7 +154,7 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
 ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr,
                             HALFCALL half_call_ptr, bool try_near_jump) {
 #if defined(__i386__) || defined(__x86_64__)
-    ZzInfoLog("%s", "x86 & x86_64 arch not support");
+    ZzDebugInfoLog("%s", "x86 & x86_64 arch not support");
     return ZZ_FAILED;
 #endif
 
