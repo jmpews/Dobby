@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 
-#include "zzinfo.h"
+#include "tools.h"
 
-ZzInfo g_zz;
+ZzDebugInfo g_zz_debug_info;
 
 void ZzEnableDebugMode() { g_zz.g_enable_debug_flag = TRUE; }
 
-bool ZzIsEnableDebugMode() { return g_zz.g_enable_debug_flag; }
+bool ZzIsEnableDebugMode() { return g_zz_debug_info.g_enable_debug_flag; }
 
-ZzInfo *ZzInfoObtain(void) { return &g_zz; }
+ZzInfo *ZzObtainDebugInfo(void) { return &g_zz_debug_info; }

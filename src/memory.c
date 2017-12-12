@@ -16,6 +16,15 @@
 
 #include "memory.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+void *zz_malloc_with_zero(zz_size_t size) {
+    void *tmp = (void *)malloc(size);
+    memset(tmp, 0, size);
+    return tmp;
+}
+
 ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zz_uint_t codedata_size) {
     zz_addr_t address_fixed = address & ~(zz_addr_t)1;
     if (!ZzMemoryPatchCode(address_fixed, codedata, codedata_size))
