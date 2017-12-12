@@ -25,10 +25,10 @@ define walk
 endef
 
 KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
-$(warning KITZZ_ALLFILES $(KITZZ_ALLFILES))
+#$(warning KITZZ_ALLFILES $(KITZZ_ALLFILES))
 KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
 KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
-$(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+#(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
 
 # ------------ kitzz make env end ---------------
 
