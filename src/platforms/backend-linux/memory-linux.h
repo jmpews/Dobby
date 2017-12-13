@@ -23,7 +23,7 @@
 #include "memory.h"
 
 #include "CommonKit/memory/common_memory_kit.h"
-#include "LinuxKit/memory/memory_kit.h"
-#include "PosixKit/memory/memory_kit.h"
+#include "LinuxKit/memory/linux_memory_kit.h"
+#include "PosixKit/memory/posix_memory_kit.h"
 
 #endif

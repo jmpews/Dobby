@@ -131,7 +131,7 @@ ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzArmRelocator *arm_relocator, Zz
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     bool is_thumb         = FALSE;
     zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
-    int redirect_limit    = 0;
+    zz_size_t redirect_limit    = 0;
 
     ZzArmHookFunctionEntryBackend *entry_backend;
     entry_backend = (ZzArmHookFunctionEntryBackend *)malloc(sizeof(ZzArmHookFunctionEntryBackend));
@@ -412,12 +412,12 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 code_slice->size, restore_target_addr);
         if (is_thumb) {
             sprintf(buffer + strlen(buffer),
-                    "ThumbInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %ld\n",
+                    "ThumbInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
                     (&self->thumb_relocator)->input_start, (&self->thumb_relocator)->input_cur,
                     (&self->thumb_relocator)->inpos);
         } else {
             sprintf(buffer + strlen(buffer),
-                    "ArmInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %ld\n",
+                    "ArmInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
                     (&self->arm_relocator)->input_start, (&self->arm_relocator)->input_cur,
                     (&self->arm_relocator)->inpos);
         }
