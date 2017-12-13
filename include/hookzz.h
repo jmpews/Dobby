@@ -97,7 +97,7 @@ typedef enum _ZZSTATUS {
 
 typedef struct _CallStack {
     unsigned long call_id;
-    struct _ThreadStack *threadstack;
+    struct _ThreadStack *ts;
 } CallStack;
 
 typedef struct _ThreadStack {
@@ -105,15 +105,20 @@ typedef struct _ThreadStack {
     unsigned long size;
 } ThreadStack;
 
-typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef struct _HookEntryInfo {
+    unsigned long hook_id;
+    void *hook_address;
+} HookEntryInfo;
+
+typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 
 // ------- export API -------
 
-#define STACK_CHECK_KEY(callstack, key) (bool)ZzGetCallStackData(callstack, key)
-#define STACK_GET(callstack, key, type) *(type *)ZzGetCallStackData(callstack, key)
-#define STACK_SET(callstack, key, value, type) ZzSetCallStackData(callstack, key, &(value), sizeof(type))
+#define STACK_CHECK_KEY(cs, key) (bool)ZzGetCallStackData(cs, key)
+#define STACK_GET(cs, key, type) *(type *)ZzGetCallStackData(cs, key)
+#define STACK_SET(cs, key, value, type) ZzSetCallStackData(cs, key, &(value), sizeof(type))
 void *ZzGetCallStackData(CallStack *callstack_ptr, char *key);
 bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, void *value_ptr, unsigned long value_size);
 

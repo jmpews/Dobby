@@ -99,8 +99,11 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
     /* call pre_call */
     if (entry->pre_call) {
         PRECALL pre_call;
-        pre_call = entry->pre_call;
-        (*pre_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack);
+        HookEntryInfo entry_info;
+        entry_info.hook_id      = entry->id;
+        entry_info.hook_address = entry->target_ptr;
+        pre_call                = entry->pre_call;
+        (*pre_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
     }
 
     /* set next hop */
@@ -131,8 +134,11 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
     /* call half_call */
     if (entry->half_call) {
         HALFCALL half_call;
-        half_call = entry->half_call;
-        (*half_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack);
+        HookEntryInfo entry_info;
+        entry_info.hook_id      = entry->id;
+        entry_info.hook_address = entry->target_ptr;
+        half_call               = entry->half_call;
+        (*half_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
     }
 
     /* set next hop */
@@ -156,8 +162,11 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
     /* call post_call */
     if (entry->post_call) {
         POSTCALL post_call;
-        post_call = entry->post_call;
-        (*post_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack);
+        HookEntryInfo entry_info;
+        entry_info.hook_id      = entry->id;
+        entry_info.hook_address = entry->target_ptr;
+        post_call               = entry->post_call;
+        (*post_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
     }
 
     /* set next hop */
