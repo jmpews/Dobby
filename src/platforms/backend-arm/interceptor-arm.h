@@ -48,7 +48,7 @@ typedef struct _ZzInterceptorBackend {
 
 typedef struct _ZzArmHookFuntionEntryBackend {
     bool is_thumb;
-    zz_uint_t redirect_code_size;
+    zz_size_t redirect_code_size;
 } ZzArmHookFunctionEntryBackend;
 
 ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,

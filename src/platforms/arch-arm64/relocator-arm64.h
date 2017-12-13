@@ -20,6 +20,7 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "memory.h"
 #include "writer.h"
 
 #include "instructions.h"
@@ -33,8 +34,8 @@ typedef struct _ZzArm64Relocator {
     zz_ptr_t input_start;
     zz_ptr_t input_cur;
     zz_addr_t input_pc;
-    zz_uint_t inpos;
-    zz_uint_t outpos;
+    int inpos;
+    int outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzArm64Writer *output;
@@ -52,7 +53,7 @@ bool zz_arm64_relocator_write_one(ZzArm64Relocator *self);
 
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self);
 
-void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
+void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 /* rewrite */
 static bool zz_arm64_relocator_rewrite_ldr(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,

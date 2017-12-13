@@ -22,8 +22,8 @@
 
 #include "memory.h"
 
-#include "CommonKit/memory/memory_kit.h"
-#include "DarwinKit/MemoryKit/memory_kit.h"
-#include "PoisxKit/memory/memory_kit.h"
+#include "CommonKit/memory/common_memory_kit.h"
+#include "DarwinKit/MemoryKit/darwin_memory_kit.h"
+#include "PosixKit/memory/posix_memory_kit.h"
 
 #endif

@@ -73,7 +73,7 @@ zz_size_t zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruc
 
     return self->input_cur - self->input_start;
 }
-void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes) {
+void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
     int tmp_size = 0;
     zz_ptr_t target_addr;
     ZzInstruction insn_ctx;
@@ -133,8 +133,8 @@ void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zz_addr_t code_
 }
 
 void zz_arm_relocator_write_all(ZzArmRelocator *self) {
-    zz_uint_t count        = 0;
-    zz_uint_t outpos       = self->outpos;
+    int count              = 0;
+    int outpos             = self->outpos;
     ZzArmWriter arm_writer = *self->output;
 
     while (zz_arm_relocator_write_one(self))

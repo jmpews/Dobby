@@ -20,6 +20,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "CommonKit/log/log_kit.h"
+
 #include "instructions.h"
 
 typedef enum _ZzARM64Reg {
@@ -61,9 +63,9 @@ typedef enum _ZzARM64Reg {
 } ZzARM64Reg;
 
 typedef struct _ZzArm64RegInfo {
-    zz_uint_t index;
-    zz_uint_t meta;
-    zz_uint_t width;
+    int index;
+    int meta;
+    int width;
     bool is_integer;
 } ZzArm64RegInfo;
 

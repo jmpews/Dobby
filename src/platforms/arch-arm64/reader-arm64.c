@@ -15,8 +15,6 @@
  */
 
 #include "reader-arm64.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 zz_ptr_t zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
     insn_ctx->address = (zz_addr_t)address;

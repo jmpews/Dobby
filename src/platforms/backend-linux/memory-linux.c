@@ -26,7 +26,7 @@ zz_ptr_t ZzMemoryAllocateNearPages(zz_addr_t address, zz_size_t redirect_range_s
 
 zz_ptr_t ZzMemoryAllocate(zz_size_t size) { return zz_posix_vm_allocate(size); }
 
-bool ZzMemoryPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_uint_t codedata_size) {
+bool ZzMemoryPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size) {
     return zz_posix_vm_patch_code(address, codedata, codedata_size);
 }
 

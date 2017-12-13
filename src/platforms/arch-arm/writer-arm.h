@@ -22,8 +22,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
-#include "writer.h"
 #include "macros.h"
+#include "writer.h"
 
 #include "instructions.h"
 #include "reader-arm.h"
@@ -43,7 +43,7 @@ void zz_arm_writer_put_bx_to_thumb(ZzArmWriter *self);
 
 // ------- architecture default -------
 
-void zz_arm_writer_put_bytes(ZzArmWriter *self, char *data, zz_uint_t data_size);
+void zz_arm_writer_put_bytes(ZzArmWriter *self, char *data, zz_size_t data_size);
 
 void zz_arm_writer_put_instruction(ZzArmWriter *self, uint32_t insn);
 

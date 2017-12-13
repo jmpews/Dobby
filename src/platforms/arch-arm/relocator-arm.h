@@ -33,8 +33,8 @@ typedef struct _ZzArmRelocator {
     zz_ptr_t input_start;
     zz_ptr_t input_cur;
     zz_addr_t input_pc;
-    zz_uint_t inpos;
-    zz_uint_t outpos;
+    int inpos;
+    int outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzLiteralInstruction **relocate_literal_insns;
@@ -50,7 +50,7 @@ void zz_arm_relocator_write_all(ZzArmRelocator *self);
 
 zz_size_t zz_arm_relocator_read_one(ZzArmRelocator *self, ZzInstruction *instruction);
 
-void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
+void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 bool zz_arm_relocator_write_one(ZzArmRelocator *self);
 

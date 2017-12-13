@@ -43,7 +43,7 @@ typedef struct _ZzInterceptorBackend {
 
 typedef struct _ZzArm64HookFuntionEntryBackend {
     bool is_thumb;
-    zz_uint_t redirect_code_size;
+    zz_size_t redirect_code_size;
 } ZzArm64HookFunctionEntryBackend;
 
 void ctx_save();

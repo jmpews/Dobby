@@ -79,7 +79,7 @@ zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *ins
     return self->input_cur - self->input_start;
 }
 
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes) {
+void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
     int tmp_size = 0;
     bool is_thumb;
     zz_ptr_t target_addr;
@@ -143,8 +143,8 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t c
 }
 
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
-    zz_uint_t count            = 0;
-    zz_uint_t outpos           = self->outpos;
+    int count                  = 0;
+    int outpos                 = self->outpos;
     ZzThumbWriter thumb_writer = *self->output;
     while (zz_thumb_relocator_write_one(self))
         count++;

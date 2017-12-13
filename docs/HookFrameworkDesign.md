@@ -284,7 +284,7 @@ gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
 ```
 void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address)
 {
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0x8);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     zz_arm64_writer_put_b_imm(self, (zz_addr_t)0xc);
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
 }

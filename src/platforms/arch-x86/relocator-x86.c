@@ -32,6 +32,6 @@ void zz_x86_relocator_relocate_writer(ZzX86Relocator *relocator, zz_addr_t code_
 
 void zz_x86_relocator_write_all(ZzX86Relocator *self) {}
 
-void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes) {}
+void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {}
 
 bool zz_x86_relocator_write_one(ZzX86Relocator *self) { return TRUE; }

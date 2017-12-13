@@ -34,11 +34,9 @@ void zz_arm64_register_describe(ZzARM64Reg reg, ZzArm64RegInfo *ri) {
         ri->width      = 64;
         ri->meta       = ZZ_ARM64_REG_X31;
     } else {
-        ZZ_ERROR_LOG_STR("zz_arm64_register_describe error.");
-#if defined(DEBUG_MODE)
-        debug_break();
-#endif
         ri->index = 0;
+        ZZ_ERROR_LOG_STR("zz_arm64_register_describe error.");
+        ZZ_DEBUG_BREAK();
     }
     ri->index = ri->meta - ZZ_ARM64_REG_X0;
 }

@@ -49,9 +49,9 @@ typedef enum _ZzReg {
 } ZzARMReg;
 
 typedef struct _ZzArmRegInfo {
-    zz_uint_t index;
-    zz_uint_t meta;
-    zz_uint_t width;
+    int index;
+    int meta;
+    int width;
 } ZzArmRegInfo;
 
 void zz_arm_register_describe(ZzARMReg reg, ZzArmRegInfo *ri);

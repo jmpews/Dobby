@@ -92,7 +92,7 @@ void zz_arm_writer_put_bx_to_thumb(ZzArmWriter *self) {
     zz_arm_writer_put_ldr_reg_reg_imm_index(self, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 // ------- architecture default -------
-void zz_arm_writer_put_bytes(ZzArmWriter *self, char *data, zz_uint_t data_size) {
+void zz_arm_writer_put_bytes(ZzArmWriter *self, char *data, zz_size_t data_size) {
     memcpy(self->codedata, data, data_size);
     self->codedata = (zz_ptr_t)self->codedata + data_size;
     self->pc += data_size;

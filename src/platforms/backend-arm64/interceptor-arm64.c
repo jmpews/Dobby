@@ -84,7 +84,7 @@ ZzCodeSlice *zz_code_patch_arm64_relocate_writer(ZzArm64Relocator *relocator, Zz
 
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
-    zz_uint_t redirect_limit = 0;
+    zz_size_t redirect_limit = 0;
 
     ZzArm64HookFunctionEntryBackend *entry_backend;
     entry_backend = (ZzArm64HookFunctionEntryBackend *)malloc(sizeof(ZzArm64HookFunctionEntryBackend));
@@ -249,7 +249,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p).\n", code_slice->data,
                 code_slice->size, restore_target_addr);
         sprintf(buffer + strlen(buffer),
-                "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %ld\n",
+                "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %d\n",
                 (&self->arm64_relocator)->input_start, (&self->arm64_relocator)->input_cur,
                 (&self->arm64_relocator)->inpos);
 
@@ -363,8 +363,8 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
 
 #ifdef TARGET_IS_IOS
 
+#include "MachoKit/macho_kit.h"
 #include <mach-o/dyld.h>
-#include <zzdeps/darwin/macho-utils-darwin.h>
 
 typedef struct _ZzInterceptorBackendNoJB {
     void *enter_thunk; // hardcode

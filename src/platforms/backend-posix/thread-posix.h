@@ -22,6 +22,6 @@
 
 #include "thread.h"
 
-#include "PosixKit/thread/thread_kit.h"
+#include "PosixKit/thread/posix_thread_kit.h"
 
 #endif

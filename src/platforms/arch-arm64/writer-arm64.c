@@ -73,7 +73,7 @@ ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzWriter *
 
 void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0x8);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     zz_arm64_writer_put_br_reg(self, reg);
     self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
@@ -81,7 +81,7 @@ void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_a
 
 void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0xc);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     zz_arm64_writer_put_blr_reg(self, reg);
     zz_arm64_writer_put_b_imm(self, 0xc);
     self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
@@ -90,7 +90,7 @@ void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, z
 
 void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0x8);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     zz_arm64_writer_put_b_imm(self, 0xc);
     self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
@@ -100,7 +100,7 @@ zz_size_t zz_arm64_writer_near_jump_range_size() { return ((1 << 25) << 2); }
 
 void zz_arm64_writer_put_ldr_br_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zz_uint_t)0xc);
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     zz_arm64_writer_put_br_reg(self, reg);
     zz_arm64_writer_put_b_imm(self, 0xc);
     self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;

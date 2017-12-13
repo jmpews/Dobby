@@ -38,8 +38,8 @@ typedef struct _ZzThumbRelocator {
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
     ZzThumbWriter *output;
-    zz_uint_t inpos;
-    zz_uint_t outpos;
+    int inpos;
+    int outpos;
 } ZzThumbRelocator;
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *writer);
@@ -54,6 +54,6 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t c
 
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
 
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
+void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 #endif

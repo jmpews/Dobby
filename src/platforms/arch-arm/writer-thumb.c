@@ -132,7 +132,7 @@ void zz_thumb_writer_put_nop(ZzThumbWriter *self) {
     return;
 }
 
-void zz_thumb_writer_put_bytes(ZzThumbWriter *self, char *data, zz_uint_t data_size) {
+void zz_thumb_writer_put_bytes(ZzThumbWriter *self, char *data, zz_size_t data_size) {
     memcpy(self->codedata, data, data_size);
     self->codedata = (zz_ptr_t)self->codedata + data_size;
     self->pc += data_size;
@@ -443,7 +443,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbWriter *self, ZzARMReg dst_reg, 
         zz_thumb_writer_put_instruction(self, insn);
     } else {
         uint16_t insn1, insn2;
-        zz_uint_t i, imm3, imm8;
+        zz_size_t i, imm3, imm8;
         i    = (ABS(right_value) >> (3 + 8)) & 0x1;
         imm3 = (ABS(right_value) >> 8) & 0b111;
         imm8 = ABS(right_value) & 0b11111111;

@@ -38,8 +38,8 @@ typedef struct _ZzX86Relocator {
     zz_ptr_t input_start;
     zz_ptr_t input_cur;
     zz_addr_t input_pc;
-    zz_uint_t inpos;
-    zz_uint_t outpos;
+    int inpos;
+    int outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzX86Writer *output;
@@ -53,6 +53,6 @@ void zz_x86_relocator_reset(ZzX86Relocator *self, zz_ptr_t input_code, ZzX86Writ
 zz_size_t zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction);
 bool zz_x86_relocator_write_one(ZzX86Relocator *self);
 void zz_x86_relocator_write_all(ZzX86Relocator *self);
-void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes);
+void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 #endif

@@ -107,15 +107,15 @@ void zz_arm64_relocator_relocate_writer(ZzArm64Relocator *relocator, zz_addr_t c
 }
 
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self) {
-    zz_uint_t count            = 0;
-    zz_uint_t outpos           = self->outpos;
+    int count                  = 0;
+    int outpos                 = self->outpos;
     ZzArm64Writer arm64_writer = *self->output;
 
     while (zz_arm64_relocator_write_one(self))
         count++;
 }
 
-void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_uint_t min_bytes, zz_uint_t *max_bytes) {
+void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
     int tmp_size = 0;
     zz_ptr_t target_addr;
     ZzInstruction insn_ctx;

@@ -163,27 +163,27 @@ HOOKZZ_C_CPP_OBJ_FILES := $(HOOKZZ_C_CPP_SRC_FILES:.c=.o)
 HOOKZZ_ASM_OBJ_FILES := $(HOOKZZ_ASM_SRC_FILES:.S=.o)
 
 HOOKZZ_SRC_OBJ_FILES := $(HOOKZZ_C_CPP_OBJ_FILES) $(HOOKZZ_ASM_OBJ_FILES)
+HOOKZZ_BUILD_SRC_OBJ_FILES := $(foreach n, $(HOOKZZ_SRC_OBJ_FILES), build/$(notdir $(n)))
 
 HOOKZZ_INCLUDE := $(foreach n, $(HOOKZZ_INCLUDE), -I$(n))
 
+# $(warning HOOKZZ_C_CPP_OBJ_FILES= $(HOOKZZ_C_CPP_OBJ_FILES))
 $(HOOKZZ_NAME) : $(HOOKZZ_SRC_OBJ_FILES)
-	@mkdir -p $(OUTPUT_DIR)
-	@rm -rf $(OUTPUT_DIR)/*
+	@# @rm -rf $(OUTPUT_DIR)/*
 
-	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(HOOKZZ_INCLUDE) $(HOOKZZ_SRC_OBJ_FILES) -o $(OUTPUT_DIR)/$(ZZ_DLL)
-	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(ZZ_OBJS)
+	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(HOOKZZ_INCLUDE) $(HOOKZZ_BUILD_SRC_OBJ_FILES) -o $(OUTPUT_DIR)/$(ZZ_DLL)
+	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(HOOKZZ_BUILD_SRC_OBJ_FILES)
 
 	@echo "$(OK_COLOR)build success for $(ARCH)-$(BACKEND)-hookzz! $(NO_COLOR)"
 
 $(HOOKZZ_C_CPP_OBJ_FILES): %.o : %.c
-	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o $@
+	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o build/$(notdir $@)
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 $(HOOKZZ_ASM_OBJ_FILES): %.o : %.S
-	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o $@
+	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o build/$(notdir $@)
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 clean:
 	@rm -rf $(shell find ./src -name "*\.o" | xargs echo)
-	@rm -rf $(OUTPUT_DIR)
 	@echo "$(OK_COLOR)clean all *.o success!$(NO_COLOR)"

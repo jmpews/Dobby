@@ -22,8 +22,8 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
-#include "writer.h"
 #include "macros.h"
+#include "writer.h"
 
 #include "instructions.h"
 #include "reader-thumb.h"
@@ -50,7 +50,7 @@ zz_size_t zz_thumb_writer_near_jump_range_size();
 
 void zz_thumb_writer_put_nop(ZzThumbWriter *self);
 
-void zz_thumb_writer_put_bytes(ZzThumbWriter *self, char *data, zz_uint_t data_size);
+void zz_thumb_writer_put_bytes(ZzThumbWriter *self, char *data, zz_size_t data_size);
 
 void zz_thumb_writer_put_instruction(ZzThumbWriter *self, uint16_t insn);
 
