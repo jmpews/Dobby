@@ -20,6 +20,7 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "memory.h"
 #include "writer.h"
 
 #include "instructions.h"

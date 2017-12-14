@@ -94,9 +94,9 @@ typedef struct _ThreadStack
 } ThreadStack;
 
 
-typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 
 ```
 

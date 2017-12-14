@@ -63,34 +63,36 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Compile
 
+use `git clone --depth 1 http://github.com/jmpews/HookZz` to clone the latest commit.
+
 ## build for arm64-ios
 
 #### 1. build `libhookzz.dylib` and `libhookzz.static.a`
 
 ```
-jmpews at jmpewsdeMBP in ~/Desktop/SpiderZz/project/HookZz
 λ : >>> make clean; make BACKEND=ios ARCH=arm64
 clean all *.o success!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/allocator.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/interceptor.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/memory.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/stack.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/trampoline.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-posix/thread-posix.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-darwin/memory-darwin.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm64/instructions.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm64/reader-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm64/regs-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm64/relocator-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm64/writer-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-arm64/thunker-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-arm64/trampoline-arm64.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/common/memory-utils-common.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/posix/memory-utils-posix.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/posix/thread-utils-posix.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/darwin/macho-utils-darwin.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/darwin/memory-utils-darwin.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-arm64/interceptor-template-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/allocator.o]!
+generate [/Users/jmpews/project/HookZz/src/interceptor.o]!
+generate [/Users/jmpews/project/HookZz/src/memory.o]!
+generate [/Users/jmpews/project/HookZz/src/stack.o]!
+generate [/Users/jmpews/project/HookZz/src/tools.o]!
+generate [/Users/jmpews/project/HookZz/src/trampoline.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/backend-posix/thread-posix.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/backend-darwin/memory-darwin.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/arch-arm64/instructions.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/arch-arm64/reader-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/arch-arm64/regs-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/arch-arm64/relocator-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/arch-arm64/writer-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/backend-arm64/interceptor-arm64.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/backend-arm64/thunker-arm64.o]!
+generate [/Users/jmpews/project/kitzz/CommonKit/memory/common_memory_kit.o]!
+generate [/Users/jmpews/project/kitzz/PosixKit/memory/posix_memory_kit.o]!
+generate [/Users/jmpews/project/kitzz/PosixKit/thread/posix_thread_kit.o]!
+generate [/Users/jmpews/project/kitzz/MachoKit/macho_kit.o]!
+generate [/Users/jmpews/project/kitzz/DarwinKit/MemoryKit/darwin_memory_kit.o]!
+generate [/Users/jmpews/project/HookZz/src/platforms/backend-arm64/interceptor-template-arm64.o]!
 build success for arm64-ios-hookzz!
 ```
 
@@ -99,7 +101,6 @@ check `build/ios-arm64/*`.
 #### 2. build tests dylib
 
 ```
-jmpews at jmpewsdeMBP in ~/Desktop/SpiderZz/project/HookZz/tests/arm64-ios
 λ : >>> make clean; make
 clean all *.o success!
 build [test_hook_oc.dylib] success for arm64-ios!

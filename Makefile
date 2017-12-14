@@ -169,7 +169,6 @@ HOOKZZ_INCLUDE := $(foreach n, $(HOOKZZ_INCLUDE), -I$(n))
 
 # $(warning HOOKZZ_C_CPP_OBJ_FILES= $(HOOKZZ_C_CPP_OBJ_FILES))
 $(HOOKZZ_NAME) : $(HOOKZZ_SRC_OBJ_FILES)
-	@# @rm -rf $(OUTPUT_DIR)/*
 
 	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(HOOKZZ_INCLUDE) $(HOOKZZ_BUILD_SRC_OBJ_FILES) -o $(OUTPUT_DIR)/$(ZZ_DLL)
 	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(HOOKZZ_BUILD_SRC_OBJ_FILES)
@@ -185,5 +184,6 @@ $(HOOKZZ_ASM_OBJ_FILES): %.o : %.S
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 clean:
+	@rm -rf $(OUTPUT_DIR)/*
 	@rm -rf $(shell find ./src -name "*\.o" | xargs echo)
 	@echo "$(OK_COLOR)clean all *.o success!$(NO_COLOR)"

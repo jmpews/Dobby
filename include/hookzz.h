@@ -110,6 +110,24 @@ typedef struct _HookEntryInfo {
     void *hook_address;
 } HookEntryInfo;
 
+
+/* ------- example -------
+void common_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    puts((char *)rs->general.regs.r0);
+    STACK_SET(cs, "format", rs->general.regs.r0, char *);
+}
+
+void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    if (STACK_CHECK_KEY(cs, "format"))
+    {
+        char *format = STACK_GET(cs, "format", char *);
+        puts(format);
+    }
+}
+------- example end ------- */
+
 typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
