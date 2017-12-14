@@ -30,25 +30,25 @@
     [self zzMethodSwizzlingHook];
 }
 
-void objcMethod_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    zz_ptr_t t = 0x1234;
-    STACK_SET(callstack, "key_x", t, void *);
-    STACK_SET(callstack, "key_y", t, zz_ptr_t);
-    NSLog(@"hookzz OC-Method: -[UIViewController %s]", (zz_ptr_t)(rs->general.regs.x1));
+void objcMethod_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
+    void *t = (void *)0x1234;
+    STACK_SET(cs, "key_x", t, void *);
+    STACK_SET(cs, "key_y", t, void *);
+    NSLog(@"hookzz OC-Method: -[UIViewController %s]", (void *)(rs->general.regs.x1));
 }
 
-void objcMethod_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    zz_ptr_t x = STACK_GET(callstack, "key_x", void *);
-    zz_ptr_t y = STACK_GET(callstack, "key_y", zz_ptr_t);
+void objcMethod_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
+    void *x = STACK_GET(cs, "key_x", void *);
+    void *y = STACK_GET(cs, "key_y", void *);
     NSLog(@"function over, and get 'key_x' is: %p", x);
     NSLog(@"function over, and get 'key_y' is: %p", y);
 }
 
 + (void)zzMethodSwizzlingHook {
-    Class hookClass = objc_getClass("UIViewController");
-    SEL oriSEL = @selector(viewWillAppear:);
+    Class hookClass  = objc_getClass("UIViewController");
+    SEL oriSEL       = @selector(viewWillAppear:);
     Method oriMethod = class_getInstanceMethod(hookClass, oriSEL);
-    IMP oriImp = method_getImplementation(oriMethod);
+    IMP oriImp       = method_getImplementation(oriMethod);
 
     ZzHookPrePost((void *)oriImp, objcMethod_pre_call, objcMethod_post_call);
 }

@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "hookzz.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -39,15 +23,15 @@ int fake_printf(const char *restrict format, ...) {
     return x;
 }
 
-void printf_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+void printf_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
     puts((char *)rs->general.regs.r0);
-    STACK_SET(callstack, "format", rs->general.regs.r0, char *);
+    STACK_SET(cs, "format", rs->general.regs.r0, char *);
     puts("printf-pre-call");
 }
 
-void printf_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    if (STACK_CHECK_KEY(callstack, "format")) {
-        char *format = STACK_GET(callstack, "format", char *);
+void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
+    if (STACK_CHECK_KEY(cs, "format")) {
+        char *format = STACK_GET(cs, "format", char *);
         puts(format);
     }
     puts("printf-post-call");
@@ -57,6 +41,6 @@ __attribute__((constructor)) void test_hook_printf() {
     void *printf_ptr = (void *)printf;
 
     ZzEnableDebugMode();
-    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, TRUE);
+    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, true);
     printf("HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d\n", 1, (void *)2, 3, (char)4, (char)5, (char)6, 7, 8, 9);
 }

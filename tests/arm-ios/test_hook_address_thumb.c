@@ -42,38 +42,31 @@ static void sorry_to_exit() {
 #endif
 }
 
-void getpid_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+void getpid_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
     unsigned long request = *(unsigned long *)(&rs->general.regs.r12);
     printf("request(r12) is: %ld\n", request);
     printf("r0 is: %ld\n", (long)rs->general.regs.r0);
 }
 
-void getpid_half_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    pid_t r0 = (pid_t)(rs->general.regs.r0);
-    printf("getpid() return at r0 is: %d\n", r0);
-}
+void getpid_half_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
+    {
+        pid_t r0 = (pid_t)(rs->general.regs.r0);
+        printf("getpid() return at r0 is: %d\n", r0);
+    }
 
-__attribute__((constructor)) void test_hook_address() {
-    void *hack_this_function_ptr = (void *)hack_this_function;
-    // hook address with only `pre_call`
-    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, (void
-    // *)getpid_pre_call, NULL);
+    __attribute__((constructor)) void test_hook_address() {
+        void *hack_this_function_ptr = (void *)hack_this_function;
+        // hook address with both `half_call` and `pre_call`
+        ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 10, getpid_pre_call, getpid_half_call,
+                           false);
+        ZzEnableHook((void *)hack_this_function_ptr + 8);
 
-    // hook address with only `half_call`
-    // ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 12, NULL, (void
-    // *)getpid_half_call);
+        void *sorry_to_exit_ptr = (void *)sorry_to_exit;
+        unsigned long nop_bytes = 0x46c0;
+        ZzRuntimeCodePatch(sorry_to_exit_ptr + 8, &nop_bytes, 2);
 
-    // hook address with both `half_call` and `pre_call`
-    ZzBuildHookAddress(hack_this_function_ptr + 8, hack_this_function_ptr + 10, getpid_pre_call, getpid_half_call,
-                       FALSE);
-    ZzEnableHook((void *)hack_this_function_ptr + 8);
+        hack_this_function();
+        sorry_to_exit();
 
-    void *sorry_to_exit_ptr = (void *)sorry_to_exit;
-    unsigned long nop_bytes = 0x46c0;
-    ZzRuntimeCodePatch((unsigned long)sorry_to_exit_ptr + 8, (zz_ptr_t)&nop_bytes, 2);
-
-    hack_this_function();
-    sorry_to_exit();
-
-    printf("hack success -.0\n");
-}
+        printf("hack success -.0\n");
+    }

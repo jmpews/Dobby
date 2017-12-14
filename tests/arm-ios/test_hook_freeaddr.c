@@ -28,16 +28,16 @@ void fake_freeaddrinfo(struct addrinfo *ai) { orig_freeaddrinfo(ai); }
 
 __attribute__((constructor)) void test_hook_freeaddrinfo() {
     ZzEnableDebugMode();
-    ZzHook((void *)freeaddrinfo, (void *)fake_freeaddrinfo, &orig_freeaddrinfo, NULL, NULL, FALSE);
+    ZzHook((void *)freeaddrinfo, (void *)fake_freeaddrinfo, &orig_freeaddrinfo, NULL, NULL, false);
 
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+    hints.ai_family   = AF_UNSPEC; // use AF_INET6 to force IPv6
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; // use my IP address
+    hints.ai_flags    = AI_PASSIVE; // use my IP address
 
     if ((rv = getaddrinfo(NULL, "3490", &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));

@@ -19,22 +19,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void open_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    zz_ptr_t t = (void *)0x1234;
-    // STACK_SET(callstack ,"key_x", t, void *);
-    // STACK_SET(callstack ,"key_y", t, zz_ptr_t);
-    // NSLog(@"hookzz OC-Method: -[UIViewController %s]",
-    // (zz_ptr_t)(rs->general.regs.x1));
+void open_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    void *t = (void *)0x1234;
+    STACK_SET(cs, "key_x", t, void *);
+    STACK_SET(cs, "key_y", t, void *);
 }
 
-void open_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    // zz_ptr_t x = STACK_GET(callstack, "key_x", void *);
-    // zz_ptr_t y = STACK_GET(callstack, "key_y", zz_ptr_t);
-    // NSLog(@"function over, and get 'key_x' is: %p", x);
-    // NSLog(@"function over, and get 'key_y' is: %p", y);
+void open_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    void *x = STACK_GET(cs, "key_x", void *);
+    void *y = STACK_GET(cs, "key_y", void *);
 }
 
-__attribute__((constructor)) void test_hook_printf() {
+__attribute__((constructor)) void test_hook_printf()
+{
     void *open_ptr = (void *)open;
 
     ZzEnableDebugMode();
