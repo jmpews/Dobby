@@ -14,28 +14,28 @@
  *    limitations under the License.
  */
 
-#ifndef writer_h
-#define writer_h
+/*
+ *  refs: https://github.com/aquynh/capstone/blob/master/LEB128.h
+ *  refs: http://llvm.org/docs/doxygen/html/LEB128_8h_source.html
+ *  refs: ld64-274.2/src/other/dyldinfo.cpp:1760
+ */
 
-#include "hookzz.h"
-#include "kitzz.h"
+#if !defined(_MSC_VER) || !defined(_KERNEL_MODE)
 
-#define MAX_LITERAL_INSN_SIZE 128
-
-typedef struct _ZzLiteralInstruction {
-    zz_ptr_t literal_insn_ptr;
-    zz_addr_t *literal_address_ptr;
-} ZzLiteralInstruction;
-
-typedef struct _ZzWriter {
-    zz_ptr_t codedata;
-    zz_ptr_t base;
-    zz_addr_t pc;
-    zz_size_t size;
-
-    ZzLiteralInstruction literal_insns[MAX_LITERAL_INSN_SIZE];
-    zz_size_t literal_insn_size;
-
-} ZzWriter;
+#include <stdint.h>
 
 #endif
+
+/// Utility function to decode a ULEB128 value.
+static inline uint64_t decodeULEB128(const uint8_t *p, unsigned *n) {
+    const uint8_t *orig_p = p;
+    uint64_t Value        = 0;
+    unsigned Shift        = 0;
+    do {
+        Value += (*p & 0x7f) << Shift;
+        Shift += 7;
+    } while (*p++ >= 128);
+    if (n)
+        *n = (unsigned)(p - orig_p);
+    return Value;
+}

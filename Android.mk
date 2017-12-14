@@ -8,7 +8,7 @@ include $(CLEAR_VARS)
 
 # ------------ kitzz make env ---------------
 
-KITZZ_PATH := D:/CodeDocument/project/kitzz
+KITZZ_PATH := $(LOCAL_PATH)/src/kitzz
 
 KITZZ_INCLUDE := $(KITZZ_PATH) \
 			$(KITZZ_PATH)/include

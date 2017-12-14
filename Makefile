@@ -129,7 +129,7 @@ endif
 
 # ------------ kitzz make env ---------------
 
-KITZZ_PATH := /Users/jmpews/project/kitzz
+KITZZ_PATH := $(HOOKZZ_PATH)/src/kitzz
 
 KITZZ_INCLUDE := $(KITZZ_PATH) \
 			$(KITZZ_PATH)/include
@@ -146,14 +146,15 @@ define walk
 endef
 
 KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
-#$(warning KITZZ_ALLFILES $(KITZZ_ALLFILES))
 KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
 KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
-#$(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+# $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
 
 # ------------ kitzz make env end ---------------
 
 HOOKZZ_INCLUDE += $(KITZZ_INCLUDE)
+
+HOOKZZ_SRC_FILES := $(HOOKZZ_SRC_FILES:$(LOCAL_PATH)/%=%)
 
 HOOKZZ_C_CPP_SRC_FILES := $(filter %.c,$(HOOKZZ_SRC_FILES)) \
 				$(KITZZ_SRC_FILES)
