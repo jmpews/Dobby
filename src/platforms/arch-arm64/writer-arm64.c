@@ -29,8 +29,7 @@
 // `witer` REF: `ZzInstruction Set Encoding`
 
 ZzArm64Writer *zz_arm64_writer_new(zz_ptr_t data_ptr) {
-    ZzArm64Writer *writer = (ZzArm64Writer *)malloc(sizeof(ZzArm64Writer));
-    memset(writer, 0, sizeof(ZzArm64Writer));
+    ZzArm64Writer *writer = (ZzArm64Writer *)zz_malloc_with_zero(sizeof(ZzArm64Writer));
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     writer->codedata        = (zz_ptr_t)align_address;

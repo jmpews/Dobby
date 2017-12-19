@@ -129,13 +129,12 @@ ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzArmRelocator *arm_relocator, Zz
 }
 
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
-    bool is_thumb         = FALSE;
-    zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
-    zz_size_t redirect_limit    = 0;
+    bool is_thumb            = FALSE;
+    zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
+    zz_size_t redirect_limit = 0;
 
     ZzArmHookFunctionEntryBackend *entry_backend;
-    entry_backend = (ZzArmHookFunctionEntryBackend *)malloc(sizeof(ZzArmHookFunctionEntryBackend));
-    memset(entry_backend, 0, sizeof(ZzArmHookFunctionEntryBackend));
+    entry_backend = (ZzArmHookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzArmHookFunctionEntryBackend));
 
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
 

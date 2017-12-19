@@ -34,13 +34,12 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, Z
     relocator->relocate_literal_insns_size = 0;
     relocator->try_relocated_length        = 0;
 
-    relocator->input_insns = (ZzInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
-    memset(relocator->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
+    relocator->input_insns =
+        (ZzInstruction *)zz_malloc_with_zero(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     relocator->output_insns =
-        (ZzRelocateInstruction *)malloc(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
-    memset(relocator->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
+        (ZzRelocateInstruction *)zz_malloc_with_zero(MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
     relocator->relocate_literal_insns =
-        (ZzLiteralInstruction **)malloc(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
+        (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
     memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 

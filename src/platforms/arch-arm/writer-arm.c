@@ -23,8 +23,7 @@
 // `writer` REF: `ZzInstruction Set Encoding`
 
 ZzArmWriter *zz_arm_writer_new(zz_ptr_t data_ptr) {
-    ZzArmWriter *writer = (ZzArmWriter *)malloc(sizeof(ZzArmWriter));
-    memset(writer, 0, sizeof(ZzArmWriter));
+    ZzArmWriter *writer = (ZzArmWriter *)zz_malloc_with_zero(sizeof(ZzArmWriter));
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     writer->codedata        = (zz_ptr_t)align_address;
