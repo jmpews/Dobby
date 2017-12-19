@@ -30,13 +30,9 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - it's cute
 
-# Getting Started
-
-[Move to HookZz Getting Started](https://jmpews.github.io/zzpp/getting-started/) **[need update]**
-
 # How it works ?
 
-[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md) **[need update]**
+[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
 
 # Why I do this?
 
@@ -52,10 +48,6 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 # Docs
 
 [Move to HookZz docs](https://jmpews.github.io/zzpp/hookzz-docs/) **[need update]**
-
-# Example
-
-[Move to HookZz example](https://jmpews.github.io/zzpp/hookzz-example/) **[need update]**
 
 # Modules
 
@@ -115,52 +107,41 @@ check `build/ios-arm64/*`.
 
 ignore...
 
-## build for arm-android
+## build for arm64-android
 
-#### 1. build `libhookzz.so` and `libhookzz.static.a`
+use ndk-build
+
+#### build `libhookzz.so` and `libhookzz.static.a`
 
 ```
-jmpews at jmpewsdeMBP in ~/Desktop/SpiderZz/project/HookZz
-λ : >>> make clean; make BACKEND=android ARCH=arm
-clean all *.o success!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/allocator.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/interceptor.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/memory.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/stack.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/trampoline.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-posix/thread-posix.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-linux/memory-linux.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/instructions.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/reader-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/reader-thumb.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/regs-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/relocator-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/relocator-thumb.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/writer-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/arch-arm/writer-thumb.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-arm/thunker-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/platforms/backend-arm/trampoline-arm.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/common/memory-utils-common.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/posix/memory-utils-posix.o]!
-generate [/Users/jmpews/Desktop/SpiderZz/project/HookZz/src/zzdeps/posix/thread-utils-posix.o]!
-build success for arm-android-hookzz!
+λ D:\TechnicalProgram\Android-SDK\ndk-bundle\build\ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk APP_ABI=arm64-v8a
+Android NDK: APP_PLATFORM not set. Defaulting to minimum supported version android-14.
+[arm64-v8a] Compile        : hookzz <= allocator.c
+[arm64-v8a] Compile        : hookzz <= interceptor.c
+[arm64-v8a] Compile        : hookzz <= memory.c
+[arm64-v8a] Compile        : hookzz <= stack.c
+[arm64-v8a] Compile        : hookzz <= tools.c
+[arm64-v8a] Compile        : hookzz <= trampoline.c
+[arm64-v8a] Compile        : hookzz <= memory-linux.c
+[arm64-v8a] Compile        : hookzz <= thread-posix.c
+[arm64-v8a] Compile        : hookzz <= instructions.c
+[arm64-v8a] Compile        : hookzz <= reader-arm64.c
+[arm64-v8a] Compile        : hookzz <= regs-arm64.c
+[arm64-v8a] Compile        : hookzz <= relocator-arm64.c
+[arm64-v8a] Compile        : hookzz <= writer-arm64.c
+[arm64-v8a] Compile        : hookzz <= interceptor-arm64.c
+[arm64-v8a] Compile        : hookzz <= thunker-arm64.c
+[arm64-v8a] Compile        : hookzz <= interceptor-template-arm64.S
+[arm64-v8a] Compile        : hookzz <= common_memory_kit.c
+[arm64-v8a] Compile        : hookzz <= linux_memory_kit.c
+[arm64-v8a] Compile        : hookzz <= posix_memory_kit.c
+[arm64-v8a] Compile        : hookzz <= posix_thread_kit.c
+[arm64-v8a] StaticLibrary  : libhookzz.a
 ```
-
-and check `build/android-armv7`
 
 #### build tests ELF
 
-```
-jmpews at jmpewsdeMBP in ~/Desktop/SpiderZz/project/HookZz/tests/arm-android
-λ : >>> make clean; make
-clean all *.o success!
-build [test_hook_open_arm.dylib] success for armv7-ios!
-build [test_hook_address_thumb.dylib] success for armv7-ios!
-build [test_hook_printf.dylib] success for armv7-ios!
-build [test] success for armv7-android-hookzz!
-```
-
-and check `build/android-armv7/*`
+test files in `tests/arm-android`
 
 # Quick Example
 
