@@ -87,8 +87,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     zz_size_t redirect_limit = 0;
 
     ZzArm64HookFunctionEntryBackend *entry_backend;
-    entry_backend = (ZzArm64HookFunctionEntryBackend *)malloc(sizeof(ZzArm64HookFunctionEntryBackend));
-    memset(entry_backend, 0, sizeof(ZzArm64HookFunctionEntryBackend));
+    entry_backend = (ZzArm64HookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzArm64HookFunctionEntryBackend));
 
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
 
@@ -112,6 +111,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     return ZZ_SUCCESS;
 }
 
+// near jump to on_enter_trampoline
 ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
     ZzArm64Writer *arm64_writer                    = NULL;

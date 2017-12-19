@@ -256,7 +256,7 @@ ZZSTATUS ZzSolidifyHook(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_p
 
     interceptor = g_interceptor;
 
-    entry               = (ZzHookFunctionEntry *)malloc(sizeof(ZzHookFunctionEntry));
+    entry               = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
     entry->target_ptr   = target_fileoff;
     entry->replace_call = replace_call_ptr;
     entry->pre_call     = (zz_ptr_t)pre_call_ptr;

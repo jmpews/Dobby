@@ -23,8 +23,7 @@
 // `witer` REF: `ZzInstruction Set Encoding`
 
 ZzThumbWriter *zz_thumb_writer_new(zz_ptr_t data_ptr) {
-    ZzThumbWriter *writer = (ZzThumbWriter *)malloc(sizeof(ZzThumbWriter));
-    memset(writer, 0, sizeof(ZzThumbWriter));
+    ZzThumbWriter *writer = (ZzThumbWriter *)zz_malloc_with_zero(sizeof(ZzThumbWriter));
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     writer->codedata        = (zz_ptr_t)align_address;
