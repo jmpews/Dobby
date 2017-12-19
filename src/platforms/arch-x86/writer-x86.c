@@ -14,31 +14,22 @@
  *    limitations under the License.
  */
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "writer-x86.h"
 
-ZzX86Writer *zz_x86_writer_new(zpointer data_ptr) {
-    return NULL;
-}
+ZzX86Writer *zz_x86_writer_new(zz_ptr_t data_ptr) { return NULL; }
 
-void zz_x86_writer_init(ZzX86Writer *self, zpointer target_addr) { zz_x86_writer_reset(self, target_addr); }
+void zz_x86_writer_init(ZzX86Writer *self, zz_ptr_t target_addr) { zz_x86_writer_reset(self, target_addr); }
 
-void zz_x86_writer_reset(ZzX86Writer *self, zpointer data_ptr) {
-}
+void zz_x86_writer_reset(ZzX86Writer *self, zz_ptr_t data_ptr) {}
 
-zsize zz_x86_writer_near_jump_range_size() { return 0; }
+zz_size_t zz_x86_writer_near_jump_range_size() { return 0; }
 
+void zz_x86_writer_put_bytes(ZzWriter *self, char *data, zz_size_t size) {}
 
-void zz_x86_writer_put_bytes(ZzWriter *self, zbyte *data, zsize size) {
-
-}
-
-void zz_x86_writer_put_instruction(ZzWriter *self, zuint32 insn) {
-
-}
-
+void zz_x86_writer_put_instruction(ZzWriter *self, uint32_t insn) {}
 
 // ======= relocator =======
 

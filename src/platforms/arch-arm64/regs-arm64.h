@@ -17,16 +17,12 @@
 #ifndef platforms_arch_arm64_regs_h
 #define platforms_arch_arm64_regs_h
 
-// platforms
-#include "instructions.h"
-
-// hookzz
-
-// zzdeps
 #include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "kitzz.h"
+
+#include "CommonKit/log/log_kit.h"
+
+#include "instructions.h"
 
 typedef enum _ZzARM64Reg {
     ZZ_ARM64_REG_X0 = 0,
@@ -67,10 +63,10 @@ typedef enum _ZzARM64Reg {
 } ZzARM64Reg;
 
 typedef struct _ZzArm64RegInfo {
-    zuint index;
-    zuint meta;
-    zuint width;
-    zbool is_integer;
+    int index;
+    int meta;
+    int width;
+    bool is_integer;
 } ZzArm64RegInfo;
 
 void zz_arm64_register_describe(ZzARM64Reg reg, ZzArm64RegInfo *ri);

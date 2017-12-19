@@ -33,26 +33,26 @@
 #include "zzdeps/zz.h"
 
 typedef struct _ZzX86Relocator {
-    zbool try_relocated_again;
-    zsize try_relocated_length;
-    zpointer input_start;
-    zpointer input_cur;
-    zaddr input_pc;
-    zuint inpos;
-    zuint outpos;
+    bool try_relocated_again;
+    zz_size_t try_relocated_length;
+    zz_ptr_t input_start;
+    zz_ptr_t input_cur;
+    zz_addr_t input_pc;
+    int inpos;
+    int outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzX86Writer *output;
     ZzLiteralInstruction **relocate_literal_insns;
-    zsize relocate_literal_insns_size;
+    zz_size_t relocate_literal_insns_size;
 } ZzX86Relocator;
 
-void zz_x86_relocator_init(ZzX86Relocator *relocator, zpointer input_code, ZzX86Writer *writer);
-void zz_x86_relocator_reset(ZzX86Relocator *self, zpointer input_code, ZzX86Writer *output);
+void zz_x86_relocator_init(ZzX86Relocator *relocator, zz_ptr_t input_code, ZzX86Writer *writer);
+void zz_x86_relocator_reset(ZzX86Relocator *self, zz_ptr_t input_code, ZzX86Writer *output);
 
-zsize zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction);
-zbool zz_x86_relocator_write_one(ZzX86Relocator *self);
+zz_size_t zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction);
+bool zz_x86_relocator_write_one(ZzX86Relocator *self);
 void zz_x86_relocator_write_all(ZzX86Relocator *self);
-void zz_x86_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes);
+void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 #endif

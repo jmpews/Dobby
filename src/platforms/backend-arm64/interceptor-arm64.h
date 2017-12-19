@@ -17,20 +17,16 @@
 #ifndef platforms_backend_arm64_intercetor_arm64
 #define platforms_backend_arm64_intercetor_arm64
 
-// platforms
+#include "hookzz.h"
+#include "kitzz.h"
+
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"
 
-// hookzz
 #include "allocator.h"
 #include "interceptor.h"
 #include "thunker.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "tools.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
@@ -40,14 +36,14 @@ typedef struct _ZzInterceptorBackend {
 
     ZzArm64Writer arm64_writer;
 
-    zpointer enter_thunk;
-    zpointer half_thunk;
-    zpointer leave_thunk;
+    zz_ptr_t enter_thunk;
+    zz_ptr_t half_thunk;
+    zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
 typedef struct _ZzArm64HookFuntionEntryBackend {
-    zbool is_thumb;
-    zuint redirect_code_size;
+    bool is_thumb;
+    zz_size_t redirect_code_size;
 } ZzArm64HookFunctionEntryBackend;
 
 void ctx_save();
@@ -58,6 +54,6 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator *allocator, zaddr target_addr,
-                                        zsize range_size);
+ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                        zz_size_t range_size);
 #endif

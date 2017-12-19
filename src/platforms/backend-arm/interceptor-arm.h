@@ -17,22 +17,18 @@
 #ifndef platforms_backend_arm_intercetor_arm
 #define platforms_backend_arm_intercetor_arm
 
-// platforms
+#include "hookzz.h"
+#include "kitzz.h"
+
+#include "allocator.h"
+#include "interceptor.h"
+#include "thunker.h"
+#include "tools.h"
+
 #include "platforms/arch-arm/relocator-arm.h"
 #include "platforms/arch-arm/relocator-thumb.h"
 #include "platforms/arch-arm/writer-arm.h"
 #include "platforms/arch-arm/writer-thumb.h"
-
-// hookzz
-#include "allocator.h"
-#include "interceptor.h"
-#include "thunker.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 // (next_hop + general_regs + sp)
 #define CTX_SAVE_STACK_OFFSET (4 * 14)
@@ -45,19 +41,20 @@ typedef struct _ZzInterceptorBackend {
     ZzArmWriter arm_writer;
     ZzThumbWriter thumb_writer;
 
-    zpointer enter_thunk;
-    zpointer half_thunk;
-    zpointer leave_thunk;
+    zz_ptr_t enter_thunk;
+    zz_ptr_t half_thunk;
+    zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
 typedef struct _ZzArmHookFuntionEntryBackend {
-    zbool is_thumb;
-    zuint redirect_code_size;
+    bool is_thumb;
+    zz_size_t redirect_code_size;
 } ZzArmHookFunctionEntryBackend;
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zaddr target_addr,
-                                        zsize range_size);
-ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zaddr target_addr,
-                                      zsize range_size);
+ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                        zz_size_t range_size);
+
+ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                      zz_size_t range_size);
 
 #endif

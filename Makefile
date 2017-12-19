@@ -4,7 +4,7 @@ ERROR_COLOR=\x1b[31;01m
 WARN_COLOR=\x1b[33;01m
 
 HOOKZZ_NAME := hookzz
-HOOKZZ_DIR := $(abspath .)
+HOOKZZ_PATH := $(abspath .)
 LOCAL_PATH := $(abspath .)
 OUTPUT_DIR := $(abspath build)
 
@@ -20,17 +20,13 @@ ifeq ($(HOST), Darwin)
 
 endif
 
-ZZ_SRCS_PATH := $(abspath $(LOCAL_PATH)/src)
-ZZ_DEPS_PATH := $(abspath $(LOCAL_PATH)/src/zzdeps)
-ZZ_CAPSTONE_DEPS_PATH := $(abspath $(LOCAL_PATH)/deps/capstone)
+# ------------ hookzz make env ---------------
 
-ZZ_COMMON_SRCS := $(wildcard $(ZZ_SRCS_PATH)/*.c)
-ZZ_SRCS := $(ZZ_COMMON_SRCS) \
-			$(wildcard $(ZZ_SRCS_PATH)/platforms/backend-posix/*.c)
+HOOKZZ_INCLUDE := $(HOOKZZ_PATH)/include \
+			$(HOOKZZ_PATH)/src
 
-# zzdeps
-ZZ_DEPS_SRCS := $(wildcard $(ZZ_DEPS_PATH)/common/*.c) \
-		$(wildcard $(ZZ_DEPS_PATH)/posix/*.c) 
+HOOKZZ_SRC_FILES := $(wildcard $(HOOKZZ_PATH)/src/*.c) \
+			$(wildcard $(HOOKZZ_PATH)/src/platforms/backend-posix/*.c)
 
 BACKEND ?= ios
 ARCH ?= arm64
@@ -48,19 +44,16 @@ ifeq ($(BACKEND), ios)
 	ZZ_SDK_ROOT := $(shell xcrun --sdk iphoneos --show-sdk-path)
 	ZZ_AR_BIN := $(shell which ar)
 	ZZ_RANLIB_BIN := $(shell which ranlib)
-
-	ZZ_DEPS_SRCS += $(wildcard $(ZZ_DEPS_PATH)/darwin/*.c)
-	ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-darwin/*.c)
-	
-	ZZ_CFLAGS := -g -fPIC -shared -dynamiclib
-	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
-
-	CFLAGS += -arch $(ZZ_ARCH)
-	
 	ZZ_GCC_SOURCE := $(ZZ_GCC_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GXX_SOURCE := $(ZZ_GXX_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GCC_TEST := $(ZZ_GCC_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GXX_TEST := $(ZZ_GXX_BIN) -isysroot $(ZZ_SDK_ROOT)
+	ZZ_CFLAGS := -g -fPIC -shared -dynamiclib
+	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
+	CFLAGS += -arch $(ZZ_ARCH)
+
+	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c)
+
 else ifeq ($(BACKEND), macos)
 	ifeq ($(ARCH), x86)
 		ZZ_ARCH := i386
@@ -74,19 +67,16 @@ else ifeq ($(BACKEND), macos)
 	ZZ_SDK_ROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 	ZZ_AR_BIN := $(shell which ar)
 	ZZ_RANLIB_BIN := $(shell which ranlib)
-
-	ZZ_DEPS_SRCS += $(wildcard $(ZZ_DEPS_PATH)/darwin/*.c)
-	ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-darwin/*.c)
-	
-	ZZ_CFLAGS := -g -fPIC -shared -dynamiclib
-	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
-
-	CFLAGS += -arch $(ZZ_ARCH)
-	
 	ZZ_GCC_SOURCE := $(ZZ_GCC_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GXX_SOURCE := $(ZZ_GXX_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GCC_TEST := $(ZZ_GCC_BIN) -isysroot $(ZZ_SDK_ROOT)
 	ZZ_GXX_TEST := $(ZZ_GXX_BIN) -isysroot $(ZZ_SDK_ROOT)
+	ZZ_CFLAGS := -g -fPIC -shared -dynamiclib
+	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
+	CFLAGS += -arch $(ZZ_ARCH)
+	
+	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c)
+
 else ifeq ($(BACKEND), android)
 	ZZ_BACKEND := android
 
@@ -115,70 +105,86 @@ else ifeq ($(BACKEND), android)
 	ZZ_GXX_BIN := $(ZZ_NDK_HOME)/toolchains/$(ZZ_CROSS_PREFIX)4.9/prebuilt/$(HOST_DIR)/bin/$(ZZ_BIN_CROSS_PREFIX)g++
 	ZZ_AR_BIN := $(ZZ_NDK_HOME)/toolchains/$(ZZ_CROSS_PREFIX)4.9/prebuilt/$(HOST_DIR)/bin/$(ZZ_BIN_CROSS_PREFIX)ar
 	ZZ_RANLIB_BIN := $(ZZ_NDK_HOME)/toolchains/$(ZZ_CROSS_PREFIX)4.9/prebuilt/$(HOST_DIR)/bin/$(ZZ_BIN_CROSS_PREFIX)ranlib
-
-	ZZ_DEPS_SRCS += $(wildcard $(ZZ_DEPS_PATH)/linux/*.c)
-	ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-linux/*.c)
-
-	ZZ_CFLAGS := -g -fPIC -shared
-	ZZ_DLL := lib$(HOOKZZ_NAME).so
-
 	ZZ_GCC_SOURCE := $(ZZ_GCC_BIN) --sysroot=$(ZZ_SDK_ROOT)
 	ZZ_GXX_SOURCE := $(ZZ_GXX_BIN) --sysroot=$(ZZ_SDK_ROOT)
 	ZZ_GCC_TEST := $(ZZ_GCC_BIN) --sysroot=$(ZZ_SDK_ROOT)
 	ZZ_GXX_TEST := $(ZZ_GXX_BIN) --sysroot=$(ZZ_SDK_ROOT)
+	ZZ_CFLAGS := -g -fPIC -shared
+	ZZ_DLL := lib$(HOOKZZ_NAME).so
+
+	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-linux/*.c)
+
 endif
 
-ZZ_SRCS += $(wildcard $(ZZ_SRCS_PATH)/platforms/arch-$(ARCH)/*.c) \
-		$(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.c)
-
-ifeq ($(ARCH), arm64)
-ZZ_SS += $(wildcard $(ZZ_SRCS_PATH)/platforms/backend-$(ARCH)/*.s)
+ifeq ($(ARCH), arm)
+HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/arch-arm/*.c) \
+			$(wildcard $(HOOKZZ_PATH)/src/platforms/backend-arm/*.c)
+else ifeq ($(ARCH), arm64)
+HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-arm64/*.S)
+HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/arch-arm64/*.c) \
+			$(wildcard $(HOOKZZ_PATH)/src/platforms/backend-arm64/*.c)
 endif
-	
-ZZ_EXPORT_INCLUDE := -I$(LOCAL_PATH)/include
 
-ZZ_SRCS_INCLUDE := $(ZZ_EXPORT_INCLUDE) \
-		-I$(ZZ_SRCS_PATH)
+# ------------ hookzz make env ---------------
 
-ZZ_DEPS_OBJS := $(ZZ_DEPS_SRCS:.c=.o)
+# ------------ kitzz make env ---------------
 
-OUTPUT_DIR := $(OUTPUT_DIR)/$(ZZ_BACKEND)-$(ZZ_ARCH)
+KITZZ_PATH := $(HOOKZZ_PATH)/src/kitzz
 
-ZZ_GCC_SOURCE += $(ZZ_SRCS_INCLUDE)
-ZZ_GCC_TEST += $(ZZ_INCLUDE)
+KITZZ_INCLUDE := $(KITZZ_PATH) \
+			$(KITZZ_PATH)/include
 
+KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
+			$(KITZZ_PATH)/PosixKit \
+			$(KITZZ_PATH)/MachoKit \
+			$(KITZZ_PATH)/DarwinKit
 
-LDFLAGS += $(ZZ_LIB)
+KITZZ_FILES_SUFFIX := %.cpp %.c
 
-ZZ_SS_OBJS := $(ZZ_SS:.s=.o)
-ZZ_SRCS_OBJS := $(ZZ_SRCS:.c=.o)
-ZZ_OBJS := $(ZZ_SRCS_OBJS) $(ZZ_DEPS_OBJS) $(ZZ_SS_OBJS)
+define walk
+    $(wildcard $(1)) $(foreach e, $(wildcard $(1)/*), $(call walk, $(e)))
+endef
 
-# ATTENTION !!!
-# 1. simple `ar` can't make a 'static library', need `ar -x` to extract `libcapstone.ios.arm64.a` and then `ar rcs` to pack as `.a`
-# 2. must `rm -rf  $(OUTPUT_DIR)/libhookzz.static.a`, very important!!!
-$(HOOKZZ_NAME) : $(ZZ_OBJS)
-	@mkdir -p $(OUTPUT_DIR)
-	@rm -rf $(OUTPUT_DIR)/*
+KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
+KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
+KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
+# $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
 
-	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(ZZ_OBJS) -o $(OUTPUT_DIR)/$(ZZ_DLL)
-	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(ZZ_OBJS)
+# ------------ kitzz make env end ---------------
+
+HOOKZZ_INCLUDE += $(KITZZ_INCLUDE)
+
+HOOKZZ_SRC_FILES := $(HOOKZZ_SRC_FILES:$(LOCAL_PATH)/%=%)
+
+HOOKZZ_C_CPP_SRC_FILES := $(filter %.c,$(HOOKZZ_SRC_FILES)) \
+				$(KITZZ_SRC_FILES)
+HOOKZZ_ASM_SRC_FILES := $(filter %.S,$(HOOKZZ_SRC_FILES))
+
+HOOKZZ_C_CPP_OBJ_FILES := $(HOOKZZ_C_CPP_SRC_FILES:.c=.o)
+HOOKZZ_ASM_OBJ_FILES := $(HOOKZZ_ASM_SRC_FILES:.S=.o)
+
+HOOKZZ_SRC_OBJ_FILES := $(HOOKZZ_C_CPP_OBJ_FILES) $(HOOKZZ_ASM_OBJ_FILES)
+HOOKZZ_BUILD_SRC_OBJ_FILES := $(foreach n, $(HOOKZZ_SRC_OBJ_FILES), build/$(notdir $(n)))
+
+HOOKZZ_INCLUDE := $(foreach n, $(HOOKZZ_INCLUDE), -I$(n))
+
+# $(warning HOOKZZ_C_CPP_OBJ_FILES= $(HOOKZZ_C_CPP_OBJ_FILES))
+$(HOOKZZ_NAME) : $(HOOKZZ_SRC_OBJ_FILES)
+
+	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(HOOKZZ_INCLUDE) $(HOOKZZ_BUILD_SRC_OBJ_FILES) -o $(OUTPUT_DIR)/$(ZZ_DLL)
+	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(HOOKZZ_BUILD_SRC_OBJ_FILES)
 
 	@echo "$(OK_COLOR)build success for $(ARCH)-$(BACKEND)-hookzz! $(NO_COLOR)"
 
-$(ZZ_SRCS_OBJS): %.o : %.c
-	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
+$(HOOKZZ_C_CPP_OBJ_FILES): %.o : %.c
+	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o build/$(notdir $@)
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
-$(ZZ_DEPS_OBJS): %.o : %.c
-	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
-	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
-
-$(ZZ_SS_OBJS): %.o : %.s
-	@$(ZZ_GCC_SOURCE) $(CFLAGS) -c $< -o $@
+$(HOOKZZ_ASM_OBJ_FILES): %.o : %.S
+	@$(ZZ_GCC_SOURCE) $(CFLAGS) $(HOOKZZ_INCLUDE) -c $< -o build/$(notdir $@)
 	@echo "$(OK_COLOR)generate [$@]! $(NO_COLOR)"
 
 clean:
+	@rm -rf $(OUTPUT_DIR)/*
 	@rm -rf $(shell find ./src -name "*\.o" | xargs echo)
-	@rm -rf $(OUTPUT_DIR)
 	@echo "$(OK_COLOR)clean all *.o success!$(NO_COLOR)"

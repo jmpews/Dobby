@@ -17,16 +17,10 @@
 #ifndef platforms_arch_arm64_reader_h
 #define platforms_arch_arm64_reader_h
 
-// platforms
-#include "instructions.h"
-
-// hookzz
-
-// zzdeps
 #include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "kitzz.h"
+
+#include "instructions.h"
 
 typedef enum _ARM64InsnType {
     ARM64_INS_LDR_literal,
@@ -38,7 +32,8 @@ typedef enum _ARM64InsnType {
     ARM64_UNDEF
 } ARM64InsnType;
 
-ARM64InsnType GetARM64InsnType(zuint32 insn);
-zpointer zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
+ARM64InsnType GetARM64InsnType(uint32_t insn);
+
+zz_ptr_t zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
 
 #endif

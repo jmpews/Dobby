@@ -18,21 +18,22 @@
 #define platforms_arch_arm64_instructions_h
 
 #include "hookzz.h"
+#include "kitzz.h"
 
 typedef struct _ZzInstruction {
-    zaddr pc;
-    zaddr address;
+    zz_addr_t pc;
+    zz_addr_t address;
     uint8_t size;
-    zuint32 insn;
+    uint32_t insn;
 } ZzInstruction;
 
 typedef struct _ZzRelocateInstruction {
     const ZzInstruction *insn_ctx;
-    zaddr relocated_offset;
-    zsize relocated_length;
+    zz_addr_t relocated_offset;
+    zz_size_t relocated_length;
 } ZzRelocateInstruction;
 
-zuint32 get_insn_sub(zuint32 insn, int start, int length);
-zbool insn_equal(zuint32 insn, char *opstr);
+uint32_t get_insn_sub(uint32_t insn, int start, int length);
+bool insn_equal(uint32_t insn, char *opstr);
 
 #endif

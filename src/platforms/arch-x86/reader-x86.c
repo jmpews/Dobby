@@ -18,6 +18,6 @@
 #include "zzdeps/common/debugbreak.h"
 #include "zzdeps/zz.h"
 
-zpointer zz_x86_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address) { return NULL; }
+zz_ptr_t zz_x86_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) { return NULL; }
 
-X86InsnType GetX86InsnType(zuint32 insn) { return X86_UNDEF; }
+X86InsnType GetX86InsnType(uint32_t insn) { return X86_UNDEF; }

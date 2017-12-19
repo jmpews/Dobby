@@ -15,16 +15,10 @@
 #ifndef platforms_arch_arm_reader_thumb_h
 #define platforms_arch_arm_reader_thumb_h
 
-// platforms
-#include "instructions.h"
-
-// hookzz
-
-// zzdeps
 #include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "kitzz.h"
+
+#include "instructions.h"
 
 typedef enum _THUMBInsnType {
     THUMB_INS_CBNZ_CBZ,
@@ -43,7 +37,7 @@ typedef enum _THUMBInsnType {
     THUMB_UNDEF
 } THUMBInsnType;
 
-THUMBInsnType GetTHUMBInsnType(zuint16 insn1, zuint16 insn2);
-zpointer zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
+THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2);
+zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
 
 #endif

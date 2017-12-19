@@ -16,9 +16,18 @@
 
 #include "memory.h"
 
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size) {
-    zaddr address_fixed = address & ~(zaddr)1;
-    if (!ZzMemoryPatchCode(address_fixed, codedata, codedata_size))
+#include <stdlib.h>
+#include <string.h>
+
+void *zz_malloc_with_zero(zz_size_t size) {
+    void *tmp = (void *)malloc(size);
+    memset(tmp, 0, size);
+    return tmp;
+}
+
+ZZSTATUS ZzRuntimeCodePatch(void *address, void *codedata, unsigned long codedata_size) {
+    zz_addr_t address_aligned = (zz_addr_t)address & ~(zz_addr_t)1;
+    if (!ZzMemoryPatchCode(address_aligned, codedata, codedata_size))
         return ZZ_FAILED;
     return ZZ_SUCCESS;
 }

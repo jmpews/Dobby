@@ -20,29 +20,18 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_x86_relocator_init(ZzX86Relocator *relocator, zpointer input_code, ZzX86Writer *output) {
-}
+void zz_x86_relocator_init(ZzX86Relocator *relocator, zz_ptr_t input_code, ZzX86Writer *output) {}
 
-void zz_x86_relocator_reset(ZzX86Relocator *self, zpointer input_code, ZzX86Writer *output) {
-}
+void zz_x86_relocator_reset(ZzX86Relocator *self, zz_ptr_t input_code, ZzX86Writer *output) {}
 
-zsize zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction) {
-    return 0;
-}
+zz_size_t zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction) { return 0; }
 
-zaddr zz_x86_relocator_get_insn_relocated_offset(ZzX86Relocator *self, zaddr address) {
-    return 0;
-}
+zz_addr_t zz_x86_relocator_get_insn_relocated_offset(ZzX86Relocator *self, zz_addr_t address) { return 0; }
 
-void zz_x86_relocator_relocate_writer(ZzX86Relocator *relocator, zaddr code_address) {
-}
+void zz_x86_relocator_relocate_writer(ZzX86Relocator *relocator, zz_addr_t code_address) {}
 
-void zz_x86_relocator_write_all(ZzX86Relocator *self) {
-}
+void zz_x86_relocator_write_all(ZzX86Relocator *self) {}
 
-void zz_x86_relocator_try_relocate(zpointer address, zuint min_bytes, zuint *max_bytes) {
-}
+void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {}
 
-zbool zz_x86_relocator_write_one(ZzX86Relocator *self) {
-    return TRUE;
-}
+bool zz_x86_relocator_write_one(ZzX86Relocator *self) { return TRUE; }

@@ -17,45 +17,46 @@
 #ifndef stack_h
 #define stack_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
+#include "memory.h"
 #include "thread.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 typedef struct _ZzCallStackItem {
     char *key;
-    zpointer value;
+    zz_ptr_t value;
 } ZzCallStackItem;
 
 typedef struct _ZzCallStack {
-    zsize call_id;
+    zz_size_t call_id;
     ThreadStack *threadstack;
-    zsize size;
-    zsize capacity;
-    zpointer sp;
-    zpointer caller_ret_addr;
+    zz_size_t size;
+    zz_size_t capacity;
+    zz_ptr_t sp;
+    zz_ptr_t caller_ret_addr;
     ZzCallStackItem *items;
 } ZzCallStack;
 
 typedef struct _ZzThreadStack {
-    zsize thread_id;
-    zsize size;
-    zsize capacity;
-    zpointer key_ptr;
+    zz_size_t thread_id;
+    zz_size_t size;
+    zz_size_t capacity;
+    zz_ptr_t key_ptr;
     ZzCallStack **callstacks;
 } ZzThreadStack;
 
-ZzThreadStack *ZzNewThreadStack(zpointer key_ptr);
+ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr);
+
 ZzCallStack *ZzNewCallStack();
-ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr);
-zbool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack);
+
+ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr);
+
+bool ZzPushCallStack(ZzThreadStack *theadstack, ZzCallStack *callstack);
+
 ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
+
 void ZzFreeCallStack(ZzCallStack *callstack);
 
 #endif

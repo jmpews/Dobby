@@ -39,15 +39,15 @@ int fake_printf(const char *format, ...) {
     return x;
 }
 
-void printf_pre_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
+void printf_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
     puts((char *)rs->general.regs.r0);
-    STACK_SET(callstack, "format", rs->general.regs.r0, char *);
+    STACK_SET(cs, "format", rs->general.regs.r0, char *);
     puts("printf-pre-call");
 }
 
-void printf_post_call(RegState *rs, ThreadStack *threadstack, CallStack *callstack) {
-    if (STACK_CHECK_KEY(callstack, "format")) {
-        char *format = STACK_GET(callstack, "format", char *);
+void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info) {
+    if (STACK_CHECK_KEY(cs, "format")) {
+        char *format = STACK_GET(cs, "format", char *);
         puts(format);
     }
     puts("printf-post-call");
@@ -57,7 +57,7 @@ __attribute__((constructor)) void test_hook_printf() {
     void *printf_ptr = (void *)printf;
 
     ZzEnableDebugMode();
-    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, FALSE);
+    ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, false);
     printf("HookZzzzzzz, %d, %p, %d, %d, %d, %d, %d, %d, %d\n", 1, (void *)2, 3, (char)4, (char)5, (char)6, 7, 8, 9);
 }
 

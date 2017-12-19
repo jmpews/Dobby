@@ -17,16 +17,11 @@
 #ifndef platforms_backend_posix_thread_h
 #define platforms_backend_posix_thread_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
 #include "thread.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/posix/thread-utils-posix.h"
-#include "zzdeps/zz.h"
+#include "PosixKit/thread/posix_thread_kit.h"
 
 #endif

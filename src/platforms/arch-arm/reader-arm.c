@@ -16,19 +16,19 @@
 
 #include "reader-arm.h"
 
-zpointer zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address) {
-    insn_ctx->type = ARM_INSN;
-    insn_ctx->address = (zaddr)address;
-    insn_ctx->pc = (zaddr)address + 8;
-    insn_ctx->insn = *(zuint32 *)address;
-    insn_ctx->size = 4;
-    return (zpointer)insn_ctx->pc;
+zz_ptr_t zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
+    insn_ctx->type    = ARM_INSN;
+    insn_ctx->address = (zz_addr_t)address;
+    insn_ctx->pc      = (zz_addr_t)address + 8;
+    insn_ctx->insn    = *(uint32_t *)address;
+    insn_ctx->size    = 4;
+    return (zz_ptr_t)insn_ctx->pc;
 }
 
 // ARM Manual
 // A5 ARM Instruction Set Encoding
 // A5.3 Load/store word and unsigned byte
-ARMInsnType GetARMInsnType(zuint32 insn) {
+ARMInsnType GetARMInsnType(uint32_t insn) {
 
     if (insn_equal(insn, "xxxx0000100xxxxxxxxxxxxxxxx0xxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
         return ARM_INS_ADD_register_A1;

@@ -15,28 +15,27 @@
 #ifndef memory_h
 #define memory_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+void *zz_malloc_with_zero(zz_size_t size);
 
-// #include "platforms/darwin/memory-darwin.h"
-// #include "zzdeps/darwin/memory-utils-darwin.h"
+zz_size_t ZzMemoryGetPageSzie();
 
-zsize ZzMemoryGetPageSzie();
+zz_ptr_t ZzMemoryAllocatePages(zz_size_t n_pages);
 
-zpointer ZzMemoryAllocatePages(zsize n_pages);
-zpointer ZzMemoryAllocateNearPages(zaddr address, zsize redirect_range_size, zsize n_pages);
-zpointer ZzMemoryAllocate(zsize size);
-zbool ZzMemoryPatchCode(const zaddr address, const zpointer codedata, zuint codedata_size);
-zbool ZzMemoryProtectAsExecutable(const zaddr address, zsize size);
-zbool ZzMemoryProtectAsWritable(const zaddr address, zsize size);
-zbool ZzMemoryIsSupportAllocateRXPage();
-zpointer ZzMemorySearchCodeCave(zaddr address, zsize redirect_range_size, zsize size);
+zz_ptr_t ZzMemoryAllocateNearPages(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t n_pages);
+
+zz_ptr_t ZzMemoryAllocate(zz_size_t size);
+
+bool ZzMemoryPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size);
+
+bool ZzMemoryProtectAsExecutable(const zz_addr_t address, zz_size_t size);
+
+bool ZzMemoryProtectAsWritable(const zz_addr_t address, zz_size_t size);
+
+bool ZzMemoryIsSupportAllocateRXPage();
+
+zz_ptr_t ZzMemorySearchCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t size);
 
 #endif

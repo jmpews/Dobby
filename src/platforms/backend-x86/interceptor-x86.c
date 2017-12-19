@@ -24,12 +24,12 @@
 
 ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) { return NULL; }
 
-ZzCodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ZzAllocator *allocator, zaddr target_addr,
-                                      zsize range_size) {
+ZzCodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                      zz_size_t range_size) {
     return NULL;
 }
 ZzCodeSlice *zz_code_patch_x86_relocate_writer(ZzX86Relocator *relocator, ZzX86Writer *x86_writer,
-                                               ZzAllocator *allocator, zaddr target_addr, zsize range_size) {
+                                               ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     return NULL;
 }
 

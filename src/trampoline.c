@@ -14,13 +14,12 @@
  *    limitations under the License.
  */
 
+#include "trampoline.h"
 #include <stdlib.h>
 
-#include "trampoline.h"
-
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
-
     ZzPrepareTrampoline(self, entry);
+
     ZzBuildEnterTrampoline(self, entry);
 
     if (entry->hook_type == HOOK_ADDRESS_TYPE) {
@@ -30,6 +29,5 @@ ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEnt
         ZzBuildInvokeTrampoline(self, entry);
         ZzBuildLeaveTrampoline(self, entry);
     }
-
     return ZZ_DONE;
 }

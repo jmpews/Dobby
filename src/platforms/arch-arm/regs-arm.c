@@ -19,18 +19,18 @@
 void zz_arm_register_describe(ZzARMReg reg, ZzArmRegInfo *ri) {
     if (reg >= ZZ_ARM_REG_R0 && reg <= ZZ_ARM_REG_R12) {
         ri->width = 32;
-        ri->meta = reg;
+        ri->meta  = reg;
     } else if (reg == ZZ_ARM_REG_SP) {
         ri->width = 32;
-        ri->meta = reg;
+        ri->meta  = reg;
     } else if (reg == ZZ_ARM_REG_LR) {
         ri->width = 32;
-        ri->meta = reg;
+        ri->meta  = reg;
     } else if (reg == ZZ_ARM_REG_PC) {
         ri->width = 32;
-        ri->meta = reg;
+        ri->meta  = reg;
     } else {
-        Serror("zz_arm64_register_describe error.");
+        ZZ_ERROR_LOG_STR("zz_arm64_register_describe error.");
 #if defined(DEBUG_MODE)
         debug_break();
 #endif

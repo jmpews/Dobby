@@ -30,8 +30,8 @@ static void thumb_insn_need_fix() {
 #if 1
 __attribute__((constructor)) void test_insn_fix_thumb() {
 
-    ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
-    zbyte temp_code_slice_data[256] = {0};
+    ZzInterceptorBackend *backend  = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    char temp_code_slice_data[256] = {0};
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
@@ -41,12 +41,12 @@ __attribute__((constructor)) void test_insn_fix_thumb() {
     ZzThumbRelocator *thumb_relocator;
     ZzThumbWriter *thumb_writer;
     thumb_relocator = &backend->thumb_relocator;
-    thumb_writer = &backend->thumb_writer;
+    thumb_writer    = &backend->thumb_writer;
 
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
-    zz_thumb_relocator_reset(thumb_relocator, (zpointer)((zaddr)thumb_insn_need_fix & ~(zaddr)1), thumb_writer);
-    zsize tmp_relocator_insn_size = 0;
+    zz_thumb_relocator_reset(thumb_relocator, ((zz_addr_t)thumb_insn_need_fix & ~(zz_addr_t)1), thumb_writer);
+    zz_size_t tmp_relocator_insn_size = 0;
 
     do {
         zz_thumb_relocator_read_one(thumb_relocator, NULL);
@@ -80,7 +80,7 @@ __attribute__((__naked__)) void arm_insn_need_fix() {
 __attribute__((constructor)) void test_insn_fix_arm() {
 
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
-    zbyte temp_code_slice_data[256] = {0};
+    char temp_code_slice_data[256] = {0};
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
@@ -94,8 +94,8 @@ __attribute__((constructor)) void test_insn_fix_arm() {
 
     zz_arm_writer_reset(arm_writer, temp_code_slice_data);
 
-    zz_arm_relocator_reset(arm_relocator, (zpointer)((zaddr)arm_insn_need_fix & ~(zaddr)1), arm_writer);
-    zsize tmp_relocator_insn_size = 0;
+    zz_arm_relocator_reset(arm_relocator, ((zz_addr_t)arm_insn_need_fix & ~(zz_addr_t)1), arm_writer);
+    zz_size_t tmp_relocator_insn_size = 0;
 
     do {
         zz_arm_relocator_read_one(arm_relocator, NULL);

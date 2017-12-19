@@ -5,7 +5,7 @@ WARN_COLOR=\x1b[33;01m
 
 
 HOOKZZ_INCLUDE_DIR := $(abspath ../../include)
-HOOKZZ_LIB_DIR := $(abspath ../../build/ios-arm64)
+HOOKZZ_LIB_DIR := $(abspath ../../build)
 
 ZZ_GCC_TEST := $(shell xcrun --sdk iphoneos --find clang) -isysroot $(shell xcrun --sdk iphoneos --show-sdk-path) -arch arm64 -O0 -g
 

@@ -15,16 +15,10 @@
 #ifndef platforms_arch_arm_reader_arm_h
 #define platforms_arch_arm_reader_arm_h
 
-// platforms
-#include "instructions.h"
-
-// hookzz
-
-// zzdeps
 #include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+#include "kitzz.h"
+
+#include "instructions.h"
 
 typedef enum _ARMInsnType {
     ARM_INS_ADD_register_A1,
@@ -37,7 +31,7 @@ typedef enum _ARMInsnType {
     ARM_UNDEF
 } ARMInsnType;
 
-ARMInsnType GetARMInsnType(zuint32 insn);
-zpointer zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zpointer address);
+ARMInsnType GetARMInsnType(uint32_t insn);
+zz_ptr_t zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
 
 #endif

@@ -17,17 +17,13 @@
 #ifndef platforms_backend_darwin_memory_h
 #define platforms_backend_darwin_memory_h
 
-// platforms
-
-// hookzz
 #include "hookzz.h"
+#include "kitzz.h"
+
 #include "memory.h"
 
-// zzdeps
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/darwin/memory-utils-darwin.h"
-#include "zzdeps/posix/memory-utils-posix.h"
-#include "zzdeps/zz.h"
+#include "CommonKit/memory/common_memory_kit.h"
+#include "DarwinKit/MemoryKit/darwin_memory_kit.h"
+#include "PosixKit/memory/posix_memory_kit.h"
 
 #endif

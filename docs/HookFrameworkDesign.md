@@ -117,13 +117,13 @@ gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
                                       ZzARM64Reg reg,
                                       GumAddress address)
 {
-  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (zuint64) address);
+  gum_arm64_writer_put_ldr_reg_u64 (self, reg, (uint64_t) address);
 }
 
 void
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
                                   ZzARM64Reg reg,
-                                  zuint64 val)
+                                  uint64_t val)
 {
   GumArm64RegInfo ri;
 
@@ -192,18 +192,11 @@ __attribute__((__naked__)) static void ctx_save() {
 void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 {
 
-    // pop x17
-    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0);
-    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 16);
+	...
 
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 26 * 4);
 
-    // call `function_context_begin_invocation`
-    zz_arm64_writer_put_bytes(writer, (void *)pass_enter_func_args, 4 * 4);
-    zz_arm64_writer_put_ldr_reg_address(
-        writer, ZZ_ARM64_REG_X17,
-        (zaddr)(zpointer)function_context_begin_invocation);
-    zz_arm64_writer_put_blr_reg(writer, ZZ_ARM64_REG_X17);
+	...
 
     zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 23 * 4);
 }
@@ -211,31 +204,62 @@ void ZzThunkerBuildEnterThunk(ZzWriter *writer)
 
 #### 3. 指令读 模块
 
-这一部分实际上就是 `disassembler`, 这一部分可以直接使用 `capstone`, 这里需要把 `capstone` 编译成多种架构.
+这一部分实际上就是 `disassembler`, ~~这一部分可以直接使用 `capstone`, 这里需要把 `capstone` 编译成多种架构.~~, 目前直接对需要修复的指令进行解析, 避免引入 `capstone`.
+
+通过下面来的例子还实现指令的判断, 虽然在速度上不如直接 mask 快, 但清晰易懂容易查错.
+
+```
+
+ARM64InsnType GetARM64InsnType(uint32_t insn) {
+    // PAGE: C6-673
+    if (insn_equal(insn, "01011000xxxxxxxxxxxxxxxxxxxxxxxx")) {
+        return ARM64_INS_LDR_literal;
+    }
+
+    // PAGE: C6-535
+    if (insn_equal(insn, "0xx10000xxxxxxxxxxxxxxxxxxxxxxxx")) {
+        return ARM64_INS_ADR;
+    }
+
+    // PAGE: C6-536
+    if (insn_equal(insn, "1xx10000xxxxxxxxxxxxxxxxxxxxxxxx")) {
+        return ARM64_INS_ADRP;
+    }
+
+    // PAGE: C6-550
+    if (insn_equal(insn, "000101xxxxxxxxxxxxxxxxxxxxxxxxxx")) {
+        return ARM64_INS_B;
+    }
+
+    // PAGE: C6-560
+    if (insn_equal(insn, "100101xxxxxxxxxxxxxxxxxxxxxxxxxx")) {
+        return ARM64_INS_BL;
+    }
+
+    // PAGE: C6-549
+    if (insn_equal(insn, "01010100xxxxxxxxxxxxxxxxxxx0xxxx")) {
+        return ARM64_INS_B_cond;
+    }
+
+    return ARM64_UNDEF;
+}
+```
 
 #### 4. 指令修复 模块
 
 这里的指令修复主要是发生在 hook 函数头几条指令, 由于备份指令到另一个地址, 这就需要对所有 `PC(IP)` 相关指令进行修复. 对于确定的哪些指令需要修复可以参考 [Move to <解析ARM和x86_x64指令格式>](http://jmpews.github.io/2017/05/17/pwn/%E8%A7%A3%E6%9E%90ARM%E5%92%8Cx86_x64%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F/).
 
-大致的思路就是: 判断 `capstone` 读取到的指令 ID, 针对特定指令写一个小函数进行修复.
+大致的思路就是: ~~判断 `capstone` 读取到的指令 ID, 针对特定指令写一个小函数进行修复.~~, 使用自己解析的指令 opcode 去解析指令的 operand.
 
 例如在 `frida-gum` 中:
 
 ```
-frida-gum/gum/arch-arm64/gumarm64relocator.c
+frida-gum/gum/arch-arm64/gumarm64relocator.
 static gboolean
 gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
                                GumCodeGenCtx * ctx)
 {
-  const cs_arm64_op * target = &ctx->detail->operands[0];
 
-  (void) self;
-
-  gum_arm64_zz_arm64_writer_put_ldr_reg_address (ctx->output, ZZ_ARM64_REG_X16,
-      target->imm);
-  gum_arm64_zz_arm64_writer_put_br_reg (ctx->output, ZZ_ARM64_REG_X16);
-
-  return TRUE;
 }
 ```
 
@@ -259,34 +283,40 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 在进行指令修复时, 需要需要将 PC 相关的地址转换为绝对地址, 其中涉及到保存地址到寄存器. 一般来说是使用指令 `ldr`. 也就是说如何完成该函数 `zz_arm64_writer_put_ldr_reg_address(relocate_writer, ZZ_ARM64_REG_X17, target_addr);`
 
-`frida-gum` 的实现原理是, 有一个相对地址表, 在整体一段写完后进行修复.
+`frida-gum` 的实现原理是, 有一个相对地址表, 保存所有用到的 ldr 指令的地方, 默认 ldr 取得都是 0 相对便宜(b 等相对指令也有记录), 在指令修复后有一个 flush writer 的过程, 这个过程会把, 会将用到绝对地址写到整个指令块后面, 形成一个绝对地址表, 同时修复之前 ldr 引用的相对偏移.
 
 ```
-void
+gboolean
 gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
-                                  ZzARM64Reg reg,
-                                  zuint64 val)
+                                  arm64_reg reg,
+                                  guint64 val)
 {
   GumArm64RegInfo ri;
 
-  gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
+  gum_arm64_writer_describe_reg (self, reg, &ri);
 
-  g_assert_cmpuint (ri.width, ==, 64);
+  if (ri.width != 64)
+    return FALSE;
 
-  gum_arm64_writer_add_literal_reference_here (self, val);
-  gum_arm64_zz_arm64_writer_put_instruction (self,
+  if (!gum_arm64_writer_add_literal_reference_here (self, val))
+    return FALSE;
+
+  gum_arm64_writer_put_instruction (self,
       (ri.is_integer ? 0x58000000 : 0x5c000000) | ri.index);
+
+  return TRUE;
 }
 ```
 
-在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器.
+在 HookZz 中的实现, 直接将地址写在指令后, 之后使用 `b` 到正常的下一条指令, 从而实现将地址保存到寄存器, 这种方式有好有坏.
 
 ```
-void zz_arm64_writer_put_ldr_reg_address(ZzWriter *self, ZzARM64Reg reg, zaddr address)
-{
-    zz_arm64_writer_put_ldr_reg_imm(self, reg, (zuint)0x8);
-    zz_arm64_writer_put_b_imm(self, (zaddr)0xc);
-    zz_arm64_writer_put_bytes(self, (zpointer)&address, sizeof(address));
+void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
+    zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
+    zz_arm64_writer_put_b_imm(self, 0xc);
+    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
+    zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
 }
 ```
 
@@ -334,7 +364,7 @@ Programmer’s Guide for ARMv8-A
 9.1.1 Parameters in general-purpose registers
 ```
 
-这里也有一个问题,  这也是 `frida-gum` 中遇到一个问题, 就是对于 `svc #0x80` 类系统调用, 系统调用号(syscall number)的传递是利用 `x16` 寄存器进行传递的, 所以本框架使用 `x17` 寄存器, 并且在传递参数时使用 `push` & `pop`, 在跳转后恢复 `x17`, 避免了一个寄存器的使用.
+这里也有一个问题, ~~ 这也是 `frida-gum` 中遇到一个问题,~~, frida-gum 会判断它修复指令是否包含 x16 还是 x17, 进而进行选择, 就是对于 `svc #0x80` 类系统调用, 系统调用号(syscall number)的传递是利用 `x16` 寄存器进行传递的, 所以本框架使用 `x17` 寄存器, 并且在传递参数时使用 `push` & `pop`, 在跳转后恢复 `x17`, 避免了一个寄存器的使用.
 
 ## `rwx` 与 `codesigning`
 
