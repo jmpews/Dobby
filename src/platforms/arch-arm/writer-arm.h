@@ -23,6 +23,7 @@
 #include "kitzz.h"
 
 #include "macros.h"
+#include "memory.h"
 #include "writer.h"
 
 #include "instructions.h"
