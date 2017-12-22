@@ -8,11 +8,11 @@
 #include "zz_macros.h"
 #include "zz_types.h"
 
-#define GLOBAL_DEBUG FALSE
-#define GLOBAL_DEBUG_LOG FALSE
-#define GLOBAL_INFO_LOG FALSE
+#define GLOBAL_DEBUG TRUE
+#define GLOBAL_DEBUG_LOG TRUE
+#define GLOBAL_INFO_LOG TRUE
 
-#ifdef GLOBAL_DEBUG
+#if GLOBAL_DEBUG
 #include "CommonKit/debug/debug_kit.h"
 #include "CommonKit/debug/debugbreak.h"
 #endif
