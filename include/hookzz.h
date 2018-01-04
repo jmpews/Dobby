@@ -56,7 +56,9 @@ typedef struct _RegState {
 
     union {
         FPReg q[8];
-        FPReg q0, q1, q2, q3, q4, q5, q6, q7;
+        struct {
+            FPReg q0, q1, q2, q3, q4, q5, q6, q7;
+        } regs;
     } floating;
 } RegState;
 #elif defined(__arm__)
