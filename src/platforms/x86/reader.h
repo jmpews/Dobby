@@ -21,9 +21,8 @@
 
 #include "../../trampoline.h"
 
-void relocator_read_one(Instruction *old_ins, Instruction *new_ins);
+void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins);
 
-void relocator_invoke_trampoline(ZzTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup);
-
+void relocator_invoke_trampoline(ZzTrampoline *trampoline, zz_ptr_t target, uint8_t *read_size, zz_ptr_t read_backup);
 
 #endif

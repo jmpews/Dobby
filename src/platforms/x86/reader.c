@@ -27,14 +27,14 @@ void capstone_init(void) {
     err = cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle);
 #endif
     if (err) {
-        Xerror("Failed on cs_open() with error returned: %u\n", err);
+        ZZ_ERROR_LOG("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
 
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 }
 
-static cs_insn *disassemble_instruction_at(zpointer address) {
+static cs_insn *zz_arm64_reader_disassemble_at(zz_ptr_t address) {
     if (!handle)
         capstone_init();
     cs_insn *insn;
@@ -43,10 +43,10 @@ static cs_insn *disassemble_instruction_at(zpointer address) {
     return insn;
 }
 
-void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
+void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins) {
 
     // capstone ins
-    cs_insn *ins_cs = disassemble_instruction_at(old_ins->address);
+    cs_insn *ins_cs = zz_arm64_reader_disassemble_at(old_ins->address);
 
     // capstone ins detail
     // cs_detail *ins_csd = ins_cs->detail->x86;
@@ -56,7 +56,7 @@ void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
     old_ins->size = ins_cs->size;
     uint8_t needFix = 0;
 
-    zpointer copy_ins_start;
+    zz_ptr_t copy_ins_start;
     uint8_t copy_ins_size;
 
     // https://c9x.me/x86/html/file_module_x86_id_146.html
@@ -86,16 +86,17 @@ void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
     if ((ins_csd.opcode[0] & 0xF0) == 0x70 || (ins_csd.opcode[0] & 0xFC) == 0xE0 ||
         (ins_csd.opcode[1] & 0xF0) == 0x80) {
         // the imm is calculate by capstone, so the imm is dest;
-        zpointer dest = (zpointer) ins_csd.operands[0].imm;
-        zpointer offset = (zpointer) ins_csd.operands[0].imm - old_ins->address - old_ins->size;
+        zz_ptr_t dest = (zz_ptr_t)ins_csd.operands[0].imm;
+        zz_ptr_t offset = (zz_ptr_t)ins_csd.operands[0].imm - old_ins->address - old_ins->size;
 
-        zpointer new_offset = dest - new_ins->address + sizeof(JMP_ABS);
+        zz_ptr_t new_offset = dest - new_ins->address + sizeof(JMP_ABS);
 
         if (dest > new_ins->address && dest < (new_ins->address + sizeof(JMP_ABS))) {
-            zpointer internal_jmp_dest = 0;
+            zz_ptr_t internal_jmp_dest = 0;
             if (internal_jmp_dest < dest) {
                 internal_jmp_dest = dest;
-                Xerror("origin: %p, trampoline: %p is trampoline-internal-jmp !", old_ins->address, new_ins->address);
+                ZZ_ERROR_LOG("origin: %p, trampoline: %p is trampoline-internal-jmp !", old_ins->address,
+                             new_ins->address);
                 return;
             }
         } else {
@@ -124,6 +125,4 @@ void relocator_read_one(Instruction *old_ins, Instruction *new_ins) {
     memcpy(old_ins->bytes, old_ins->address, old_ins->size);
 }
 
-void relocator_invoke_trampoline(ZzTrampoline *trampoline, zpointer target, uint8_t *read_size, zpointer read_backup) {
-
-}
+void relocator_invoke_trampoline(ZzTrampoline *trampoline, zz_ptr_t target, uint8_t *read_size, zz_ptr_t read_backup) {}

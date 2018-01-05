@@ -1,12 +1,12 @@
 /**
  *    Copyright 2017 jmpews
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,44 +14,41 @@
  *    limitations under the License.
  */
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "stack.h"
-#include "thread.h"
 
-ZzThreadStack *ZzGetCurrentThreadStack(zpointer key_ptr) {
-    ZzThreadStack *stack = (ZzThreadStack *) ZzThreadGetCurrentThreadData(key_ptr);
-    if (!stack)
+ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr) {
+    ZzThreadStack *threadstack = (ZzThreadStack *)ZzThreadGetCurrentThreadData(key_ptr);
+    if (!threadstack)
         return NULL;
-    return stack;
+    return threadstack;
 }
 
-ZzThreadStack *ZzNewThreadStack(zpointer key_ptr) {
-    ZzThreadStack *stack;
-    stack = (ZzThreadStack *) malloc(sizeof(ZzThreadStack));
-    stack->capacity = 4;
-    ZzCallStack **callstacks = (ZzCallStack **) malloc(sizeof(ZzCallStack *) * (stack->capacity));
+ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr) {
+    ZzThreadStack *threadstack;
+    threadstack              = (ZzThreadStack *)zz_malloc_with_zero(sizeof(ZzThreadStack));
+    threadstack->capacity    = 4;
+    ZzCallStack **callstacks = (ZzCallStack **)zz_malloc_with_zero(sizeof(ZzCallStack *) * (threadstack->capacity));
     if (!callstacks)
         return NULL;
-    stack->callstacks = callstacks;
-    stack->size = 0;
-    stack->key_ptr = key_ptr;
-    stack->thread_id = ZzThreadGetCurrentThreadID();
-    ZzThreadSetCurrentThreadData(key_ptr, (zpointer) stack);
-    return stack;
+    threadstack->callstacks = callstacks;
+    threadstack->size       = 0;
+    threadstack->key_ptr    = key_ptr;
+    threadstack->thread_id  = ZzThreadGetCurrentThreadID();
+    ZzThreadSetCurrentThreadData(key_ptr, (zz_ptr_t)threadstack);
+    return threadstack;
 }
 
 ZzCallStack *ZzNewCallStack() {
     ZzCallStack *callstack;
-    callstack = (ZzCallStack *) malloc(sizeof(ZzCallStack));
+    callstack           = (ZzCallStack *)zz_malloc_with_zero(sizeof(ZzCallStack));
     callstack->capacity = 4;
-
-    callstack->items = (ZzCallStackItem *) malloc(sizeof(ZzCallStackItem) * callstack->capacity);
+    callstack->items    = (ZzCallStackItem *)malloc(sizeof(ZzCallStackItem) * callstack->capacity);
+    callstack->size     = 0;
     if (!callstack->items)
         return NULL;
-
-    callstack->size = 0;
     return callstack;
 }
 
@@ -72,28 +69,31 @@ ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {
 
 bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
     if (!stack)
-        return false;
+        return FALSE;
 
     if (stack->size >= stack->capacity) {
-        ZzCallStack **callstacks = (ZzCallStack **) realloc(stack->callstacks,
-                                                            sizeof(ZzCallStack *) * (stack->capacity) * 2);
+        // add extra callstacks
+        ZzCallStack **callstacks =
+            (ZzCallStack **)realloc(stack->callstacks, sizeof(ZzCallStack *) * (stack->capacity) * 2);
         if (!callstacks)
-            return false;
+            return FALSE;
         stack->callstacks = callstacks;
-        stack->capacity = stack->capacity * 2;
+        stack->capacity   = stack->capacity * 2;
     }
 
-    callstack->call_id = stack->size;
+    callstack->call_id     = stack->size;
+    callstack->threadstack = (ThreadStack *)stack;
 
     stack->callstacks[stack->size++] = callstack;
-    return true;
+    return TRUE;
 }
 
-zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
-    ZzCallStack *callstack = (ZzCallStack *) callstack_ptr;
+zz_ptr_t ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
+    ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
     if (!callstack)
         return NULL;
-    for (int i = 0; i < callstack->size; ++i) {
+    int i;
+    for (i = 0; i < callstack->size; ++i) {
         if (!strcmp(callstack->items[i].key, key)) {
             return callstack->items[i].value;
         }
@@ -105,31 +105,30 @@ ZzCallStackItem *ZzNewCallStackData(ZzCallStack *callstack) {
     if (!callstack)
         return NULL;
     if (callstack->size >= callstack->capacity) {
-        ZzCallStackItem *callstackitems = (ZzCallStackItem *) realloc(callstack->items,
-                                                                      sizeof(ZzCallStackItem) * callstack->capacity *
-                                                                      2);
+        // add extra callstackitems
+        ZzCallStackItem *callstackitems =
+            (ZzCallStackItem *)realloc(callstack->items, sizeof(ZzCallStackItem) * callstack->capacity * 2);
         if (!callstackitems)
             return NULL;
-        callstack->items = callstackitems;
+        callstack->items    = callstackitems;
         callstack->capacity = callstack->capacity * 2;
     }
     return &(callstack->items[callstack->size++]);
 }
 
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size) {
-    ZzCallStack *callstack = (ZzCallStack *) callstack_ptr;
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size) {
+    ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
     if (!callstack)
-        return false;
+        return FALSE;
 
     ZzCallStackItem *item = ZzNewCallStackData(callstack);
 
-    char *key_tmp = (char *) malloc(strlen(key) + 1);
+    char *key_tmp = (char *)zz_malloc_with_zero(strlen(key) + 1);
     strncpy(key_tmp, key, strlen(key) + 1);
 
-    zpointer value_tmp = (zpointer) malloc(value_size);
+    zz_ptr_t value_tmp = (zz_ptr_t)zz_malloc_with_zero(value_size);
     memcpy(value_tmp, value_ptr, value_size);
-    item->key = key_tmp;
+    item->key   = key_tmp;
     item->value = value_tmp;
-    return true;
+    return TRUE;
 }
-

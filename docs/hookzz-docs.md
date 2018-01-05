@@ -24,7 +24,7 @@ build hook with `replace_call`, `pre_call`, `post_call`, but not enable. the def
 @pre_call_ptr: pre function call address
 @post_call_ptr: post funciton call address
 
-ZZSTATUS ZzBuildHook(zpointer target_ptr, zpointer replace_ptr, zpointer *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 ```
 
 #### 2. `ZzBuildHookAddress`
@@ -37,7 +37,7 @@ build hook address(a piece of code) with `pre_call`, `half_call`. the definition
 @pre_call_ptr: pre function call address
 @half_call_ptr: half function call address
 
-ZZSTATUS ZzBuildHookAddress(zpointer target_start_ptr, zpointer target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
+ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
 ```
 
 #### 3. `ZzEnableHook`
@@ -47,7 +47,7 @@ enable hook with `code patch` at target_ptr.
 ```
 @target_ptr: target address
 
-ZZSTATUS ZzEnableHook(zpointer target_ptr);
+ZZSTATUS ZzEnableHook(zz_ptr_t target_ptr);
 ```
 
 #### 4. `ZzRuntimeCodePatch`
@@ -59,7 +59,7 @@ runtime code patch without codesign limit, and will work better with [MachoParse
 @codedata: code patch data
 @codedata: code ptach data size
 
-ZZSTATUS ZzRuntimeCodePatch(zaddr address, zpointer codedata, zuint codedata_size);
+ZZSTATUS ZzRuntimeCodePatch(zz_addr_t address, zz_ptr_t codedata, zz_size_t codedata_size);
 ```
 
 **[Move to AntiDebugBypass Example](https://github.com/jmpews/HookZzModules/blob/master/AntiDebugBypass/AntiDebugBypass.mm#L270)**
@@ -90,13 +90,13 @@ typedef struct _CallStack
 typedef struct _ThreadStack
 {
     long thread_id;
-    zsize size;
+    zz_size_t size;
 } ThreadStack;
 
 
-typedef void (*PRECALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*POSTCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
-typedef void (*HALFCALL)(RegState *rs, ThreadStack *threadstack, CallStack *callstack);
+typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 
 ```
 
@@ -146,10 +146,10 @@ export 2 method user to get/set `callstack`
 
 ```
 // get value with the key
-zpointer ZzGetCallStackData(CallStack *callstack_ptr, char *key);
+zz_ptr_t ZzGetCallStackData(CallStack *callstack_ptr, char *key);
 
 // set value with key.
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zpointer value_ptr, zsize value_size);
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size);
 ```
 
 but for convenience, the macro is better.

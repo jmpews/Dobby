@@ -15,9 +15,9 @@
 #ifndef instructions_h
 #define instructions_h
 
-#include "capstone.h"
-#include "../../../include/zz.h"
 #include "../../../include/hookzz.h"
+#include "../../../include/zz.h"
+#include "capstone.h"
 
 // Structs for writing x86/x64 instructions.
 
@@ -74,28 +74,28 @@ typedef struct _JCC_ABS {
 } __attribute__((packed)) JCC_ABS;
 
 typedef struct _Instruction {
-    zpointer address;
+    zz_ptr_t address;
     cs_insn *ins_cs;
     uint8_t size;
-    zbyte bytes[16];
-} Instruction;
+    char bytes[16];
+} ZzInstruction;
 
 // not use!!!
 typedef struct _RelocatedInstruction {
-    Instruction old_ins;
-    Instruction new_ins;
+    ZzInstruction old_ins;
+    ZzInstruction new_ins;
 } RelocatedInstruction;
 
 // not use!!!
 typedef struct _RelocatedTrampoline {
-    zpointer old_target;
-    zpointer new_target;
+    zz_ptr_t old_target;
+    zz_ptr_t new_target;
 
     uint8_t old_size;
     uint8_t new_size;
 
-    Instruction old_inss[16];
-    Instruction new_inss[16];
+    ZzInstruction old_inss[16];
+    ZzInstruction new_inss[16];
 } RelocatedTrampoline;
 
 #endif

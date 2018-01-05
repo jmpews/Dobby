@@ -1,10 +1,10 @@
 .DS_Store
+build/
 darwin.ios.release.mk
 .idea/
 .vscode/
 cmake-build-debug/
 MachoParser.xcworkspace/
-CMakeLists.txt
 
 # Prerequisites
 *.d
