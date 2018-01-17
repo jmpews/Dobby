@@ -40,12 +40,12 @@ typedef struct _ZzArmRelocator {
     ZzRelocateInstruction *output_insns;
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
-    ZzArmWriter *output;
+    ZzARMAssemblerWriter *output;
 } ZzArmRelocator;
 
-void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzArmWriter *output);
+void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
 
-void zz_arm_relocator_reset(ZzArmRelocator *self, zz_ptr_t input_code, ZzArmWriter *output);
+void zz_arm_relocator_reset(ZzArmRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
 
 void zz_arm_relocator_write_all(ZzArmRelocator *self);
 

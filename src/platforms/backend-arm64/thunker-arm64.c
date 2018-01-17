@@ -299,7 +299,7 @@ __attribute__((__naked__)) void enter_thunk_template() {
 
 ------------------- enter_thunk_template end -------------- */
 
-void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
+void zz_arm64_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
@@ -340,7 +340,7 @@ void zz_arm64_thunker_build_enter_thunk(ZzWriter *writer) {
     zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
-void zz_arm64_thunker_build_half_thunk(ZzWriter *writer) {
+void zz_arm64_thunker_build_half_thunk(ZzAssemblerWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
@@ -483,7 +483,7 @@ __attribute__((__naked__)) void leave_thunk_template() {
 
 -------------------enter_thunk_template end-- ------------ */
 
-void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
+void zz_arm64_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {
     /* save general registers and sp */
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
@@ -525,7 +525,7 @@ void zz_arm64_thunker_build_leave_thunk(ZzWriter *writer) {
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     char temp_code_slice_data[512] = {0};
-    ZzArm64Writer *arm64_writer    = NULL;
+    ZzARM64AssemblerWriter *arm64_writer    = NULL;
     ZzCodeSlice *code_slice        = NULL;
     ZZSTATUS status                = ZZ_SUCCESS;
 

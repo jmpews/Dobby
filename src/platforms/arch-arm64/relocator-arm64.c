@@ -20,7 +20,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzArm64Writer *output) {
+void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
     relocator->inpos                       = 0;
     relocator->outpos                      = 0;
     relocator->output                      = output;
@@ -38,7 +38,7 @@ void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, Z
         (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
-void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzArm64Writer *output) {
+void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
     self->input_pc                    = (zz_addr_t)input_code;
@@ -88,7 +88,7 @@ zz_addr_t zz_arm64_relocator_get_insn_relocated_offset(ZzArm64Relocator *self, z
 }
 
 void zz_arm64_relocator_relocate_writer(ZzArm64Relocator *relocator, zz_addr_t code_address) {
-    ZzArm64Writer *arm64_writer;
+    ZzARM64AssemblerWriter *arm64_writer;
     arm64_writer = relocator->output;
     if (relocator->relocate_literal_insns_size) {
         int i;
@@ -109,7 +109,7 @@ void zz_arm64_relocator_relocate_writer(ZzArm64Relocator *relocator, zz_addr_t c
 void zz_arm64_relocator_write_all(ZzArm64Relocator *self) {
     int count                  = 0;
     int outpos                 = self->outpos;
-    ZzArm64Writer arm64_writer = *self->output;
+    ZzARM64AssemblerWriter arm64_writer = *self->output;
 
     while (zz_arm64_relocator_write_one(self))
         count++;

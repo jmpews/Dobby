@@ -139,12 +139,38 @@ typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const Hoo
 #define STACK_CHECK_KEY(cs, key) (bool)ZzGetCallStackData(cs, key)
 #define STACK_GET(cs, key, type) *(type *)ZzGetCallStackData(cs, key)
 #define STACK_SET(cs, key, value, type) ZzSetCallStackData(cs, key, &(value), sizeof(type))
-void *ZzGetCallStackData(CallStack *callstack_ptr, char *key);
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, void *value_ptr, unsigned long value_size);
+
+/* ------- example -------
+void common_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    puts((char *)rs->general.regs.r0);
+    STACK_SET(cs, "format", rs->general.regs.r0, char *);
+}
+
+void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
+{
+    if (STACK_CHECK_KEY(cs, "format"))
+    {
+        char *format = STACK_GET(cs, "format", char *);
+        puts(format);
+    }
+}
+------- example end ------- */
+
+void *ZzGetCallStackData(CallStack *callstack_ptr, char *key_str);
+bool ZzSetCallStackData(CallStack *callstack_ptr, char *key_str, void *value_ptr, unsigned long value_size);
 
 ZZSTATUS ZzBuildHook(void *target_ptr, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
 ZZSTATUS ZzBuildHookAddress(void *target_start_ptr, void *target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr, bool try_near_jump);
 ZZSTATUS ZzEnableHook(void *target_ptr);
+
+/* ------- example -------
+
+ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, true);
+ZzHookPrePost((void *)printf_ptr, printf_pre_call, printf_post_call, true);
+ZzHookReplace((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf);
+
+------- example end ------- */
 
 ZZSTATUS ZzHook(void *target_ptr, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
 ZZSTATUS ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);

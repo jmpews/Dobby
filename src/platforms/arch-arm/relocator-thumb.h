@@ -38,14 +38,14 @@ typedef struct _ZzThumbRelocator {
     ZzRelocateInstruction *output_insns;
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
-    ZzThumbWriter *output;
+    ZzThumbAssemblerWriter *output;
     int inpos;
     int outpos;
 } ZzThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *writer);
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbAssemblerWriter *writer);
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbWriter *output);
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbAssemblerWriter *output);
 
 zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
 

@@ -33,7 +33,9 @@ typedef struct _ZzRelocateInstruction {
     zz_size_t relocated_length;
 } ZzRelocateInstruction;
 
+// get hex insn sub
 uint32_t get_insn_sub(uint32_t insn, int start, int length);
-bool insn_equal(uint32_t insn, char *opstr);
 
+// equal insn with mask string
+bool insn_equal(uint32_t insn, char *opstr);
 #endif

@@ -175,7 +175,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
     ZzFreeCallStack(callstack);
 }
 
-void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -216,7 +216,7 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 }
 
 // A4.1.10 BX
-void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_half_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -256,7 +256,7 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
-void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -296,7 +296,7 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     char temp_code_slice_data[512] = {0};
-    ZzThumbWriter *thumb_writer    = NULL;
+    ZzThumbAssemblerWriter *thumb_writer    = NULL;
     ZzCodeSlice *code_slice        = NULL;
     ZZSTATUS status                = ZZ_SUCCESS;
 

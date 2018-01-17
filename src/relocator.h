@@ -23,6 +23,7 @@
 #include "interceptor.h"
 #include "writer.h"
 
-void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzWriter *backup_writer, ZzWriter *relocate_writer);
+void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzAssemblerWriter *backup_writer,
+                                      ZzAssemblerWriter *relocate_writer);
 
 #endif

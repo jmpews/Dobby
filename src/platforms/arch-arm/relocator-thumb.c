@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,7 +5,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbWriter *output) {
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbAssemblerWriter *output) {
 
     memset(relocator, 0, sizeof(ZzThumbRelocator));
 
@@ -43,7 +27,7 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, Z
     memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbWriter *output) {
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbAssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
     self->input_pc                    = (zz_addr_t)input_code;
@@ -124,7 +108,7 @@ zz_addr_t zz_thumb_relocator_get_insn_relocated_offset(ZzThumbRelocator *self, z
 }
 
 void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t code_address) {
-    ZzThumbWriter *thumb_writer;
+    ZzThumbAssemblerWriter *thumb_writer;
     thumb_writer = relocator->output;
     if (relocator->relocate_literal_insns_size) {
         int i;
@@ -142,9 +126,9 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t c
 }
 
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
-    int count                  = 0;
-    int outpos                 = self->outpos;
-    ZzThumbWriter thumb_writer = *self->output;
+    int count                           = 0;
+    int outpos                          = self->outpos;
+    ZzThumbAssemblerWriter thumb_writer = *self->output;
     while (zz_thumb_relocator_write_one(self))
         count++;
 }

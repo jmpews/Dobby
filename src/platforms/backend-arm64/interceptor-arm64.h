@@ -34,7 +34,7 @@ typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
     ZzArm64Relocator arm64_relocator;
 
-    ZzArm64Writer arm64_writer;
+    ZzARM64AssemblerWriter arm64_writer;
 
     zz_ptr_t enter_thunk;
     zz_ptr_t half_thunk;
@@ -54,6 +54,6 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_code_patch_arm64_writer(ZzArm64Writer *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+ZzCodeSlice *zz_code_patch_arm64_writer(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
                                         zz_size_t range_size);
 #endif

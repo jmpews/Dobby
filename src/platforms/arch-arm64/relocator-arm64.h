@@ -38,14 +38,14 @@ typedef struct _ZzArm64Relocator {
     int outpos;
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
-    ZzArm64Writer *output;
+    ZzARM64AssemblerWriter *output;
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
 } ZzArm64Relocator;
 
-void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzArm64Writer *writer);
+void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzARM64AssemblerWriter *writer);
 
-void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzArm64Writer *output);
+void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output);
 
 zz_size_t zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction);
 

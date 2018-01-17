@@ -5,7 +5,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzArmWriter *output) {
+void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzARMAssemblerWriter *output) {
     relocator->inpos                       = 0;
     relocator->outpos                      = 0;
     relocator->input_start                 = input_code;
@@ -23,7 +23,7 @@ void zz_arm_relocator_init(ZzArmRelocator *relocator, zz_ptr_t input_code, ZzArm
         (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
-void zz_arm_relocator_reset(ZzArmRelocator *self, zz_ptr_t input_code, ZzArmWriter *output) {
+void zz_arm_relocator_reset(ZzArmRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
     self->input_pc                    = (zz_addr_t)input_code;
@@ -99,7 +99,7 @@ zz_addr_t zz_arm_relocator_get_insn_relocated_offset(ZzArmRelocator *self, zz_ad
 }
 
 void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zz_addr_t code_address) {
-    ZzArmWriter *arm_writer;
+    ZzARMAssemblerWriter *arm_writer;
     arm_writer = relocator->output;
     if (relocator->relocate_literal_insns_size) {
         int i;
@@ -117,9 +117,9 @@ void zz_arm_relocator_relocate_writer(ZzArmRelocator *relocator, zz_addr_t code_
 }
 
 void zz_arm_relocator_write_all(ZzArmRelocator *self) {
-    int count              = 0;
-    int outpos             = self->outpos;
-    ZzArmWriter arm_writer = *self->output;
+    int count                       = 0;
+    int outpos                      = self->outpos;
+    ZzARMAssemblerWriter arm_writer = *self->output;
 
     while (zz_arm_relocator_write_one(self))
         count++;
@@ -247,7 +247,7 @@ static bool zz_arm_relocator_rewrite_BLBLX_immediate_A1(ZzArmRelocator *self, co
     // convert 'bl' to 'b', but save 'cond'
     zz_arm_writer_put_instruction(self->output, (insn & 0xF0000000) | 0b1010 << 24 | 0);
 
-    ZzArmWriter ouput_bak = *self->output;
+    ZzARMAssemblerWriter ouput_bak = *self->output;
 
     zz_arm_writer_put_b_imm(self->output, 0);
     ZzLiteralInstruction **literal_insn_ptr = &(self->relocate_literal_insns[self->relocate_literal_insns_size++]);
