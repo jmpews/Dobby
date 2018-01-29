@@ -134,11 +134,18 @@ KITZZ_PATH := $(HOOKZZ_PATH)/src/kitzz
 KITZZ_INCLUDE := $(KITZZ_PATH) \
 			$(KITZZ_PATH)/include
 
+ifeq ($(BACKEND), ios)
 KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
 			$(KITZZ_PATH)/PosixKit \
 			$(KITZZ_PATH)/MachoKit \
 			$(KITZZ_PATH)/DarwinKit
-
+else ifeq ($(BACKEND), macos)
+else ifeq ($(BACKEND), android)
+KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
+			$(KITZZ_PATH)/PosixKit \
+			$(KITZZ_PATH)/ELFKit\
+			$(KITZZ_PATH)/LinuxKit
+endif
 KITZZ_FILES_SUFFIX := %.cpp %.c
 
 define walk
