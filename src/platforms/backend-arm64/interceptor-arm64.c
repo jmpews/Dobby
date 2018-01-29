@@ -46,8 +46,8 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     return backend;
 }
 
-ZzCodeSlice *zz_code_patch_arm64_writer(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                        zz_size_t range_size) {
+static ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator,
+                                        zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, arm64_writer->size);
@@ -64,7 +64,7 @@ ZzCodeSlice *zz_code_patch_arm64_writer(ZzARM64AssemblerWriter *arm64_writer, Zz
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_arm64_relocate_writer(ZzARM64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
+static ZzCodeSlice *zz_arm64_relocate_code_patch(ZzARM64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
                                                  ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
@@ -114,7 +114,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
 // near jump to on_enter_trampoline
 ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
-    ZzARM64AssemblerWriter *arm64_writer                    = NULL;
+    ZzARM64AssemblerWriter *arm64_writer           = NULL;
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
@@ -124,7 +124,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
     code_slice =
-        zz_code_patch_arm64_writer(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
+        zz_arm64_code_patch(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
     if (code_slice)
         entry->on_enter_transfer_trampoline = code_slice->data;
     else
@@ -144,7 +144,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 }
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
-    ZzARM64AssemblerWriter *arm64_writer                    = NULL;
+    ZzARM64AssemblerWriter *arm64_writer           = NULL;
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
@@ -162,7 +162,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)self->enter_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_enter_trampoline = code_slice->data;
     else
@@ -230,7 +230,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)restore_target_addr);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_relocate_writer(arm64_relocator, arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_relocate_code_patch(arm64_relocator, arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_invoke_trampoline = code_slice->data;
     else
@@ -270,7 +270,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 
 ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
-    ZzARM64AssemblerWriter *arm64_writer                    = NULL;
+    ZzARM64AssemblerWriter *arm64_writer           = NULL;
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
@@ -288,7 +288,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)self->half_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_half_trampoline = code_slice->data;
     else
@@ -302,7 +302,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
-    ZzARM64AssemblerWriter *arm64_writer                    = NULL;
+    ZzARM64AssemblerWriter *arm64_writer           = NULL;
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
@@ -316,7 +316,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)self->leave_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_leave_trampoline = code_slice->data;
     else

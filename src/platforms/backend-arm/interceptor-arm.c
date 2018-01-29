@@ -50,8 +50,8 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     return backend;
 }
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                        zz_size_t range_size) {
+ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                 zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, thumb_writer->size);
@@ -69,8 +69,8 @@ ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbAssemblerWriter *thumb_writer, Zz
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_thumb_relocate_writer(ZzThumbRelocator *thumb_relocator, ZzThumbAssemblerWriter *thumb_writer,
-                                                 ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
+ZzCodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *thumb_relocator, ZzThumbAssemblerWriter *thumb_writer,
+                                          ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, thumb_writer->size);
@@ -90,8 +90,8 @@ ZzCodeSlice *zz_code_patch_thumb_relocate_writer(ZzThumbRelocator *thumb_relocat
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_arm_writer(ZzARMAssemblerWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                      zz_size_t range_size) {
+ZzCodeSlice *zz_arm_code_patch(ZzARMAssemblerWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                               zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, arm_writer->size);
@@ -108,8 +108,8 @@ ZzCodeSlice *zz_code_patch_arm_writer(ZzARMAssemblerWriter *arm_writer, ZzAlloca
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzARMRelocator *arm_relocator, ZzARMAssemblerWriter *arm_writer,
-                                               ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
+ZzCodeSlice *zz_arm_relocate_code_patch(ZzARMRelocator *arm_relocator, ZzARMAssemblerWriter *arm_writer,
+                                        ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, arm_writer->size);
@@ -186,8 +186,8 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
 
 ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]               = {0};
-    ZzARMAssemblerWriter *arm_writer                      = NULL;
-    ZzARMAssemblerWriter *thumb_writer                    = NULL;
+    ZzARMAssemblerWriter *arm_writer             = NULL;
+    ZzARMAssemblerWriter *thumb_writer           = NULL;
     ZzCodeSlice *code_slice                      = NULL;
     ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
@@ -206,8 +206,8 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
 
         /* code patch */
-        code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, target_addr,
-                                                zz_thumb_writer_near_jump_range_size());
+        code_slice =
+            zz_thumb_code_patch(thumb_writer, self->allocator, target_addr, zz_thumb_writer_near_jump_range_size());
         if (code_slice)
             entry->on_enter_transfer_trampoline = code_slice->data;
         else
@@ -220,8 +220,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
         zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
 
         /* code patch */
-        code_slice =
-            zz_code_patch_arm_writer(arm_writer, self->allocator, target_addr, zz_arm_writer_near_jump_range_size());
+        code_slice = zz_arm_code_patch(arm_writer, self->allocator, target_addr, zz_arm_writer_near_jump_range_size());
         if (code_slice)
             entry->on_enter_transfer_trampoline = code_slice->data;
         else
@@ -244,8 +243,8 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 
 ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]               = {0};
-    ZzARMAssemblerWriter *arm_writer                      = NULL;
-    ZzARMAssemblerWriter *thumb_writer                    = NULL;
+    ZzARMAssemblerWriter *arm_writer             = NULL;
+    ZzARMAssemblerWriter *thumb_writer           = NULL;
     ZzCodeSlice *code_slice                      = NULL;
     ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
@@ -268,7 +267,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)self->enter_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_enter_trampoline = code_slice->data + 1;
     else
@@ -349,7 +348,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)(restore_target_addr + 1));
 
         /* code patch */
-        code_slice = zz_code_patch_thumb_relocate_writer(thumb_relocator, thumb_writer, self->allocator, 0, 0);
+        code_slice = zz_thumb_relocate_code_patch(thumb_relocator, thumb_writer, self->allocator, 0, 0);
         if (code_slice)
             entry->on_invoke_trampoline = code_slice->data + 1;
         else
@@ -390,7 +389,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)restore_target_addr);
 
         /* code patch */
-        code_slice = zz_code_patch_arm_relocate_writer(arm_relocator, arm_writer, self->allocator, 0, 0);
+        code_slice = zz_arm_relocate_code_patch(arm_relocator, arm_writer, self->allocator, 0, 0);
         if (code_slice)
             entry->on_invoke_trampoline = code_slice->data;
         else
@@ -443,11 +442,11 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 }
 
 ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
-    char temp_code_slice_data[256] = {0};
-    ZzARMAssemblerWriter *arm_writer        = NULL;
-    ZzARMAssemblerWriter *thumb_writer      = NULL;
-    ZzCodeSlice *code_slice        = NULL;
-    ZZSTATUS status                = ZZ_SUCCESS;
+    char temp_code_slice_data[256]     = {0};
+    ZzARMAssemblerWriter *arm_writer   = NULL;
+    ZzARMAssemblerWriter *thumb_writer = NULL;
+    ZzCodeSlice *code_slice            = NULL;
+    ZZSTATUS status                    = ZZ_SUCCESS;
 
     thumb_writer = &self->thumb_writer;
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
@@ -464,7 +463,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)self->half_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_half_trampoline = code_slice->data + 1;
     else
@@ -496,7 +495,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)self->leave_thunk);
 
     /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         entry->on_leave_trampoline = code_slice->data + 1;
     else

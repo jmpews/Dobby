@@ -51,10 +51,10 @@ typedef struct _ZzARMHookFuntionEntryBackend {
     zz_size_t redirect_code_size;
 } ZzARMHookFunctionEntryBackend;
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                        zz_size_t range_size);
+ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                 zz_size_t range_size);
 
-ZzCodeSlice *zz_code_patch_arm_writer(ZzARMAssemblerWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                      zz_size_t range_size);
+ZzCodeSlice *zz_arm_code_patch(ZzARMAssemblerWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                               zz_size_t range_size);
 
 #endif

@@ -524,10 +524,10 @@ void zz_arm64_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    char temp_code_slice_data[512] = {0};
-    ZzARM64AssemblerWriter *arm64_writer    = NULL;
-    ZzCodeSlice *code_slice        = NULL;
-    ZZSTATUS status                = ZZ_SUCCESS;
+    char temp_code_slice_data[512]       = {0};
+    ZzARM64AssemblerWriter *arm64_writer = NULL;
+    ZzCodeSlice *code_slice              = NULL;
+    ZZSTATUS status                      = ZZ_SUCCESS;
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
@@ -536,7 +536,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->enter_thunk = (void *)enter_thunk_template;
     // self->enter_thunk = code_slice->data;
@@ -560,7 +560,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_arm64_thunker_build_leave_thunk(arm64_writer);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->leave_thunk = code_slice->data;
     else
@@ -581,7 +581,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_arm64_thunker_build_half_thunk(arm64_writer);
 
     /* code patch */
-    code_slice = zz_code_patch_arm64_writer(arm64_writer, self->allocator, 0, 0);
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     if (code_slice)
         self->half_thunk = code_slice->data;
     else
