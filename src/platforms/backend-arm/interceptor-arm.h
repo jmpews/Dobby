@@ -35,7 +35,7 @@
 
 typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
-    ZzArmRelocator arm_relocator;
+    ZzARMRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
 
     ZzARMAssemblerWriter arm_writer;
@@ -46,10 +46,10 @@ typedef struct _ZzInterceptorBackend {
     zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
-typedef struct _ZzArmHookFuntionEntryBackend {
+typedef struct _ZzARMHookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzArmHookFunctionEntryBackend;
+} ZzARMHookFunctionEntryBackend;
 
 ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
                                         zz_size_t range_size);

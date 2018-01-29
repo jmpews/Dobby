@@ -108,7 +108,7 @@ ZzCodeSlice *zz_code_patch_arm_writer(ZzARMAssemblerWriter *arm_writer, ZzAlloca
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzArmRelocator *arm_relocator, ZzARMAssemblerWriter *arm_writer,
+ZzCodeSlice *zz_code_patch_arm_relocate_writer(ZzARMRelocator *arm_relocator, ZzARMAssemblerWriter *arm_writer,
                                                ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
@@ -133,8 +133,8 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
     zz_size_t redirect_limit = 0;
 
-    ZzArmHookFunctionEntryBackend *entry_backend;
-    entry_backend = (ZzArmHookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzArmHookFunctionEntryBackend));
+    ZzARMHookFunctionEntryBackend *entry_backend;
+    entry_backend = (ZzARMHookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzARMHookFunctionEntryBackend));
 
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
 
@@ -189,7 +189,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
     ZzARMAssemblerWriter *arm_writer                      = NULL;
     ZzARMAssemblerWriter *thumb_writer                    = NULL;
     ZzCodeSlice *code_slice                      = NULL;
-    ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
+    ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
     bool is_thumb                                = TRUE;
     zz_addr_t target_addr                        = (zz_addr_t)entry->target_ptr;
@@ -247,7 +247,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     ZzARMAssemblerWriter *arm_writer                      = NULL;
     ZzARMAssemblerWriter *thumb_writer                    = NULL;
     ZzCodeSlice *code_slice                      = NULL;
-    ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
+    ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
     bool is_thumb;
 
@@ -297,7 +297,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]               = {0};
     ZzCodeSlice *code_slice                      = NULL;
-    ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
+    ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
     bool is_thumb                                = TRUE;
     zz_addr_t target_addr                        = (zz_addr_t)entry->target_ptr;
@@ -355,7 +355,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         else
             return ZZ_FAILED;
     } else {
-        ZzArmRelocator *arm_relocator;
+        ZzARMRelocator *arm_relocator;
         ZzARMAssemblerWriter *arm_writer;
         arm_relocator = &self->arm_relocator;
         arm_writer    = &self->arm_writer;
@@ -416,7 +416,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                     (&self->thumb_relocator)->inpos);
         } else {
             sprintf(buffer + strlen(buffer),
-                    "ArmInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
+                    "ARMInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
                     (&self->arm_relocator)->input_start, (&self->arm_relocator)->input_cur,
                     (&self->arm_relocator)->inpos);
         }
@@ -519,7 +519,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]               = {0};
     ZzCodeSlice *code_slice                      = NULL;
-    ZzArmHookFunctionEntryBackend *entry_backend = (ZzArmHookFunctionEntryBackend *)entry->backend;
+    ZzARMHookFunctionEntryBackend *entry_backend = (ZzARMHookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                              = ZZ_SUCCESS;
     bool is_thumb                                = TRUE;
     zz_addr_t target_addr                        = (zz_addr_t)entry->target_ptr;

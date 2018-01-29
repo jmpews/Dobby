@@ -62,13 +62,13 @@ typedef enum _ZzARM64Reg {
     ZZ_ARM64_REG_SP = ZZ_ARM64_REG_X31
 } ZzARM64Reg;
 
-typedef struct _ZzArm64RegInfo {
+typedef struct _ZzARM64RegInfo {
     int index;
     int meta;
     int width;
     bool is_integer;
-} ZzArm64RegInfo;
+} ZzARM64RegInfo;
 
-void zz_arm64_register_describe(ZzARM64Reg reg, ZzArm64RegInfo *ri);
+void zz_arm64_register_describe(ZzARM64Reg reg, ZzARM64RegInfo *ri);
 
 #endif

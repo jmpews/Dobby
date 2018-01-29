@@ -112,7 +112,7 @@ void zz_arm64_writer_put_ldr_br_b_reg_address(ZzAssemblerWriter *self, ZzARM64Re
 // ======= default =======
 
 void zz_arm64_writer_put_ldr_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg reg, uint32_t offset) {
-    ZzArm64RegInfo ri;
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t imm19, Rt_ndx;
@@ -127,7 +127,7 @@ void zz_arm64_writer_put_ldr_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg reg, ui
 // PAGE: C6-871
 void zz_arm64_writer_put_str_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg,
                                             uint64_t offset) {
-    ZzArm64RegInfo rs, rd;
+    ZzARM64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
     zz_arm64_register_describe(dst_reg, &rd);
@@ -148,7 +148,7 @@ void zz_arm64_writer_put_str_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg 
 
 void zz_arm64_writer_put_ldr_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg,
                                             uint64_t offset) {
-    ZzArm64RegInfo rs, rd;
+    ZzARM64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
     zz_arm64_register_describe(dst_reg, &rd);
@@ -169,7 +169,7 @@ void zz_arm64_writer_put_ldr_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg 
 
 // C6-562
 void zz_arm64_writer_put_br_reg(ZzAssemblerWriter *self, ZzARM64Reg reg) {
-    ZzArm64RegInfo ri;
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t op = 0, Rn_ndx;
@@ -180,7 +180,7 @@ void zz_arm64_writer_put_br_reg(ZzAssemblerWriter *self, ZzARM64Reg reg) {
 
 // C6-561
 void zz_arm64_writer_put_blr_reg(ZzAssemblerWriter *self, ZzARM64Reg reg) {
-    ZzArm64RegInfo ri;
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t op = 0b01, Rn_ndx;
@@ -212,7 +212,7 @@ void zz_arm64_writer_put_b_cond_imm(ZzAssemblerWriter *self, uint32_t condition,
 // C6-525
 void zz_arm64_writer_put_add_reg_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
                                          uint64_t imm) {
-    ZzArm64RegInfo rd, rl;
+    ZzARM64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
     zz_arm64_register_describe(left_reg, &rl);
@@ -231,7 +231,7 @@ void zz_arm64_writer_put_add_reg_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg dst
 // C6-930
 void zz_arm64_writer_put_sub_reg_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
                                          uint64_t imm) {
-    ZzArm64RegInfo rd, rl;
+    ZzARM64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
     zz_arm64_register_describe(left_reg, &rl);

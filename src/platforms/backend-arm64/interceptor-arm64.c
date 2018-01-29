@@ -64,7 +64,7 @@ ZzCodeSlice *zz_code_patch_arm64_writer(ZzARM64AssemblerWriter *arm64_writer, Zz
     return code_slice;
 }
 
-ZzCodeSlice *zz_code_patch_arm64_relocate_writer(ZzArm64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
+ZzCodeSlice *zz_code_patch_arm64_relocate_writer(ZzARM64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
                                                  ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
@@ -86,8 +86,8 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
     zz_size_t redirect_limit = 0;
 
-    ZzArm64HookFunctionEntryBackend *entry_backend;
-    entry_backend = (ZzArm64HookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzArm64HookFunctionEntryBackend));
+    ZzARM64HookFunctionEntryBackend *entry_backend;
+    entry_backend = (ZzARM64HookFunctionEntryBackend *)zz_malloc_with_zero(sizeof(ZzARM64HookFunctionEntryBackend));
 
     entry->backend = (struct _ZzHookFunctionEntryBackend *)entry_backend;
 
@@ -116,7 +116,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
     char temp_code_slice_data[256]                 = {0};
     ZzARM64AssemblerWriter *arm64_writer                    = NULL;
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
 
@@ -146,7 +146,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     char temp_code_slice_data[256]                 = {0};
     ZzARM64AssemblerWriter *arm64_writer                    = NULL;
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
 
@@ -189,12 +189,12 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
     zz_ptr_t restore_target_addr;
 
-    ZzArm64Relocator *arm64_relocator;
+    ZzARM64Relocator *arm64_relocator;
     ZzARM64AssemblerWriter *arm64_writer;
     arm64_relocator = &self->arm64_relocator;
     arm64_writer    = &self->arm64_writer;
@@ -249,7 +249,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
                 "LogInfo: on_invoke_trampoline at %p, length: %ld. and will jump to rest code(%p).\n", code_slice->data,
                 code_slice->size, restore_target_addr);
         sprintf(buffer + strlen(buffer),
-                "ArmInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %d\n",
+                "ARMInstructionFix: origin instruction at %p, relocator end at %p, relocator instruction nums %d\n",
                 (&self->arm64_relocator)->input_start, (&self->arm64_relocator)->input_cur,
                 (&self->arm64_relocator)->inpos);
 
@@ -272,7 +272,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     char temp_code_slice_data[256]                 = {0};
     ZzARM64AssemblerWriter *arm64_writer                    = NULL;
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
 
@@ -300,7 +300,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
 ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
     ZzARM64AssemblerWriter *arm64_writer                    = NULL;
 
@@ -339,7 +339,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
 ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     char temp_code_slice_data[256]                 = {0};
     ZzCodeSlice *code_slice                        = NULL;
-    ZzArm64HookFunctionEntryBackend *entry_backend = (ZzArm64HookFunctionEntryBackend *)entry->backend;
+    ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
     zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
     ZzARM64AssemblerWriter *arm64_writer;

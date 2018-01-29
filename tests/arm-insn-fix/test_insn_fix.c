@@ -87,8 +87,8 @@ __attribute__((constructor)) void test_insn_fix_arm() {
     zz_thumb_writer_init(&backend->thumb_writer, NULL);
     zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
 
-    ZzArmRelocator *arm_relocator;
-    ZzArmWriter *arm_writer;
+    ZzARMRelocator *arm_relocator;
+    ZzARMWriter *arm_writer;
     arm_relocator = &backend->arm_relocator;
     arm_writer = &backend->arm_writer;
 

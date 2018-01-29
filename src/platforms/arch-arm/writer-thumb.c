@@ -55,7 +55,7 @@ ZzLiteralInstruction *zz_thumb_writer_put_ldr_reg_relocate_address(ZzThumbAssemb
 // ------- custom -------
 
 void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ZzARMReg reg, zz_addr_t address) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
     zz_arm_register_describe(reg, &ri);
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
 
@@ -82,7 +82,7 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ZzARMRe
 }
 
 void zz_thumb_writer_put_ldr_reg_address(ZzThumbAssemblerWriter *self, ZzARMReg reg, zz_addr_t address) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
@@ -134,7 +134,7 @@ void zz_thumb_writer_put_b_imm(ZzThumbAssemblerWriter *self, uint32_t imm) {
 }
 
 void zz_thumb_writer_put_bx_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
 
@@ -148,7 +148,7 @@ void zz_thumb_writer_put_bx_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
 }
 
 void zz_thumb_writer_put_blx_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
 
@@ -196,7 +196,7 @@ void zz_thumb_writer_put_b_imm32(ZzThumbAssemblerWriter *self, uint32_t imm) {
 // PAGE: A8-410
 // A8.8.64 LDR (literal)
 void zz_thumb_writer_put_ldr_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg reg, int32_t imm) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
 
     zz_arm_register_describe(reg, &ri);
 
@@ -215,7 +215,7 @@ void zz_thumb_writer_put_ldr_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg reg,
 
 bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
                                                     ZzARMReg left_reg, ZzARMReg right_reg, int32_t right_offset) {
-    ZzArmRegInfo lr, rr;
+    ZzARMRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
@@ -237,7 +237,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbAssemblerWriter *self
 
 bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
                                                     ZzARMReg left_reg, ZzARMReg right_reg, int32_t right_offset) {
-    ZzArmRegInfo lr, rr;
+    ZzARMRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
@@ -259,7 +259,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbAssemblerWriter *self
 
 bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
                                                     ZzARMReg left_reg, ZzARMReg right_reg, int32_t right_offset) {
-    ZzArmRegInfo lr, rr;
+    ZzARMRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
@@ -285,7 +285,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbAssemblerWriter *self
 bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
                                                     ZzARMReg left_reg, ZzARMReg right_reg, int32_t right_offset,
                                                     bool index, bool wback) {
-    ZzArmRegInfo lr, rr;
+    ZzARMRegInfo lr, rr;
 
     zz_arm_register_describe(left_reg, &lr);
     zz_arm_register_describe(right_reg, &rr);
@@ -361,7 +361,7 @@ void zz_thumb_writer_put_ldr_reg_reg(ZzThumbAssemblerWriter *self, ZzARMReg dst_
 }
 
 void zz_thumb_writer_put_add_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, int32_t imm) {
-    ZzArmRegInfo dst;
+    ZzARMRegInfo dst;
     uint16_t sign_mask, insn;
 
     zz_arm_register_describe(dst_reg, &dst);
@@ -391,7 +391,7 @@ void zz_thumb_writer_put_sub_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_
 
 void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg,
                                          int32_t right_value) {
-    ZzArmRegInfo dst, left;
+    ZzARMRegInfo dst, left;
     uint16_t insn;
 
     zz_arm_register_describe(dst_reg, &dst);
@@ -446,7 +446,7 @@ void zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg 
 }
 
 void zz_thumb_writer_put_push_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
     uint16_t M, register_list;
@@ -457,7 +457,7 @@ void zz_thumb_writer_put_push_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
 }
 
 void zz_thumb_writer_put_pop_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
-    ZzArmRegInfo ri;
+    ZzARMRegInfo ri;
     zz_arm_register_describe(reg, &ri);
 
     uint16_t P, register_list;
@@ -468,7 +468,7 @@ void zz_thumb_writer_put_pop_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg) {
 }
 
 void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, ZzARMReg right_reg) {
-    ZzArmRegInfo dst, left, right;
+    ZzARMRegInfo dst, left, right;
     zz_arm_register_describe(dst_reg, &dst);
     zz_arm_register_describe(left_reg, &left);
     zz_arm_register_describe(right_reg, &right);

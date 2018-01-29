@@ -20,7 +20,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
+void zz_arm64_relocator_init(ZzARM64Relocator *relocator, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
     relocator->inpos                       = 0;
     relocator->outpos                      = 0;
     relocator->output                      = output;
@@ -38,7 +38,7 @@ void zz_arm64_relocator_init(ZzArm64Relocator *relocator, zz_ptr_t input_code, Z
         (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
-void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
+void zz_arm64_relocator_reset(ZzARM64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
     self->input_pc                    = (zz_addr_t)input_code;
@@ -53,7 +53,7 @@ void zz_arm64_relocator_reset(ZzArm64Relocator *self, zz_ptr_t input_code, ZzARM
     memset(self->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
-zz_size_t zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *instruction) {
+zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzInstruction *instruction) {
     ZzInstruction *insn_ctx            = &self->input_insns[self->inpos];
     ZzRelocateInstruction *re_insn_ctx = &self->output_insns[self->inpos];
 
@@ -73,7 +73,7 @@ zz_size_t zz_arm64_relocator_read_one(ZzArm64Relocator *self, ZzInstruction *ins
     return self->input_cur - self->input_start;
 }
 
-zz_addr_t zz_arm64_relocator_get_insn_relocated_offset(ZzArm64Relocator *self, zz_addr_t address) {
+zz_addr_t zz_arm64_relocator_get_insn_relocated_offset(ZzARM64Relocator *self, zz_addr_t address) {
     const ZzInstruction *insn_ctx;
     const ZzRelocateInstruction *re_insn_ctx;
     int i;
@@ -87,7 +87,7 @@ zz_addr_t zz_arm64_relocator_get_insn_relocated_offset(ZzArm64Relocator *self, z
     return 0;
 }
 
-void zz_arm64_relocator_relocate_writer(ZzArm64Relocator *relocator, zz_addr_t code_address) {
+void zz_arm64_relocator_relocate_writer(ZzARM64Relocator *relocator, zz_addr_t code_address) {
     ZzARM64AssemblerWriter *arm64_writer;
     arm64_writer = relocator->output;
     if (relocator->relocate_literal_insns_size) {
@@ -106,9 +106,9 @@ void zz_arm64_relocator_relocate_writer(ZzArm64Relocator *relocator, zz_addr_t c
     }
 }
 
-void zz_arm64_relocator_write_all(ZzArm64Relocator *self) {
-    int count                  = 0;
-    int outpos                 = self->outpos;
+void zz_arm64_relocator_write_all(ZzARM64Relocator *self) {
+    int count                           = 0;
+    int outpos                          = self->outpos;
     ZzARM64AssemblerWriter arm64_writer = *self->output;
 
     while (zz_arm64_relocator_write_one(self))
@@ -141,7 +141,7 @@ void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
 }
 
 // PAGE: C6-673
-static bool zz_arm64_relocator_rewrite_LDR_literal(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_LDR_literal(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                                    ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn = insn_ctx->insn;
     // TODO: check opc == 10, with signed
@@ -159,7 +159,7 @@ static bool zz_arm64_relocator_rewrite_LDR_literal(ZzArm64Relocator *self, const
 }
 
 // PAGE: C6-535
-static bool zz_arm64_relocator_rewrite_ADR(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_ADR(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                            ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn  = insn_ctx->insn;
     uint32_t immhi = get_insn_sub(insn, 5, 19);
@@ -176,7 +176,7 @@ static bool zz_arm64_relocator_rewrite_ADR(ZzArm64Relocator *self, const ZzInstr
 }
 
 // PAGE: C6-536
-static bool zz_arm64_relocator_rewrite_ADRP(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_ADRP(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                             ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn  = insn_ctx->insn;
     uint32_t immhi = get_insn_sub(insn, 5, 19);
@@ -194,7 +194,7 @@ static bool zz_arm64_relocator_rewrite_ADRP(ZzArm64Relocator *self, const ZzInst
 }
 
 // PAGE: C6-550
-static bool zz_arm64_relocator_rewrite_B(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_B(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                          ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn  = insn_ctx->insn;
     uint32_t imm26 = get_insn_sub(insn, 0, 26);
@@ -210,7 +210,7 @@ static bool zz_arm64_relocator_rewrite_B(ZzArm64Relocator *self, const ZzInstruc
 }
 
 // PAGE: C6-560
-static bool zz_arm64_relocator_rewrite_BL(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_BL(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                           ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn  = insn_ctx->insn;
     uint32_t imm26 = get_insn_sub(insn, 0, 26);
@@ -239,7 +239,7 @@ static bool zz_arm64_relocator_rewrite_BL(ZzArm64Relocator *self, const ZzInstru
 // 0x018 : remain code
 
 // PAGE: C6-549
-static bool zz_arm64_relocator_rewrite_B_cond(ZzArm64Relocator *self, const ZzInstruction *insn_ctx,
+static bool zz_arm64_relocator_rewrite_B_cond(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
                                               ZzRelocateInstruction *re_insn_ctx) {
     uint32_t insn  = insn_ctx->insn;
     uint32_t imm19 = get_insn_sub(insn, 5, 19);
@@ -258,7 +258,7 @@ static bool zz_arm64_relocator_rewrite_B_cond(ZzArm64Relocator *self, const ZzIn
     return TRUE;
 }
 
-bool zz_arm64_relocator_write_one(ZzArm64Relocator *self) {
+bool zz_arm64_relocator_write_one(ZzARM64Relocator *self) {
     const ZzInstruction *insn_ctx;
     ZzRelocateInstruction *re_insn_ctx;
 
