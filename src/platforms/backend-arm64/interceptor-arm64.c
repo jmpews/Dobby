@@ -46,8 +46,8 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     return backend;
 }
 
-static ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator,
-                                        zz_addr_t target_addr, zz_size_t range_size) {
+ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                 zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
         code_slice = ZzNewNearCodeSlice(allocator, target_addr, range_size, arm64_writer->size);
@@ -64,7 +64,7 @@ static ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, Zz
     return code_slice;
 }
 
-static ZzCodeSlice *zz_arm64_relocate_code_patch(ZzARM64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
+ZzCodeSlice *zz_arm64_relocate_code_patch(ZzARM64Relocator *relocator, ZzARM64AssemblerWriter *arm64_writer,
                                                  ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
