@@ -164,7 +164,7 @@ LogInfo: on_enter_transfer_trampoline at 0x180f1f414, length: 20. and will jump 
 
 ZzBuildInvokeTrampoline:
 LogInfo: on_invoke_trampoline at 0x100150304, length: 24. and will jump to rest code(0x181402a60).
-ArmInstructionFix: origin instruction at 0x181402a5c, relocator end at 0x181402a60, relocator instruction nums 1
+ARMInstructionFix: origin instruction at 0x181402a5c, relocator end at 0x181402a60, relocator instruction nums 1
 origin_prologue: 0xf4 0x4f 0xbe 0xa9 
 
 ZzBuildLeaveTrampoline:

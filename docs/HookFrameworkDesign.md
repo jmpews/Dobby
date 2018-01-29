@@ -113,7 +113,7 @@ darwin 下有 `vmmap` 这个命令可以在 `macOS` 使用, darwin 下 pid 与 `
 ```
 // frida-gum/gum/arch-arm64/gumarm64writer.c
 void
-gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
+gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumARM64Writer * self,
                                       ZzARM64Reg reg,
                                       GumAddress address)
 {
@@ -121,11 +121,11 @@ gum_arm64_zz_arm64_writer_put_ldr_reg_address (GumArm64Writer * self,
 }
 
 void
-gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
+gum_arm64_writer_put_ldr_reg_u64 (GumARM64Writer * self,
                                   ZzARM64Reg reg,
                                   uint64_t val)
 {
-  GumArm64RegInfo ri;
+  GumARM64RegInfo ri;
 
   gum_arm64_zz_arm64_writer_describe_reg (self, reg, &ri);
 
@@ -256,7 +256,7 @@ ARM64InsnType GetARM64InsnType(uint32_t insn) {
 ```
 frida-gum/gum/arch-arm64/gumarm64relocator.
 static gboolean
-gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
+gum_arm64_relocator_rewrite_b (GumARM64Relocator * self,
                                GumCodeGenCtx * ctx)
 {
 
@@ -287,11 +287,11 @@ gum_arm64_relocator_rewrite_b (GumArm64Relocator * self,
 
 ```
 gboolean
-gum_arm64_writer_put_ldr_reg_u64 (GumArm64Writer * self,
+gum_arm64_writer_put_ldr_reg_u64 (GumARM64Writer * self,
                                   arm64_reg reg,
                                   guint64 val)
 {
-  GumArm64RegInfo ri;
+  GumARM64RegInfo ri;
 
   gum_arm64_writer_describe_reg (self, reg, &ri);
 
