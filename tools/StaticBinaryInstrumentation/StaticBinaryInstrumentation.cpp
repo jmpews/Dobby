@@ -1,160 +1,15 @@
-/*
- clang++ -L/Users/jmpews/Desktop/SpiderZz/project/HookZz/tools/deps/MachoParser/build \
- -lmachoparser -o solidifyhook solidifyhook.cpp
- */
-
 #include <iostream>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 #include <mach-o/loader.h>
-
-#ifndef zz_h
-#define zz_h
-
-// Created by jmpews on 2017/5/3.
-//
-#define PROGRAM_NAME "zz"
-#define PROGRAM_VER "1.0.0"
-#define PROGRAM_AUTHOR "jmpews@gmail.com"
-
-#include <stdbool.h>
-#include <stdint.h>
-
-// --- custom type ---
-
-// 1. zpointer and zaddr is different
-
-#define DEBUG_MODE 0
-
-#ifndef zz_type
-#define zz_type
-
-typedef void *zpointer;
-typedef unsigned long zsize;
-typedef unsigned long zaddr;
-typedef uint32_t zuint32;
-typedef uint16_t zuint16;
-typedef uint8_t zuint8;
-typedef int32_t zint32;
-typedef int16_t zint16;
-typedef int8_t zint8;
-typedef unsigned long zuint;
-typedef long zint;
-typedef unsigned char zbyte;
-typedef bool zbool;
-
-#endif
-
-#if defined(FALSE)
-#else
-#define FALSE 0
-#define TRUE 1
-#endif
-
-// --- log configuration ---
-
-#define GLOBAL_DEBUG 0
-#define GLOBAL_INFO 1
-#define SYSLOG 0
-#define COLOR_LOG 0
-
-#if (COLOR_LOG)
-#define RED "\x1B[31m"
-#define GRN "\x1B[32m"
-#define YEL "\x1B[33m"
-#define BLU "\x1B[34m"
-#define MAG "\x1B[35m"
-#define CYN "\x1B[36m"
-#define WHT "\x1B[37m"
-#define RESET "\x1B[0m"
-#else
-#define RED ""
-#define GRN ""
-#define YEL ""
-#define BLU ""
-#define MAG ""
-#define CYN ""
-#define WHT ""
-#define RESET ""
-#endif
-
-#include <stdio.h>
-
-// Important!!!
-// STDERR before STDOUT, because sync
-
-#if (SYSLOG)
-#include <sys/syslog.h>
-#define Xinfo(fmt, ...)                                                                                                \
-    do {                                                                                                               \
-        if (GLOBAL_INFO)                                                                                               \
-            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                                               \
-    } while (0)
-#define Sinfo(MSG) Xinfo("%s", MSG)
-#define Xdebug(fmt, ...)                                                                                               \
-    do {                                                                                                               \
-        if (GLOBAL_DEBUG)                                                                                              \
-            syslog(LOG_WARNING, RESET fmt, __VA_ARGS__);                                                               \
-    } while (0)
-#define Sdebug(MSG) Xdebug("%s", MSG)
-#define Xerror(fmt, ...)                                                                                               \
-    do {                                                                                                               \
-        syslog(LOG_DEBUG,                                                                                              \
-               RED "[!] "                                                                                              \
-                   "%s:%d:%s(): " fmt RESET "\n",                                                                      \
-               __FILE__, __LINE__, __func__, __VA_ARGS__);                                                             \
-    } while (0)
-
-#define Serror(MSG) Xerror("%s", MSG)
-#else
-#define Xinfo(fmt, ...)                                                                                                \
-    do {                                                                                                               \
-        if (GLOBAL_INFO)                                                                                               \
-            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                              \
-    } while (0)
-#define Sinfo(MSG) Xinfo("%s", MSG)
-
-#define Xdebug(fmt, ...)                                                                                               \
-    do {                                                                                                               \
-        if (GLOBAL_DEBUG)                                                                                              \
-            fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                              \
-    } while (0)
-#define Sdebug(MSG) Xdebug("%s", MSG)
-#define Xerror(fmt, ...)                                                                                               \
-    do {                                                                                                               \
-        fprintf(stderr,                                                                                                \
-                RED "[!] "                                                                                             \
-                    "%s:%d:%s(): " fmt RESET "\n",                                                                     \
-                __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
-    } while (0)
-
-#define Serror(MSG) Xerror("%s", MSG)
-#endif
-
-// --- common macro ---
-#undef ABS
-#define ABS(a) (((a) < 0) ? -(a) : (a))
-
-#endif
-//#include "../deps/MachoParser/include/MachoFD.h"
-#include "MachoFD.h"
-
-void zz_debug() {
-#ifdef DEBUGMODE
-#ifdef ZZDEPS
-    debug_break();
-#else
-    perror(NULL);
-#endif
-#endif
-}
 
 using namespace std;
 
-unsigned long zz_file_get_size(const char *target_path) {
-    unsigned long filesize = -1;
+typedef unsigned long zz_size_t;
+
+zz_size_t zz_file_get_size(const char *target_path) {
+    zz_size_t filesize = -1;
     struct stat statbuff;
     if (stat(target_path, &statbuff) < 0) {
         return filesize;
@@ -166,7 +21,7 @@ unsigned long zz_file_get_size(const char *target_path) {
 
 bool zz_file_is_exist(const char *target_path) {
     if ((access(target_path, F_OK)) != -1) {
-        return true;
+        return TRUE;
     }
     return FALSE;
 }
@@ -177,67 +32,81 @@ bool zz_file_remove(const char *target_path) {
             return TRUE;
         }
     }
-    zz_debug();
     return FALSE;
 }
 
-void zz_write_file_to_file(const char *src_path, const char *dst_path, unsigned long src_offset,
-                           unsigned long dst_offset, unsigned long size) {
+bool zz_file_copy_offset(const char *src_path, const char *dst_path, zz_size_t src_offset, zz_size_t dst_offset, zz_size_t length) {
     FILE *src_fd;
     FILE *dst_fd;
+
+    if (!zz_file_is_exist(src_path) || !zz_file_is_exist(dst_path)) {
+        return FALSE;
+    }
+
     src_fd = fopen(src_path, "rb");
+    dst_fd = fopen(dst_path, "rb+");
+
     fseek(src_fd, src_offset, SEEK_SET);
-
-    if (!zz_file_is_exist(dst_path))
-        dst_fd = fopen(dst_path, "wb");
-    else
-        dst_fd = fopen(dst_path, "rb+");
-
     fseek(dst_fd, dst_offset, SEEK_SET);
 
-    unsigned int WRITE_BLOCK_SIZE = 1024;
+    zz_size_t WRITE_BLOCK_SIZE = 1024;
     unsigned char tmp_block[1024];
 
-    for (int i = 0; i < size / WRITE_BLOCK_SIZE; i++) {
+    for (int i = 0; i < length / WRITE_BLOCK_SIZE; i++) {
         fread(tmp_block, WRITE_BLOCK_SIZE, 1, src_fd);
         fwrite(tmp_block, WRITE_BLOCK_SIZE, 1, dst_fd);
     }
 
-    if (size % WRITE_BLOCK_SIZE) {
-        fread(tmp_block, size % WRITE_BLOCK_SIZE, 1, src_fd);
-        fwrite(tmp_block, size % WRITE_BLOCK_SIZE, 1, dst_fd);
+    if (length % WRITE_BLOCK_SIZE) {
+        fread(tmp_block, length % WRITE_BLOCK_SIZE, 1, src_fd);
+        fwrite(tmp_block, length % WRITE_BLOCK_SIZE, 1, dst_fd);
     }
 
     fclose(src_fd);
     fclose(dst_fd);
+    return TRUE;
 }
 
 void zz_copy_file_to_file(const char *src_path, const char *dst_path) {
-    unsigned long file_size;
+    zz_size_t file_size;
     file_size = zz_file_get_size(src_path);
-    zz_write_file_to_file(src_path, dst_path, 0, 0, file_size);
+    zz_file_copy_offset(src_path, dst_path, 0, 0, file_size);
 }
 
-void zz_file_write(const char *dst_path, unsigned long offset, void *content, unsigned long size) {
+void zz_file_write(const char *dst_path, zz_size_t offset, void *content, zz_size_t length) {
     FILE *dst_fd = fopen(dst_path, "rb+");
     fseek(dst_fd, offset, SEEK_SET);
-    fwrite(content, size, 1, dst_fd);
+    fwrite(content, length, 1, dst_fd);
     fclose(dst_fd);
 }
 
-void zz_file_read(const char *dst_path, unsigned long offset, void *content, unsigned long size) {
+void zz_file_read(const char *dst_path, zz_size_t offset, void *content, zz_size_t length) {
     FILE *dst_fd = fopen(dst_path, "rb");
     fseek(dst_fd, offset, SEEK_SET);
-    fread(content, size, 1, dst_fd);
+    fread(content, length, 1, dst_fd);
     fclose(dst_fd);
 }
 
-void zz_write_append_to_file(const char *dst_path, void *content, unsigned long size) {
+void zz_file_append_write(const char *dst_path, void *content, zz_size_t length) {
     FILE *dst_fd = fopen(dst_path, "ab+");
-    fwrite(content, size, 1, dst_fd);
+    fwrite(content, length, 1, dst_fd);
     fclose(dst_fd);
 }
-unsigned long get_linkedit_loadcmd_offset(MachoFD *machofd) {
+
+void zz_file_move_offset_to_offset(const char *target_path, zz_size_t src_offset, zz_size_t dst_offset,
+                                   zz_size_t length) {
+    FILE *target_fd;
+    target_fd = fopen(target_path, "rb+");
+    unsigned char *data = (unsigned char *)malloc(length);
+    fseek(target_fd, src_offset, SEEK_SET);
+    fread(data, length, 1, target_fd);
+    fseek(target_fd, dst_offset, SEEK_SET);
+    fwrite(data, length, 1, target_fd);
+    free(data);
+    fclose(target_fd);
+}
+
+zz_size_t macho_get_linkedit_loadcmd_fileoff(macho_header) {
     for (const auto &loadcmd : machofd->loadcommands.load_command_infos) {
         /* iterate dump section */
         if (loadcmd.load_cmd->cmd == LC_SEGMENT_64) {
@@ -248,11 +117,13 @@ unsigned long get_linkedit_loadcmd_offset(MachoFD *machofd) {
     return 0;
 }
 
-void macho_fix_load_command(const char *target_path) {
+void fix_macho_load_command(const char *target_path) {
     MachoFD *machofd = new MachoFD(target_path);
+
     if (machofd->isFat) {
         printf("use lipo to thin it.");
     }
+
     machofd->parse_macho();
 
     for (const auto &loadcmd : machofd->loadcommands.load_command_infos) {
@@ -310,19 +181,6 @@ void macho_fix_load_command(const char *target_path) {
     }
 }
 
-void zz_file_move_offset_to_offset(const char *target_path, unsigned long src_offset, unsigned long dst_offset,
-                                   unsigned long size) {
-    FILE *target_fd;
-    target_fd = fopen(target_path, "rb+");
-    unsigned char *data = (unsigned char *)malloc(size);
-    fseek(target_fd, src_offset, SEEK_SET);
-    fread(data, size, 1, target_fd);
-    fseek(target_fd, dst_offset, SEEK_SET);
-    fwrite(data, size, 1, target_fd);
-    free(data);
-    fclose(target_fd);
-}
-
 void macho_insert_segment(string target_path, string new_target_path) {
 
     char *rx_segment_name = (char *)"HookZzCode";
@@ -371,22 +229,24 @@ void macho_insert_segment(string target_path, string new_target_path) {
     new_target_linkedit_segment.vmaddr = new_target_linkedit_segment.vmaddr + 0x4000 + 0x4000;
     new_target_linkedit_segment.fileoff = new_target_linkedit_segment.fileoff + 0x4000 + 0x4000;
 
-    // fix header
-    new_target_header.ncmds += 2;
-    new_target_header.sizeofcmds += (new_target_rx_segment.cmdsize + new_target_rw_segment.cmdsize);
+    zz_file_copy_offset(target_path.c_str(), new_target_path.c_str(), 0, 0, seg_linkedit->seg_cmd_64->fileoff);
 
-    //    zz_copy_file_to_file(target_path.c_str(), new_target_path.c_str());
-    zz_write_file_to_file(target_path.c_str(), new_target_path.c_str(), 0, 0, seg_linkedit->seg_cmd_64->fileoff);
-
-    unsigned long orig_linkedit_offset = get_linkedit_loadcmd_offset(machofd);
+    /* fix linkedit segment, move it */
+    unsigned long orig_linkedit_offset = zz_macho_get_linkedit_loadcmd_fileoff(machofd);
     unsigned long move_size =
         machofd->header.header64->sizeofcmds + sizeof(struct mach_header_64) - orig_linkedit_offset;
     unsigned long new_linkedit_offset =
         orig_linkedit_offset + (new_target_rx_segment.cmdsize + new_target_rw_segment.cmdsize);
-    zz_file_move_offset_to_offset(new_target_path.c_str(), orig_linkedit_offset, new_linkedit_offset, move_size);
+    unsigned char tmp_buffer = (unsigned char *)malloc(move_size);
+    zz_file_read(new_target_path.c_str(), orig_linkedit_offset, tmp_buffer, move_size);
+    zz_file_write(new_target_path.c_str(), new_linkedit_offset, move_size);
 
+    // fix header
+    new_target_header.ncmds += 2;
+    new_target_header.sizeofcmds += (new_target_rx_segment.cmdsize + new_target_rw_segment.cmdsize);
     zz_file_write(new_target_path.c_str(), 0, &new_target_header, sizeof(new_target_header));
     Sinfo("[*] fix macho header");
+
     zz_file_write(new_target_path.c_str(), orig_linkedit_offset, &new_target_rx_segment,
                   sizeof(struct segment_command_64));
     Sinfo("[*] add \'HookZzCode(r-x)\' Segment");
@@ -399,16 +259,16 @@ void macho_insert_segment(string target_path, string new_target_path) {
     Sinfo("[*] fix \'__LINKEDIT\' Segment");
 
     char segment_blank[0x4000] = {0};
-    zz_write_append_to_file(new_target_path.c_str(), &segment_blank, 0x4000);
-    Xinfo("[*] reserve %p size space to HookZzCode Segment", (zpointer)0x4000);
-    zz_write_append_to_file(new_target_path.c_str(), &segment_blank, 0x4000);
-    Xinfo("[*] reserve %p size space to HookZzData Segment", (zpointer)0x4000);
-    zz_write_file_to_file(target_path.c_str(), new_target_path.c_str(), seg_linkedit->seg_cmd_64->fileoff,
-                          new_target_linkedit_segment.fileoff,
-                          zz_file_get_size(target_path.c_str()) - seg_linkedit->seg_cmd_64->fileoff);
+    zz_file_append_write(new_target_path.c_str(), &segment_blank, 0x4000);
+    Xinfo("[*] reserve %p length space to HookZzCode Segment", (zpointer)0x4000);
+    zz_file_append_write(new_target_path.c_str(), &segment_blank, 0x4000);
+    Xinfo("[*] reserve %p length space to HookZzData Segment", (zpointer)0x4000);
+    zz_file_copy_offset(target_path.c_str(), new_target_path.c_str(), seg_linkedit->seg_cmd_64->fileoff,
+                        new_target_linkedit_segment.fileoff,
+                        zz_file_get_size(target_path.c_str()) - seg_linkedit->seg_cmd_64->fileoff);
 
     /* fix load command */
-    macho_fix_load_command(new_target_path.c_str());
+    fix_macho_load_command(new_target_path.c_str());
 }
 
 typedef struct _ZzInterceptorBackendNoJB {
