@@ -91,6 +91,7 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
     entry->interceptor             = interceptor;
     entry->target_ptr              = target_ptr;
     entry->target_end_ptr          = target_end_ptr;
+    entry->target_half_ret_addr    = 0;
     entry->replace_call            = replace_call;
     entry->pre_call                = (zz_ptr_t)pre_call;
     entry->half_call               = (zz_ptr_t)half_call;
@@ -102,7 +103,7 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
     entry->origin_prologue.address = target_ptr;
     entry->thread_local_key        = ZzThreadNewThreadLocalKeyPtr();
 
-    /* key function!!! */
+    // build enter, leave trampoline
     ZzBuildTrampoline(interceptor->backend, entry);
     ZzAddHookFunctionEntry(entry);
 }
@@ -138,15 +139,11 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
             status = ZZ_ALREADY_HOOK;
             break;
         }
-
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-
         ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
                                       post_call_ptr, try_near_jump);
-
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
-
     } while (0);
     return status;
 }
@@ -182,12 +179,9 @@ ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, 
             status = ZZ_ALREADY_HOOK;
             break;
         }
-
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-
         ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE, target_start_ptr, target_end_ptr, NULL, pre_call_ptr,
                                       half_call_ptr, NULL, try_near_jump);
-
     } while (0);
     return status;
 }
@@ -254,16 +248,13 @@ ZZSTATUS ZzSolidifyHook(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_p
             return ZZ_FAILED;
     }
 
-    interceptor = g_interceptor;
-
+    interceptor         = g_interceptor;
     entry               = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
     entry->target_ptr   = target_fileoff;
     entry->replace_call = replace_call_ptr;
     entry->pre_call     = (zz_ptr_t)pre_call_ptr;
     entry->post_call    = (zz_ptr_t)post_call_ptr;
-
     ZzActivateSolidifyTrampoline(entry, (zz_addr_t)target_fileoff);
-
     if (origin_ptr)
         *origin_ptr = entry->on_invoke_trampoline;
     return status;

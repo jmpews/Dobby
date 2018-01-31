@@ -303,17 +303,15 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     thumb_writer = &self->thumb_writer;
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
-    /* buid enter_thunk */
+    // buid enter_thunk
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
-
-    /* code patch */
     code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         self->enter_thunk = code_slice->data + 1;
     else
         return ZZ_FAILED;
 
-    /* debug log */
+    // debug log
     if (ZzIsEnableDebugMode()) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};

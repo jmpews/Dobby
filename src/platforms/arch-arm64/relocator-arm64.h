@@ -55,19 +55,6 @@ void zz_arm64_relocator_write_all(ZzARM64Relocator *self);
 
 void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
-/* rewrite */
-static bool zz_arm64_relocator_rewrite_ldr(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
-                                           ZzRelocateInstruction *re_insn_ctx);
+void zz_arm64_relocator_relocate_writer(ZzARM64Relocator *relocator, zz_addr_t code_address);
 
-static bool zz_arm64_relocator_rewrite_adr(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
-                                           ZzRelocateInstruction *re_insn_ctx);
-
-static bool zz_arm64_relocator_rewrite_b(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
-                                         ZzRelocateInstruction *re_insn_ctx);
-
-static bool zz_arm64_relocator_rewrite_b_cond(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
-                                              ZzRelocateInstruction *re_insn_ctx);
-
-static bool zz_arm64_relocator_rewrite_bl(ZzARM64Relocator *self, const ZzInstruction *insn_ctx,
-                                          ZzRelocateInstruction *re_insn_ctx);
 #endif
