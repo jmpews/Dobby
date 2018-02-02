@@ -127,9 +127,18 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-    zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
-    code_slice =
-        zz_arm64_code_patch(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->replace_call);
+    } else {
+        zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
+    }
+
+    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+        code_slice =
+            zz_arm64_code_patch(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
+    } else {
+        code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
+    }
 
     if (code_slice)
         entry->on_enter_transfer_trampoline = code_slice->data;
@@ -207,13 +216,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     zz_arm64_relocator_reset(arm64_relocator, (zz_ptr_t)target_addr, arm64_writer);
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-        do {
-            zz_arm64_relocator_read_one(arm64_relocator, NULL);
-            tmp_relocator_insn_size = arm64_relocator->input_cur - arm64_relocator->input_start;
-        } while (tmp_relocator_insn_size < entry_backend->redirect_code_size);
-        zz_arm64_relocator_write_all(arm64_relocator);
-    } else if (entry->hook_type == HOOK_ADDRESS_TYPE) {
+    if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
         do {
             zz_arm64_relocator_read_one(arm64_relocator, NULL);
             zz_arm64_relocator_write_one(arm64_relocator);
@@ -225,6 +228,12 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             }
         } while (tmp_relocator_insn_size < entry_backend->redirect_code_size ||
                  arm64_relocator->input_cur < entry->target_end_ptr);
+    } else {
+        do {
+            zz_arm64_relocator_read_one(arm64_relocator, NULL);
+            tmp_relocator_insn_size = arm64_relocator->input_cur - arm64_relocator->input_start;
+        } while (tmp_relocator_insn_size < entry_backend->redirect_code_size);
+        zz_arm64_relocator_write_all(arm64_relocator);
     }
 
     // jump to rest target address
@@ -238,7 +247,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         return ZZ_FAILED;
 
     // update target_half_ret_addr
-    if (entry->hook_type == HOOK_ADDRESS_TYPE) {
+    if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
         entry->target_half_ret_addr += (zz_addr_t)code_slice->data;
     }
 
@@ -345,21 +354,21 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     arm64_writer->pc = target_addr;
 
-    if (entry->pre_call || entry->post_call) {
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+            zz_arm64_writer_put_b_imm(arm64_writer,
+                                      (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm64_writer->pc);
+        } else {
+            zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
+                                                   (zz_addr_t)entry->on_enter_transfer_trampoline);
+        }
+    } else {
         if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
             zz_arm64_writer_put_b_imm(arm64_writer,
                                       (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm64_writer->pc);
         } else {
             zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
                                                    (zz_addr_t)entry->on_enter_trampoline);
-        }
-    } else {
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-            zz_arm64_writer_put_b_imm(arm64_writer,
-                                      (zz_addr_t)entry->on_invoke_trampoline - (zz_addr_t)arm64_writer->pc);
-        } else {
-            zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
-                                                   (zz_addr_t)entry->on_invoke_trampoline);
         }
     }
 

@@ -102,10 +102,6 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
     entry->on_leave_trampoline     = NULL;
     entry->origin_prologue.address = target_ptr;
     entry->thread_local_key        = ZzThreadNewThreadLocalKeyPtr();
-
-    // build enter, leave trampoline
-    ZzBuildTrampoline(interceptor->backend, entry);
-    ZzAddHookFunctionEntry(entry);
 }
 
 ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
@@ -119,6 +115,7 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
     ZzInterceptor *interceptor                      = g_interceptor;
     ZzHookFunctionEntrySet *hook_function_entry_set = NULL;
     ZzHookFunctionEntry *entry;
+    int hook_type;
 
     /* check g_intercepter initialization */
     if (!interceptor) {
@@ -140,8 +137,19 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
             break;
         }
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-        ZzInitializeHookFunctionEntry(entry, HOOK_FUNCTION_TYPE, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
+
+        if (pre_call_ptr || post_call_ptr) {
+            hook_type = HOOK_TYPE_ADDRESS_PRE_POST;
+        } else {
+            hook_type = HOOK_TYPE_FUNCTION_REPLACE;
+        }
+
+        // TODO: check return status
+        ZzInitializeHookFunctionEntry(entry, hook_type, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
                                       post_call_ptr, try_near_jump);
+        ZzBuildTrampoline(interceptor->backend, entry);
+        ZzAddHookFunctionEntry(entry);
+
         if (origin_ptr)
             *origin_ptr = entry->on_invoke_trampoline;
     } while (0);
@@ -179,9 +187,13 @@ ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, 
             status = ZZ_ALREADY_HOOK;
             break;
         }
+
+        // TODO: check return status
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-        ZzInitializeHookFunctionEntry(entry, HOOK_ADDRESS_TYPE, target_start_ptr, target_end_ptr, NULL, pre_call_ptr,
-                                      half_call_ptr, NULL, try_near_jump);
+        ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_ADDRESS_PRE_POST, target_start_ptr, target_end_ptr, NULL,
+                                      pre_call_ptr, half_call_ptr, NULL, try_near_jump);
+        ZzBuildTrampoline(interceptor->backend, entry);
+        ZzAddHookFunctionEntry(entry);
     } while (0);
     return status;
 }

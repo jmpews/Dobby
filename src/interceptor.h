@@ -16,8 +16,9 @@ typedef struct _FunctionBackup {
     char data[32];
 } FunctionBackup;
 
-#define HOOK_FUNCTION_TYPE 1
-#define HOOK_ADDRESS_TYPE 2
+#define HOOK_TYPE_FUNCTION_PRE_POST 1
+#define HOOK_TYPE_ADDRESS_PRE_POST 2
+#define HOOK_TYPE_FUNCTION_REPLACE 3
 
 struct _ZzInterceptor;
 struct _ZzHookFunctionEntryBackend;
