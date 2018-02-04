@@ -127,7 +127,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
-    if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->replace_call);
     } else {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
@@ -164,7 +164,6 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
-    zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
@@ -192,9 +191,10 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
         ZzDebugInfoLog("%s", buffer);
     }
 
-    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-        ZzBuildEnterTransferTrampoline(self, entry);
-    }
+    if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT)
+        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+            ZzBuildEnterTransferTrampoline(self, entry);
+        }
 
     free(code_slice);
     return status;
@@ -284,7 +284,6 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
     ZZSTATUS status                                = ZZ_SUCCESS;
-    zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
 
     arm64_writer = &self->arm64_writer;
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
@@ -309,7 +308,6 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     char temp_code_slice_data[256]                 = {0};
     ZzCodeSlice *code_slice                        = NULL;
     ZzARM64HookFunctionEntryBackend *entry_backend = (ZzARM64HookFunctionEntryBackend *)entry->backend;
-    zz_addr_t target_addr                          = (zz_addr_t)entry->target_ptr;
     ZzARM64AssemblerWriter *arm64_writer           = NULL;
 
     arm64_writer = &self->arm64_writer;
@@ -354,7 +352,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
     zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
     arm64_writer->pc = target_addr;
 
-    if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
         if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
             zz_arm64_writer_put_b_imm(arm64_writer,
                                       (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm64_writer->pc);
@@ -400,7 +398,7 @@ typedef struct _ZzHookFunctionEntryNoJB {
     void *on_leave_trampoline;  // HookZzData, 99% hardcode
 } ZzHookFunctionEntryNoJB;
 
-ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff) {
+ZZSTATUS ZzActivateStaticBinaryInstrumentationTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff) {
     struct mach_header_64 *header           = (struct mach_header_64 *)_dyld_get_image_header(0);
     struct segment_command_64 *text_seg_cmd = zz_macho_get_segment_64_via_name(header, "__TEXT");
     struct segment_command_64 *data_seg_cmd = zz_macho_get_segment_64_via_name(header, "HookZzData");

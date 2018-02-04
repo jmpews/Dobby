@@ -52,7 +52,10 @@ ifeq ($(BACKEND), ios)
 	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
 	CFLAGS += -arch $(ZZ_ARCH)
 
-	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c)
+	FISHHOOK_SRC_FILES = $(HOOKZZ_PATH)/src/deps/fishhook/fishhook.c
+	HOOKZZ_SRC_FILES += $(FISHHOOK_SRC_FILES)
+
+	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c) 
 
 else ifeq ($(BACKEND), macos)
 	ifeq ($(ARCH), x86)
@@ -155,7 +158,9 @@ endef
 KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
 KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
 KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
+
 # $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+# $(warning HOOKZZ_SRC_FILES= $(HOOKZZ_SRC_FILES))
 
 # ------------ kitzz make env end ---------------
 

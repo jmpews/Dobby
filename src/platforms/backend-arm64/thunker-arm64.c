@@ -133,7 +133,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_TYPE_FUNCTION_PRE_POST) {
+    if (entry->hook_type != HOOK_TYPE_ADDRESS_PRE_POST) {
         callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }

@@ -183,6 +183,9 @@ void ZzEnableDebugMode(void);
 // runtime code patch
 ZZSTATUS ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_length);
 
+ZZSTATUS ZzHookGOT(const char *name, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr,
+                   POSTCALL post_call_ptr);
+
 // ------- export API end -------
 
 #if defined(__arm64__) || defined(__aarch64__)
@@ -194,7 +197,7 @@ ZZSTATUS ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_l
 #endif
 #endif
 #ifdef TARGET_IS_IOS
-ZZSTATUS ZzSolidifyHook(void *target_fileoff, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr,
+ZZSTATUS StaticBinaryInstrumentation(void *target_fileoff, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);
 #endif
 

@@ -187,7 +187,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
         thumb_writer = &self->thumb_writer;
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->replace_call);
         } else {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
@@ -208,7 +208,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
         arm_writer = &self->arm_writer;
         zz_arm_writer_reset(arm_writer, temp_code_slice_data);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->replace_call);
         } else {
             zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
@@ -527,7 +527,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
         thumb_writer->pc = target_addr + 4;
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 zz_thumb_writer_put_b_imm32(thumb_writer,
                                             (zz_addr_t)entry->on_invoke_trampoline - (zz_addr_t)thumb_writer->pc);
@@ -551,7 +551,7 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         zz_arm_writer_reset(arm_writer, temp_code_slice_data);
         arm_writer->pc = target_addr + 8;
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_REPLACE) {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
                 zz_arm_writer_put_b_imm(arm_writer,
                                         (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->pc);

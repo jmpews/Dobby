@@ -28,6 +28,8 @@ typedef struct _ZzTrampoline {
 
 struct _ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator);
 
+ZzHookFunctionEntry *ZzFindHookFunctionEntry(zz_ptr_t target_ptr);
+
 ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
@@ -45,7 +47,7 @@ ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunct
 ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 #ifdef TARGET_IS_IOS
-ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff);
+// ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff);
 #endif
 
 #endif
