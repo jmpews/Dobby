@@ -30,6 +30,8 @@ struct _ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator);
 
 ZzHookFunctionEntry *ZzFindHookFunctionEntry(zz_ptr_t target_ptr);
 
+ZZSTATUS ZzFreeTrampoline(ZzHookFunctionEntry *entry);
+
 ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);

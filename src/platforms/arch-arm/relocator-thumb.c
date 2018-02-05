@@ -27,6 +27,13 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, Z
     memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
+void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
+    free(relocator->input_insns);
+    free(relocator->output_insns);
+    free(relocator->relocate_literal_insns);
+    free(relocator);
+}
+
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbAssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;

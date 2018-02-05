@@ -45,6 +45,8 @@ typedef struct _ZzARMRelocator {
 
 void zz_arm_relocator_init(ZzARMRelocator *relocator, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
 
+void zz_arm_relocator_free(ZzARMRelocator *relocator);
+
 void zz_arm_relocator_reset(ZzARMRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
 
 void zz_arm_relocator_write_all(ZzARMRelocator *self);

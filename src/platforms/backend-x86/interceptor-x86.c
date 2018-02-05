@@ -33,6 +33,28 @@ ZzCodeSlice *zz_code_patch_x86_relocate_writer(ZzX86Relocator *relocator, ZzX86W
     return NULL;
 }
 
+ZZSTATUS ZzFreeTrampoline(ZzHookFunctionEntry *entry) {
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_transfer_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_leave_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+}
+
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) { return ZZ_FAILED; }
 
 ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) { return ZZ_FAILED; }

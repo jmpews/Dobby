@@ -86,6 +86,29 @@ ZzCodeSlice *zz_arm64_relocate_code_patch(ZzARM64Relocator *relocator, ZzARM64As
     return code_slice;
 }
 
+ZZSTATUS ZzFreeTrampoline(ZzHookFunctionEntry *entry) {
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_transfer_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_leave_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+    return ZZ_SUCCESS;
+}
+
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
     zz_size_t redirect_limit = 0;
@@ -99,6 +122,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     } else {
         // check the first few instructions, preparatory work of instruction-fix
         zz_arm64_relocator_try_relocate((zz_ptr_t)target_addr, ZZ_ARM64_FULL_REDIRECT_SIZE, &redirect_limit);
+
         if (redirect_limit != 0 && redirect_limit > ZZ_ARM64_TINY_REDIRECT_SIZE &&
             redirect_limit < ZZ_ARM64_FULL_REDIRECT_SIZE) {
             entry->try_near_jump              = TRUE;
@@ -111,6 +135,12 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     }
 
     self->arm64_relocator.try_relocated_length = entry_backend->redirect_code_size;
+
+    // save original prologue
+    memcpy(entry->origin_prologue.data, entry->target_ptr, entry_backend->redirect_code_size);
+    entry->origin_prologue.size    = entry_backend->redirect_code_size;
+    entry->origin_prologue.address = entry->target_ptr;
+
     // relocator initialize
     zz_arm64_relocator_init(&self->arm64_relocator, (zz_ptr_t)target_addr, &self->arm64_writer);
     return ZZ_SUCCESS;

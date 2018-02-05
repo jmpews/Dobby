@@ -45,6 +45,8 @@ typedef struct _ZzARM64Relocator {
 
 void zz_arm64_relocator_init(ZzARM64Relocator *relocator, zz_ptr_t input_code, ZzARM64AssemblerWriter *writer);
 
+void zz_arm64_relocator_free(ZzARM64Relocator *relocator);
+
 void zz_arm64_relocator_reset(ZzARM64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output);
 
 zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzInstruction *instruction);

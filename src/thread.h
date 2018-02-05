@@ -22,6 +22,8 @@
 
 zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
 
+bool ZzThreadFreeThreadLocalKeyPtr(zz_ptr_t key_ptr);
+
 zz_ptr_t ZzThreadGetCurrentThreadData(zz_ptr_t key_ptr);
 
 bool ZzThreadSetCurrentThreadData(zz_ptr_t key_ptr, zz_ptr_t data);

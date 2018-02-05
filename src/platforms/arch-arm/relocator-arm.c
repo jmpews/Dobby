@@ -23,6 +23,13 @@ void zz_arm_relocator_init(ZzARMRelocator *relocator, zz_ptr_t input_code, ZzARM
         (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
+void zz_arm_relocator_free(ZzARMRelocator *relocator) {
+    free(relocator->input_insns);
+    free(relocator->output_insns);
+    free(relocator->relocate_literal_insns);
+    free(relocator);
+}
+
 void zz_arm_relocator_reset(ZzARMRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;

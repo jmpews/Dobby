@@ -104,6 +104,24 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
     entry->thread_local_key        = ZzThreadNewThreadLocalKeyPtr();
 }
 
+void ZzFreeHookFunctionEntry(ZzHookFunctionEntry *entry) {
+    ZzInterceptor *interceptor                      = g_interceptor;
+    ZzHookFunctionEntrySet *hook_function_entry_set = &(interceptor->hook_function_entry_set);
+    ZzHookFunctionEntry **entries                   = hook_function_entry_set->entries;
+    int i;
+    for (i = 0; i < hook_function_entry_set->size; ++i) {
+        if (entries[i] && entry == entries[i]) {
+            // exchange with the last item
+            entries[i] = entries[hook_function_entry_set->size - 1];
+        }
+    }
+    hook_function_entry_set->size--;
+
+    // free thread local key
+    ZzThreadFreeThreadLocalKeyPtr(entry->thread_local_key);
+    ZzFreeTrampoline(entry);
+}
+
 ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                      POSTCALL post_call_ptr, bool try_near_jump) {
 #if defined(__i386__) || defined(__x86_64__)
@@ -265,6 +283,21 @@ ZZSTATUS ZzEnableHook(zz_ptr_t target_ptr) {
     return ZzActivateTrampoline(interceptor->backend, entry);
 }
 
+ZZSTATUS ZzDisableHook(zz_ptr_t target_ptr) {
+    ZZSTATUS status            = ZZ_DONE_ENABLE;
+    ZzInterceptor *interceptor = g_interceptor;
+    ZzHookFunctionEntry *entry = ZzFindHookFunctionEntry(target_ptr);
+
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
+        ZzDisableHookGOT((const char *)target_ptr);
+    } else {
+        ZzMemoryPatchCode((const zz_addr_t)entry->origin_prologue.address, entry->origin_prologue.data,
+                          entry->origin_prologue.size);
+    }
+    ZzFreeHookFunctionEntry(entry);
+    return status;
+}
+
 ZZSTATUS ZzHook(zz_ptr_t target_ptr, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                 POSTCALL post_call_ptr, bool try_near_jump) {
     ZzBuildHook(target_ptr, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr, try_near_jump);
@@ -292,7 +325,6 @@ ZZSTATUS ZzHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECA
 }
 
 // #ifdef TARGET_IS_IOS
-
 // ZZSTATUS StaticBinaryInstrumentation(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr,
 //                                      PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
 //     ZZSTATUS status                                 = ZZ_DONE_HOOK;

@@ -186,6 +186,8 @@ ZZSTATUS ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_l
 ZZSTATUS ZzHookGOT(const char *name, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr,
                    POSTCALL post_call_ptr);
 
+ZZSTATUS ZzDisableHook(void *target_ptr);
+
 // ------- export API end -------
 
 #if defined(__arm64__) || defined(__aarch64__)
