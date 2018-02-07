@@ -1,6 +1,7 @@
 #ifndef kitzz_zz_types_h
 #define kitzz_zz_types_h
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // for bool type

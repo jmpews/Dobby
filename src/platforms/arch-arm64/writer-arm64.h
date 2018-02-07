@@ -17,7 +17,6 @@
 #ifndef platforms_arch_arm64_writer_h
 #define platforms_arch_arm64_writer_h
 
-#include "hookzz.h"
 #include "kitzz.h"
 
 #include "memory.h"
