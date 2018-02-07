@@ -31,23 +31,23 @@
 typedef struct _ZzARMRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
-    zz_ptr_t input_start;
-    zz_ptr_t input_cur;
-    zz_addr_t input_pc;
     int inpos;
     int outpos;
+
     ZzInstruction *input_insns;
     ZzRelocateInstruction *output_insns;
     ZzLiteralInstruction **relocate_literal_insns;
     zz_size_t relocate_literal_insns_size;
+
     ZzARMAssemblerWriter *output;
+    ZzARMReader *input;
 } ZzARMRelocator;
 
-void zz_arm_relocator_init(ZzARMRelocator *relocator, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
+void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output);
 
 void zz_arm_relocator_free(ZzARMRelocator *relocator);
 
-void zz_arm_relocator_reset(ZzARMRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output);
+void zz_arm_relocator_reset(ZzARMRelocator *self, ZzARMReader *input, ZzARMAssemblerWriter *output);
 
 void zz_arm_relocator_write_all(ZzARMRelocator *self);
 

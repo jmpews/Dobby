@@ -2,22 +2,17 @@
 
 #include <stdlib.h>
 
-// ATTENTION !!!:
-// 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
-// `writer` REF: `ZzInstruction Set Encoding`
-
 ZzARMAssemblerWriter *zz_arm_writer_new(zz_ptr_t data_ptr) {
     ZzARMAssemblerWriter *writer = (ZzARMAssemblerWriter *)zz_malloc_with_zero(sizeof(ZzARMAssemblerWriter));
+    zz_addr_t align_address      = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
 
-    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    writer->codedata        = (zz_ptr_t)align_address;
-    writer->base            = (zz_ptr_t)align_address;
-    writer->pc              = align_address;
-    writer->size            = 0;
+    writer->w_start_address   = (zz_ptr_t)align_address;
+    writer->w_current_address = (zz_ptr_t)align_address;
+    writer->pc                = align_address;
+    writer->size              = 0;
 
     writer->literal_insn_size = 0;
     memset(writer->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
-
     return writer;
 }
 
@@ -26,14 +21,14 @@ void zz_arm_writer_init(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr) { zz_arm_
 void zz_arm_writer_reset(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr) {
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->codedata          = (zz_ptr_t)align_address;
-    self->base              = (zz_ptr_t)align_address;
-    self->pc                = align_address;
+
+    writer->w_start_address   = (zz_ptr_t)align_address;
+    writer->w_current_address = (zz_ptr_t)align_address;
+    writer->pc                = align_address;
+    writer->size              = 0;
 
     self->literal_insn_size = 0;
     memset(self->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
-
-    self->size = 0;
 }
 
 zz_size_t zz_arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }

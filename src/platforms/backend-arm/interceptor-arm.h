@@ -40,6 +40,8 @@ typedef struct _ZzInterceptorBackend {
 
     ZzARMAssemblerWriter arm_writer;
     ZzThumbAssemblerWriter thumb_writer;
+    ZzARMReader arm_reader;
+    ZzARMReader thumb_reader;
 
     zz_ptr_t enter_thunk;
     zz_ptr_t half_thunk;

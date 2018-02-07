@@ -22,7 +22,7 @@
 
 typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN } InsnType;
 
-typedef struct _Instruction {
+typedef struct _ZzARMInstruction {
     InsnType type;
     zz_addr_t pc;
     zz_addr_t address;
@@ -38,13 +38,8 @@ typedef struct _Instruction {
     uint32_t insn;
     uint16_t insn1;
     uint16_t insn2;
-} ZzInstruction;
-
-typedef struct _ZzRelocateInstruction {
-    const ZzInstruction *insn_ctx;
-    zz_addr_t relocated_offset;
-    zz_size_t relocated_length;
-} ZzRelocateInstruction;
+    char *data;
+} ZzARMInstruction;
 
 uint32_t get_insn_sub(uint32_t insn, int start, int length);
 bool insn_equal(uint32_t insn, char *opstr);

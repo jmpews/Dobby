@@ -31,7 +31,7 @@
 #include "regs-arm.h"
 #include "writer-thumb.h"
 
-typedef ZzAssemblerWriter ZzThumbAssemblerWriter;
+typedef ZzARMAssemblerWriter ZzThumbAssemblerWriter;
 
 typedef enum _ZzThumbMemoryOperation { ZZ_THUMB_MEMORY_LOAD, ZZ_THUMB_MEMORY_STORE } ZzThumbMemoryOperation;
 
@@ -96,17 +96,21 @@ void zz_thumb_writer_put_add_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_
 
 void zz_thumb_writer_put_sub_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, int32_t imm);
 
-void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, int32_t right_value);
+void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg,
+                                         int32_t right_value);
 
-void zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, int32_t right_value);
+void zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg,
+                                         int32_t right_value);
 
 void zz_thumb_writer_put_push_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg);
 
 void zz_thumb_writer_put_pop_reg(ZzThumbAssemblerWriter *self, ZzARMReg reg);
 
-void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg, ZzARMReg right_reg);
+void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg left_reg,
+                                         ZzARMReg right_reg);
 
-ZzLiteralInstruction *zz_thumb_writer_put_ldr_reg_relocate_address(ZzThumbAssemblerWriter *self, ZzARMReg reg, zz_addr_t address,
+ZzLiteralInstruction *zz_thumb_writer_put_ldr_reg_relocate_address(ZzThumbAssemblerWriter *self, ZzARMReg reg,
+                                                                   zz_addr_t address,
                                                                    ZzLiteralInstruction **literal_insn_ptr);
 
 ZzLiteralInstruction *zz_thumb_writer_put_ldr_b_reg_relocate_address(ZzThumbAssemblerWriter *self, ZzARMReg reg,

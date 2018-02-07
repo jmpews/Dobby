@@ -31,16 +31,12 @@
 typedef struct _ZzThumbRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
-    zz_ptr_t input_start;
-    zz_ptr_t input_cur;
-    zz_addr_t input_pc;
-    ZzInstruction *input_insns;
-    ZzRelocateInstruction *output_insns;
-    ZzLiteralInstruction **relocate_literal_insns;
-    zz_size_t relocate_literal_insns_size;
     ZzThumbAssemblerWriter *output;
+    ZzARMReader *input;
     int inpos;
     int outpos;
+    ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
+    zz_size_t literal_insn_size;
 } ZzThumbRelocator;
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbAssemblerWriter *writer);

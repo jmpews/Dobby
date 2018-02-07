@@ -5,12 +5,10 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_arm_relocator_init(ZzARMRelocator *relocator, zz_ptr_t input_code, ZzARMAssemblerWriter *output) {
+void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output) {
     relocator->inpos                       = 0;
     relocator->outpos                      = 0;
-    relocator->input_start                 = input_code;
-    relocator->input_cur                   = input_code;
-    relocator->input_pc                    = (zz_addr_t)input_code;
+    relocator->input                       = input;
     relocator->output                      = output;
     relocator->relocate_literal_insns_size = 0;
     relocator->try_relocated_length        = 0;
@@ -30,15 +28,13 @@ void zz_arm_relocator_free(ZzARMRelocator *relocator) {
     free(relocator);
 }
 
-void zz_arm_relocator_reset(ZzARMRelocator *self, zz_ptr_t input_code, ZzARMAssemblerWriter *output) {
-    self->input_cur                   = input_code;
-    self->input_start                 = input_code;
-    self->input_pc                    = (zz_addr_t)input_code;
-    self->inpos                       = 0;
-    self->outpos                      = 0;
-    self->output                      = output;
-    self->relocate_literal_insns_size = 0;
-    self->try_relocated_length        = 0;
+void zz_arm_relocator_reset(ZzARMRelocator *self, ZzARMReader *input, ZzARMAssemblerWriter *output) {
+    relocator->inpos                       = 0;
+    relocator->outpos                      = 0;
+    relocator->input                       = input;
+    relocator->output                      = output;
+    relocator->relocate_literal_insns_size = 0;
+    relocator->try_relocated_length        = 0;
 
     memset(self->input_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzInstruction));
     memset(self->output_insns, 0, MAX_RELOCATOR_INSTRUCIONS_SIZE * sizeof(ZzRelocateInstruction));
@@ -64,30 +60,34 @@ zz_size_t zz_arm_relocator_read_one(ZzARMRelocator *self, ZzInstruction *instruc
 
     return self->input_cur - self->input_start;
 }
+
+// try relocate to get relocate-insn-limit
 void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
-    int tmp_size = 0;
-    zz_ptr_t target_addr;
-    ZzInstruction insn_ctx;
-    bool early_end = FALSE;
-    target_addr    = (zz_ptr_t)address;
+    int tmp_size          = 0;
+    bool early_end        = FALSE;
+    zz_addr_t target_addr = (zz_addr_t)address;
+    ZzARMInstruction *insn_ctx;
+    ZzARMReader *reader = zz_arm_reader_new(address);
 
     do {
-        zz_arm_reader_read_one_instruction(target_addr, &insn_ctx);
-        switch (GetARMInsnType(insn_ctx.insn)) {
+        insn_ctx = zz_arm_reader_read_one_instruction(reader);
+        switch (GetARMInsnType(insn_ctx->insn)) {
         case ARM_INS_B_A1: {
-            uint32_t cond = get_insn_sub(insn_ctx.insn, 28, 4);
+            uint32_t cond = get_insn_sub(insn_ctx->insn, 28, 4);
             if (cond == 0xE)
                 early_end = TRUE;
         }; break;
         default:;
         }
-        tmp_size += insn_ctx.size;
-        target_addr = target_addr + insn_ctx.size;
+        tmp_size += insn_ctx->size;
+        target_addr = target_addr + insn_ctx->size;
     } while (tmp_size < min_bytes);
 
     if (early_end) {
         *max_bytes = tmp_size;
     }
+
+    zz_arm_reader_free(reader);
     return;
 }
 

@@ -31,7 +31,22 @@ typedef enum _ARMInsnType {
     ARM_UNDEF
 } ARMInsnType;
 
+#define MAX_INSN_SIZE 256
+typedef struct _ZzARMReader {
+    ZzARMInstruction *insns[MAX_INSN_SIZE];
+    zz_size_t insn_size;
+    zz_ptr_t r_start_address;
+    zz_ptr_t r_current_address;
+    zz_addr_t pc;
+    zz_size_t size;
+} ZzARMReader;
+
 ARMInsnType GetARMInsnType(uint32_t insn);
-zz_ptr_t zz_arm_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx);
+
+ZzARMReader *zz_arm_reader_new(zz_ptr_t insn_address);
+void zz_arm_reader_init(ZzARMReader *self, zz_ptr_t insn_address);
+void zz_arm_reader_reset(ZzARMReader *self, zz_ptr_t insn_address);
+void zz_arm_reader_free(ZzARMReader *self);
+ZzARMInstruction *zz_arm_reader_read_one_instruction(ZzARMReader *self);
 
 #endif

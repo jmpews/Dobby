@@ -15,9 +15,12 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)zz_malloc_with_zero(sizeof(ZzInterceptorBackend));
 
     zz_arm_writer_init(&backend->arm_writer, NULL);
-    zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
+    zz_arm_reader_init(&backend->arm_reader, NULL);
+    zz_arm_relocator_init(&backend->arm_relocator, &backend->arm_reader, &backend->arm_writer);
+
     zz_thumb_writer_init(&backend->thumb_writer, NULL);
-    zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
+    zz_arm_reader_init(&backend->thumb_writer, NULL);
+    zz_thumb_relocator_init(&backend->thumb_relocator, &backend->thumb_reader, &backend->thumb_writer);
 
     backend->allocator   = allocator;
     backend->enter_thunk = NULL;
@@ -342,11 +345,14 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     if (is_thumb) {
         ZzThumbRelocator *thumb_relocator;
         ZzThumbAssemblerWriter *thumb_writer;
+        ZzARMReader *thumb_reader;
         thumb_relocator = &self->thumb_relocator;
         thumb_writer    = &self->thumb_writer;
+        thumb_reader    = &self->thumb_reader;
 
         zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        zz_thumb_relocator_reset(thumb_relocator, (zz_ptr_t)target_addr, thumb_writer);
+        zz_arm_reader_reset(thumb_reader, entry->target_ptr);
+        zz_thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
 
         if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
             do {

@@ -31,7 +31,16 @@
 #include "regs-arm.h"
 #include "writer-arm.h"
 
-typedef ZzAssemblerWriter ZzARMAssemblerWriter;
+#define MAX_INSN_SIZE 256
+typedef struct _ZzARMAssemblerWriter {
+    ZzARMInstruction *insns[MAX_INSN_SIZE];
+    zz_size_t insn_size;
+    zz_ptr_t w_start_address;
+    zz_ptr_t w_current_address;
+    zz_addr_t pc;
+    zz_size_t size;
+} ZzARMAssemblerWriter;
+
 ZzARMAssemblerWriter *zz_arm_writer_new(zz_ptr_t data_ptr);
 void zz_arm_writer_init(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr);
 void zz_arm_writer_reset(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr);
@@ -60,11 +69,11 @@ void zz_arm_writer_put_str_reg_reg_imm(ZzARMAssemblerWriter *self, ZzARMReg dst_
 
 void zz_arm_writer_put_ldr_reg_imm_literal(ZzARMAssemblerWriter *self, ZzARMReg dst_reg, int32_t imm);
 
-void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzARMAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, int32_t imm,
-                                             bool index);
+void zz_arm_writer_put_ldr_reg_reg_imm_index(ZzARMAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg,
+                                             int32_t imm, bool index);
 
-void zz_arm_writer_put_ldr_reg_reg_imm_A1(ZzARMAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, uint32_t imm, bool P,
-                                          bool U, bool W);
+void zz_arm_writer_put_ldr_reg_reg_imm_A1(ZzARMAssemblerWriter *self, ZzARMReg dst_reg, ZzARMReg src_reg, uint32_t imm,
+                                          bool P, bool U, bool W);
 
 void zz_arm_writer_put_ldr_reg_address(ZzARMAssemblerWriter *self, ZzARMReg reg, zz_addr_t address);
 
@@ -76,9 +85,11 @@ void zz_arm_writer_put_push_reg(ZzARMAssemblerWriter *self, ZzARMReg reg);
 
 void zz_arm_writer_put_pop_reg(ZzARMAssemblerWriter *self, ZzARMReg reg);
 
-ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg, zz_addr_t address,
+ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
+                                                                   zz_addr_t address,
                                                                    ZzLiteralInstruction **literal_insn_ptr);
 
-ZzLiteralInstruction *zz_arm_writer_put_ldr_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg, zz_addr_t address,
+ZzLiteralInstruction *zz_arm_writer_put_ldr_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
+                                                                 zz_addr_t address,
                                                                  ZzLiteralInstruction **literal_insn_ptr);
 #endif
