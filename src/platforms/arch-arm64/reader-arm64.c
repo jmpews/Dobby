@@ -1,6 +1,6 @@
 #include "reader-arm64.h"
 
-zz_ptr_t zz_arm64_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
+zz_ptr_t zz_arm64_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) {
     insn_ctx->address = (zz_addr_t)address;
     insn_ctx->size    = 4;
     insn_ctx->pc      = (zz_addr_t)address;

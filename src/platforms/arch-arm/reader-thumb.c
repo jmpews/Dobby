@@ -28,7 +28,7 @@ bool insn_is_thumb2(uint32_t insn) {
     }
 }
 
-zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
+zz_ptr_t zz_thumb_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) {
     insn_ctx->pc      = (zz_addr_t)address + 4;
     insn_ctx->address = (zz_addr_t)address;
     insn_ctx->insn    = *(uint32_t *)address;
