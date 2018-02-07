@@ -56,7 +56,7 @@ endif
 
 # ------------ hookzz make env end ---------------
 
-HOOKZZ_SRC_FILES += $(KITZZ_SRC_FILES)
+HOOKZZ_SRC_FILES += $(KITZZ_FILE_LIST)
 HOOKZZ_INCLUDE += $(KITZZ_INCLUDE)
 
 LOCAL_MODULE := hookzz
