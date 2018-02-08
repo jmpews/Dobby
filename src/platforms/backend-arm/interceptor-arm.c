@@ -112,6 +112,29 @@ ZzCodeSlice *zz_arm_relocate_code_patch(ZzARMRelocator *relocator, ZzARMAssemble
     return code_slice;
 }
 
+ZZSTATUS ZzFreeTrampoline(ZzHookFunctionEntry *entry) {
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_enter_transfer_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_leave_trampoline) {
+        //TODO
+    }
+
+    if (entry->on_invoke_trampoline) {
+        //TODO
+    }
+    return ZZ_SUCCESS;
+}
+
 ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
     bool is_thumb            = FALSE;
     zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
@@ -162,6 +185,11 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
         }
         self->arm_relocator.try_relocated_length = entry_backend->redirect_code_size;
     }
+
+    // save original prologue
+    memcpy(entry->origin_prologue.data, entry->target_ptr, entry_backend->redirect_code_size);
+    entry->origin_prologue.size    = entry_backend->redirect_code_size;
+    entry->origin_prologue.address = entry->target_ptr;
 
     // relocator initialize
     zz_arm_relocator_init(&self->arm_relocator, (zz_ptr_t)target_addr, &self->arm_writer);

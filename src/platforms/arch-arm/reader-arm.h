@@ -32,6 +32,6 @@ typedef enum _ARMInsnType {
 } ARMInsnType;
 
 ARMInsnType GetARMInsnType(uint32_t insn);
-zz_ptr_t zz_arm_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address);
+zz_ptr_t zz_arm_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx);
 
 #endif

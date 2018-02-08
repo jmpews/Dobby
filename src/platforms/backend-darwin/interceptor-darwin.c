@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "interceptor-darwin.h"
+#include "interceptor.h"
 #include "trampoline.h"
 
 #include <dlfcn.h>
@@ -15,12 +16,28 @@ ZZSTATUS ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr,
     const struct mach_header *header = _dyld_get_image_header(0);
     zz_size_t slide                  = pub_dyld_get_image_slide(header);
 
-    ZzBuildHookGOT((zz_ptr_t)name, NULL, NULL, pre_call_ptr, post_call_ptr);
+    if (replace_ptr) {
+        ZzBuildHookGOT((zz_ptr_t)name, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr);
+    } else {
+        ZzBuildHookGOT((zz_ptr_t)name, target_ptr, NULL, pre_call_ptr, post_call_ptr);
+    }
+
     ZzHookFunctionEntry *entry = ZzFindHookFunctionEntry((zz_ptr_t)name);
-    entry->replace_call        = target_ptr;
     // TODO: fix here
     rebind_symbols_image((void *)header, slide,
-                         (struct rebinding[1]){{name, entry->on_enter_trampoline, (void *)&origin_ptr}}, 1);
+                         (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
+    return ZZ_SUCCESS;
+}
+
+ZZSTATUS ZzDisableHookGOT(const char *name) {
+    intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
+    pub_dyld_get_image_slide         = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
+    zz_ptr_t target_ptr              = dlsym((void *)dlopen(0, RTLD_LAZY), name);
+    const struct mach_header *header = _dyld_get_image_header(0);
+    zz_size_t slide                  = pub_dyld_get_image_slide(header);
+    ZzHookFunctionEntry *entry       = ZzFindHookFunctionEntry((zz_ptr_t)name);
+
+    rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, target_ptr, NULL}}, 1);
     return ZZ_SUCCESS;
 }
 

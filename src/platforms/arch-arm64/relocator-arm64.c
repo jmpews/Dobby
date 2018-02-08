@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "relocator-arm64.h"
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +22,13 @@ void zz_arm64_relocator_init(ZzARM64Relocator *relocator, zz_ptr_t input_code, Z
         (ZzLiteralInstruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
+void zz_arm64_relocator_free(ZzARM64Relocator *relocator) {
+    free(relocator->input_insns);
+    free(relocator->output_insns);
+    free(relocator->relocate_literal_insns);
+    free(relocator);
+}
+
 void zz_arm64_relocator_reset(ZzARM64Relocator *self, zz_ptr_t input_code, ZzARM64AssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
@@ -58,7 +49,7 @@ zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzInstruction *ins
     ZzRelocateInstruction *re_insn_ctx = &self->output_insns[self->inpos];
 
     re_insn_ctx->insn_ctx = insn_ctx;
-    zz_arm64_reader_read_one_instruction(insn_ctx, self->input_cur);
+    zz_arm64_reader_read_one_instruction(self->input_cur, insn_ctx);
 
     // switch (0) {}
 
@@ -123,7 +114,7 @@ void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
     target_addr    = (zz_ptr_t)address;
 
     do {
-        zz_arm64_reader_read_one_instruction(&insn_ctx, target_addr);
+        zz_arm64_reader_read_one_instruction(target_addr, &insn_ctx);
         switch (GetARM64InsnType(insn_ctx.insn)) {
         case ARM64_INS_B:
             early_end = TRUE;

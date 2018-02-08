@@ -27,6 +27,13 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, Z
     memset(relocator->relocate_literal_insns, 0, MAX_LITERAL_INSN_SIZE * sizeof(ZzLiteralInstruction *));
 }
 
+void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
+    free(relocator->input_insns);
+    free(relocator->output_insns);
+    free(relocator->relocate_literal_insns);
+    free(relocator);
+}
+
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbAssemblerWriter *output) {
     self->input_cur                   = input_code;
     self->input_start                 = input_code;
@@ -47,7 +54,7 @@ zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *ins
     ZzRelocateInstruction *re_insn_ctx = &self->output_insns[self->inpos];
 
     re_insn_ctx->insn_ctx = insn_ctx;
-    zz_thumb_reader_read_one_instruction(insn_ctx, self->input_cur);
+    zz_thumb_reader_read_one_instruction(self->input_cur, insn_ctx);
 
     // switch (1) {}
 
@@ -72,7 +79,7 @@ void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
     target_addr    = (zz_ptr_t)address;
 
     do {
-        zz_thumb_reader_read_one_instruction(&insn_ctx, target_addr);
+        zz_thumb_reader_read_one_instruction(target_addr, &insn_ctx);
         switch (GetTHUMBInsnType(insn_ctx.insn1, insn_ctx.insn2)) {
         case THUMB_INS_B_T2:
             early_end = TRUE;
