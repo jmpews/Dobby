@@ -12,7 +12,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - **solidify inlinehook without Jailbreak(Static Binary Instrumentation) [new-90%]**
 
-- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM [new-0%]**
+- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM**
 
 - the power to access registers directly
 
@@ -50,7 +50,9 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Thanks List
 
-```
-上海哎媲媲网络技术有限公司 --- 1000
-@Xset-s --- 88
-```
+**上海哎媲媲网络技术有限公司** --- 1000
+
+# Contact Me
+
+wechat: winter1ife
+QQ: 858982985
