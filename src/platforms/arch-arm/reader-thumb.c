@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "reader-thumb.h"
 
 bool insn_is_thumb2(uint32_t insn) {
@@ -29,10 +13,11 @@ bool insn_is_thumb2(uint32_t insn) {
 }
 
 ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
-    insn_ctx          = (ZzARMInstruction *)malloc_zero(sizeof(ZzARMInstruction));
-    insn_ctx->pc      = (zz_addr_t)self->pc + 4;
-    insn_ctx->address = (zz_addr_t)self->address;
-    insn_ctx->insn    = *(uint32_t *)self->address;
+    ZzARMInstruction *insn_ctx          = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    insn_ctx->type    = THUMB_INSN;
+    insn_ctx->pc      = (zz_addr_t)self->current_pc;
+    insn_ctx->address = (zz_addr_t)self->r_current_address;
+    insn_ctx->insn    = *(uint32_t *)self->r_current_address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -47,8 +32,8 @@ ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
         insn_ctx->insn2 = 0;
     }
 
-    self->pc += 4;
-    self->address += insn_ctx->size;
+    self->current_pc += 4;
+    self->r_current_address += insn_ctx->size;
     self->size += insn_ctx->size;
     self->insns[self->insn_size] = insn_ctx;
     return insn_ctx;

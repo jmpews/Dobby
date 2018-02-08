@@ -4,15 +4,12 @@
 
 ZzARMAssemblerWriter *zz_arm_writer_new(zz_ptr_t data_ptr) {
     ZzARMAssemblerWriter *writer = (ZzARMAssemblerWriter *)zz_malloc_with_zero(sizeof(ZzARMAssemblerWriter));
-    zz_addr_t align_address      = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-
-    writer->w_start_address   = (zz_ptr_t)align_address;
-    writer->w_current_address = (zz_ptr_t)align_address;
-    writer->pc                = align_address;
-    writer->size              = 0;
-
-    writer->literal_insn_size = 0;
-    memset(writer->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
+    zz_addr_t align_address = (zz_addr_t) data_ptr & ~(zz_addr_t) 3;
+    writer->w_current_address = align_address;
+    writer->w_start_address = align_address;
+    writer->current_pc = 0;
+    writer->start_pc = 0;
+    writer->size = 0;
     return writer;
 }
 
@@ -21,45 +18,20 @@ void zz_arm_writer_init(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr) { zz_arm_
 void zz_arm_writer_reset(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr) {
 
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-
-    writer->w_start_address   = (zz_ptr_t)align_address;
-    writer->w_current_address = (zz_ptr_t)align_address;
-    writer->pc                = align_address;
-    writer->size              = 0;
-
-    self->literal_insn_size = 0;
-    memset(self->literal_insns, 0, sizeof(ZzLiteralInstruction) * MAX_LITERAL_INSN_SIZE);
+    self->w_current_address = align_address;
+    self->w_start_address = align_address;
+    self->current_pc = 0;
+    self->start_pc = 0;
+    self->size = 0;
 }
 
 zz_size_t zz_arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }
 
-// ------- relocator -------
-
-ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
-                                                                   zz_addr_t address,
-                                                                   ZzLiteralInstruction **literal_insn_ptr) {
-    zz_arm_writer_put_ldr_b_reg_address(self, reg, address);
-    ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
-    *literal_insn_ptr                  = literal_insn;
-    return literal_insn;
-}
-
-ZzLiteralInstruction *zz_arm_writer_put_ldr_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
-                                                                 zz_addr_t address,
-                                                                 ZzLiteralInstruction **literal_insn_ptr) {
-    zz_arm_writer_put_ldr_reg_address(self, reg, address);
-    ZzLiteralInstruction *literal_insn = &(self->literal_insns[self->literal_insn_size - 1]);
-    *literal_insn_ptr                  = literal_insn;
-    return literal_insn;
-}
-
 // ------- user custom -------
 
 void zz_arm_writer_put_ldr_b_reg_address(ZzARMAssemblerWriter *self, ZzARMReg reg, zz_addr_t address) {
-    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, 0);
     zz_arm_writer_put_b_imm(self, 0x0);
-    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
@@ -73,16 +45,27 @@ void zz_arm_writer_put_bx_to_thumb(ZzARMAssemblerWriter *self) {
 }
 // ------- architecture default -------
 void zz_arm_writer_put_bytes(ZzARMAssemblerWriter *self, char *data, zz_size_t data_size) {
-    memcpy(self->codedata, data, data_size);
-    self->codedata = (zz_ptr_t)self->codedata + data_size;
-    self->pc += data_size;
+    memcpy((zz_ptr_t )self->w_current_address, data, data_size);
+    self->w_current_address = self->w_current_address + data_size;
+    self->current_pc += data_size;
     self->size += data_size;
+
+
+    ZzARMInstruction *arm_insn = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    arm_insn->pc = self->current_pc - data_size;
+    arm_insn->address = self->w_current_address-data_size;
+    arm_insn->size = data_size;
+    arm_insn->insn = 0;
+    arm_insn->insn1 = 0;
+    arm_insn->insn2 = 0;
+    arm_insn->type = UNKOWN_INSN;
+    self->insns[self->insn_size++] = arm_insn;
 }
 
 void zz_arm_writer_put_instruction(ZzARMAssemblerWriter *self, uint32_t insn) {
-    *(uint32_t *)(self->codedata) = insn;
-    self->codedata                = (zz_ptr_t)self->codedata + sizeof(uint32_t);
-    self->pc += 4;
+    *(uint32_t *)(self->w_current_address) = insn;
+    self->w_current_address                = self->w_current_address + sizeof(uint32_t);
+    self->current_pc += 4;
     self->size += 4;
 }
 
@@ -162,9 +145,7 @@ void zz_arm_writer_put_str_reg_reg_imm(ZzARMAssemblerWriter *self, ZzARMReg dst_
 }
 
 void zz_arm_writer_put_ldr_reg_address(ZzARMAssemblerWriter *self, ZzARMReg reg, zz_addr_t address) {
-    self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, -4);
-    self->literal_insns[self->literal_insn_size++].literal_address_ptr = self->codedata;
     zz_arm_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 

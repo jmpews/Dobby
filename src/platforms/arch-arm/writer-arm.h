@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #ifndef platforms_arch_arm_writer_arm_h
 #define platforms_arch_arm_writer_arm_h
 
@@ -35,9 +19,10 @@
 typedef struct _ZzARMAssemblerWriter {
     ZzARMInstruction *insns[MAX_INSN_SIZE];
     zz_size_t insn_size;
-    zz_ptr_t w_start_address;
-    zz_ptr_t w_current_address;
-    zz_addr_t pc;
+    zz_addr_t w_start_address;
+    zz_addr_t w_current_address;
+    zz_addr_t start_pc;
+    zz_addr_t current_pc;
     zz_size_t size;
 } ZzARMAssemblerWriter;
 
@@ -85,11 +70,4 @@ void zz_arm_writer_put_push_reg(ZzARMAssemblerWriter *self, ZzARMReg reg);
 
 void zz_arm_writer_put_pop_reg(ZzARMAssemblerWriter *self, ZzARMReg reg);
 
-ZzLiteralInstruction *zz_arm_writer_put_ldr_b_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
-                                                                   zz_addr_t address,
-                                                                   ZzLiteralInstruction **literal_insn_ptr);
-
-ZzLiteralInstruction *zz_arm_writer_put_ldr_reg_relocate_address(ZzARMAssemblerWriter *self, ZzARMReg reg,
-                                                                 zz_addr_t address,
-                                                                 ZzLiteralInstruction **literal_insn_ptr);
 #endif

@@ -20,7 +20,7 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
-typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN } InsnType;
+typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN, UNKOWN_INSN } InsnType;
 
 typedef struct _ZzARMInstruction {
     InsnType type;

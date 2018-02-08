@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #ifndef platforms_arch_arm_relocator_thumb_h
 #define platforms_arch_arm_relocator_thumb_h
 
@@ -35,15 +19,16 @@ typedef struct _ZzThumbRelocator {
     ZzARMReader *input;
     int inpos;
     int outpos;
-    ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
+    // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
+    ZzARMInstruction **literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
 } ZzThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, zz_ptr_t input_code, ZzThumbAssemblerWriter *writer);
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ZzARMReader *input, ZzThumbAssemblerWriter *writer);
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, zz_ptr_t input_code, ZzThumbAssemblerWriter *output);
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, ZzARMReader *input, ZzThumbAssemblerWriter *output);
 
-zz_size_t zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzInstruction *instruction);
+void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzARMInstruction *instruction);
 
 bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
 

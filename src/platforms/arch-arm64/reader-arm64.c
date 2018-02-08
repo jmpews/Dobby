@@ -1,12 +1,47 @@
 #include "reader-arm64.h"
 
-zz_ptr_t zz_arm64_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) {
-    insn_ctx->address = (zz_addr_t)address;
-    insn_ctx->size    = 4;
-    insn_ctx->pc      = (zz_addr_t)address;
-    insn_ctx->insn    = *(uint32_t *)address;
-    return (zz_ptr_t)insn_ctx->pc;
+ZzARM64Reader *zz_arm_reader_new(zz_ptr_t insn_address) {
+    ZzARM64Reader *reader = (ZzARM64Reader *)zz_malloc_with_zero(sizeof(ZzARM64Reader));
+
+    reader->r_start_address   = insn_address;
+    reader->r_current_address = insn_address;
+    reader->current_pc                = insn_address + 8;
+    reader->size              = 0;
+    reader->insn_size         = 0;
 }
+
+void zz_arm_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address) { zz_arm_reader_reset(self, insn_address); }
+
+void zz_arm_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address) {
+    self->r_start_address   = insn_address;
+    self->r_current_address = insn_address;
+    self->current_pc                = insn_address + 8;
+    self->size              = 0;
+    self->insn_size         = 0;
+}
+
+void zz_arm_reader_free(ZzARM64Reader *self) {
+    if (self->insn_size) {
+        for (int i = 0; i < self->insn_size; i++) {
+            free(self->insns[i]);
+        }
+    }
+    free(self);
+}
+
+ZzARM64Instruction *zz_arm_reader_read_one_instruction(ZzARM64Reader *self) {
+    ZzARM64Instruction *insn_ctx          = (ZzARM64Instruction *)zz_malloc_with_zero(sizeof(ZzARM64Instruction));
+    insn_ctx->address = (zz_addr_t)self->r_current_address;
+    insn_ctx->pc      = (zz_addr_t)self->current_pc;
+    insn_ctx->insn    = *(uint32_t *)self->r_current_address;
+    insn_ctx->size    = 4;
+
+    self->r_current_address += 4;
+    self->insns[self->insn_size] = insn_ctx;
+    self->size += 4;
+    return insn_ctx;
+}
+
 
 ARM64InsnType GetARM64InsnType(uint32_t insn) {
     // PAGE: C6-673
