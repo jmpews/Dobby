@@ -35,26 +35,28 @@
 
 typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
-    ZzArmRelocator arm_relocator;
+    ZzARMRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
 
-    ZzArmWriter arm_writer;
-    ZzThumbWriter thumb_writer;
+    ZzARMAssemblerWriter arm_writer;
+    ZzThumbAssemblerWriter thumb_writer;
+    ZzARMReader arm_reader;
+    ZzARMReader thumb_reader;
 
     zz_ptr_t enter_thunk;
     zz_ptr_t half_thunk;
     zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
-typedef struct _ZzArmHookFuntionEntryBackend {
+typedef struct _ZzARMHookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzArmHookFunctionEntryBackend;
+} ZzARMHookFunctionEntryBackend;
 
-ZzCodeSlice *zz_code_patch_thumb_writer(ZzThumbWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                        zz_size_t range_size);
+ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                                 zz_size_t range_size);
 
-ZzCodeSlice *zz_code_patch_arm_writer(ZzArmWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                      zz_size_t range_size);
+ZzCodeSlice *zz_arm_code_patch(ZzARMAssemblerWriter *arm_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+                               zz_size_t range_size);
 
 #endif

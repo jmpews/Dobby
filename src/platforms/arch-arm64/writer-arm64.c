@@ -1,23 +1,6 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
-#include <string.h>
-
 #include "writer-arm64.h"
 #include <stdlib.h>
+#include <string.h>
 
 // REF:
 // ARM Architecture Reference Manual ARMV8
@@ -28,11 +11,10 @@
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
 // `witer` REF: `ZzInstruction Set Encoding`
 
-ZzArm64Writer *zz_arm64_writer_new(zz_ptr_t data_ptr) {
-    ZzArm64Writer *writer = (ZzArm64Writer *)malloc(sizeof(ZzArm64Writer));
-    memset(writer, 0, sizeof(ZzArm64Writer));
+ZzARM64AssemblerWriter *zz_arm64_writer_new(zz_ptr_t codedata) {
+    ZzARM64AssemblerWriter *writer = (ZzARM64AssemblerWriter *)zz_malloc_with_zero(sizeof(ZzARM64AssemblerWriter));
 
-    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
+    zz_addr_t align_address = (zz_addr_t)codedata & ~(zz_addr_t)3;
     writer->codedata        = (zz_ptr_t)align_address;
     writer->base            = (zz_ptr_t)align_address;
     writer->pc              = align_address;
@@ -44,10 +26,12 @@ ZzArm64Writer *zz_arm64_writer_new(zz_ptr_t data_ptr) {
     return writer;
 }
 
-void zz_arm64_writer_init(ZzArm64Writer *self, zz_ptr_t target_addr) { zz_arm64_writer_reset(self, target_addr); }
+void zz_arm64_writer_init(ZzARM64AssemblerWriter *self, zz_ptr_t target_addr) {
+    zz_arm64_writer_reset(self, target_addr);
+}
 
-void zz_arm64_writer_reset(ZzArm64Writer *self, zz_ptr_t data_ptr) {
-    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
+void zz_arm64_writer_reset(ZzARM64AssemblerWriter *self, zz_ptr_t codedata) {
+    zz_addr_t align_address = (zz_addr_t)codedata & ~(zz_addr_t)3;
 
     self->codedata = (zz_ptr_t)align_address;
     self->base     = (zz_ptr_t)align_address;
@@ -60,7 +44,8 @@ void zz_arm64_writer_reset(ZzArm64Writer *self, zz_ptr_t data_ptr) {
 
 // ======= relocator =======
 
-ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address,
+ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzAssemblerWriter *self, ZzARM64Reg reg,
+                                                                      zz_addr_t address,
                                                                       ZzLiteralInstruction **literal_insn_ptr) {
 
     zz_arm64_writer_put_ldr_br_reg_address(self, reg, address);
@@ -71,7 +56,7 @@ ZzLiteralInstruction *zz_arm64_writer_put_ldr_br_reg_relocate_address(ZzWriter *
 
 // ======= user custom =======
 
-void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void zz_arm64_writer_put_ldr_br_reg_address(ZzAssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     zz_arm64_writer_put_br_reg(self, reg);
@@ -79,7 +64,7 @@ void zz_arm64_writer_put_ldr_br_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_a
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
-void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzAssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     zz_arm64_writer_put_blr_reg(self, reg);
@@ -88,7 +73,7 @@ void zz_arm64_writer_put_ldr_blr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, z
     zz_arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
-void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void zz_arm64_writer_put_ldr_b_reg_address(ZzAssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     zz_arm64_writer_put_b_imm(self, 0xc);
@@ -98,7 +83,7 @@ void zz_arm64_writer_put_ldr_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_ad
 
 zz_size_t zz_arm64_writer_near_jump_range_size() { return ((1 << 25) << 2); }
 
-void zz_arm64_writer_put_ldr_br_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void zz_arm64_writer_put_ldr_br_b_reg_address(ZzAssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
     self->literal_insns[self->literal_insn_size].literal_insn_ptr = self->codedata;
     zz_arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     zz_arm64_writer_put_br_reg(self, reg);
@@ -109,8 +94,8 @@ void zz_arm64_writer_put_ldr_br_b_reg_address(ZzWriter *self, ZzARM64Reg reg, zz
 
 // ======= default =======
 
-void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, uint32_t offset) {
-    ZzArm64RegInfo ri;
+void zz_arm64_writer_put_ldr_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg reg, uint32_t offset) {
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t imm19, Rt_ndx;
@@ -123,8 +108,9 @@ void zz_arm64_writer_put_ldr_reg_imm(ZzWriter *self, ZzARM64Reg reg, uint32_t of
 }
 
 // PAGE: C6-871
-void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg, uint64_t offset) {
-    ZzArm64RegInfo rs, rd;
+void zz_arm64_writer_put_str_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg,
+                                            uint64_t offset) {
+    ZzARM64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
     zz_arm64_register_describe(dst_reg, &rd);
@@ -143,8 +129,9 @@ void zz_arm64_writer_put_str_reg_reg_offset(ZzWriter *self, ZzARM64Reg src_reg, 
     return;
 }
 
-void zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg, uint64_t offset) {
-    ZzArm64RegInfo rs, rd;
+void zz_arm64_writer_put_ldr_reg_reg_offset(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg,
+                                            uint64_t offset) {
+    ZzARM64RegInfo rs, rd;
 
     zz_arm64_register_describe(src_reg, &rs);
     zz_arm64_register_describe(dst_reg, &rd);
@@ -164,8 +151,8 @@ void zz_arm64_writer_put_ldr_reg_reg_offset(ZzWriter *self, ZzARM64Reg dst_reg, 
 }
 
 // C6-562
-void zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg) {
-    ZzArm64RegInfo ri;
+void zz_arm64_writer_put_br_reg(ZzAssemblerWriter *self, ZzARM64Reg reg) {
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t op = 0, Rn_ndx;
@@ -175,8 +162,8 @@ void zz_arm64_writer_put_br_reg(ZzWriter *self, ZzARM64Reg reg) {
 }
 
 // C6-561
-void zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
-    ZzArm64RegInfo ri;
+void zz_arm64_writer_put_blr_reg(ZzAssemblerWriter *self, ZzARM64Reg reg) {
+    ZzARM64RegInfo ri;
     zz_arm64_register_describe(reg, &ri);
 
     uint32_t op = 0b01, Rn_ndx;
@@ -188,7 +175,7 @@ void zz_arm64_writer_put_blr_reg(ZzWriter *self, ZzARM64Reg reg) {
 }
 
 // C6-550
-void zz_arm64_writer_put_b_imm(ZzWriter *self, uint64_t offset) {
+void zz_arm64_writer_put_b_imm(ZzAssemblerWriter *self, uint64_t offset) {
     uint32_t op = 0b0, imm26;
     imm26       = (offset >> 2) & 0x03ffffff;
     zz_arm64_writer_put_instruction(self, 0x14000000 | op << 31 | imm26);
@@ -197,7 +184,7 @@ void zz_arm64_writer_put_b_imm(ZzWriter *self, uint64_t offset) {
 
 // TODO: standard form, need fix others
 // PAGE: C6-549
-void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, uint32_t condition, uint64_t imm) {
+void zz_arm64_writer_put_b_cond_imm(ZzAssemblerWriter *self, uint32_t condition, uint64_t imm) {
     uint32_t imm19, cond;
     cond  = condition;
     imm19 = (imm >> 2) & 0x7ffff;
@@ -206,8 +193,9 @@ void zz_arm64_writer_put_b_cond_imm(ZzWriter *self, uint32_t condition, uint64_t
 }
 
 // C6-525
-void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, uint64_t imm) {
-    ZzArm64RegInfo rd, rl;
+void zz_arm64_writer_put_add_reg_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+                                         uint64_t imm) {
+    ZzARM64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
     zz_arm64_register_describe(left_reg, &rl);
@@ -224,8 +212,9 @@ void zz_arm64_writer_put_add_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzA
 }
 
 // C6-930
-void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg, uint64_t imm) {
-    ZzArm64RegInfo rd, rl;
+void zz_arm64_writer_put_sub_reg_reg_imm(ZzAssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+                                         uint64_t imm) {
+    ZzARM64RegInfo rd, rl;
 
     zz_arm64_register_describe(dst_reg, &rd);
     zz_arm64_register_describe(left_reg, &rl);
@@ -241,7 +230,7 @@ void zz_arm64_writer_put_sub_reg_reg_imm(ZzWriter *self, ZzARM64Reg dst_reg, ZzA
     return;
 }
 
-void zz_arm64_writer_put_bytes(ZzWriter *self, char *data, zz_size_t size) {
+void zz_arm64_writer_put_bytes(ZzAssemblerWriter *self, char *data, zz_size_t size) {
     memcpy(self->codedata, data, size);
     self->codedata = (zz_ptr_t)self->codedata + size;
     self->pc += size;
@@ -249,7 +238,7 @@ void zz_arm64_writer_put_bytes(ZzWriter *self, char *data, zz_size_t size) {
     return;
 }
 
-void zz_arm64_writer_put_instruction(ZzWriter *self, uint32_t insn) {
+void zz_arm64_writer_put_instruction(ZzAssemblerWriter *self, uint32_t insn) {
     *(uint32_t *)(self->codedata) = insn;
     self->codedata                = (zz_ptr_t)self->codedata + sizeof(uint32_t);
     self->pc += 4;

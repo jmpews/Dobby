@@ -22,6 +22,8 @@
 
 void zz_x86_relocator_init(ZzX86Relocator *relocator, zz_ptr_t input_code, ZzX86Writer *output) {}
 
+void zz_x86_relocator_free(ZzX86Relocator *relocator) {}
+
 void zz_x86_relocator_reset(ZzX86Relocator *self, zz_ptr_t input_code, ZzX86Writer *output) {}
 
 zz_size_t zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction) { return 0; }

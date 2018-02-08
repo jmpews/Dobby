@@ -10,8 +10,8 @@ ZzAllocator *ZzNewAllocator() {
         return NULL;
 
     ZzAllocator *allocator;
-    allocator               = (ZzAllocator *)malloc(sizeof(ZzAllocator));
-    allocator->memory_pages = (ZzMemoryPage **)malloc(sizeof(ZzMemoryPage *) * DEFAULT_ALLOCATOR_CAPACITY);
+    allocator               = (ZzAllocator *)zz_malloc_with_zero(sizeof(ZzAllocator));
+    allocator->memory_pages = (ZzMemoryPage **)zz_malloc_with_zero(sizeof(ZzMemoryPage *) * DEFAULT_ALLOCATOR_CAPACITY);
     if (!allocator->memory_pages)
         return NULL;
     allocator->size     = 0;
@@ -35,7 +35,7 @@ ZzMemoryPage *ZzNewMemoryPage() {
         exit(1);
     }
 
-    page            = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
+    page            = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
     page->base      = page_ptr;
     page->curr_pos  = page_ptr;
     page->size      = page_size;
@@ -60,7 +60,7 @@ ZzMemoryPage *ZzNewNearMemoryPage(zz_addr_t address, zz_size_t redirect_range_si
         exit(1);
     }
 
-    page = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
+    page = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
 
     page->base = page_ptr;
 
@@ -92,7 +92,7 @@ ZzMemoryPage *ZzNewNearCodeCave(zz_addr_t address, zz_size_t redirect_range_size
     if (!cave_ptr)
         return NULL;
 
-    page             = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
+    page             = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
     page->base       = cave_ptr;
     page->curr_pos   = cave_ptr;
     page->size       = cave_size;
@@ -138,7 +138,7 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t code_slice_size) {
         }
 
         if (page->base && !page->isCodeCave && (page->size - page->used_size) > code_slice_size) {
-            code_slice       = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+            code_slice       = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
             code_slice->data = page->curr_pos;
             code_slice->size = code_slice_size;
 
@@ -157,7 +157,7 @@ ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t code_slice_size) {
         page->curr_pos += t;
     }
 
-    code_slice       = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+    code_slice       = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
     code_slice->data = page->curr_pos;
     code_slice->size = code_slice_size;
 
@@ -214,7 +214,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_si
             }
 
             if (1 == flag) {
-                code_slice             = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+                code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
                 code_slice->isCodeCave = page->isCodeCave;
                 code_slice->data       = page->curr_pos;
                 code_slice->size       = code_slice_size;
@@ -225,7 +225,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_si
             } else if (2 == flag) {
 
                 // new page
-                ZzMemoryPage *new_page = (ZzMemoryPage *)malloc(sizeof(ZzMemoryPage));
+                ZzMemoryPage *new_page = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
                 new_page->base         = (zz_ptr_t)split_addr;
                 new_page->size         = ((zz_addr_t)page->base + page->size) - split_addr;
                 new_page->used_size    = 0;
@@ -235,7 +235,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_si
                 // origin page
                 page->size = split_addr - (zz_addr_t)page->base;
 
-                code_slice             = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+                code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
                 code_slice->isCodeCave = FALSE;
                 code_slice->data       = new_page->curr_pos;
                 code_slice->size       = code_slice_size;
@@ -264,7 +264,7 @@ ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_si
     if (!page)
         return NULL;
 
-    code_slice             = (ZzCodeSlice *)malloc(sizeof(ZzCodeSlice));
+    code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
     code_slice->isCodeCave = page->isCodeCave;
     code_slice->data       = page->curr_pos;
     code_slice->size       = code_slice_size;

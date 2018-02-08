@@ -30,6 +30,21 @@ bool zz_posix_thread_add_thread_local_key(ThreadLocalKeyList *keylist, ThreadLoc
     return TRUE;
 }
 
+bool zz_posix_thread_free_thread_local_key(zz_ptr_t key_ptr) {
+    ThreadLocalKeyList *g_keys = g_thread_local_key_list;
+    zz_size_t i;
+
+    if (!key_ptr)
+        return NULL;
+    for (i = 0; i < g_keys->size; i++) {
+        if (g_keys->keys[i] == key_ptr) {
+            g_keys->keys[i] = g_keys->keys[g_keys->size - 1];
+        }
+    }
+    g_keys->size--;
+    return TRUE;
+}
+
 void zz_posix_thread_initialize_thread_local_key_list() {
     if (!g_thread_local_key_list) {
         g_thread_local_key_list = zz_posix_thread_new_thread_local_key_list();

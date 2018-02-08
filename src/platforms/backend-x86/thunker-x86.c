@@ -44,8 +44,8 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
-        callstack->caller_ret_addr = *(zz_ptr_t *)caller_ret_addr;
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
+        callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
 }
@@ -100,10 +100,10 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
     ZzFreeCallStack(callstack);
 }
 
-void zz_x86_thunker_build_enter_thunk(ZzWriter *writer) {}
+void zz_x86_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {}
 
-void zz_x86_thunker_build_half_thunk(ZzWriter *writer) {}
+void zz_x86_thunker_build_half_thunk(ZzAssemblerWriter *writer) {}
 
-void zz_x86_thunker_build_leave_thunk(ZzWriter *writer) {}
+void zz_x86_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {}
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) { return ZZ_FAILED; }

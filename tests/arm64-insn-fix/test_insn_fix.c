@@ -21,8 +21,8 @@ __attribute__((constructor)) void test_insn_fix_arm64() {
     zz_arm64_writer_init(&backend->arm64_writer, NULL);
     zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);
 
-    ZzArm64Relocator *arm64_relocator;
-    ZzArm64Writer *arm64_writer;
+    ZzARM64Relocator *arm64_relocator;
+    ZzARM64Writer *arm64_writer;
     arm64_relocator = &backend->arm64_relocator;
     arm64_writer    = &backend->arm64_writer;
 

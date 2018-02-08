@@ -1,6 +1,7 @@
 #ifndef kitzz_zz_types_h
 #define kitzz_zz_types_h
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // for bool type
@@ -20,7 +21,7 @@ typedef unsigned long zz_size_t;
 typedef unsigned int zz_uint_t;
 
 typedef uint64_t zuint64_t;
-typedef uint32_t uint32_t_t;
+typedef uint32_t zuint32_t;
 typedef uint16_t zuint16_t;
 typedef uint8_t zuint8_t;
 

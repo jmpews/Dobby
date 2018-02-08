@@ -52,7 +52,10 @@ ifeq ($(BACKEND), ios)
 	ZZ_DLL := lib$(HOOKZZ_NAME).dylib
 	CFLAGS += -arch $(ZZ_ARCH)
 
-	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c)
+	FISHHOOK_SRC_FILES = $(HOOKZZ_PATH)/src/deps/fishhook/fishhook.c
+	HOOKZZ_SRC_FILES += $(FISHHOOK_SRC_FILES)
+
+	HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-darwin/*.c) 
 
 else ifeq ($(BACKEND), macos)
 	ifeq ($(ARCH), x86)
@@ -134,11 +137,18 @@ KITZZ_PATH := $(HOOKZZ_PATH)/src/kitzz
 KITZZ_INCLUDE := $(KITZZ_PATH) \
 			$(KITZZ_PATH)/include
 
+ifeq ($(BACKEND), ios)
 KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
 			$(KITZZ_PATH)/PosixKit \
 			$(KITZZ_PATH)/MachoKit \
 			$(KITZZ_PATH)/DarwinKit
-
+else ifeq ($(BACKEND), macos)
+else ifeq ($(BACKEND), android)
+KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
+			$(KITZZ_PATH)/PosixKit \
+			$(KITZZ_PATH)/ELFKit\
+			$(KITZZ_PATH)/LinuxKit
+endif
 KITZZ_FILES_SUFFIX := %.cpp %.c
 
 define walk
@@ -148,7 +158,9 @@ endef
 KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
 KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
 KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
+
 # $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+# $(warning HOOKZZ_SRC_FILES= $(HOOKZZ_SRC_FILES))
 
 # ------------ kitzz make env end ---------------
 

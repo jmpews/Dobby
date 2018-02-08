@@ -16,8 +16,10 @@ typedef struct _FunctionBackup {
     char data[32];
 } FunctionBackup;
 
-#define HOOK_FUNCTION_TYPE 1
-#define HOOK_ADDRESS_TYPE 2
+#define HOOK_TYPE_ADDRESS_PRE_POST 1
+#define HOOK_TYPE_FUNCTION_via_PRE_POST 2
+#define HOOK_TYPE_FUNCTION_via_REPLACE 3
+#define HOOK_TYPE_FUNCTION_via_GOT 4
 
 struct _ZzInterceptor;
 struct _ZzHookFunctionEntryBackend;
@@ -63,4 +65,7 @@ typedef struct _ZzInterceptor {
     ZzAllocator *allocator;
 } ZzInterceptor;
 
+ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+                        POSTCALL post_call_ptr);
+ZZSTATUS ZzDisableHookGOT(const char *name);
 #endif

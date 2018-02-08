@@ -31,7 +31,7 @@
         if (GLOBAL_INFO_LOG)                                                                                           \
             fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                              \
     } while (0)
-#define ZZ_INFO_LOG_STR(MSG) ZZ_INFO_LOG("%s", MS)
+#define ZZ_INFO_LOG_STR(MSG) ZZ_INFO_LOG("%s", MSG)
 
 #define ZZ_DEBUG_LOG(fmt, ...)                                                                                         \
     do {                                                                                                               \

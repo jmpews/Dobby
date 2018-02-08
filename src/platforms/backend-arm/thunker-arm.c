@@ -113,7 +113,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type == HOOK_FUNCTION_TYPE) {
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
         callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
@@ -175,7 +175,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
     ZzFreeCallStack(callstack);
 }
 
-void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -216,7 +216,7 @@ void zz_thumb_thunker_build_enter_thunk(ZzWriter *writer) {
 }
 
 // A4.1.10 BX
-void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_half_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -256,7 +256,7 @@ void zz_thumb_thunker_build_half_thunk(ZzWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
-void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
+void zz_thumb_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {
 
     /* save general registers and sp */
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
@@ -295,25 +295,23 @@ void zz_thumb_thunker_build_leave_thunk(ZzWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    char temp_code_slice_data[512] = {0};
-    ZzThumbWriter *thumb_writer    = NULL;
-    ZzCodeSlice *code_slice        = NULL;
-    ZZSTATUS status                = ZZ_SUCCESS;
+    char temp_code_slice_data[512]       = {0};
+    ZzThumbAssemblerWriter *thumb_writer = NULL;
+    ZzCodeSlice *code_slice              = NULL;
+    ZZSTATUS status                      = ZZ_SUCCESS;
 
     thumb_writer = &self->thumb_writer;
     zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
 
-    /* buid enter_thunk */
+    // buid enter_thunk
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
-
-    /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         self->enter_thunk = code_slice->data + 1;
     else
         return ZZ_FAILED;
 
-    /* debug log */
+    // debug log
     if (ZzIsEnableDebugMode()) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
@@ -339,7 +337,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_leave_thunk(thumb_writer);
 
     /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         self->leave_thunk = code_slice->data + 1;
     else
@@ -371,7 +369,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_half_thunk(thumb_writer);
 
     /* code patch */
-    code_slice = zz_code_patch_thumb_writer(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
     if (code_slice)
         self->half_thunk = code_slice->data + 1;
     else

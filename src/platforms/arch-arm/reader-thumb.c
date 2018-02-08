@@ -28,10 +28,11 @@ bool insn_is_thumb2(uint32_t insn) {
     }
 }
 
-zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t address) {
-    insn_ctx->pc      = (zz_addr_t)address + 4;
-    insn_ctx->address = (zz_addr_t)address;
-    insn_ctx->insn    = *(uint32_t *)address;
+ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
+    insn_ctx          = (ZzARMInstruction *)malloc_zero(sizeof(ZzARMInstruction));
+    insn_ctx->pc      = (zz_addr_t)self->pc + 4;
+    insn_ctx->address = (zz_addr_t)self->address;
+    insn_ctx->insn    = *(uint32_t *)self->address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -45,7 +46,12 @@ zz_ptr_t zz_thumb_reader_read_one_instruction(ZzInstruction *insn_ctx, zz_ptr_t 
         insn_ctx->insn1 = insn_ctx->insn & 0x0000FFFF;
         insn_ctx->insn2 = 0;
     }
-    return (zz_ptr_t)insn_ctx->pc;
+
+    self->pc += 4;
+    self->address += insn_ctx->size;
+    self->size += insn_ctx->size;
+    self->insns[self->insn_size] = insn_ctx;
+    return insn_ctx;
 }
 
 // ARM Manual
