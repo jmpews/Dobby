@@ -8,7 +8,7 @@ typedef struct _ZzInstruction {
     zz_addr_t address;
     uint8_t size;
     uint32_t insn;
-} ZzARM64Instruction;
+} ZzInstruction;
 
 typedef struct _ZzRelocateInstruction {
     const ZzInstruction *insn_ctx;
