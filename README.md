@@ -40,19 +40,29 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 # Docs
 
-[Move to HookZz docs](https://github.com/jmpews/HookZz/blob/master/docs/HookZzDocs.md)**
+[Move to HookZz docs](https://github.com/jmpews/HookZz/blob/master/docs/HookZzDocs.md) **[need update]**
 
 # Modules
 
-!: most modules for ios.
+most modules for ios.
 
 [Move to HookZzModules](https://github.com/jmpews/HookZzModules) **[need update]**
 
+# Demo
+
+[HookZzAndroidDemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/HookZzAndroidDemoTemplate.zip)
+
 # Thanks List
 
-**上海哎媲媲网络技术有限公司** --- 1000
+@sxf144 - RMB1000
+@ckis - RMB88
 
 # Contact Me
 
+Donate BTC Address:1DB8TD4mieneXhGoYNfRwjvfRKCc1kDdvJ
+
+```
+recommend_email: jmpews@gmail.com
 wechat: winter1ife
 QQ: 858982985
+```
