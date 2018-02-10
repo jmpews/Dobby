@@ -1,28 +1,51 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "reader-arm.h"
+#include <stdlib.h>
 
-zz_ptr_t zz_arm_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) {
+ZzARMReader *zz_arm_reader_new(zz_ptr_t insn_address) {
+    ZzARMReader *reader = (ZzARMReader *)zz_malloc_with_zero(sizeof(ZzARMReader));
+
+    reader->r_start_address   = (zz_addr_t)insn_address;
+    reader->r_current_address = (zz_addr_t )insn_address;
+    reader->start_pc                = (zz_addr_t )insn_address + 8;
+    reader->current_pc                = (zz_addr_t )insn_address + 8;
+    reader->size              = 0;
+    reader->insn_size         = 0;
+    return reader;
+}
+
+void zz_arm_reader_init(ZzARMReader *self, zz_ptr_t insn_address) { zz_arm_reader_reset(self, insn_address); }
+
+void zz_arm_reader_reset(ZzARMReader *self, zz_ptr_t insn_address) {
+    self->r_start_address   = (zz_addr_t )insn_address;
+    self->r_current_address = (zz_addr_t )insn_address;
+    self->start_pc                = (zz_addr_t )insn_address + 8;
+    self->current_pc                = (zz_addr_t )insn_address + 8;
+    self->size              = 0;
+    self->insn_size         = 0;
+}
+
+void zz_arm_reader_free(ZzARMReader *self) {
+    if (self->insn_size) {
+        for (int i = 0; i < self->insn_size; i++) {
+            free(self->insns[i]);
+        }
+    }
+    free(self);
+}
+
+ZzARMInstruction *zz_arm_reader_read_one_instruction(ZzARMReader *self) {
+    ZzARMInstruction *insn_ctx          = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
     insn_ctx->type    = ARM_INSN;
-    insn_ctx->address = (zz_addr_t)address;
-    insn_ctx->pc      = (zz_addr_t)address + 8;
-    insn_ctx->insn    = *(uint32_t *)address;
+    insn_ctx->address = (zz_addr_t)self->r_current_address;
+    insn_ctx->pc      = (zz_addr_t)self->current_pc;
+    insn_ctx->insn    = *(uint32_t *)self->r_current_address;
     insn_ctx->size    = 4;
-    return (zz_ptr_t)insn_ctx->pc;
+
+    self->current_pc += insn_ctx->size;
+    self->r_current_address += insn_ctx->size;
+    self->insns[self->insn_size++] = insn_ctx;
+    self->size += insn_ctx->size;
+    return insn_ctx;
 }
 
 // ARM Manual

@@ -3,18 +3,13 @@
 
 #include "kitzz.h"
 
-typedef struct _ZzInstruction {
+typedef struct _ZzARM64Instruction {
     zz_addr_t pc;
     zz_addr_t address;
     uint8_t size;
     uint32_t insn;
-} ZzInstruction;
-
-typedef struct _ZzRelocateInstruction {
-    const ZzInstruction *insn_ctx;
-    zz_addr_t relocated_offset;
-    zz_size_t relocated_length;
-} ZzRelocateInstruction;
+    char *data;
+} ZzARM64Instruction;
 
 // get hex insn sub
 uint32_t get_insn_sub(uint32_t insn, int start, int length);

@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "reader-thumb.h"
 
 bool insn_is_thumb2(uint32_t insn) {
@@ -28,10 +12,44 @@ bool insn_is_thumb2(uint32_t insn) {
     }
 }
 
-zz_ptr_t zz_thumb_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) {
-    insn_ctx->pc      = (zz_addr_t)address + 4;
-    insn_ctx->address = (zz_addr_t)address;
-    insn_ctx->insn    = *(uint32_t *)address;
+ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address) {
+    ZzARMReader *reader = (ZzARMReader *)zz_malloc_with_zero(sizeof(ZzARMReader));
+
+    reader->r_start_address   = (zz_addr_t)insn_address;
+    reader->r_current_address = (zz_addr_t )insn_address;
+    reader->start_pc                = (zz_addr_t )insn_address + 4;
+    reader->current_pc                = (zz_addr_t )insn_address + 4;
+    reader->size              = 0;
+    reader->insn_size         = 0;
+    return reader;
+}
+
+void zz_thumb_reader_init(ZzARMReader *self, zz_ptr_t insn_address) { zz_thumb_reader_reset(self, insn_address); }
+
+void zz_thumb_reader_reset(ZzARMReader *self, zz_ptr_t insn_address) {
+    self->r_start_address   = (zz_addr_t )insn_address;
+    self->r_current_address = (zz_addr_t )insn_address;
+    self->start_pc                = (zz_addr_t )insn_address + 4;
+    self->current_pc                = (zz_addr_t )insn_address + 4;
+    self->size              = 0;
+    self->insn_size         = 0;
+}
+
+void zz_thumb_reader_free(ZzARMReader *self) {
+    if (self->insn_size) {
+        for (int i = 0; i < self->insn_size; i++) {
+            free(self->insns[i]);
+        }
+    }
+    free(self);
+}
+
+ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
+    ZzARMInstruction *insn_ctx          = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    insn_ctx->type    = THUMB_INSN;
+    insn_ctx->pc      = (zz_addr_t)self->current_pc;
+    insn_ctx->address = (zz_addr_t)self->r_current_address;
+    insn_ctx->insn    = *(uint32_t *)self->r_current_address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -45,7 +63,12 @@ zz_ptr_t zz_thumb_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *i
         insn_ctx->insn1 = insn_ctx->insn & 0x0000FFFF;
         insn_ctx->insn2 = 0;
     }
-    return (zz_ptr_t)insn_ctx->pc;
+
+    self->current_pc += insn_ctx->size;
+    self->r_current_address += insn_ctx->size;
+    self->size += insn_ctx->size;
+    self->insns[self->insn_size++] = insn_ctx;
+    return insn_ctx;
 }
 
 // ARM Manual

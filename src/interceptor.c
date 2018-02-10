@@ -157,7 +157,7 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
 
         if (pre_call_ptr || post_call_ptr) {
-            hook_type = HOOK_TYPE_ADDRESS_PRE_POST;
+            hook_type = HOOK_TYPE_FUNCTION_via_PRE_POST;
         } else {
             hook_type = HOOK_TYPE_FUNCTION_via_REPLACE;
         }

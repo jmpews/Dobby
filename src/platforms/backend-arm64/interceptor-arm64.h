@@ -22,6 +22,8 @@
 
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"
+#include "platforms/arch-arm64/reader-arm64.h"
+
 
 #include "allocator.h"
 #include "interceptor.h"
@@ -33,8 +35,8 @@
 typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
     ZzARM64Relocator arm64_relocator;
-
     ZzARM64AssemblerWriter arm64_writer;
+    ZzARM64Reader arm64_reader;
 
     zz_ptr_t enter_thunk;
     zz_ptr_t half_thunk;
@@ -54,6 +56,4 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
-                                 zz_size_t range_size);
 #endif
