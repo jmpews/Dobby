@@ -5,8 +5,7 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void
-zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output) {
+void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output) {
     memset(relocator, 0, sizeof(ZzARMRelocator));
     relocator->inpos = 0;
     relocator->outpos = 0;

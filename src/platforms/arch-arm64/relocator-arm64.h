@@ -29,6 +29,8 @@ void zz_arm64_relocator_free(ZzARM64Relocator *relocator);
 
 void zz_arm64_relocator_reset(ZzARM64Relocator *self, ZzARM64Reader *input, ZzARM64AssemblerWriter *output);
 
+void zz_arm64_relocator_relocate_writer(ZzARM64Relocator *relocator, zz_addr_t final_relocate_address);
+
 void zz_arm64_relocator_write_all(ZzARM64Relocator *self);
 
 zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzARM64Instruction *instruction);

@@ -37,7 +37,6 @@ typedef struct _ZzInterceptorBackend {
     ZzAllocator *allocator;
     ZzARMRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
-
     ZzARMAssemblerWriter arm_writer;
     ZzThumbAssemblerWriter thumb_writer;
     ZzARMReader arm_reader;
