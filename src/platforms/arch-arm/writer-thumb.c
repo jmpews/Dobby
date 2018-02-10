@@ -9,25 +9,44 @@ ZzThumbAssemblerWriter *zz_thumb_writer_new(zz_ptr_t data_ptr) {
     zz_addr_t align_address = (zz_addr_t) data_ptr & ~(zz_addr_t) 3;
     writer->w_current_address = align_address;
     writer->w_start_address = align_address;
-    writer->current_pc = 0;
-    writer->start_pc = 0;
+    writer->current_pc = align_address+4;
+    writer->start_pc = align_address+4;
     writer->size = 0;
+    writer->insn_size = 0;
 
     return writer;
 }
 
-void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr) {
-    zz_thumb_writer_reset(self, data_ptr);
+void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+    zz_thumb_writer_reset(self, data_ptr, target_ptr);
+
 }
 
-void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr) {
+void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t) data_ptr & ~(zz_addr_t) 3;
+    zz_addr_t target_align_address = (zz_addr_t) target_ptr & ~(zz_addr_t) 3;
 
     self->w_current_address = align_address;
     self->w_start_address = align_address;
-    self->current_pc = 0;
-    self->start_pc = 0;
+    self->current_pc = target_align_address+4;
+    self->start_pc = target_align_address+4;
     self->size = 0;
+
+    if(self->insn_size) {
+        for (int i = 0; i < self->insn_size; ++i) {
+            free(self->insns[i]);
+        }
+    }
+    self->insn_size = 0;
+}
+
+void zz_thumb_writer_free(ZzThumbAssemblerWriter *self) {
+    if (self->insn_size) {
+        for (int i = 0; i < self->insn_size; i++) {
+            free(self->insns[i]);
+        }
+    }
+    free(self);
 }
 
 zz_size_t zz_thumb_writer_near_jump_range_size() { return ((1 << 23) << 1); }

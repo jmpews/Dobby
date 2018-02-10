@@ -20,6 +20,8 @@ zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemb
 
 void zz_arm_relocator_free(ZzARMRelocator *relocator) {
 
+    zz_arm_reader_free(relocator->input);
+    zz_arm_writer_free(relocator->output);
     free(relocator);
 }
 
@@ -91,26 +93,23 @@ zz_addr_t zz_arm_relocator_get_insn_relocated_offset(ZzARMRelocator *self, zz_ad
     }
     return 0;
 }
+#endif
 
-void zz_arm_relocator_relocate_writer(ZzARMRelocator *relocator, zz_addr_t code_address) {
+void zz_arm_relocator_relocate_writer(ZzARMRelocator *relocator, zz_addr_t final_relocate_address) {
     ZzARMAssemblerWriter *arm_writer;
     arm_writer = relocator->output;
-    if (relocator->relocate_literal_insns_size) {
-        int i;
-        zz_addr_t literal_address, relocated_offset, relocated_address, *literal_address_ptr;
-        for (i = 0; i < relocator->relocate_literal_insns_size; i++) {
-            literal_address_ptr = (zz_addr_t *)relocator->relocate_literal_insns[i]->literal_address_ptr;
-            literal_address     = *literal_address_ptr;
-            relocated_offset    = zz_arm_relocator_get_insn_relocated_offset(relocator, literal_address);
-            if (relocated_offset) {
-                relocated_address    = code_address + relocated_offset;
-                *literal_address_ptr = relocated_address;
-            }
+    if (relocator->literal_insn_size) {
+        zz_size_t literal_offset;
+        zz_addr_t *literal_target_address_ptr;
+        for (int i = 0; i < relocator->literal_insn_size; i++) {
+            literal_target_address_ptr = (zz_addr_t *)relocator->literal_insns[i]->address;
+            *literal_target_address_ptr += final_relocate_address;
+
         }
     }
 }
 
-#endif
+
 
 void zz_arm_relocator_write_all(ZzARMRelocator *self) {
     int count = 0;
@@ -124,7 +123,7 @@ void zz_arm_relocator_write_all(ZzARMRelocator *self) {
 void zz_arm_relocator_register_literal_insn(ZzARMRelocator *self, ZzARMInstruction *insn_ctx) {
     self->literal_insns[self->literal_insn_size++] = insn_ctx;
     // convert the temportary absolute address with offset.
-    zz_addr_t *temp_address = insn_ctx->address;
+    zz_addr_t *temp_address = (zz_addr_t  *)insn_ctx->address;
     *temp_address = insn_ctx->pc - self->output->start_pc;
 }
 

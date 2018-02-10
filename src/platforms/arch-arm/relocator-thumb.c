@@ -14,7 +14,11 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ZzARMReader *input, Zz
     relocator->try_relocated_length        = 0;
 }
 
-void zz_thumb_relocator_free(ZzThumbRelocator *relocator) { free(relocator); }
+void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
+    zz_thumb_reader_free(relocator->input);
+    zz_thumb_writer_free(relocator->output);
+    free(relocator);
+}
 
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, ZzARMReader *input, ZzThumbAssemblerWriter *output) {
     self->inpos                       = 0;
@@ -46,7 +50,7 @@ void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
     is_thumb       = INSTRUCTION_IS_THUMB((zz_addr_t)address);
 
     ZzARMInstruction *insn_ctx;
-    ZzARMReader *reader = zz_arm_reader_new(address);
+    ZzARMReader *reader = zz_thumb_reader_new(address);
 
     do {
         insn_ctx = zz_thumb_reader_read_one_instruction(reader);
@@ -67,7 +71,7 @@ void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
         *max_bytes = tmp_size;
     }
 
-    zz_arm_reader_free(reader);
+    zz_thumb_reader_free(reader);
     return;
 }
 
@@ -87,24 +91,20 @@ zz_addr_t zz_thumb_relocator_get_insn_relocated_offset(ZzThumbRelocator *self, z
     return 0;
 }
 
-void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t code_address) {
+#endif
+void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t final_relocate_address) {
     ZzThumbAssemblerWriter *thumb_writer;
     thumb_writer = relocator->output;
-    if (relocator->relocate_literal_insns_size) {
-        int i;
-        zz_addr_t literal_address, relocated_offset, relocated_address, *literal_address_ptr;
-        for (i = 0; i < relocator->relocate_literal_insns_size; i++) {
-            literal_address_ptr = (zz_addr_t *)relocator->relocate_literal_insns[i]->literal_address_ptr;
-            literal_address     = *literal_address_ptr;
-            relocated_offset = zz_thumb_relocator_get_insn_relocated_offset(relocator, literal_address & ~(zz_addr_t)1);
-            if (relocated_offset) {
-                relocated_address    = code_address + relocated_offset + 1;
-                *literal_address_ptr = relocated_address;
-            }
+    if (relocator->literal_insn_size) {
+        zz_size_t literal_offset;
+        zz_addr_t *literal_target_address_ptr;
+        for (int i = 0; i < relocator->literal_insn_size; i++) {
+            literal_target_address_ptr = (zz_addr_t *)relocator->literal_insns[i]->address;
+            *literal_target_address_ptr += final_relocate_address;
+
         }
     }
 }
-#endif
 
 void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
     int count                           = 0;
@@ -184,6 +184,7 @@ bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ZzA
     uint32_t insn1           = insn_ctx->insn1;
     uint32_t imm8            = get_insn_sub(insn1, 0, 8);
     uint32_t imm32           = imm8 << 2;
+    // TODO: must be align_4 ?
     zz_addr_t target_address = ALIGN_4(insn_ctx->pc) + imm32;
     int Rt_ndx               = get_insn_sub(insn1, 8, 3);
 

@@ -15,6 +15,7 @@
  */
 
 #include "thunker-arm.h"
+#include "backend-arm-helper.h"
 
 // 前提: arm 可以直接访问 pc 寄存器, 也就是说无需中间寄存器就可以实现 `abs
 // jump`.
@@ -301,7 +302,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     ZZSTATUS status                      = ZZ_SUCCESS;
 
     thumb_writer = &self->thumb_writer;
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice, 0);
 
     // buid enter_thunk
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
@@ -317,9 +318,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t  p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         ZzDebugInfoLog("%s", thunk_buffer);
@@ -327,7 +327,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 code_slice->size);
         ZzDebugInfoLog("%s", buffer);
     }
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice, 0);
 
     // build leave_thunk
     zz_thumb_thunker_build_leave_thunk(thumb_writer);
@@ -344,9 +344,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         ZzDebugInfoLog("%s", thunk_buffer);
@@ -354,7 +353,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
                 code_slice->size);
         ZzDebugInfoLog("%s", buffer);
     }
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice, 0);
 
     // build half_thunk
     zz_thumb_thunker_build_half_thunk(thumb_writer);
@@ -371,9 +370,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        zz_ptr_t p;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         ZzDebugInfoLog("%s", thunk_buffer);

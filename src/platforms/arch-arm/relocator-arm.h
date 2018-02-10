@@ -30,6 +30,8 @@ void zz_arm_relocator_free(ZzARMRelocator *relocator);
 
 void zz_arm_relocator_reset(ZzARMRelocator *self, ZzARMReader *input, ZzARMAssemblerWriter *output);
 
+void zz_arm_relocator_relocate_writer(ZzARMRelocator *relocator, zz_addr_t final_relocate_address);
+
 void zz_arm_relocator_write_all(ZzARMRelocator *self);
 
 zz_size_t zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction);

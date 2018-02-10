@@ -16,12 +16,12 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     ZZSTATUS status;
     ZzInterceptorBackend *backend = (ZzInterceptorBackend *)zz_malloc_with_zero(sizeof(ZzInterceptorBackend));
 
-    zz_arm_writer_init(&backend->arm_writer, NULL);
+    zz_arm_writer_init(&backend->arm_writer, NULL, NULL);
     zz_arm_reader_init(&backend->arm_reader, NULL);
     zz_arm_relocator_init(&backend->arm_relocator, &backend->arm_reader, &backend->arm_writer);
 
-    zz_thumb_writer_init(&backend->thumb_writer, NULL);
-    zz_arm_reader_init(&backend->thumb_reader, NULL);
+    zz_thumb_writer_init(&backend->thumb_writer, NULL, NULL);
+    zz_thumb_reader_init(&backend->thumb_reader, NULL);
     zz_thumb_relocator_init(&backend->thumb_relocator, &backend->thumb_reader, &backend->thumb_writer);
 
     backend->allocator   = allocator;
@@ -116,9 +116,9 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
     }
 
     // save original prologue
-    memcpy(entry->origin_prologue.data, entry->target_ptr, entry_backend->redirect_code_size);
+    memcpy(entry->origin_prologue.data, (zz_ptr_t)target_addr, entry_backend->redirect_code_size);
     entry->origin_prologue.size    = entry_backend->redirect_code_size;
-    entry->origin_prologue.address = entry->target_ptr;
+    entry->origin_prologue.address = (zz_ptr_t)target_addr;
 
     // relocator initialize
     zz_arm_relocator_init(&self->arm_relocator, (zz_ptr_t)target_addr, &self->arm_writer);
@@ -142,7 +142,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
 
     if (is_thumb) {
         thumb_writer = &self->thumb_writer;
-        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, temp_code_slice_data);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->replace_call);
@@ -163,7 +163,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
             return ZZ_FAILED;
     } else {
         arm_writer = &self->arm_writer;
-        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
+        zz_arm_writer_reset(arm_writer, temp_code_slice_data, 0);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->replace_call);
@@ -210,7 +210,7 @@ ZZSTATUS ZzBuildEnterTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
 
     thumb_writer = &self->thumb_writer;
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, 0);
 
     /* prepare 2 stack space: 1. next_hop 2. entry arg */
     zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
@@ -275,8 +275,8 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         thumb_writer    = &self->thumb_writer;
         thumb_reader    = &self->thumb_reader;
 
-        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        zz_arm_reader_reset(thumb_reader, entry->target_ptr);
+        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, 0);
+        zz_thumb_reader_reset(thumb_reader, (zz_ptr_t )target_addr);
         zz_thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
 
         if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
@@ -311,11 +311,14 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
     } else {
         ZzARMRelocator *arm_relocator;
         ZzARMAssemblerWriter *arm_writer;
+        ZzARMReader *arm_reader;
         arm_relocator = &self->arm_relocator;
         arm_writer    = &self->arm_writer;
+        arm_reader = &self->arm_reader;
 
-        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-        zz_arm_relocator_reset(arm_relocator, (zz_ptr_t)target_addr, arm_writer);
+        zz_arm_writer_reset(arm_writer, temp_code_slice_data, 0);
+        zz_arm_reader_reset(arm_reader, (zz_ptr_t )target_addr);
+        zz_arm_relocator_reset(arm_relocator, arm_reader, arm_writer);
 
         if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
             do {
@@ -361,23 +364,21 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
         if (is_thumb) {
             sprintf(buffer + strlen(buffer),
                     "ThumbInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
-                    (&self->thumb_relocator)->input->start_pc, (&self->thumb_relocator)->input->current_pc,
+                    (zz_ptr_t )(&self->thumb_relocator)->input->r_start_address, (zz_ptr_t )(&self->thumb_relocator)->input->r_current_address,
                     (&self->thumb_relocator)->inpos);
         } else {
             sprintf(buffer + strlen(buffer),
-                    "ARMInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n",
-                    (&self->arm_relocator)->input->start_pc, (&self->arm_relocator)->input->current_pc,
-                    (&self->arm_relocator)->inpos);
+                    "ARMInstructionFix: origin instruction at %p, end at %p, relocator instruction nums %d\n", (zz_ptr_t )(&self->thumb_relocator)->input->r_start_address, (zz_ptr_t )(&self->thumb_relocator)->input->r_current_address, (&self->arm_relocator)->inpos);
         }
         char origin_prologue[256] = {0};
         int t                     = 0;
-        zz_ptr_t p;
+
         if (is_thumb) {
-            for (p = (&self->thumb_relocator)->input->start_pc; p < (&self->thumb_relocator)->input->current_pc; p++, t = t + 5) {
+            for (zz_addr_t p = (&self->thumb_relocator)->input->r_start_address; p < (&self->thumb_relocator)->input->r_current_address; p++, t = t + 5) {
                 sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
             }
         } else {
-            for (p = (&self->arm_relocator)->input->start_pc; p < (&self->arm_relocator)->input->current_pc; p++, t = t + 5) {
+            for (zz_addr_t p = (&self->arm_relocator)->input->r_start_address; p < (&self->arm_relocator)->input->r_current_address; p++, t = t + 5) {
                 sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
             }
         }
@@ -397,7 +398,7 @@ ZZSTATUS ZzBuildHalfTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *
     ZZSTATUS status                    = ZZ_SUCCESS;
 
     thumb_writer = &self->thumb_writer;
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, 0);
 
     /* prepare 2 stack space: 1. next_hop 2. entry arg */
     zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
@@ -429,7 +430,7 @@ ZZSTATUS ZzBuildLeaveTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry 
     ZzARMAssemblerWriter *thumb_writer;
 
     thumb_writer = &self->thumb_writer;
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, 0);
 
     // prepare 2 stack space: 1. next_hop 2. entry arg
     zz_thumb_writer_put_sub_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0xc);
@@ -477,39 +478,36 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
     if (is_thumb) {
         ZzThumbAssemblerWriter *thumb_writer;
         thumb_writer = &self->thumb_writer;
-        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
-        thumb_writer->w_start_address = target_addr + 4;
-        thumb_writer->w_current_address = target_addr + 4;
+        zz_thumb_writer_reset(thumb_writer, temp_code_slice_data, target_addr);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 zz_thumb_writer_put_b_imm32(thumb_writer,
-                                            (zz_addr_t)entry->on_invoke_trampoline - (zz_addr_t)thumb_writer->w_current_address);
+                                            (zz_addr_t)entry->on_enter_transfer_trampoline - ((zz_addr_t)thumb_writer->start_pc+thumb_writer->size));
             } else {
                 zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC,
-                                                    (zz_addr_t)entry->on_invoke_trampoline);
+                                                    (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
         } else {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 zz_thumb_writer_put_b_imm32(thumb_writer, (zz_addr_t)entry->on_enter_transfer_trampoline -
-                        ((zz_addr_t)thumb_writer->w_start_address+thumb_writer->size));
+                        ((zz_addr_t)thumb_writer->start_pc+thumb_writer->size));
             } else {
                 zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }
         if (!ZzMemoryPatchCode((zz_addr_t)target_addr, (zz_ptr_t)thumb_writer->w_start_address, thumb_writer->size))
             return ZZ_FAILED;
+        zz_thumb_writer_free(thumb_writer);
     } else {
         ZzARMAssemblerWriter *arm_writer;
         arm_writer = &self->arm_writer;
-        zz_arm_writer_reset(arm_writer, temp_code_slice_data);
-        arm_writer->w_start_address = target_addr + 8;
-        arm_writer->w_current_address = target_addr + 8;
+        zz_arm_writer_reset(arm_writer, temp_code_slice_data, target_addr);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
                 zz_arm_writer_put_b_imm(arm_writer,
-                                        (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->w_current_address);
+                                        (zz_addr_t)entry->on_enter_transfer_trampoline - ((zz_addr_t)arm_writer->start_pc+arm_writer->size));
             } else {
                 zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC,
                                                   (zz_addr_t)entry->on_enter_transfer_trampoline);
@@ -517,13 +515,14 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
         } else {
             if (entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE) {
                 zz_arm_writer_put_b_imm(arm_writer,
-                                        (zz_addr_t)entry->on_enter_transfer_trampoline - ((zz_addr_t)arm_writer->w_start_address+arm_writer->size));
+                                        (zz_addr_t)entry->on_enter_transfer_trampoline - ((zz_addr_t)arm_writer->start_pc+arm_writer->size));
             } else {
                 zz_arm_writer_put_ldr_reg_address(arm_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }
-        if (!ZzMemoryPatchCode((zz_addr_t)target_addr, arm_writer->w_start_address, arm_writer->size))
+        if (!ZzMemoryPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm_writer->w_start_address, arm_writer->size))
             return ZZ_FAILED;
+        zz_arm_writer_free(arm_writer);
     }
 
     return ZZ_DONE_HOOK;

@@ -12,6 +12,38 @@ bool insn_is_thumb2(uint32_t insn) {
     }
 }
 
+ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address) {
+    ZzARMReader *reader = (ZzARMReader *)zz_malloc_with_zero(sizeof(ZzARMReader));
+
+    reader->r_start_address   = (zz_addr_t)insn_address;
+    reader->r_current_address = (zz_addr_t )insn_address;
+    reader->start_pc                = (zz_addr_t )insn_address + 4;
+    reader->current_pc                = (zz_addr_t )insn_address + 4;
+    reader->size              = 0;
+    reader->insn_size         = 0;
+    return reader;
+}
+
+void zz_thumb_reader_init(ZzARMReader *self, zz_ptr_t insn_address) { zz_thumb_reader_reset(self, insn_address); }
+
+void zz_thumb_reader_reset(ZzARMReader *self, zz_ptr_t insn_address) {
+    self->r_start_address   = (zz_addr_t )insn_address;
+    self->r_current_address = (zz_addr_t )insn_address;
+    self->start_pc                = (zz_addr_t )insn_address + 4;
+    self->current_pc                = (zz_addr_t )insn_address + 4;
+    self->size              = 0;
+    self->insn_size         = 0;
+}
+
+void zz_thumb_reader_free(ZzARMReader *self) {
+    if (self->insn_size) {
+        for (int i = 0; i < self->insn_size; i++) {
+            free(self->insns[i]);
+        }
+    }
+    free(self);
+}
+
 ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
     ZzARMInstruction *insn_ctx          = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
     insn_ctx->type    = THUMB_INSN;
@@ -32,10 +64,10 @@ ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
         insn_ctx->insn2 = 0;
     }
 
-    self->current_pc += 4;
+    self->current_pc += insn_ctx->size;
     self->r_current_address += insn_ctx->size;
     self->size += insn_ctx->size;
-    self->insns[self->insn_size] = insn_ctx;
+    self->insns[self->insn_size++] = insn_ctx;
     return insn_ctx;
 }
 

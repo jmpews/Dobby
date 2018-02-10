@@ -1,5 +1,6 @@
 
 #include "backend-arm-helper.h"
+
 #include <stdlib.h>
 
 ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocator *allocator, zz_addr_t target_addr,
@@ -21,7 +22,7 @@ ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocat
     return code_slice;
 }
 
-ZzCodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *thumb_relocator, ZzThumbAssemblerWriter *thumb_writer,
+ZzCodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *relocator, ZzThumbAssemblerWriter *thumb_writer,
                                           ZzAllocator *allocator, zz_addr_t target_addr, zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
     if (range_size > 0) {
@@ -32,7 +33,7 @@ ZzCodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *thumb_relocator, ZzT
     if (!code_slice)
         return NULL;
 
-    zz_thumb_relocator_relocate_writer(thumb_relocator, (zz_addr_t)code_slice->data);
+    zz_thumb_relocator_relocate_writer(relocator, (zz_addr_t)code_slice->data);
 
     if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )thumb_writer->w_start_address, thumb_writer->size)) {
 

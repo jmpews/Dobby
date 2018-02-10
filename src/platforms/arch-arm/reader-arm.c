@@ -4,19 +4,22 @@
 ZzARMReader *zz_arm_reader_new(zz_ptr_t insn_address) {
     ZzARMReader *reader = (ZzARMReader *)zz_malloc_with_zero(sizeof(ZzARMReader));
 
-    reader->r_start_address   = insn_address;
-    reader->r_current_address = insn_address;
-    reader->current_pc                = insn_address + 8;
+    reader->r_start_address   = (zz_addr_t)insn_address;
+    reader->r_current_address = (zz_addr_t )insn_address;
+    reader->start_pc                = (zz_addr_t )insn_address + 8;
+    reader->current_pc                = (zz_addr_t )insn_address + 8;
     reader->size              = 0;
     reader->insn_size         = 0;
+    return reader;
 }
 
 void zz_arm_reader_init(ZzARMReader *self, zz_ptr_t insn_address) { zz_arm_reader_reset(self, insn_address); }
 
 void zz_arm_reader_reset(ZzARMReader *self, zz_ptr_t insn_address) {
-    self->r_start_address   = insn_address;
-    self->r_current_address = insn_address;
-    self->current_pc                = insn_address + 8;
+    self->r_start_address   = (zz_addr_t )insn_address;
+    self->r_current_address = (zz_addr_t )insn_address;
+    self->start_pc                = (zz_addr_t )insn_address + 8;
+    self->current_pc                = (zz_addr_t )insn_address + 8;
     self->size              = 0;
     self->insn_size         = 0;
 }
@@ -38,10 +41,10 @@ ZzARMInstruction *zz_arm_reader_read_one_instruction(ZzARMReader *self) {
     insn_ctx->insn    = *(uint32_t *)self->r_current_address;
     insn_ctx->size    = 4;
 
-    self->current_pc += 8;
-    self->r_current_address += 4;
-    self->insns[self->insn_size] = insn_ctx;
-    self->size += 4;
+    self->current_pc += insn_ctx->size;
+    self->r_current_address += insn_ctx->size;
+    self->insns[self->insn_size++] = insn_ctx;
+    self->size += insn_ctx->size;
     return insn_ctx;
 }
 

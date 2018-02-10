@@ -28,9 +28,13 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ZzARMRe
 
 ZzThumbAssemblerWriter *zz_thumb_writer_new(zz_ptr_t data_ptr);
 
-void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr);
+void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 
-void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr);
+void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+
+void zz_thumb_writer_free(ZzThumbAssemblerWriter *self);
+
+
 
 zz_size_t zz_thumb_writer_near_jump_range_size();
 

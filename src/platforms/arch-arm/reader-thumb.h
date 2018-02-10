@@ -1,5 +1,5 @@
-#ifndef platforms_arch_arm_reader_thumb_h
-#define platforms_arch_arm_reader_thumb_h
+#ifndef platforms_arch_thumb_reader_thumb_h
+#define platforms_arch_thumb_reader_thumb_h
 
 #include "hookzz.h"
 #include "kitzz.h"
@@ -25,6 +25,9 @@ typedef enum _THUMBInsnType {
 } THUMBInsnType;
 
 THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2);
+ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address);
+void zz_thumb_reader_init(ZzARMReader *self, zz_ptr_t insn_address);
+void zz_thumb_reader_reset(ZzARMReader *self, zz_ptr_t insn_address);
+void zz_thumb_reader_free(ZzARMReader *self);
 ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self);
-
 #endif
