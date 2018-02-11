@@ -2,13 +2,12 @@
 
 #include <stdlib.h>
 
-ZzARMAssemblerWriter *zz_arm_writer_new(zz_ptr_t data_ptr) {
+ZzARMAssemblerWriter *zz_arm_writer_new() {
     ZzARMAssemblerWriter *writer = (ZzARMAssemblerWriter *)zz_malloc_with_zero(sizeof(ZzARMAssemblerWriter));
-    zz_addr_t align_address = (zz_addr_t) data_ptr & ~(zz_addr_t) 3;
-    writer->w_current_address = align_address;
-    writer->w_start_address = align_address;
-    writer->current_pc = align_address+8;
-    writer->start_pc = align_address+8;
+    writer->w_current_address = 0;
+    writer->w_start_address = 0;
+    writer->current_pc = 0+8;
+    writer->start_pc = 0+8;
     writer->size = 0;
     writer->insn_size = 0;
     return writer;
@@ -18,11 +17,26 @@ void zz_arm_writer_init(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t
 
 void zz_arm_writer_reset(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    zz_addr_t target_align_address = (zz_addr_t)target_ptr & ~(zz_addr_t)3;
     self->w_current_address = align_address;
     self->w_start_address = align_address;
-    self->current_pc = target_align_address+8;
-    self->start_pc = target_align_address+8;
+    self->current_pc = target_ptr+8;
+    self->start_pc = target_ptr+8;
+    self->size = 0;
+
+    if(self->insn_size) {
+        for (int i = 0; i < self->insn_size; ++i) {
+            free(self->insns[i]);
+        }
+    }
+    self->insn_size = 0;
+}
+
+void zz_arm_writer_reset_without_align(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
+    self->w_current_address = align_address;
+    self->w_start_address = align_address;
+    self->current_pc = target_ptr+8;
+    self->start_pc = target_ptr+8;
     self->size = 0;
 
     if(self->insn_size) {

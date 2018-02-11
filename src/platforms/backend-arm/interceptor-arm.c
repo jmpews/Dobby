@@ -89,6 +89,7 @@ ZZSTATUS ZzPrepareTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *en
             } else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 return ZZ_FAILED;
             } else {
+                // put nop to align !!!!
                 entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
                 if (target_addr % 4) {
                     entry_backend->redirect_code_size += 2;
@@ -158,7 +159,7 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
         }
 
         if (code_slice)
-            entry->on_enter_transfer_trampoline = code_slice->data;
+            entry->on_enter_transfer_trampoline = code_slice->data + 1;
         else
             return ZZ_FAILED;
     } else {
@@ -300,6 +301,10 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 
         // jump to rest function instructions address
         restore_target_addr = (zz_ptr_t)((zz_addr_t)target_addr + thumb_relocator->input->size);
+//        ZzDebugInfoLog("arm_relocator->input->size: %ld", thumb_relocator->input->size);
+//        ZzDebugInfoLog("arm_relocator->input->insn_size: %ld", thumb_relocator->input->insn_size);
+//        ZzDebugInfoLog("arm_relocator->output->size: %ld", thumb_relocator->output->size);
+//        ZzDebugInfoLog("arm_relocator->output->insn_size: %ld", thumb_relocator->output->insn_size);
         zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)(restore_target_addr + 1));
 
         // code patch
@@ -485,6 +490,9 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
                 zz_thumb_writer_put_b_imm32(thumb_writer,
                                             (zz_addr_t)entry->on_enter_transfer_trampoline - ((zz_addr_t)thumb_writer->start_pc+thumb_writer->size));
             } else {
+                // target address is not aligne 4, need align
+                if((target_addr%4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
+                    zz_thumb_writer_put_nop(thumb_writer);
                 zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC,
                                                     (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
@@ -493,6 +501,9 @@ ZZSTATUS ZzActivateTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry *e
                 zz_thumb_writer_put_b_imm32(thumb_writer, (zz_addr_t)entry->on_enter_transfer_trampoline -
                         ((zz_addr_t)thumb_writer->start_pc+thumb_writer->size));
             } else {
+                // target address is not aligne 4, need align
+                if((target_addr%4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
+                    zz_thumb_writer_put_nop(thumb_writer);
                 zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }

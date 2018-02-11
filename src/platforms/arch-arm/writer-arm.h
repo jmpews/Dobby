@@ -26,7 +26,7 @@ typedef struct _ZzARMAssemblerWriter {
     zz_size_t size;
 } ZzARMAssemblerWriter;
 
-ZzARMAssemblerWriter *zz_arm_writer_new(zz_ptr_t data_ptr);
+ZzARMAssemblerWriter *zz_arm_writer_new();
 void zz_arm_writer_init(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 void zz_arm_writer_reset(ZzARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 void zz_arm_writer_free(ZzARMAssemblerWriter *self);

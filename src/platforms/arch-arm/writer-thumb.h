@@ -26,7 +26,7 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ZzARMRe
 
 // ------- architecture default -------
 
-ZzThumbAssemblerWriter *zz_thumb_writer_new(zz_ptr_t data_ptr);
+ZzThumbAssemblerWriter *zz_thumb_writer_new();
 
 void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 
