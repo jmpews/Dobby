@@ -34,7 +34,7 @@ zz_arm_relocator_reset(ZzARMRelocator *self, ZzARMReader *input, ZzARMAssemblerW
     self->try_relocated_length = 0;
 }
 
-zz_size_t zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction) {
+void zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction) {
     ZzARMInstruction *insn_ctx;
 
     zz_arm_reader_read_one_instruction(self->input);

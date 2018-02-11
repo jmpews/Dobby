@@ -117,7 +117,7 @@ void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
 void zz_thumb_relocator_register_literal_insn(ZzThumbRelocator *self, ZzARMInstruction *insn_ctx) {
     self->literal_insns[self->literal_insn_size++] = insn_ctx;
     // convert the temportary absolute address with offset.
-    zz_addr_t *temp_address = insn_ctx->address;
+    zz_addr_t *temp_address = (zz_addr_t *)insn_ctx->address;
     *temp_address = insn_ctx->pc - self->output->start_pc;   
 }
 

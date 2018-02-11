@@ -13,7 +13,6 @@ ZzThumbAssemblerWriter *zz_thumb_writer_new(zz_ptr_t data_ptr) {
     writer->start_pc = align_address+4;
     writer->size = 0;
     writer->insn_size = 0;
-
     return writer;
 }
 
@@ -35,6 +34,7 @@ void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_a
     if(self->insn_size) {
         for (int i = 0; i < self->insn_size; ++i) {
             free(self->insns[i]);
+            self->insns[i] = NULL;
         }
     }
     self->insn_size = 0;
@@ -44,6 +44,7 @@ void zz_thumb_writer_free(ZzThumbAssemblerWriter *self) {
     if (self->insn_size) {
         for (int i = 0; i < self->insn_size; i++) {
             free(self->insns[i]);
+            self->insns[i] = NULL;
         }
     }
     free(self);

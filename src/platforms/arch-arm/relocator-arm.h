@@ -34,7 +34,7 @@ void zz_arm_relocator_relocate_writer(ZzARMRelocator *relocator, zz_addr_t final
 
 void zz_arm_relocator_write_all(ZzARMRelocator *self);
 
-zz_size_t zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction);
+void zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction);
 
 void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
