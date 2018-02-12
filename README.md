@@ -55,6 +55,7 @@ most modules for ios.
 # Thanks List
 
 @sxf144 - RMB1000
+
 @ckis - RMB88
 
 # Contact Me
@@ -66,3 +67,5 @@ recommend_email: jmpews@gmail.com
 wechat: winter1ife
 QQ: 858982985
 ```
+
+<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1foe7ta4t5oj20iq0ow75w.jpg" alt="qrcode">
