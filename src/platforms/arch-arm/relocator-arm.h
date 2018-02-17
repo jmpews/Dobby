@@ -12,6 +12,15 @@
 #include "regs-arm.h"
 #include "writer-arm.h"
 
+typedef struct _ZzARMRelocatorInstruction {
+    ZzARMInstruction *origin_insn;
+    ZzARMInstruction **relocated_insns;
+    zz_size_t relocated_insn_size;
+
+    zz_size_t output_index_start;
+    zz_size_t ouput_index_end;
+} ZzARMRelocatorInstruction;
+
 typedef struct _ZzARMRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
@@ -19,10 +28,17 @@ typedef struct _ZzARMRelocator {
     ZzARMReader *input;
     int inpos;
     int outpos;
+
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
     ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
+
+    // record for every instruction need to be relocated
+    ZzARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    zz_size_t relocator_insn_size;
 } ZzARMRelocator;
+
+
 
 void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output);
 

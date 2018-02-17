@@ -50,9 +50,9 @@ static ZzInterceptor *ZzGlobalInterceptorInstance(void) {
             ZZ_ERROR_LOG_STR("current device does not support allocating r-x memory page!");
             return NULL;
         }
-    } else {
-        interceptor = g_interceptor;
     }
+
+    interceptor = g_interceptor;
     return interceptor;
 
 }
@@ -99,7 +99,7 @@ ZZSTATUS ZzAddHookFunctionEntry(ZzHookFunctionEntry *entry) {
 }
 
 void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz_ptr_t target_ptr,
-                                   zz_ptr_t target_end_ptr, zz_ptr_t replace_call, PRECALL pre_call, HALFCALL half_call,
+                                   zz_ptr_t replace_call, PRECALL pre_call,
                                    POSTCALL post_call, bool try_near_jump) {
     ZzInterceptor *interceptor                      = NULL;
     ZzHookFunctionEntrySet *hook_function_entry_set = NULL;
@@ -116,15 +116,12 @@ void ZzInitializeHookFunctionEntry(ZzHookFunctionEntry *entry, int hook_type, zz
     entry->try_near_jump           = try_near_jump;
     entry->interceptor             = interceptor;
     entry->target_ptr              = target_ptr;
-    entry->target_end_ptr          = target_end_ptr;
-    entry->target_half_ret_addr    = 0;
     entry->replace_call            = replace_call;
     entry->pre_call                = (zz_ptr_t)pre_call;
-    entry->half_call               = (zz_ptr_t)half_call;
     entry->post_call               = (zz_ptr_t)post_call;
     entry->on_enter_trampoline     = NULL;
     entry->on_invoke_trampoline    = NULL;
-    entry->on_half_trampoline      = NULL;
+//    entry->on_half_trampoline      = NULL;
     entry->on_leave_trampoline     = NULL;
     entry->origin_prologue.address = target_ptr;
     entry->thread_local_key        = ZzThreadNewThreadLocalKeyPtr();
@@ -191,7 +188,7 @@ ZZSTATUS ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *o
         }
 
         // TODO: check return status
-        ZzInitializeHookFunctionEntry(entry, hook_type, target_ptr, 0, replace_call_ptr, pre_call_ptr, NULL,
+        ZzInitializeHookFunctionEntry(entry, hook_type, target_ptr, replace_call_ptr, pre_call_ptr,
                                       post_call_ptr, try_near_jump);
         ZzBuildTrampoline(interceptor->backend, entry);
         ZzAddHookFunctionEntry(entry);
@@ -230,8 +227,7 @@ ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
 
         // TODO: check return status
-        ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_FUNCTION_via_GOT, target_ptr, 0, replace_call_ptr, pre_call_ptr,
-                                      NULL, post_call_ptr, 0);
+        ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_FUNCTION_via_GOT, target_ptr, replace_call_ptr, pre_call_ptr, post_call_ptr, false);
         ZzBuildTrampoline(interceptor->backend, entry);
         ZzAddHookFunctionEntry(entry);
 
@@ -241,8 +237,7 @@ ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t
     return status;
 }
 
-ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr,
-                            HALFCALL half_call_ptr, bool try_near_jump) {
+ZZSTATUS ZzBuildHookOneInstruction(zz_ptr_t insn_address, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr, POSTCALL  post_call_ptr, bool try_near_jump) {
     // HookZz do not support x86 now.
 #if defined(__i386__) || defined(__x86_64__)
     ZzDebugInfoLog("%s", "x86 & x86_64 arch not support");
@@ -262,15 +257,15 @@ ZZSTATUS ZzBuildHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, 
 
     do {
         // check is already hooked ?
-        if (ZzFindHookFunctionEntry(target_start_ptr)) {
+        if (ZzFindHookFunctionEntry(insn_address)) {
             status = ZZ_ALREADY_HOOK;
             break;
         }
 
         // TODO: check return status
         entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-        ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_ADDRESS_PRE_POST, target_start_ptr, target_end_ptr, NULL,
-                                      pre_call_ptr, half_call_ptr, NULL, try_near_jump);
+        ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_ONE_INSTRUCTION, insn_address, NULL,
+                                      pre_call_ptr, post_call_ptr, try_near_jump);
         status = ZzBuildTrampoline(interceptor->backend, entry);
         ZzAddHookFunctionEntry(entry);
     } while (0);
@@ -347,12 +342,14 @@ ZZSTATUS ZzHookReplace(zz_ptr_t target_ptr, zz_ptr_t replace_ptr, zz_ptr_t *orig
     return status;
 }
 
-ZZSTATUS ZzHookAddress(zz_ptr_t target_start_ptr, zz_ptr_t target_end_ptr, PRECALL pre_call_ptr,
-                       HALFCALL half_call_ptr) {
+ZZSTATUS ZzDynamicBinaryInstrumentation(zz_ptr_t insn_address, STUBCALL stub_call_ptr) {
+
+}
+
+ZZSTATUS ZzHookOneInstruction(zz_ptr_t insn_address, PRECALL pre_call_ptr,
+                       POSTCALL post_call_ptr, bool try_near_jump) {
     ZZSTATUS status = ZZ_SUCCESS;
-    status = ZzBuildHookAddress(target_start_ptr, target_end_ptr, pre_call_ptr, half_call_ptr, FALSE);
-    status = ZzEnableHook(target_start_ptr);
-    return ZZ_SUCCESS;
+
 }
 
 // #ifdef TARGET_IS_IOS

@@ -134,7 +134,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
     }
 
-    if (entry->hook_type != HOOK_TYPE_ADDRESS_PRE_POST) {
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
         callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
@@ -153,18 +153,18 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    /* call half_call */
-    if (entry->half_call) {
-        HALFCALL half_call;
-        HookEntryInfo entry_info;
-        entry_info.hook_id      = entry->id;
-        entry_info.hook_address = entry->target_ptr;
-        half_call               = entry->half_call;
-        (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
-    }
-
-    /*  set next hop */
-    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
+//    /* call half_call */
+//    if (entry->half_call) {
+//        HALFCALL half_call;
+//        HookEntryInfo entry_info;
+//        entry_info.hook_id      = entry->id;
+//        entry_info.hook_address = entry->target_ptr;
+//        half_call               = entry->half_call;
+//        (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
+//    }
+//
+//    /*  set next hop */
+//    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
 
     ZzFreeCallStack(callstack);
 }
@@ -525,13 +525,13 @@ void zz_arm64_thunker_build_leave_thunk(ZzARM64AssemblerWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    char temp_code_slice_data[512]       = {0};
+    char temp_code_slice[512]       = {0};
     ZzARM64AssemblerWriter *arm64_writer = NULL;
     ZzCodeSlice *code_slice              = NULL;
     ZZSTATUS status                      = ZZ_SUCCESS;
 
     arm64_writer = &self->arm64_writer;
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data, 0);
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
 
     /* build enter_thunk */
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
@@ -555,7 +555,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         ZzDebugInfoLog("%s", buffer);
     }
 
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data, 0);
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
 
     /* build leave_thunk */
     zz_arm64_thunker_build_leave_thunk(arm64_writer);
@@ -576,7 +576,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         ZzDebugInfoLog("%s", buffer);
     }
 
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data, 0);
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
 
     /* build half_thunk */
     zz_arm64_thunker_build_half_thunk(arm64_writer);

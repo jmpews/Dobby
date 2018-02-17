@@ -131,19 +131,19 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
 #endif
     }
     ZzCallStack *callstack = ZzPopCallStack(threadstack);
-
-    /* call half_call */
-    if (entry->half_call) {
-        HALFCALL half_call;
-        HookEntryInfo entry_info;
-        entry_info.hook_id      = entry->id;
-        entry_info.hook_address = entry->target_ptr;
-        half_call               = entry->half_call;
-        (*half_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
-    }
-
-    /* set next hop */
-    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
+//
+//    /* call half_call */
+//    if (entry->half_call) {
+//        HALFCALL half_call;
+//        HookEntryInfo entry_info;
+//        entry_info.hook_id      = entry->id;
+//        entry_info.hook_address = entry->target_ptr;
+//        half_call               = entry->half_call;
+//        (*half_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
+//    }
+//
+//    /* set next hop */
+//    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
 
     ZzFreeCallStack(callstack);
 }

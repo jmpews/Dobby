@@ -42,7 +42,7 @@ ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self, ZzHookFuncti
 
 ZZSTATUS ZzBuildEnterTransferTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
-ZZSTATUS ZzBuildHalfTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+ZZSTATUS ZzBuildInsnLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 
 ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
 

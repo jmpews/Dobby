@@ -2,10 +2,10 @@
 #include <stdlib.h>
 
 ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
-    if (entry->hook_type == HOOK_TYPE_ADDRESS_PRE_POST) {
+    if (entry->hook_type == HOOK_TYPE_ONE_INSTRUCTION) {
         ZzPrepareTrampoline(self, entry);
         ZzBuildEnterTrampoline(self, entry);
-        ZzBuildHalfTrampoline(self, entry);
+        ZzBuildInsnLeaveTrampoline(self, entry);
         ZzBuildInvokeTrampoline(self, entry);
     } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
         ZzPrepareTrampoline(self, entry);

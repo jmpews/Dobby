@@ -11,6 +11,15 @@
 #include "regs-arm64.h"
 #include "writer-arm64.h"
 
+typedef struct _ZzARM64RelocatorInstruction {
+    ZzARM64Instruction *origin_insn;
+    ZzARM64Instruction **relocated_insns;
+    zz_size_t relocated_insn_size;
+
+    zz_size_t output_index_start;
+    zz_size_t ouput_index_end;
+} ZzARM64RelocatorInstruction;
+
 typedef struct _ZzARM64Relocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
@@ -21,6 +30,10 @@ typedef struct _ZzARM64Relocator {
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
     ZzARM64Instruction *literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
+
+    // record for every instruction need to be relocated
+    ZzARM64RelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    zz_size_t relocator_insn_size;
 } ZzARM64Relocator;
 
 void zz_arm64_relocator_init(ZzARM64Relocator *relocator, ZzARM64Reader *input, ZzARM64AssemblerWriter *output);

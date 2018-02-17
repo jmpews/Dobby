@@ -16,7 +16,7 @@ typedef struct _FunctionBackup {
     char data[32];
 } FunctionBackup;
 
-#define HOOK_TYPE_ADDRESS_PRE_POST 1
+#define HOOK_TYPE_ONE_INSTRUCTION 1
 #define HOOK_TYPE_FUNCTION_via_PRE_POST 2
 #define HOOK_TYPE_FUNCTION_via_REPLACE 3
 #define HOOK_TYPE_FUNCTION_via_GOT 4
@@ -32,17 +32,18 @@ typedef struct _ZzHookFunctionEntry {
     zz_ptr_t thread_local_key;
 
     zz_ptr_t target_ptr;
-    zz_ptr_t target_end_ptr;
-    zz_ptr_t target_half_ret_addr;
+//    zz_ptr_t target_end_ptr;
+//    zz_ptr_t target_half_ret_addr;
 
     zz_ptr_t pre_call;
-    zz_ptr_t half_call;
     zz_ptr_t post_call;
+    zz_ptr_t stub_call;
     zz_ptr_t replace_call;
 
     zz_ptr_t on_enter_transfer_trampoline;
     zz_ptr_t on_enter_trampoline;
-    zz_ptr_t on_half_trampoline;
+//    zz_ptr_t on_half_trampoline;
+    zz_ptr_t on_insn_leave_trampoline;
     zz_ptr_t on_invoke_trampoline;
     zz_ptr_t on_leave_trampoline;
 

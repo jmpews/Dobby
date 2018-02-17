@@ -11,6 +11,7 @@
 #include "reader-thumb.h"
 #include "regs-arm.h"
 #include "writer-thumb.h"
+#include "relocator-arm.h"
 
 typedef struct _ZzThumbRelocator {
     bool try_relocated_again;
@@ -22,6 +23,10 @@ typedef struct _ZzThumbRelocator {
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
     ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
+
+    // record for every instruction need to be relocated
+    ZzARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    zz_size_t relocator_insn_size;
 } ZzThumbRelocator;
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ZzARMReader *input, ZzThumbAssemblerWriter *writer);

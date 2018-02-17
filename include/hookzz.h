@@ -132,7 +132,8 @@ void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEn
 
 typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
-typedef void (*HALFCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
+
+typedef void (*STUBCALL)(RegState *rs, const HookEntryInfo *info);
 
 // ------- export API -------
 
@@ -161,21 +162,12 @@ void *ZzGetCallStackData(CallStack *callstack_ptr, char *key_str);
 bool ZzSetCallStackData(CallStack *callstack_ptr, char *key_str, void *value_ptr, unsigned long value_size);
 
 ZZSTATUS ZzBuildHook(void *target_ptr, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
-ZZSTATUS ZzBuildHookAddress(void *target_start_ptr, void *target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr, bool try_near_jump);
 ZZSTATUS ZzEnableHook(void *target_ptr);
-
-/* ------- example -------
-
-ZzHook((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf, printf_pre_call, printf_post_call, true);
-ZzHookPrePost((void *)printf_ptr, printf_pre_call, printf_post_call, true);
-ZzHookReplace((void *)printf_ptr, (void *)fake_printf, (void **)&orig_printf);
-
-------- example end ------- */
 
 ZZSTATUS ZzHook(void *target_ptr, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
 ZZSTATUS ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 ZZSTATUS ZzHookReplace(void *target_ptr, void *replace_ptr, void **origin_ptr);
-ZZSTATUS ZzHookAddress(void *target_start_ptr, void *target_end_ptr, PRECALL pre_call_ptr, HALFCALL half_call_ptr);
+
 
 // enable debug info
 void ZzEnableDebugMode(void);
