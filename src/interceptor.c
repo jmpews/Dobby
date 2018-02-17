@@ -293,6 +293,8 @@ ZZSTATUS ZzEnableHook(zz_ptr_t target_ptr) {
         status = ZZ_ALREADY_ENABLED;
         ZZ_ERROR_LOG("%p already enable!", target_ptr);
         return status;
+    } else {
+        entry->isEnabled = true;
     }
 
     // key function.
@@ -317,7 +319,9 @@ ZZSTATUS ZzDisableHook(zz_ptr_t target_ptr) {
         ZzMemoryPatchCode((const zz_addr_t)entry->origin_prologue.address, entry->origin_prologue.data,
                           entry->origin_prologue.size);
     }
-    ZzFreeHookFunctionEntry(entry);
+
+    entry->isEnabled = false;
+
     return status;
 }
 

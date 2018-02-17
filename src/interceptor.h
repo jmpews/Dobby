@@ -69,4 +69,6 @@ typedef struct _ZzInterceptor {
 ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);
 ZZSTATUS ZzDisableHookGOT(const char *name);
+
+void ZzFreeHookFunctionEntry(ZzHookFunctionEntry *entry);
 #endif
