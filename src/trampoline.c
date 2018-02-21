@@ -19,6 +19,10 @@ ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEnt
     } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
         ZzBuildEnterTrampoline(self, entry);
         ZzBuildLeaveTrampoline(self, entry);
+    } else if (entry->hook_type == HOOK_TYPE_DBI) {
+        ZzPrepareTrampoline(self, entry);
+        ZzBuildDynamicBinaryInstrumentationTrampoline(self, entry);
+        ZzBuildInvokeTrampoline(self, entry);
     }
     return ZZ_DONE;
 }

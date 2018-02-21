@@ -102,7 +102,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
 
 void zz_x86_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {}
 
-void zz_x86_thunker_build_half_thunk(ZzAssemblerWriter *writer) {}
+void zz_x86_thunker_build_insn_leave_thunk(ZzAssemblerWriter *writer) {}
 
 void zz_x86_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {}
 

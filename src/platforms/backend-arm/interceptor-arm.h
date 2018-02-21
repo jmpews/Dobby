@@ -43,8 +43,10 @@ typedef struct _ZzInterceptorBackend {
     ZzARMReader thumb_reader;
 
     zz_ptr_t enter_thunk;
-    zz_ptr_t half_thunk;
+    zz_ptr_t insn_leave_thunk;
     zz_ptr_t leave_thunk;
+    zz_ptr_t dynamic_binary_instrumentation_thunk;
+
 } ZzInterceptorBackend;
 
 typedef struct _ZzARMHookFuntionEntryBackend {

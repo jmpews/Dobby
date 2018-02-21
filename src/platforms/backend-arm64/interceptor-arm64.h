@@ -39,7 +39,7 @@ typedef struct _ZzInterceptorBackend {
     ZzARM64Reader arm64_reader;
 
     zz_ptr_t enter_thunk;
-    zz_ptr_t half_thunk;
+    zz_ptr_t insn_leave_thunk;
     zz_ptr_t leave_thunk;
 } ZzInterceptorBackend;
 
