@@ -112,13 +112,23 @@ void zz_arm64_relocator_write_all(ZzARM64Relocator *self) {
         count++;
 }
 
-void zz_arm64_relocator_register_literal_insn(ZzARM64Relocator *self, ZzARM64Instruction *insn_ctx) {
+static void zz_arm64_relocator_register_literal_insn(ZzARM64Relocator *self, ZzARM64Instruction *insn_ctx) {
     self->literal_insns[self->literal_insn_size++] = insn_ctx;
     // convert the temportary absolute address with offset.
 //    zz_addr_t *temp_address = (zz_addr_t  *)insn_ctx->address;
 //    *temp_address = insn_ctx->pc - self->output->start_pc;
 }
 
+// ###### ATTENTION ######
+// refer llvm/lib/Target/AArch64/AArch64InstrInfo.td & AArch64InstrFormats.td
+// keywords: CmpBranch CBZ CBNZ
+static bool zz_arm64_relocator_rewrite_CmpBranch_CBZ_CBNZ(ZzARM64Relocator *self, const ZzARM64Instruction *insn_ctx) {
+
+};
+
+
+// ###### ATTENTION ######
+// refer ARM64 Architecture Manual
 // PAGE: C6-673
 static bool zz_arm64_relocator_rewrite_LDR_literal(ZzARM64Relocator *self, const ZzARM64Instruction *insn_ctx
                                                    ) {
