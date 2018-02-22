@@ -30,6 +30,7 @@ ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator) {
     backend->enter_thunk = NULL;
     backend->insn_leave_thunk = NULL;
     backend->leave_thunk = NULL;
+    backend->dynamic_binary_instrumentation_thunk = NULL;
 
     // build enter/leave/inovke thunk
     status = ZzThunkerBuildThunk(backend);
@@ -290,7 +291,7 @@ ZZSTATUS ZzBuildDynamicBinaryInstrumentationTrampoline(ZzInterceptorBackend *sel
                                            0x0); // pop r7
     zz_thumb_writer_put_add_reg_imm(thumb_writer, ZZ_ARM_REG_SP, 0x4);
 
-    // jump to enter thunk
+    // jump to dynamic_binary_instrumentation_thunk
     zz_thumb_writer_put_ldr_reg_address(thumb_writer, ZZ_ARM_REG_PC, (zz_addr_t) self->dynamic_binary_instrumentation_thunk);
 
     code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
@@ -300,22 +301,20 @@ ZZSTATUS ZzBuildDynamicBinaryInstrumentationTrampoline(ZzInterceptorBackend *sel
         return ZZ_FAILED;
 
     // debug log
-//    if (HookZzDebugInfoIsEnable()) {
-//        char buffer[1024] = {};
-//        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildEnterTrampoline:");
-//        sprintf(buffer + strlen(buffer),
-//                "LogInfo: dynamic_binary_instrumentation_trampoline at %p, length: %ld. hook-entry: %p. and will jump to "
-//                        "enter_thunk(%p)\n",
-//                code_slice->data, code_slice->size, (void *) entry, (void *) self->enter_thunk);
-//        HookZzDebugInfoLog("%s", buffer);
-//    }
+    if (HookZzDebugInfoIsEnable()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzBuildEnterTrampoline:");
+        sprintf(buffer + strlen(buffer),
+                "LogInfo: dynamic_binary_instrumentation_trampoline at %p, length: %ld. hook-entry: %p. and will jump to "
+                        "dynamic_binary_instrumentation_thunk(%p)\n",
+                code_slice->data, code_slice->size, (void *) entry, (void *) self->dynamic_binary_instrumentation_thunk);
+        HookZzDebugInfoLog("%s", buffer);
+    }
 
     // build the double trampline aka enter_transfer_trampoline
-    if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
-        if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-            (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE)) {
-            ZzBuildEnterTransferTrampoline(self, entry);
-        }
+    if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
+        (!is_thumb && entry_backend->redirect_code_size == ZZ_ARM_TINY_REDIRECT_SIZE)) {
+        ZzBuildEnterTransferTrampoline(self, entry);
     }
 
     free(code_slice);
@@ -388,9 +387,9 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
             return ZZ_FAILED;
 
         if (entry->hook_type == HOOK_TYPE_ONE_INSTRUCTION) {
-            ZzARMRelocatorInstruction relocator_insn = thumb_relocator->relocator_insns[0];
+            ZzARMRelocatorInstruction relocator_insn = thumb_relocator->relocator_insns[1];
             entry->next_insn_addr =
-                    relocator_insn.relocated_insn_size + (zz_addr_t) code_slice->data;
+                    (relocator_insn.relocated_insns[0]->pc - thumb_relocator->output->start_pc) + (zz_addr_t) code_slice->data + 1;
         }
     } else {
         ZzARMRelocator *arm_relocator;
@@ -444,9 +443,9 @@ ZZSTATUS ZzBuildInvokeTrampoline(ZzInterceptorBackend *self, ZzHookFunctionEntry
 
         //
         if (entry->hook_type == HOOK_TYPE_ONE_INSTRUCTION) {
-            ZzARMRelocatorInstruction relocator_insn = arm_relocator->relocator_insns[0];
+            ZzARMRelocatorInstruction relocator_insn = arm_relocator->relocator_insns[1];
             entry->next_insn_addr =
-                    relocator_insn.relocated_insn_size + (zz_addr_t) code_slice->data;
+                    (relocator_insn.relocated_insns[0]->pc - arm_relocator->output->start_pc) + (zz_addr_t) code_slice->data;
         }
     }
 

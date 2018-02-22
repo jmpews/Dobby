@@ -63,7 +63,7 @@ void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_
     }
     ZzCallStack *callstack = ZzPopCallStack(stack);
 
-    /* call half_call */
+    // call half_call
     if (entry->half_call) {
         HALFCALL half_call;
         half_call = entry->half_call;

@@ -15,10 +15,10 @@
 typedef struct _ZzARMRelocatorInstruction {
     ZzARMInstruction *origin_insn;
     ZzARMInstruction **relocated_insns;
-    zz_size_t relocated_insn_size;
-
     zz_size_t output_index_start;
     zz_size_t ouput_index_end;
+    zz_size_t relocated_insn_size;
+    zz_size_t size;
 } ZzARMRelocatorInstruction;
 
 typedef struct _ZzARMRelocator {

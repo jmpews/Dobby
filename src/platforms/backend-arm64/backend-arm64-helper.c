@@ -17,7 +17,7 @@ ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocat
     if (!code_slice)
         return NULL;
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, arm64_writer->w_start_address, arm64_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_addr_t )arm64_writer->w_start_address, arm64_writer->size)) {
         free(code_slice);
         return NULL;
     }

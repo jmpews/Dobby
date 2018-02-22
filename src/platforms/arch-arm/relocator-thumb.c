@@ -428,17 +428,18 @@ bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ZzARMInst
 
 bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     ZzARMInstruction *insn_ctx, **input_insns;
-    ZzARMRelocatorInstruction relocator_insn;
-    relocator_insn = self->relocator_insns[self->relocator_insn_size];
+    ZzARMRelocatorInstruction *relocator_insn;
+    relocator_insn = self->relocator_insns + self->relocator_insn_size;
     bool rewritten = FALSE;
 
     if (self->inpos != self->outpos) {
         input_insns = self->input->insns;
         insn_ctx    = input_insns[self->outpos];
-        relocator_insn.origin_insn = insn_ctx;
-        relocator_insn.relocated_insns = self->output->insns+self->output->insn_size-1;
-        relocator_insn.output_index_start = self->output->insn_size;
+        relocator_insn->origin_insn = insn_ctx;
+        relocator_insn->relocated_insns = self->output->insns+self->output->insn_size;
+        relocator_insn->output_index_start = self->output->insn_size;
         self->outpos++;
+        self->relocator_insn_size++;
     } else
         return FALSE;
 
@@ -492,8 +493,8 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     } else {
     }
 
-    relocator_insn.ouput_index_end = self->output->insn_size;
-    relocator_insn.relocated_insn_size = relocator_insn.ouput_index_end-relocator_insn.output_index_start;
+    relocator_insn->ouput_index_end = self->output->insn_size;
+    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end-relocator_insn->output_index_start;
 
     return TRUE;
 }

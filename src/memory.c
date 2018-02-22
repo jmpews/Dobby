@@ -26,8 +26,8 @@ void *zz_malloc_with_zero(zz_size_t size) {
 }
 
 ZZSTATUS ZzRuntimeCodePatch(void *address, void *codedata, unsigned long codedata_size) {
-    zz_addr_t address_aligned = (zz_addr_t)address & ~(zz_addr_t)1;
-    if (!ZzMemoryPatchCode(address_aligned, codedata, codedata_size))
+//    zz_addr_t address_aligned = (zz_addr_t)address & ~(zz_addr_t)1;
+    if (!ZzMemoryPatchCode((zz_addr_t )address, codedata, codedata_size))
         return ZZ_FAILED;
     return ZZ_SUCCESS;
 }

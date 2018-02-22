@@ -102,6 +102,7 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
+
 }
 
 void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
@@ -216,7 +217,7 @@ void zz_thumb_thunker_build_enter_thunk(ZzThumbAssemblerWriter *writer) {
 
 void zz_thumb_thunker_build_insn_leave_thunk(ZzThumbAssemblerWriter *writer) {
 
-    /* save general registers and sp */
+    // save general registers and sp
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
@@ -236,7 +237,7 @@ void zz_thumb_thunker_build_insn_leave_thunk(ZzThumbAssemblerWriter *writer) {
     // caller ret address
     zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
-    /* call function_context_half_invocation */
+    // call function_context_half_invocation
     zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zz_addr_t)insn_context_end_invocation);
     zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
@@ -256,7 +257,7 @@ void zz_thumb_thunker_build_insn_leave_thunk(ZzThumbAssemblerWriter *writer) {
 
 void zz_thumb_thunker_build_dynamic_binary_instrumentation_thunk(ZzThumbAssemblerWriter *writer) {
 
-    /* save general registers and sp */
+    // save general registers and sp
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);
@@ -276,7 +277,7 @@ void zz_thumb_thunker_build_dynamic_binary_instrumentation_thunk(ZzThumbAssemble
     // caller ret address
     zz_thumb_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R3, ZZ_ARM_REG_SP, 0x8 + 13 * 4);
 
-    /* call function_context_half_invocation */
+    // call function_context_half_invocation
     zz_thumb_writer_put_ldr_b_reg_address(writer, ZZ_ARM_REG_LR, (zz_addr_t)dynamic_binary_instrumentation_invocation);
     zz_thumb_writer_put_blx_reg(writer, ZZ_ARM_REG_LR);
 
@@ -296,7 +297,7 @@ void zz_thumb_thunker_build_dynamic_binary_instrumentation_thunk(ZzThumbAssemble
 
 void zz_thumb_thunker_build_leave_thunk(ZzThumbAssemblerWriter *writer) {
 
-    /* save general registers and sp */
+    // save general registers and sp
     zz_thumb_writer_put_bx_reg(writer, ZZ_ARM_REG_PC);
     zz_arm_writer_put_bytes(writer, THUMB_FUNCTION_ADDRESS((void *)ctx_save), 15 * 4);
     zz_arm_writer_put_add_reg_reg_imm(writer, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 1);

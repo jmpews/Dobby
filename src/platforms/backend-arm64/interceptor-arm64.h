@@ -41,6 +41,7 @@ typedef struct _ZzInterceptorBackend {
     zz_ptr_t enter_thunk;
     zz_ptr_t insn_leave_thunk;
     zz_ptr_t leave_thunk;
+    zz_ptr_t dynamic_binary_instrumentation_thunk;
 } ZzInterceptorBackend;
 
 typedef struct _ZzARM64HookFuntionEntryBackend {

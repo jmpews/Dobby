@@ -35,7 +35,7 @@ zz_arm64_relocator_reset(ZzARM64Relocator *self, ZzARM64Reader *input, ZzARM64As
     self->try_relocated_length = 0;
 }
 
-zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzARM64Instruction *instruction) {
+void zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzARM64Instruction *instruction) {
     ZzARM64Instruction *insn_ctx;
 
     zz_arm64_reader_read_one_instruction(self->input);
@@ -243,17 +243,20 @@ static bool zz_arm64_relocator_rewrite_B_cond(ZzARM64Relocator *self, const ZzAR
 
 bool zz_arm64_relocator_write_one(ZzARM64Relocator *self) {
     ZzARM64Instruction *insn_ctx, **input_insns;
-    ZzARM64RelocatorInstruction relocator_insn;
-    relocator_insn = self->relocator_insns[self->relocator_insn_size];
+    ZzARM64RelocatorInstruction *relocator_insn;
+    zz_size_t tmp_size;
+    relocator_insn = self->relocator_insns + self->relocator_insn_size;
     bool rewritten = FALSE;
 
     if (self->inpos != self->outpos) {
         input_insns = self->input->insns;
         insn_ctx    = input_insns[self->outpos];
-        relocator_insn.origin_insn = insn_ctx;
-        relocator_insn.relocated_insns = self->output->insns+self->output->insn_size-1;
-        relocator_insn.output_index_start = self->output->insn_size;
+        relocator_insn->origin_insn = insn_ctx;
+        relocator_insn->relocated_insns = self->output->insns+self->output->insn_size;
+        relocator_insn->output_index_start = self->output->insn_size;
+        tmp_size = self->output->size;
         self->outpos++;
+        self->relocator_insn_size++;
     } else
         return FALSE;
     switch (GetARM64InsnType(insn_ctx->insn)) {
@@ -285,8 +288,9 @@ bool zz_arm64_relocator_write_one(ZzARM64Relocator *self) {
 
     }
 
-    relocator_insn.ouput_index_end = self->output->insn_size;
-    relocator_insn.relocated_insn_size = relocator_insn.ouput_index_end-relocator_insn.output_index_start;
+    relocator_insn->size = self->output->size - tmp_size;
+    relocator_insn->ouput_index_end = self->output->insn_size;
+    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end-relocator_insn->output_index_start;
 
     return TRUE;
 }

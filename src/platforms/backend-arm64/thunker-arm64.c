@@ -1,19 +1,3 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "thunker-arm64.h"
 #include "backend-arm64-helper.h"
 #include <string.h>
@@ -101,7 +85,6 @@
 //         "ldp q6, q7, [sp], #32\n");
 // }
 
-// just like pre_call, wow!
 void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                        zz_ptr_t caller_ret_addr) {
     ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
@@ -140,36 +123,50 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
     }
 }
 
-// just like post_call, wow!
-void function_context_half_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
-                                      zz_ptr_t caller_ret_addr) {
-    ZZ_DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
+void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+                                 zz_ptr_t caller_ret_addr) {
+    ZZ_DEBUG_LOG("target %p insn_context__end_invocation", entry->target_ptr);
 
-    ZzThreadStack *stack = ZzGetCurrentThreadStack(entry->thread_local_key);
-    if (!stack) {
+    ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    if (!threadstack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
-    ZzCallStack *callstack = ZzPopCallStack(stack);
+    ZzCallStack *callstack = ZzPopCallStack(threadstack);
 
-//    /* call half_call */
-//    if (entry->half_call) {
-//        HALFCALL half_call;
-//        HookEntryInfo entry_info;
-//        entry_info.hook_id      = entry->id;
-//        entry_info.hook_address = entry->target_ptr;
-//        half_call               = entry->half_call;
-//        (*half_call)(rs, (ThreadStack *)stack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
-//    }
-//
-//    /*  set next hop */
-//    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
+    if (entry->post_call) {
+        POSTCALL post_call;
+        HookEntryInfo entry_info;
+        entry_info.hook_id      = entry->id;
+        entry_info.hook_address = entry->target_ptr;
+        post_call               = entry->post_call;
+        (*post_call)(rs, (ThreadStack *)threadstack, (CallStack *)callstack, (const HookEntryInfo *)&entry_info);
+    }
+
+    // set next hop
+    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->next_insn_addr;
 
     ZzFreeCallStack(callstack);
 }
 
-// just like post_call, wow!
+
+void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
+
+    /* call pre_call */
+    if (entry->pre_call) {
+        STUBCALL pre_call;
+        HookEntryInfo entry_info;
+        entry_info.hook_id      = entry->id;
+        entry_info.hook_address = entry->target_ptr;
+        pre_call                = entry->stub_call;
+        (*pre_call)(rs, (const HookEntryInfo *)&entry_info);
+    }
+
+
+    *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
+}
+
 void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
     ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
@@ -301,14 +298,14 @@ __attribute__((__naked__)) void enter_thunk_template() {
 ------------------- enter_thunk_template end -------------- */
 
 void zz_arm64_thunker_build_enter_thunk(ZzARM64AssemblerWriter *writer) {
-    /* save general registers and sp */
+    // save general registers and sp
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
 
-    /* trick: use the `ctx_save` left [sp]*/
+    // trick: use the `ctx_save` left [sp]
     zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     // pass enter func args
@@ -325,7 +322,7 @@ void zz_arm64_thunker_build_enter_thunk(ZzARM64AssemblerWriter *writer) {
     // call function_context_begin_invocation
     zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_begin_invocation);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
@@ -342,14 +339,14 @@ void zz_arm64_thunker_build_enter_thunk(ZzARM64AssemblerWriter *writer) {
 }
 
 void zz_arm64_thunker_build_insn_leave_thunk(ZzARM64AssemblerWriter *writer) {
-    /* save general registers and sp */
+    // save general registers and sp
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
 
-    /* trick: use the `ctx_save` left [sp]*/
+    // trick: use the `ctx_save` left [sp]
     zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     // pass enter func args
@@ -364,10 +361,10 @@ void zz_arm64_thunker_build_insn_leave_thunk(ZzARM64AssemblerWriter *writer) {
     // caller ret address
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
-    /* call function_context_half_invocation */
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_half_invocation);
+    // call function_context_half_invocation
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)insn_context_end_invocation);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
@@ -485,14 +482,14 @@ __attribute__((__naked__)) void leave_thunk_template() {
 -------------------enter_thunk_template end-- ------------ */
 
 void zz_arm64_thunker_build_leave_thunk(ZzARM64AssemblerWriter *writer) {
-    /* save general registers and sp */
+    // save general registers and sp
     zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
 
-    /* trick: use the `ctx_save` left [sp]*/
+    // trick: use the `ctx_save` left [sp]
     zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     // pass enter func args
@@ -508,7 +505,7 @@ void zz_arm64_thunker_build_leave_thunk(ZzARM64AssemblerWriter *writer) {
     /* call function_context_end_invocation */
     zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)function_context_end_invocation);
 
-    /* alignment padding + dummy PC */
+    // alignment padding + dummy PC
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
 
     /* restore general registers stack */
@@ -524,6 +521,48 @@ void zz_arm64_thunker_build_leave_thunk(ZzARM64AssemblerWriter *writer) {
     zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
+void zz_arm64_thunker_build_dynamic_binary_instrumentation_thunk(ZzARM64AssemblerWriter *writer) {
+    // save general registers and sp
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_save, 23 * 4);
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 8 + CTX_SAVE_STACK_OFFSET + 2 * 8);
+
+    // trick: use the `ctx_save` left [sp]
+    zz_arm64_writer_put_str_reg_reg_offset(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP, 0 * 8);
+
+    // alignment padding + dummy PC
+    zz_arm64_writer_put_sub_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
+
+    // pass enter func args
+    // entry
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X0, ZZ_ARM64_REG_SP, 2 * 8 + 8 + CTX_SAVE_STACK_OFFSET);
+    // next hop
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X1, ZZ_ARM64_REG_SP,
+                                        2 * 8 + 8 + CTX_SAVE_STACK_OFFSET + 0x8);
+    // RegState
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X2, ZZ_ARM64_REG_SP, 2 * 8);
+    // caller ret address
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
+
+    // call function_context_begin_invocation
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)dynamic_binary_instrumentation_invocation);
+
+    // alignment padding + dummy PC
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
+
+    /* restore general registers stack */
+    zz_arm64_writer_put_bytes(writer, (void *)ctx_restore, 21 * 4);
+
+    /* load next hop to x17 */
+    zz_arm64_writer_put_ldr_reg_reg_offset(writer, ZZ_ARM64_REG_X17, ZZ_ARM64_REG_SP, 0x8);
+
+    /* restore next hop and arg stack */
+    zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
+
+    /* jump to next hop */
+    zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
+}
+
+
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     char temp_code_slice[512]       = {0};
     ZzARM64AssemblerWriter *arm64_writer = NULL;
@@ -531,9 +570,9 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     ZZSTATUS status                      = ZZ_SUCCESS;
 
     arm64_writer = &self->arm64_writer;
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
 
     /* build enter_thunk */
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
     zz_arm64_thunker_build_enter_thunk(arm64_writer);
 
     /* code patch */
@@ -555,9 +594,9 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         HookZzDebugInfoLog("%s", buffer);
     }
 
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
 
     /* build leave_thunk */
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
     zz_arm64_thunker_build_leave_thunk(arm64_writer);
 
     /* code patch */
@@ -576,9 +615,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         HookZzDebugInfoLog("%s", buffer);
     }
 
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
-
     /* build insn_leave_thunk */
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
     zz_arm64_thunker_build_insn_leave_thunk(arm64_writer);
 
     /* code patch */
@@ -593,6 +631,26 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
         sprintf(buffer + strlen(buffer), "LogInfo: insn_leave_thunk at %p, length: %ld.\n", code_slice->data,
+                code_slice->size);
+        HookZzDebugInfoLog("%s", buffer);
+    }
+
+    /* build dynamic_binary_instrumentation_thunk */
+    zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
+    zz_arm64_thunker_build_dynamic_binary_instrumentation_thunk(arm64_writer);
+
+    /* code patch */
+    code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
+    if (code_slice)
+        self->dynamic_binary_instrumentation_thunk = code_slice->data;
+    else
+        return ZZ_FAILED;
+
+    /* debug log */
+    if (HookZzDebugInfoIsEnable()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "LogInfo: dynamic_binary_instrumentation_thunk at %p, length: %ld.\n", code_slice->data,
                 code_slice->size);
         HookZzDebugInfoLog("%s", buffer);
     }

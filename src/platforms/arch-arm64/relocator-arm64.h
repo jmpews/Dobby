@@ -14,10 +14,10 @@
 typedef struct _ZzARM64RelocatorInstruction {
     ZzARM64Instruction *origin_insn;
     ZzARM64Instruction **relocated_insns;
-    zz_size_t relocated_insn_size;
-
     zz_size_t output_index_start;
     zz_size_t ouput_index_end;
+    zz_size_t relocated_insn_size;
+    zz_size_t size;
 } ZzARM64RelocatorInstruction;
 
 typedef struct _ZzARM64Relocator {
@@ -46,7 +46,7 @@ void zz_arm64_relocator_relocate_writer(ZzARM64Relocator *relocator, zz_addr_t f
 
 void zz_arm64_relocator_write_all(ZzARM64Relocator *self);
 
-zz_size_t zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzARM64Instruction *instruction);
+void zz_arm64_relocator_read_one(ZzARM64Relocator *self, ZzARM64Instruction *instruction);
 
 void zz_arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 

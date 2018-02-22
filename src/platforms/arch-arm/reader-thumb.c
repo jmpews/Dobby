@@ -105,7 +105,10 @@ THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2) {
     }
 
     if (!insn_is_thumb2(insn1) && insn_equal(insn1, "1101xxxxxxxxxxxx")) {
-        return THUMB_INS_B_T1;
+        int cond = get_insn_sub(insn1, 8, 4);
+        if(cond != 0b1110 && cond != 0b1111) {
+            return THUMB_INS_B_T1;
+        }
     }
 
     if (!insn_is_thumb2(insn1) && insn_equal(insn1, "11100xxxxxxxxxxx")) {
