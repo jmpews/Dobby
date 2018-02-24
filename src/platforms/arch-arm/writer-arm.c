@@ -97,6 +97,16 @@ void zz_arm_writer_put_instruction(ZzARMAssemblerWriter *self, uint32_t insn) {
     self->w_current_address                = self->w_current_address + sizeof(uint32_t);
     self->current_pc += 4;
     self->size += 4;
+
+    ZzARMInstruction *arm_insn = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    arm_insn->pc = self->current_pc - 4;
+    arm_insn->address = self->w_current_address-4;
+    arm_insn->size = 4;
+    arm_insn->insn = insn;
+    arm_insn->insn1 = 0;
+    arm_insn->insn2 = 0;
+    arm_insn->type = ARM_INSN;
+    self->insns[self->insn_size++] = arm_insn;
 }
 
 void zz_arm_writer_put_b_imm(ZzARMAssemblerWriter *self, uint32_t imm) {

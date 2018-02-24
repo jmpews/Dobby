@@ -135,15 +135,14 @@ void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, 
 void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
 
     /* call pre_call */
-    if (entry->pre_call) {
-        STUBCALL pre_call;
+    if (entry->stub_call) {
+        STUBCALL stub_call;
         HookEntryInfo entry_info;
         entry_info.hook_id      = entry->id;
         entry_info.hook_address = entry->target_ptr;
-        pre_call                = entry->stub_call;
-        (*pre_call)(rs, (const HookEntryInfo *)&entry_info);
+        stub_call                = entry->stub_call;
+        (*stub_call)(rs, (const HookEntryInfo *)&entry_info);
     }
-
 
     *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
 }

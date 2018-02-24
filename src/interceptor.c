@@ -33,6 +33,7 @@ ZZSTATUS ZzInitializeInterceptor(void) {
             interceptor->allocator = ZzNewAllocator();
             interceptor->backend   = ZzBuildInteceptorBackend(interceptor->allocator);
         }
+
         return ZZ_DONE_INIT;
     }
     return ZZ_ALREADY_INIT;
@@ -364,10 +365,11 @@ ZZSTATUS ZzDynamicBinaryInstrumentation(zz_ptr_t insn_address, STUBCALL stub_cal
         return status;
     }
     entry = (ZzHookFunctionEntry *)zz_malloc_with_zero(sizeof(ZzHookFunctionEntry));
-    ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_DBI, insn_address, NULL, NULL, NULL, false);
+    ZzInitializeHookFunctionEntry(entry, HOOK_TYPE_DBI, insn_address, NULL, NULL, NULL, true);
     entry->stub_call = stub_call_ptr;
     ZzBuildTrampoline(interceptor->backend, entry);
     ZzAddHookFunctionEntry(entry);
+
     status = ZzEnableHook(insn_address);
     return status;
 }

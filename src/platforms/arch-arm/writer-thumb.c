@@ -133,7 +133,7 @@ void zz_thumb_writer_put_instruction(ZzThumbAssemblerWriter *self, uint16_t insn
     arm_insn->address = self->w_current_address-2;
     arm_insn->size = 2;
     arm_insn->insn = 0;
-    arm_insn->insn1 = 0;
+    arm_insn->insn1 = insn;
     arm_insn->insn2 = 0;
     arm_insn->type = THUMB_INSN;
     self->insns[self->insn_size++] = arm_insn;

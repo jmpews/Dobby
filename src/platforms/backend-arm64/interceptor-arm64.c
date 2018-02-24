@@ -112,13 +112,15 @@ ZZSTATUS ZzBuildEnterTransferTrampoline(ZzInterceptorBackend *self, ZzHookFuncti
     zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
     if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->replace_call);
+    } else if(entry->hook_type == HOOK_TYPE_DBI) {
+        zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
     } else {
         zz_arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
     }
 
     if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
         code_slice =
-            zz_arm64_code_patch(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size());
+            zz_arm64_code_patch(arm64_writer, self->allocator, target_addr, zz_arm64_writer_near_jump_range_size() - 0x10);
     } else {
         code_slice = zz_arm64_code_patch(arm64_writer, self->allocator, 0, 0);
     }

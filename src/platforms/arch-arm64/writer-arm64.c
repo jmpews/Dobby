@@ -95,7 +95,6 @@ void zz_arm64_writer_put_bytes(ZzARM64AssemblerWriter *self, char *data, zz_size
     arm64_insn->address = self->w_current_address-data_size;
     arm64_insn->size = data_size;
     arm64_insn->insn = 0;
-
     self->insns[self->insn_size++] = arm64_insn;
 }
 
@@ -104,6 +103,13 @@ void zz_arm64_writer_put_instruction(ZzARM64AssemblerWriter *self, uint32_t insn
     self->w_current_address                = self->w_current_address + sizeof(uint32_t);
     self->current_pc += 4;
     self->size += 4;
+
+    ZzARM64Instruction *arm64_insn = (ZzARM64Instruction *)zz_malloc_with_zero(sizeof(ZzARM64Instruction));
+    arm64_insn->pc = self->current_pc - 4;
+    arm64_insn->address = self->w_current_address-4;
+    arm64_insn->size = 4;
+    arm64_insn->insn = insn;
+    self->insns[self->insn_size++] = arm64_insn;
 }
 
 

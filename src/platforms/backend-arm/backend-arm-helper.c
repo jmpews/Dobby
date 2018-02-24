@@ -15,7 +15,6 @@ ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocat
         return NULL;
 
     if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )thumb_writer->w_start_address, thumb_writer->size)) {
-
         free(code_slice);
         return NULL;
     }
