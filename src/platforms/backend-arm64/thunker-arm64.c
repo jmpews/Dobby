@@ -150,7 +150,6 @@ void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, 
     ZzFreeCallStack(callstack);
 }
 
-
 void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
 
     /* call pre_call */
@@ -159,10 +158,9 @@ void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_pt
         HookEntryInfo entry_info;
         entry_info.hook_id      = entry->id;
         entry_info.hook_address = entry->target_ptr;
-        stub_call                = entry->stub_call;
+        stub_call               = entry->stub_call;
         (*stub_call)(rs, (const HookEntryInfo *)&entry_info);
     }
-
 
     *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
 }
@@ -544,7 +542,8 @@ void zz_arm64_thunker_build_dynamic_binary_instrumentation_thunk(ZzARM64Assemble
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_X3, ZZ_ARM64_REG_SP, 2 * 8 + 2 * 8 + 28 * 8 + 8);
 
     // call function_context_begin_invocation
-    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17, (zz_addr_t)dynamic_binary_instrumentation_invocation);
+    zz_arm64_writer_put_ldr_blr_b_reg_address(writer, ZZ_ARM64_REG_X17,
+                                              (zz_addr_t)dynamic_binary_instrumentation_invocation);
 
     // alignment padding + dummy PC
     zz_arm64_writer_put_add_reg_reg_imm(writer, ZZ_ARM64_REG_SP, ZZ_ARM64_REG_SP, 2 * 8);
@@ -562,9 +561,8 @@ void zz_arm64_thunker_build_dynamic_binary_instrumentation_thunk(ZzARM64Assemble
     zz_arm64_writer_put_br_reg(writer, ZZ_ARM64_REG_X17);
 }
 
-
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    char temp_code_slice[512]       = {0};
+    char temp_code_slice[512]            = {0};
     ZzARM64AssemblerWriter *arm64_writer = NULL;
     ZzCodeSlice *code_slice              = NULL;
     ZZSTATUS status                      = ZZ_SUCCESS;
@@ -593,7 +591,6 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         // code_slice->size);
         HookZzDebugInfoLog("%s", buffer);
     }
-
 
     /* build leave_thunk */
     zz_arm64_writer_reset(arm64_writer, temp_code_slice, 0);
@@ -650,8 +647,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     if (HookZzDebugInfoIsEnable()) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        sprintf(buffer + strlen(buffer), "LogInfo: dynamic_binary_instrumentation_thunk at %p, length: %ld.\n", code_slice->data,
-                code_slice->size);
+        sprintf(buffer + strlen(buffer), "LogInfo: dynamic_binary_instrumentation_thunk at %p, length: %ld.\n",
+                code_slice->data, code_slice->size);
         HookZzDebugInfoLog("%s", buffer);
     }
 

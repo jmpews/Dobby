@@ -82,5 +82,4 @@ void zz_arm64_writer_put_bytes(ZzARM64AssemblerWriter *self, char *data, zz_size
 
 void zz_arm64_writer_put_instruction(ZzARM64AssemblerWriter *self, uint32_t insn);
 
-
 #endif

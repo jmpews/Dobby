@@ -16,6 +16,4 @@
 
 #include "regs-x86.h"
 
-void zz_x86_register_describe(ZzX86Reg reg, ZzX86RegInfo *ri) {
-
-}
+void zz_x86_register_describe(ZzX86Reg reg, ZzX86RegInfo *ri) {}

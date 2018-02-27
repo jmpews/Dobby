@@ -102,11 +102,10 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
         callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
         *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
     }
-
 }
 
 void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
-                                      zz_ptr_t caller_ret_addr) {
+                                 zz_ptr_t caller_ret_addr) {
     ZZ_DEBUG_LOG("target %p insn_context__end_invocation", entry->target_ptr);
 
     ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
@@ -140,7 +139,7 @@ void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_pt
         HookEntryInfo entry_info;
         entry_info.hook_id      = entry->id;
         entry_info.hook_address = entry->target_ptr;
-        stub_call                = entry->stub_call;
+        stub_call               = entry->stub_call;
         (*stub_call)(rs, (const HookEntryInfo *)&entry_info);
     }
 
@@ -333,7 +332,7 @@ void zz_thumb_thunker_build_leave_thunk(ZzThumbAssemblerWriter *writer) {
 }
 
 ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
-    char temp_code_slice[512]       = {0};
+    char temp_code_slice[512]            = {0};
     ZzThumbAssemblerWriter *thumb_writer = NULL;
     ZzCodeSlice *code_slice              = NULL;
     ZZSTATUS status                      = ZZ_SUCCESS;
@@ -356,7 +355,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char thunk_buffer[2048] = {};
         int t                   = 0;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (zz_addr_t  p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
+             p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         HookZzDebugInfoLog("%s", thunk_buffer);
@@ -382,7 +382,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char thunk_buffer[2048] = {};
         int t                   = 0;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
+             p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         HookZzDebugInfoLog("%s", thunk_buffer);
@@ -408,7 +409,8 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char thunk_buffer[2048] = {};
         int t                   = 0;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
+             p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         HookZzDebugInfoLog("%s", thunk_buffer);
@@ -434,12 +436,13 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char thunk_buffer[2048] = {};
         int t                   = 0;
         sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
-        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size; p++, t = t + 5) {
+        for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
+             p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
         }
         HookZzDebugInfoLog("%s", thunk_buffer);
-        sprintf(buffer + strlen(buffer), "LogInfo: dynamic_binary_instrumentation_thunk at %p, length: %ld.\n", code_slice->data,
-                code_slice->size);
+        sprintf(buffer + strlen(buffer), "LogInfo: dynamic_binary_instrumentation_thunk at %p, length: %ld.\n",
+                code_slice->data, code_slice->size);
         HookZzDebugInfoLog("%s", buffer);
     }
     return status;

@@ -30,7 +30,6 @@ typedef struct _ZzHookFunctionEntry {
 
     zz_addr_t next_insn_addr; // hook one instruction next insn addr
 
-
     zz_ptr_t pre_call;
     zz_ptr_t post_call;
     zz_ptr_t stub_call;

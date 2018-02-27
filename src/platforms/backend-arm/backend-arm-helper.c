@@ -14,7 +14,7 @@ ZzCodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ZzAllocat
     if (!code_slice)
         return NULL;
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )thumb_writer->w_start_address, thumb_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)thumb_writer->w_start_address, thumb_writer->size)) {
         free(code_slice);
         return NULL;
     }
@@ -34,7 +34,7 @@ ZzCodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *relocator, ZzThumbAs
 
     zz_thumb_relocator_relocate_writer(relocator, (zz_addr_t)code_slice->data);
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )thumb_writer->w_start_address, thumb_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)thumb_writer->w_start_address, thumb_writer->size)) {
 
         free(code_slice);
         return NULL;
@@ -53,7 +53,7 @@ ZzCodeSlice *zz_arm_code_patch(ZzARMAssemblerWriter *arm_writer, ZzAllocator *al
     if (!code_slice)
         return NULL;
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )arm_writer->w_start_address, arm_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)arm_writer->w_start_address, arm_writer->size)) {
         free(code_slice);
         return NULL;
     }
@@ -73,7 +73,7 @@ ZzCodeSlice *zz_arm_relocate_code_patch(ZzARMRelocator *relocator, ZzARMAssemble
 
     zz_arm_relocator_relocate_writer(relocator, (zz_addr_t)code_slice->data);
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )arm_writer->w_start_address, arm_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)arm_writer->w_start_address, arm_writer->size)) {
         free(code_slice);
         return NULL;
     }

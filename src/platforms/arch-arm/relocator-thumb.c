@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "relocator-thumb.h"
@@ -8,11 +8,11 @@
 
 void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ZzARMReader *input, ZzThumbAssemblerWriter *output) {
     memset(relocator, 0, sizeof(ZzThumbRelocator));
-    relocator->inpos                       = 0;
-    relocator->outpos                      = 0;
-    relocator->input                       = input;
-    relocator->output                      = output;
-    relocator->try_relocated_length        = 0;
+    relocator->inpos                = 0;
+    relocator->outpos               = 0;
+    relocator->input                = input;
+    relocator->output               = output;
+    relocator->try_relocated_length = 0;
 }
 
 void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
@@ -22,12 +22,12 @@ void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
 }
 
 void zz_thumb_relocator_reset(ZzThumbRelocator *self, ZzARMReader *input, ZzThumbAssemblerWriter *output) {
-    self->inpos                       = 0;
-    self->outpos                      = 0;
-    self->input                       = input;
-    self->output                      = output;
-    self->literal_insn_size = 0;
-    self->try_relocated_length        = 0;
+    self->inpos                = 0;
+    self->outpos               = 0;
+    self->input                = input;
+    self->output               = output;
+    self->literal_insn_size    = 0;
+    self->try_relocated_length = 0;
 }
 
 void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzARMInstruction *instruction) {
@@ -94,12 +94,12 @@ zz_addr_t zz_thumb_relocator_get_insn_relocated_offset(ZzThumbRelocator *self, z
 
 #endif
 
-static ZzARMRelocatorInstruction *zz_thumb_relocator_get_relocator_insn_with_address(ZzARMRelocator *self, zz_addr_t insn_address) {
+static ZzARMRelocatorInstruction *zz_thumb_relocator_get_relocator_insn_with_address(ZzThumbRelocator *self,
+                                                                                     zz_addr_t insn_address) {
     for (int i = 0; i < self->relocator_insn_size; ++i) {
-        if((self->relocator_insns[i].origin_insn->pc-4) == insn_address) {
+        if ((self->relocator_insns[i].origin_insn->pc - 4) == insn_address) {
             return &self->relocator_insns[i];
         }
-
     }
     return NULL;
 }
@@ -110,10 +110,13 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t f
         for (int i = 0; i < relocator->literal_insn_size; i++) {
             literal_target_address_ptr = (zz_addr_t *)relocator->literal_insns[i]->address;
             // literal instruction in the range of instructions-need-fix
-            if(*literal_target_address_ptr > (relocator->input->start_pc-4) && *literal_target_address_ptr < (relocator->input->start_pc - 4+ relocator->input->size)) {
-                relocated_insn = zz_thumb_relocator_get_relocator_insn_with_address(relocator, *literal_target_address_ptr);
+            if (*literal_target_address_ptr > (relocator->input->start_pc - 4) &&
+                *literal_target_address_ptr < (relocator->input->start_pc - 4 + relocator->input->size)) {
+                relocated_insn =
+                    zz_thumb_relocator_get_relocator_insn_with_address(relocator, *literal_target_address_ptr);
                 assert(relocated_insn);
-                *literal_target_address_ptr = (*relocated_insn->relocated_insns)->pc - relocator->output->start_pc + final_relocate_address;
+                *literal_target_address_ptr =
+                    (*relocated_insn->relocated_insns)->pc - relocator->output->start_pc + final_relocate_address;
             }
         }
     }
@@ -130,8 +133,8 @@ void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
 void zz_thumb_relocator_register_literal_insn(ZzThumbRelocator *self, ZzARMInstruction *insn_ctx) {
     self->literal_insns[self->literal_insn_size++] = insn_ctx;
     // convert the temportary absolute address with offset.
-//    zz_addr_t *temp_address = (zz_addr_t *)insn_ctx->address;
-//    *temp_address = insn_ctx->pc - self->output->start_pc;
+    //    zz_addr_t *temp_address = (zz_addr_t *)insn_ctx->address;
+    //    *temp_address = insn_ctx->pc - self->output->start_pc;
 }
 
 // A8-357
@@ -193,9 +196,9 @@ static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, c
 
 // PAGE: A8-410
 bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ZzARMInstruction *insn_ctx) {
-    uint32_t insn1           = insn_ctx->insn1;
-    uint32_t imm8            = get_insn_sub(insn1, 0, 8);
-    uint32_t imm32           = imm8 << 2;
+    uint32_t insn1 = insn_ctx->insn1;
+    uint32_t imm8  = get_insn_sub(insn1, 0, 8);
+    uint32_t imm32 = imm8 << 2;
     // TODO: must be align_4 ?
     zz_addr_t target_address = ALIGN_4(insn_ctx->pc) + imm32;
     int Rt_ndx               = get_insn_sub(insn1, 8, 3);
@@ -433,10 +436,10 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     bool rewritten = FALSE;
 
     if (self->inpos != self->outpos) {
-        input_insns = self->input->insns;
-        insn_ctx    = input_insns[self->outpos];
-        relocator_insn->origin_insn = insn_ctx;
-        relocator_insn->relocated_insns = self->output->insns+self->output->insn_size;
+        input_insns                        = self->input->insns;
+        insn_ctx                           = input_insns[self->outpos];
+        relocator_insn->origin_insn        = insn_ctx;
+        relocator_insn->relocated_insns    = self->output->insns + self->output->insn_size;
         relocator_insn->output_index_start = self->output->insn_size;
         self->outpos++;
         self->relocator_insn_size++;
@@ -493,8 +496,8 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     } else {
     }
 
-    relocator_insn->ouput_index_end = self->output->insn_size;
-    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end-relocator_insn->output_index_start;
+    relocator_insn->ouput_index_end     = self->output->insn_size;
+    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end - relocator_insn->output_index_start;
 
     return TRUE;
 }

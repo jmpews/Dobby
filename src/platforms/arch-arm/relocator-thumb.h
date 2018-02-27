@@ -10,8 +10,8 @@
 #include "instructions.h"
 #include "reader-thumb.h"
 #include "regs-arm.h"
-#include "writer-thumb.h"
 #include "relocator-arm.h"
+#include "writer-thumb.h"
 
 typedef struct _ZzThumbRelocator {
     bool try_relocated_again;

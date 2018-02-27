@@ -7,7 +7,6 @@
 #include "instructions.h"
 #include "platforms/backend-linux/memory-linux.h"
 
-
 typedef enum _ARMInsnType {
     ARM_INS_ADD_register_A1,
     ARM_INS_LDR_literal_A1,

@@ -4,7 +4,6 @@
 
 #include "backend-arm64-helper.h"
 
-
 ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocator *allocator, zz_addr_t target_addr,
                                  zz_size_t range_size) {
     ZzCodeSlice *code_slice = NULL;
@@ -17,7 +16,7 @@ ZzCodeSlice *zz_arm64_code_patch(ZzARM64AssemblerWriter *arm64_writer, ZzAllocat
     if (!code_slice)
         return NULL;
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_addr_t )arm64_writer->w_start_address, arm64_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)arm64_writer->w_start_address, arm64_writer->size)) {
         free(code_slice);
         return NULL;
     }
@@ -38,7 +37,7 @@ ZzCodeSlice *zz_arm64_relocate_code_patch(ZzARM64Relocator *relocator, ZzARM64As
 
     zz_arm64_relocator_relocate_writer(relocator, (zz_addr_t)code_slice->data);
 
-    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t )arm64_writer->w_start_address, arm64_writer->size)) {
+    if (!ZzMemoryPatchCode((zz_addr_t)code_slice->data, (zz_ptr_t)arm64_writer->w_start_address, arm64_writer->size)) {
         free(code_slice);
         return NULL;
     }

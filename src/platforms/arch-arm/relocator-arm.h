@@ -38,8 +38,6 @@ typedef struct _ZzARMRelocator {
     zz_size_t relocator_insn_size;
 } ZzARMRelocator;
 
-
-
 void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output);
 
 void zz_arm_relocator_free(ZzARMRelocator *relocator);

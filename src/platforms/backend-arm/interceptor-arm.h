@@ -38,5 +38,4 @@ typedef struct _ZzARMHookFuntionEntryBackend {
     zz_size_t redirect_code_size;
 } ZzARMHookFunctionEntryBackend;
 
-
 #endif

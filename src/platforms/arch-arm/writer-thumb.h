@@ -13,8 +13,8 @@
 #include "instructions.h"
 #include "reader-thumb.h"
 #include "regs-arm.h"
-#include "writer-thumb.h"
 #include "writer-arm.h"
+#include "writer-thumb.h"
 
 typedef ZzARMAssemblerWriter ZzThumbAssemblerWriter;
 
@@ -33,8 +33,6 @@ void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_ad
 void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 
 void zz_thumb_writer_free(ZzThumbAssemblerWriter *self);
-
-
 
 zz_size_t zz_thumb_writer_near_jump_range_size();
 

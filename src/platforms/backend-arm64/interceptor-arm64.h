@@ -20,10 +20,9 @@
 #include "hookzz.h"
 #include "kitzz.h"
 
+#include "platforms/arch-arm64/reader-arm64.h"
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"
-#include "platforms/arch-arm64/reader-arm64.h"
-
 
 #include "allocator.h"
 #include "interceptor.h"
