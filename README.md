@@ -1,9 +1,5 @@
 # What is HookZz ?
 
-<h1 align="center"> <font color=#D52B2B face="Courier New">[ Issue Blog ]</font> </h1>
-<h1 style="text-align:center;color:#D52B2B;font-weight:700;font-family:Courier New;padding:2em;margin:2em">[ Issue Blog ]</h1>
-
-
 **a hook framework for arm/arm64/ios/android**
 
 ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
