@@ -2,7 +2,7 @@
 #define platforms_arch_thumb_reader_thumb_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "instructions.h"
 #include "reader-arm.h"

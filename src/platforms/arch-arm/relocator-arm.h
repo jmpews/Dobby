@@ -2,7 +2,7 @@
 #define platforms_arch_arm_relocator_arm_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "memory.h"
 #include "writer.h"

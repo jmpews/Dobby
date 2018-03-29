@@ -2,9 +2,8 @@
 #define writer_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #define MAX_LITERAL_INSN_SIZE 128
-
 
 #endif

@@ -41,29 +41,25 @@ extern "C" {
 
 static pthread_mutex_t counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-Macho::Macho()
-{
-    this->is64bit = FALSE;
+Macho::Macho() {
+    this->is64bit      = FALSE;
     this->isDyldLinker = FALSE;
-    this->dyld_path = NULL;
-    this->isFat = FALSE;
+    this->dyld_path    = NULL;
+    this->isFat        = FALSE;
 
-    this->image_base = 0;
+    this->image_base  = 0;
     this->load_vmaddr = 0;
 
     /* runtime var */
-    this->aslr_slide = 0;
+    this->aslr_slide    = 0;
     this->linkedit_base = 0;
     this->load_end_addr = 0;
-    this->load_addr = 0;
+    this->load_addr     = 0;
 
     this->parse_type = PARSE_ALL;
 }
 
-Macho::Macho(input_t input) : Macho()
-{
-    memcpy(&this->input, &input, sizeof(input_t));
-}
+Macho::Macho(input_t input) : Macho() { memcpy(&this->input, &input, sizeof(input_t)); }
 
 // bool Macho::check_initialization()
 // {
@@ -162,7 +158,7 @@ Macho::Macho(input_t input) : Macho()
 //     if (this->input.type == TASK_INPUT)
 //     {
 //         task_t task = this->input.rt.task;
-//         return zz_vm_read_data_via_task(task, (zaddr)addr, data, len);
+//         return zz_darwin_vm_read_data_via_task(task, (zaddr)addr, data, len);
 //     }
 //     else if (this->input.type == FD_INPUT)
 //     {
@@ -186,32 +182,26 @@ Macho::Macho(input_t input) : Macho()
 //     return TRUE;
 // }
 
-zaddr Macho::macho_search_data(const zaddr start_addr, const zaddr end_addr, const zbyte *data,
-                               const zsize len)
-{
+zaddr Macho::macho_search_data(const zaddr start_addr, const zaddr end_addr, const zbyte *data, const zsize len) {
     zaddr search_start_addr, search_end_addr, search_curr_addr;
     zbyte *buf;
 
     search_start_addr = start_addr;
-    search_end_addr = end_addr;
+    search_end_addr   = end_addr;
 
-    if (search_start_addr < this->load_addr)
-    {
+    if (search_start_addr < this->load_addr) {
         search_start_addr = this->load_addr;
     }
-    if (search_end_addr > this->load_end_addr)
-    {
+    if (search_end_addr > this->load_end_addr) {
         search_end_addr = this->load_end_addr;
     }
 
     search_curr_addr = search_start_addr;
-    buf = (zbyte *)malloc(len);
+    buf              = (zbyte *)malloc(len);
 
-    while (search_end_addr > search_curr_addr)
-    {
+    while (search_end_addr > search_curr_addr) {
         if (this->macho_read(search_curr_addr, buf, len))
-            if (!memcmp(buf, data, len))
-            {
+            if (!memcmp(buf, data, len)) {
                 return search_curr_addr;
             }
         search_curr_addr += len;
@@ -231,7 +221,7 @@ zaddr Macho::macho_search_data(const zaddr start_addr, const zaddr end_addr, con
 //     }
 //     else if (this->input.type == TASK_INPUT)
 //     {
-//         return zz_vm_read_string_via_task(this->input.rt.task, (zaddr)addr);
+//         return zz_darwin_vm_read_string_via_task(this->input.rt.task, (zaddr)addr);
 //     }
 //     else
 //     {
@@ -262,8 +252,7 @@ zaddr Macho::macho_search_data(const zaddr start_addr, const zaddr end_addr, con
 //     return NULL;
 // }
 
-bool Macho::macho_runtime_read(zaddr vmaddr, zpointer data, zsize len)
-{
+bool Macho::macho_runtime_read(zaddr vmaddr, zpointer data, zsize len) {
     zaddr tmp_vmaddr = macho_runtime_address(vmaddr);
     if (this->input.type == FD_INPUT)
         return macho_read(tmp_vmaddr, data, len);
@@ -273,8 +262,7 @@ bool Macho::macho_runtime_read(zaddr vmaddr, zpointer data, zsize len)
         return macho_read(tmp_vmaddr, data, len);
     return TRUE;
 }
-char *Macho::macho_runtime_read_string(zaddr vmaddr)
-{
+char *Macho::macho_runtime_read_string(zaddr vmaddr) {
     zaddr tmp_vmaddr = macho_runtime_address(vmaddr);
 
     if (this->input.type == FD_INPUT)
@@ -285,21 +273,17 @@ char *Macho::macho_runtime_read_string(zaddr vmaddr)
         return macho_read_string(tmp_vmaddr);
     return NULL;
 }
-zaddr Macho::macho_runtime_address(zaddr vmaddr)
-{
+zaddr Macho::macho_runtime_address(zaddr vmaddr) {
     if ((this->input.type == TASK_INPUT) || (this->input.type == MEM_INPUT))
         return vmaddr;
-    else
-    {
+    else {
         return vmaddr - this->load_vmaddr + this->load_addr;
     }
 }
-zaddr Macho::macho_link_address(zaddr vmaddr)
-{
+zaddr Macho::macho_link_address(zaddr vmaddr) {
     if ((this->input.type == TASK_INPUT) || (this->input.type == MEM_INPUT))
         return vmaddr + this->linkedit_base;
-    else
-    {
+    else {
         return vmaddr + this->load_addr;
     }
 }

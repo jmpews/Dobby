@@ -18,7 +18,7 @@
 #define platforms_backend_posix_thread_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "thread.h"
 

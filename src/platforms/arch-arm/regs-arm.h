@@ -16,7 +16,7 @@
 #define platforms_arch_arm_regs_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "CommonKit/log/log_kit.h"
 

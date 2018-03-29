@@ -18,7 +18,7 @@
 #define trampoline_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "interceptor.h"
 

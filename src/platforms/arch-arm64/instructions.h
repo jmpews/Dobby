@@ -1,7 +1,7 @@
 #ifndef platforms_arch_arm64_instructions_h
 #define platforms_arch_arm64_instructions_h
 
-#include "kitzz.h"
+#include "zkit.h"
 
 typedef struct _ZzARM64Instruction {
     zz_addr_t pc;

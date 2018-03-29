@@ -1,9 +1,9 @@
 #include "tools.h"
 
-HookZzDebugInfo g_debug_info;
+HookZzDebugInfo gDebugInfoControl;
 
-void HookZzDebugInfoEnable() { g_debug_info.is_enable = true; }
+void HookZzDebugInfoEnable() { gDebugInfoControl.is_enable = true; }
 
-bool HookZzDebugInfoIsEnable() { return g_debug_info.is_enable; }
+bool HookZzDebugInfoIsEnable() { return gDebugInfoControl.is_enable; }
 
-HookZzDebugInfo *ZzObtainDebugInfo(void) { return &g_debug_info; }
+HookZzDebugInfo *ZzObtainDebugInfo(void) { return &gDebugInfoControl; }

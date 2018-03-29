@@ -18,7 +18,7 @@
 #define platforms_backend_arm64_intercetor_arm64
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "platforms/arch-arm64/reader-arm64.h"
 #include "platforms/arch-arm64/relocator-arm64.h"

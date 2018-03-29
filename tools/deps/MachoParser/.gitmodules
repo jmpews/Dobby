@@ -1,3 +1,3 @@
-[submodule "src/kitzz"]
-	path = src/kitzz
-	url = https://github.com/jmpews/kitzz.git
+[submodule "src/zkit"]
+	path = src/zkit
+	url = https://github.com/jmpews/zkit.git

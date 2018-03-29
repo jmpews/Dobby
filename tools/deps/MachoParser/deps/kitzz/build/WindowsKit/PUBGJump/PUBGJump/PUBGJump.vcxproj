@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\CodeDocument\project\kitzz\include\WindowsKit\IOKit\KeyboardKit\;$(IncludePath)</IncludePath>
+    <IncludePath>D:\CodeDocument\project\zkit\include\WindowsKit\IOKit\KeyboardKit\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

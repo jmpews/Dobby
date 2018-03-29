@@ -18,7 +18,7 @@
 #define platforms_backend_linux_memory_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "memory.h"
 

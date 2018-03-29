@@ -2,7 +2,7 @@
 #define interceptor_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "allocator.h"
 #include "stack.h"

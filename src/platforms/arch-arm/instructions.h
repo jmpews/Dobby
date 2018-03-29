@@ -2,7 +2,7 @@
 #define platforms_arch_arm_instructions_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN, UNKOWN_INSN } InsnType;
 

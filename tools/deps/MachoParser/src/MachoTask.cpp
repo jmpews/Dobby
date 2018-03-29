@@ -20,85 +20,70 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "zz.h"
-#include "MachoTask.h"
 #include "MachoFD.h"
+#include "MachoTask.h"
+#include "zz.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "zzdeps/darwin/memory-utils-darwin.h"
 #include "zzdeps/darwin/macho-utils-darwin.h"
+#include "zzdeps/darwin/memory-utils-darwin.h"
 #ifdef __cplusplus
 }
 #endif
 
-MachoTask::MachoTask() : MachoRuntime()
-{
+MachoTask::MachoTask() : MachoRuntime() {
     // m_dyld_load_addr = 0;
 }
 
-MachoTask::MachoTask(pid_t pid) : MachoRuntime()
-{
-    this->setPid(pid);
-}
+MachoTask::MachoTask(pid_t pid) : MachoRuntime() { this->setPid(pid); }
 
-MachoTask::MachoTask(input_t input) : MachoRuntime(input)
-{
-}
+MachoTask::MachoTask(input_t input) : MachoRuntime(input) {}
 
-bool MachoTask::setPid(pid_t pid)
-{
+bool MachoTask::setPid(pid_t pid) {
     task_t t = zz_darwin_get_task_via_pid(pid);
-    if (t)
-    {
+    if (t) {
         this->input.rt.task = t;
-        this->input.rt.pid = pid;
-        this->input.type = TASK_INPUT;
+        this->input.rt.pid  = pid;
+        this->input.type    = TASK_INPUT;
         searchBinLoadAddress();
         return TRUE;
     }
     return FALSE;
 }
-bool MachoTask::macho_read(zaddr addr, zpointer data, zsize len)
-{
-    return zz_vm_read_data_via_task(this->input.rt.task, (zaddr)addr, data, len);
+bool MachoTask::macho_read(zaddr addr, zpointer data, zsize len) {
+    return zz_darwin_vm_read_data_via_task(this->input.rt.task, (zaddr)addr, data, len);
 }
-char *MachoTask::macho_read_string(zaddr addr)
-{
-    return zz_vm_read_string_via_task(this->input.rt.task, (zaddr)addr);
+char *MachoTask::macho_read_string(zaddr addr) {
+    return zz_darwin_vm_read_string_via_task(this->input.rt.task, (zaddr)addr);
 }
-bool MachoTask::check_initialization()
-{
-    if (this->input.rt.pid <= 0)
-    {
+bool MachoTask::check_initialization() {
+    if (this->input.rt.pid <= 0) {
         Serror("MachoParser must be init.");
         return FALSE;
     }
     return TRUE;
 }
-bool MachoTask::searchBinLoadAddress()
-{
+bool MachoTask::searchBinLoadAddress() {
     //search align by memory page
     zsize page_size;
     unsigned long search_block_size;
     zsize aslr_limit;
     zaddr cur_addr, end_addr;
 
-    page_size = sysconf(_SC_PAGESIZE);
+    page_size         = sysconf(_SC_PAGESIZE);
     search_block_size = 0x1000;
     search_block_size = page_size;
 
-    cur_addr = MACHO_LOAD_ADDRESS;
+    cur_addr   = MACHO_LOAD_ADDRESS;
     aslr_limit = ((1 << 16) << 12) + 0x100000000;
-    end_addr = MACHO_LOAD_ADDRESS + aslr_limit;
+    end_addr   = MACHO_LOAD_ADDRESS + aslr_limit;
 
     char ch;
-    while (end_addr > cur_addr)
-    {
-        if (zz_vm_check_address_valid_via_task(this->input.rt.task, cur_addr))
-        {
-            this->load_addr = cur_addr;
+    while (end_addr > cur_addr) {
+        if (zz_darwin_vm_check_address_valid_via_task(this->input.rt.task, cur_addr)) {
+            this->load_addr         = cur_addr;
             this->input.rt.baseAddr = cur_addr;
             Xinfo("macho load at %p", (zpointer)cur_addr);
             return TRUE;
@@ -165,7 +150,7 @@ bool MachoTask::searchBinLoadAddress()
 
 //     while (end_addr > cur_addr)
 //     {
-//         if (zz_vm_check_address_valid_via_task(this->input.rt.task, cur_addr))
+//         if (zz_darwin_vm_check_address_valid_via_task(this->input.rt.task, cur_addr))
 //             if (macho_read(cur_addr, buf, sizeof(uint32_t)))
 //             {
 //                 if ((!memcmp(buf, &magic_64, sizeof(uint32_t))) && check_dyld_arch(cur_addr))

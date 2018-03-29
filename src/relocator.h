@@ -18,12 +18,9 @@
 #define relocator_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "interceptor.h"
 #include "writer.h"
-
-void ZzRelocatorBuildInvokeTrampoline(ZzHookFunctionEntry *entry, ZzAssemblerWriter *backup_writer,
-                                      ZzAssemblerWriter *relocate_writer);
 
 #endif

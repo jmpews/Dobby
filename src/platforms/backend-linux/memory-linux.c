@@ -40,7 +40,7 @@ bool ZzMemoryProtectAsWritable(const zz_addr_t address, zz_size_t size) {
 }
 
 zz_ptr_t ZzMemorySearchCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t size) {
-    // return zz_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
+    // return zz_darwin_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
     return zz_linux_vm_search_code_cave(address, redirect_range_size, size);
 }
 

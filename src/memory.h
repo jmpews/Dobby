@@ -16,7 +16,7 @@
 #define memory_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 void *zz_malloc_with_zero(zz_size_t size);
 

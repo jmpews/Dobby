@@ -1,7 +1,7 @@
 #ifndef platforms_arch_arm64_relocator_h
 #define platforms_arch_arm64_relocator_h
 
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "memory.h"
 #include "writer.h"

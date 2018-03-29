@@ -18,11 +18,10 @@
 #define stack_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "memory.h"
 #include "thread.h"
-
 
 typedef struct _ZzCallStackItem {
     char *key;

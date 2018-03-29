@@ -130,46 +130,46 @@ endif
 
 # ------------ hookzz make env ---------------
 
-# ------------ kitzz make env ---------------
+# ------------ zkit make env ---------------
 
-KITZZ_PATH := $(HOOKZZ_PATH)/src/kitzz
+zkit_PATH := $(HOOKZZ_PATH)/src/zkit
 
-KITZZ_INCLUDE := $(KITZZ_PATH) \
-			$(KITZZ_PATH)/include
+zkit_INCLUDE := $(zkit_PATH) \
+			$(zkit_PATH)/include
 
 ifeq ($(BACKEND), ios)
-KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
-			$(KITZZ_PATH)/PosixKit \
-			$(KITZZ_PATH)/MachoKit \
-			$(KITZZ_PATH)/DarwinKit
+zkit_FILES_PATH := $(zkit_PATH)/CommonKit \
+			$(zkit_PATH)/PosixKit \
+			$(zkit_PATH)/MachoKit \
+			$(zkit_PATH)/DarwinKit
 else ifeq ($(BACKEND), macos)
 else ifeq ($(BACKEND), android)
-KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
-			$(KITZZ_PATH)/PosixKit \
-			$(KITZZ_PATH)/ELFKit\
-			$(KITZZ_PATH)/LinuxKit
+zkit_FILES_PATH := $(zkit_PATH)/CommonKit \
+			$(zkit_PATH)/PosixKit \
+			$(zkit_PATH)/ELFKit\
+			$(zkit_PATH)/LinuxKit
 endif
-KITZZ_FILES_SUFFIX := %.cpp %.c
+zkit_FILES_SUFFIX := %.cpp %.c
 
 define walk
     $(wildcard $(1)) $(foreach e, $(wildcard $(1)/*), $(call walk, $(e)))
 endef
 
-KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
-KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
-KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
+zkit_ALLFILES := $(foreach src_path,$(zkit_FILES_PATH), $(call walk,$(src_path),*.*) )
+zkit_FILE_LIST  := $(filter $(zkit_FILES_SUFFIX),$(zkit_ALLFILES))
+zkit_SRC_FILES := $(zkit_FILE_LIST:$(LOCAL_PATH)/%=%)
 
-# $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+# $(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
 # $(warning HOOKZZ_SRC_FILES= $(HOOKZZ_SRC_FILES))
 
-# ------------ kitzz make env end ---------------
+# ------------ zkit make env end ---------------
 
-HOOKZZ_INCLUDE += $(KITZZ_INCLUDE)
+HOOKZZ_INCLUDE += $(zkit_INCLUDE)
 
 HOOKZZ_SRC_FILES := $(HOOKZZ_SRC_FILES:$(LOCAL_PATH)/%=%)
 
 HOOKZZ_C_CPP_SRC_FILES := $(filter %.c,$(HOOKZZ_SRC_FILES)) \
-				$(KITZZ_SRC_FILES)
+				$(zkit_SRC_FILES)
 HOOKZZ_ASM_SRC_FILES := $(filter %.S,$(HOOKZZ_SRC_FILES))
 
 HOOKZZ_C_CPP_OBJ_FILES := $(HOOKZZ_C_CPP_SRC_FILES:.c=.o)

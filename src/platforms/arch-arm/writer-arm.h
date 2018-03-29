@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "macros.h"
 #include "memory.h"

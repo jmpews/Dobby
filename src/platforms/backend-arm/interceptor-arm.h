@@ -2,7 +2,7 @@
 #define platforms_backend_arm_intercetor_arm
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "allocator.h"
 #include "interceptor.h"

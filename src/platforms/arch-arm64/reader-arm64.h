@@ -1,7 +1,7 @@
 #ifndef platforms_arch_arm64_reader_h
 #define platforms_arch_arm64_reader_h
 
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "instructions.h"
 

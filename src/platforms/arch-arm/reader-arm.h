@@ -2,7 +2,7 @@
 #define platforms_arch_arm_reader_arm_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "instructions.h"
 #include "platforms/backend-linux/memory-linux.h"

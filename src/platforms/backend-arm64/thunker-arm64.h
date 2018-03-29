@@ -18,7 +18,7 @@
 #define platforms_backend_arm64_thunker_arm64
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "stack.h"
 #include "thunker.h"

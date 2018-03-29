@@ -18,7 +18,7 @@
 #define platforms_backend_darwin_memory_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 #include "memory.h"
 

@@ -18,7 +18,7 @@
 #define thread_h
 
 #include "hookzz.h"
-#include "kitzz.h"
+#include "zkit.h"
 
 zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
 

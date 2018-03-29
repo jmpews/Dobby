@@ -5,31 +5,31 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-# ------------ kitzz make env ---------------
+# ------------ zkit make env ---------------
 
-KITZZ_PATH := $(LOCAL_PATH)/src/kitzz
+zkit_PATH := $(LOCAL_PATH)/src/zkit
 
-KITZZ_INCLUDE := $(KITZZ_PATH) \
-			$(KITZZ_PATH)/include
+zkit_INCLUDE := $(zkit_PATH) \
+			$(zkit_PATH)/include
 
-KITZZ_FILES_PATH := $(KITZZ_PATH)/CommonKit \
-			$(KITZZ_PATH)/LinuxKit \
-			$(KITZZ_PATH)/ELFKit \
-			$(KITZZ_PATH)/PosixKit
+zkit_FILES_PATH := $(zkit_PATH)/CommonKit \
+			$(zkit_PATH)/LinuxKit \
+			$(zkit_PATH)/ELFKit \
+			$(zkit_PATH)/PosixKit
 
-KITZZ_FILES_SUFFIX := %.cpp %.c
+zkit_FILES_SUFFIX := %.cpp %.c
 
 define walk
     $(wildcard $(1)) $(foreach e, $(wildcard $(1)/*), $(call walk, $(e)))
 endef
 
-KITZZ_ALLFILES := $(foreach src_path,$(KITZZ_FILES_PATH), $(call walk,$(src_path),*.*) )
-# $(warning KITZZ_ALLFILES $(KITZZ_ALLFILES))
-KITZZ_FILE_LIST  := $(filter $(KITZZ_FILES_SUFFIX),$(KITZZ_ALLFILES))
-KITZZ_SRC_FILES := $(KITZZ_FILE_LIST:$(LOCAL_PATH)/%=%)
-# $(warning KITZZ_SRC_FILES= $(KITZZ_SRC_FILES))
+zkit_ALLFILES := $(foreach src_path,$(zkit_FILES_PATH), $(call walk,$(src_path),*.*) )
+# $(warning zkit_ALLFILES $(zkit_ALLFILES))
+zkit_FILE_LIST  := $(filter $(zkit_FILES_SUFFIX),$(zkit_ALLFILES))
+zkit_SRC_FILES := $(zkit_FILE_LIST:$(LOCAL_PATH)/%=%)
+# $(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
 
-# ------------ kitzz make env end ---------------
+# ------------ zkit make env end ---------------
 
 
 # ------------ hookzz make env ---------------
@@ -56,8 +56,8 @@ endif
 
 # ------------ hookzz make env end ---------------
 
-HOOKZZ_SRC_FILES += $(KITZZ_FILE_LIST)
-HOOKZZ_INCLUDE += $(KITZZ_INCLUDE)
+HOOKZZ_SRC_FILES += $(zkit_FILE_LIST)
+HOOKZZ_INCLUDE += $(zkit_INCLUDE)
 
 LOCAL_MODULE := hookzz
 LOCAL_C_INCLUDES := $(HOOKZZ_INCLUDE)
