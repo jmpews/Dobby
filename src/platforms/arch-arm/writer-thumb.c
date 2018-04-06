@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 ZzThumbAssemblerWriter *zz_thumb_writer_new() {
-    ZzThumbAssemblerWriter *writer = (ZzThumbAssemblerWriter *)zz_malloc_with_zero(sizeof(ZzThumbAssemblerWriter));
+    ZzThumbAssemblerWriter *writer = (ZzThumbAssemblerWriter *)malloc0(sizeof(ZzThumbAssemblerWriter));
     writer->w_current_address      = 0;
     writer->w_start_address        = 0;
     writer->current_pc             = 0 + 4;
@@ -106,7 +106,7 @@ void zz_thumb_writer_put_bytes(ZzThumbAssemblerWriter *self, char *data, zz_size
     self->current_pc += data_size;
     self->size += data_size;
 
-    ZzARMInstruction *arm_insn     = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    ZzARMInstruction *arm_insn     = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     arm_insn->pc                   = self->current_pc - data_size;
     arm_insn->address              = self->w_current_address - data_size;
     arm_insn->size                 = data_size;
@@ -124,7 +124,7 @@ void zz_thumb_writer_put_instruction(ZzThumbAssemblerWriter *self, uint16_t insn
     self->current_pc += 2;
     self->size += 2;
 
-    ZzARMInstruction *arm_insn     = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    ZzARMInstruction *arm_insn     = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     arm_insn->pc                   = self->current_pc - 2;
     arm_insn->address              = self->w_current_address - 2;
     arm_insn->size                 = 2;

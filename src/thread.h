@@ -20,14 +20,14 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-zz_ptr_t ZzThreadNewThreadLocalKeyPtr();
+zz_ptr_t ThreadNewThreadLocalKeyPtr();
 
-bool ZzThreadFreeThreadLocalKeyPtr(zz_ptr_t key_ptr);
+bool ThreadFreeThreadLocalKeyPtr(zz_ptr_t thread_local_key);
 
-zz_ptr_t ZzThreadGetCurrentThreadData(zz_ptr_t key_ptr);
+zz_ptr_t ThreadGetThreadLocalValue(zz_ptr_t thread_local_key);
 
-bool ZzThreadSetCurrentThreadData(zz_ptr_t key_ptr, zz_ptr_t data);
+bool ThreadSetThreadLocalValue(zz_ptr_t thread_local_key, zz_ptr_t data);
 
-long ZzThreadGetCurrentThreadID();
+long ThreadGetCurrentThreadID();
 
 #endif

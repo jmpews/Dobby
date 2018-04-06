@@ -22,36 +22,28 @@
 
 #include "interceptor.h"
 
-typedef struct _ZzTrampoline {
-    ZzCodeSlice *code_slice;
-} ZzTrampoline;
+void TrampolineFree(HookEntry *entry);
 
-struct _ZzInterceptorBackend *ZzBuildInteceptorBackend(ZzAllocator *allocator);
+void TrampolinePrepare(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZzHookFunctionEntry *ZzFindHookFunctionEntry(zz_ptr_t target_ptr);
+void TrampolineBuildAll(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzFreeTrampoline(ZzHookFunctionEntry *entry);
+void TrampolineActivateAll(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzPrepareTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForEnter(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForEnterTransfer(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzActivateTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForInstructionLeave(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzBuildEnterTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForInvoke(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzBuildEnterTransferTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForLeave(struct _InterceptorBackend *self, HookEntry *entry);
 
-ZZSTATUS ZzBuildInsnLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
-
-ZZSTATUS ZzBuildInvokeTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
-
-ZZSTATUS ZzBuildLeaveTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
-
-ZZSTATUS ZzBuildDynamicBinaryInstrumentationTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry);
+void TrampolineBuildForDynamicBinaryInstrumentation(struct _InterceptorBackend *self, HookEntry *entry);
 
 #ifdef TARGET_IS_IOS
-// ZZSTATUS ZzActivateSolidifyTrampoline(ZzHookFunctionEntry *entry, zz_addr_t target_fileoff);
+// ZZSTATUS ZzActivateSolidifyTrampoline(HookEntry *entry, zz_addr_t target_fileoff);
 #endif
 
 #endif

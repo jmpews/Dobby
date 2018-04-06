@@ -22,7 +22,7 @@
 #include "platforms/arch-x86/writer-x86.h"
 
 // hookzz
-#include "allocator.h"
+#include "emm.h"
 #include "interceptor.h"
 #include "thunker.h"
 
@@ -34,12 +34,12 @@
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
-typedef struct _ZzInterceptorBackend {
+typedef struct _InterceptorBackend {
 
-} ZzInterceptorBackend;
+} InterceptorBackend;
 
 typedef struct _ZzX86HookFuntionEntryBackend {
-} ZzX86HookFunctionEntryBackend;
+} ZzX86HookEntryBackend;
 
 void ctx_save();
 void ctx_restore();
@@ -49,6 +49,6 @@ void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();
 
-ZzCodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ZzAllocator *allocator, zz_addr_t target_addr,
+CodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
                                       zz_size_t range_size);
 #endif

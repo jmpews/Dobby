@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 ZzARMReader *zz_arm_reader_new(zz_ptr_t insn_address) {
-    ZzARMReader *reader = (ZzARMReader *)zz_malloc_with_zero(sizeof(ZzARMReader));
+    ZzARMReader *reader = (ZzARMReader *)malloc0(sizeof(ZzARMReader));
 
     reader->r_start_address   = (zz_addr_t)insn_address;
     reader->r_current_address = (zz_addr_t)insn_address;
@@ -34,7 +34,7 @@ void zz_arm_reader_free(ZzARMReader *self) {
 }
 
 ZzARMInstruction *zz_arm_reader_read_one_instruction(ZzARMReader *self) {
-    ZzARMInstruction *insn_ctx = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    ZzARMInstruction *insn_ctx = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     insn_ctx->type             = ARM_INSN;
     insn_ctx->address          = (zz_addr_t)self->r_current_address;
     insn_ctx->pc               = (zz_addr_t)self->current_pc;

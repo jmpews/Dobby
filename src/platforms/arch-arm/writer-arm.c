@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 ZzARMAssemblerWriter *zz_arm_writer_new() {
-    ZzARMAssemblerWriter *writer = (ZzARMAssemblerWriter *)zz_malloc_with_zero(sizeof(ZzARMAssemblerWriter));
+    ZzARMAssemblerWriter *writer = (ZzARMAssemblerWriter *)malloc0(sizeof(ZzARMAssemblerWriter));
     writer->w_current_address = 0;
     writer->w_start_address = 0;
     writer->current_pc = 0+8;
@@ -81,7 +81,7 @@ void zz_arm_writer_put_bytes(ZzARMAssemblerWriter *self, char *data, zz_size_t d
     self->size += data_size;
 
 
-    ZzARMInstruction *arm_insn = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    ZzARMInstruction *arm_insn = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     arm_insn->pc = self->current_pc - data_size;
     arm_insn->address = self->w_current_address-data_size;
     arm_insn->size = data_size;
@@ -98,7 +98,7 @@ void zz_arm_writer_put_instruction(ZzARMAssemblerWriter *self, uint32_t insn) {
     self->current_pc += 4;
     self->size += 4;
 
-    ZzARMInstruction *arm_insn = (ZzARMInstruction *)zz_malloc_with_zero(sizeof(ZzARMInstruction));
+    ZzARMInstruction *arm_insn = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     arm_insn->pc = self->current_pc - 4;
     arm_insn->address = self->w_current_address-4;
     arm_insn->size = 4;

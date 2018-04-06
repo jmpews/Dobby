@@ -1,5 +1,5 @@
-#ifndef allocator_h
-#define allocator_h
+#ifndef emm_h
+#define emm_h
 
 #include <stdint.h>
 
@@ -14,28 +14,28 @@ typedef struct _codeslice {
     zz_ptr_t data;
     zz_size_t size;
     bool is_used;
-    bool isCodeCave;
-} ZzCodeSlice;
+    bool is_code_cave;
+} CodeSlice;
 
-typedef struct _ZzMemoryPage {
-    zz_ptr_t base;
-    zz_ptr_t curr_pos;
-    zz_size_t size;
+typedef struct _ExecuteMemoryBlock {
+    zz_ptr_t start_address;
+    zz_ptr_t current_address;
+    zz_size_t total_size;
     zz_size_t used_size;
-    bool isCodeCave;
-} ZzMemoryPage;
+    bool is_code_cave;
+} ExecuteMemoryBlock;
 
-typedef struct _allocator {
-    ZzMemoryPage **memory_pages;
+typedef struct _ExecuteMemoryManager {
+    ExecuteMemoryBlock **execute_memory_block_ptr_list;
     zz_size_t size;
     zz_size_t capacity;
-} ZzAllocator;
+} ExecuteMemoryManager;
 
-ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_size_t redirect_range_size,
-                                zz_size_t codeslice_size);
+CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, zz_addr_t address,
+                                                     zz_size_t redirect_range_size, zz_size_t codeslice_size);
 
-ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t codeslice_size);
+CodeSlice *ExecuteMemoryManagerAllocateCodeSlice(ExecuteMemoryManager *emm, zz_size_t codeslice_size);
 
-ZzAllocator *ZzNewAllocator();
+ExecuteMemoryManager *ExecuteMemoryManagerSharedInstance();
 
 #endif

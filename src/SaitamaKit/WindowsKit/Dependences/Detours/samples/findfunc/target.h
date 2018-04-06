@@ -1,0 +1,13 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+//  Detour Test Program (target.h of target.dll)
+//
+//  Microsoft Research Detours Package, Version 3.0.
+//
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+
+DWORD WINAPI Target(DWORD dwCount);
+
+//
+///////////////////////////////////////////////////////////////// End of File.

@@ -4,7 +4,7 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "allocator.h"
+#include "emm.h"
 #include "interceptor.h"
 #include "thunker.h"
 #include "tools.h"
@@ -17,8 +17,8 @@
 // (next_hop + general_regs + sp)
 #define CTX_SAVE_STACK_OFFSET (4 * 14)
 
-typedef struct _ZzInterceptorBackend {
-    ZzAllocator *allocator;
+typedef struct _InterceptorBackend {
+    ExecuteMemoryManager *emm;
     ZzARMRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
     ZzARMAssemblerWriter arm_writer;
@@ -31,11 +31,11 @@ typedef struct _ZzInterceptorBackend {
     zz_ptr_t leave_thunk;
     zz_ptr_t dynamic_binary_instrumentation_thunk;
 
-} ZzInterceptorBackend;
+} InterceptorBackend;
 
 typedef struct _ZzARMHookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzARMHookFunctionEntryBackend;
+} ZzARMHookEntryBackend;
 
 #endif

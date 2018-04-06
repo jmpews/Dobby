@@ -4,7 +4,7 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "allocator.h"
+#include "emm.h"
 #include "stack.h"
 #include "thread.h"
 #include "thunker.h"
@@ -17,8 +17,8 @@ typedef struct _FunctionBackup {
 } FunctionBackup;
 
 struct _ZzInterceptor;
-struct _ZzHookFunctionEntryBackend;
-typedef struct _ZzHookFunctionEntry {
+struct _HookEntryBackend;
+typedef struct _HookEntry {
     ZZHOOKTYPE hook_type;
     unsigned long id;
     bool isEnabled;
@@ -43,28 +43,28 @@ typedef struct _ZzHookFunctionEntry {
     zz_ptr_t on_dynamic_binary_instrumentation_trampoline;
 
     FunctionBackup origin_prologue;
-    struct _ZzHookFunctionEntryBackend *backend;
+    struct _HookEntryBackend *backend;
     struct _ZzInterceptor *interceptor;
-} ZzHookFunctionEntry;
+} HookEntry;
 
 typedef struct {
-    ZzHookFunctionEntry **entries;
+    HookEntry **entries;
     zz_size_t size;
     zz_size_t capacity;
-} ZzHookFunctionEntrySet;
+} HookEntrySet;
 
-struct _ZzInterceptorBackend;
+struct _InterceptorBackend;
 typedef struct _ZzInterceptor {
     bool is_support_rx_page;
     bool default_trampoline_try_near_jump;
-    ZzHookFunctionEntrySet hook_function_entry_set;
-    struct _ZzInterceptorBackend *backend;
-    ZzAllocator *allocator;
+    HookEntrySet hook_function_entry_set;
+    struct _InterceptorBackend *backend;
+    ExecuteMemoryManager *emm;
 } ZzInterceptor;
 
 ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);
 ZZSTATUS ZzDisableHookGOT(const char *name);
 
-void ZzFreeHookFunctionEntry(ZzHookFunctionEntry *entry);
+void ZzFreeHookEntry(HookEntry *entry);
 #endif

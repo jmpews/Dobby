@@ -1,28 +1,28 @@
 #include "trampoline.h"
 #include <stdlib.h>
 
-ZZSTATUS ZzBuildTrampoline(struct _ZzInterceptorBackend *self, ZzHookFunctionEntry *entry) {
+void TrampolineBuildAll(struct _InterceptorBackend *self, HookEntry *entry) {
     if (entry->hook_type == HOOK_TYPE_ONE_INSTRUCTION) {
-        ZzPrepareTrampoline(self, entry);
-        ZzBuildEnterTrampoline(self, entry);
-        ZzBuildInsnLeaveTrampoline(self, entry);
-        ZzBuildInvokeTrampoline(self, entry);
+        TrampolinePrepare(self, entry);
+        TrampolineBuildForEnter(self, entry);
+        TrampolineBuildForInstructionLeave(self, entry);
+        TrampolineBuildForInvoke(self, entry);
     } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
-        ZzPrepareTrampoline(self, entry);
-        ZzBuildEnterTrampoline(self, entry);
-        ZzBuildInvokeTrampoline(self, entry);
-        ZzBuildLeaveTrampoline(self, entry);
+        TrampolinePrepare(self, entry);
+        TrampolineBuildForEnter(self, entry);
+        TrampolineBuildForInvoke(self, entry);
+        TrampolineBuildForLeave(self, entry);
     } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-        ZzPrepareTrampoline(self, entry);
-        ZzBuildEnterTransferTrampoline(self, entry);
-        ZzBuildInvokeTrampoline(self, entry);
+        TrampolinePrepare(self, entry);
+        TrampolineBuildForEnterTransfer(self, entry);
+        TrampolineBuildForInvoke(self, entry);
     } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
-        ZzBuildEnterTrampoline(self, entry);
-        ZzBuildLeaveTrampoline(self, entry);
+        TrampolineBuildForEnter(self, entry);
+        TrampolineBuildForLeave(self, entry);
     } else if (entry->hook_type == HOOK_TYPE_DBI) {
-        ZzPrepareTrampoline(self, entry);
-        ZzBuildDynamicBinaryInstrumentationTrampoline(self, entry);
-        ZzBuildInvokeTrampoline(self, entry);
+        TrampolinePrepare(self, entry);
+        TrampolineBuildForDynamicBinaryInstrumentation(self, entry);
+        TrampolineBuildForInvoke(self, entry);
     }
-    return ZZ_DONE;
+    return ZZ_SUCCESS;
 }

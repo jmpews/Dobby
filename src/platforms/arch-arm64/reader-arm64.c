@@ -1,6 +1,6 @@
 #include "reader-arm64.h"
-ZzARM64Reader *zz_arm64_reader_new(zz_ptr_t insn_address) {
-    ZzARM64Reader *reader = (ZzARM64Reader *)zz_malloc_with_zero(sizeof(ZzARM64Reader));
+ZzARM64Reader *arm64_reader_new(zz_ptr_t insn_address) {
+    ZzARM64Reader *reader = (ZzARM64Reader *)malloc0(sizeof(ZzARM64Reader));
 
     reader->r_start_address   = (zz_addr_t)insn_address;
     reader->r_current_address = (zz_addr_t)insn_address;
@@ -11,9 +11,9 @@ ZzARM64Reader *zz_arm64_reader_new(zz_ptr_t insn_address) {
     return reader;
 }
 
-void zz_arm64_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address) { zz_arm64_reader_reset(self, insn_address); }
+void arm64_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address) { arm64_reader_reset(self, insn_address); }
 
-void zz_arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address) {
+void arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address) {
     self->r_start_address   = (zz_addr_t)insn_address;
     self->r_current_address = (zz_addr_t)insn_address;
     self->start_pc          = (zz_addr_t)insn_address;
@@ -22,7 +22,7 @@ void zz_arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address) {
     self->insn_size         = 0;
 }
 
-void zz_arm64_reader_free(ZzARM64Reader *self) {
+void arm64_reader_free(ZzARM64Reader *self) {
     if (self->insn_size) {
         for (int i = 0; i < self->insn_size; i++) {
             free(self->insns[i]);
@@ -31,8 +31,8 @@ void zz_arm64_reader_free(ZzARM64Reader *self) {
     free(self);
 }
 
-ZzARM64Instruction *zz_arm64_reader_read_one_instruction(ZzARM64Reader *self) {
-    ZzARM64Instruction *insn_ctx = (ZzARM64Instruction *)zz_malloc_with_zero(sizeof(ZzARM64Instruction));
+ZzARM64Instruction *arm64_reader_read_one_instruction(ZzARM64Reader *self) {
+    ZzARM64Instruction *insn_ctx = (ZzARM64Instruction *)malloc0(sizeof(ZzARM64Instruction));
     insn_ctx->address            = (zz_addr_t)self->r_current_address;
     insn_ctx->pc                 = (zz_addr_t)self->current_pc;
     insn_ctx->insn               = *(uint32_t *)self->r_current_address;

@@ -24,15 +24,15 @@
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"
 
-#include "allocator.h"
+#include "emm.h"
 #include "interceptor.h"
 #include "thunker.h"
 #include "tools.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
-typedef struct _ZzInterceptorBackend {
-    ZzAllocator *allocator;
+typedef struct _InterceptorBackend {
+    ExecuteMemoryManager *emm;
     ZzARM64Relocator arm64_relocator;
     ZzARM64AssemblerWriter arm64_writer;
     ZzARM64Reader arm64_reader;
@@ -41,12 +41,12 @@ typedef struct _ZzInterceptorBackend {
     zz_ptr_t insn_leave_thunk;
     zz_ptr_t leave_thunk;
     zz_ptr_t dynamic_binary_instrumentation_thunk;
-} ZzInterceptorBackend;
+} InterceptorBackend;
 
 typedef struct _ZzARM64HookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzARM64HookFunctionEntryBackend;
+} ZzARM64HookEntryBackend;
 
 void ctx_save();
 void ctx_restore();

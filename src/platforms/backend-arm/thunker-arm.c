@@ -1,31 +1,6 @@
 #include "thunker-arm.h"
 #include "backend-arm-helper.h"
 
-// 前提: arm 可以直接访问 pc 寄存器, 也就是说无需中间寄存器就可以实现 `abs
-// jump`.
-
-// frida-gum 的做法, 手动恢复 lr, 并将 `next_hop` 写在之前 store `lr` 的位置,
-// 之后利用恢复寄存器跳转
-
-// 还有一个点, 就是 hook-entry 的参数传递, 这就是为啥 frida-gum 中为啥把
-// gum_emit_prolog 分成了两部分, 把 gum_emit_push_cpu_context_high_part 放在 x7
-// 用之前.
-
-// 这个和 arm64 有不同, arm64 中借助了一个中间寄存器 x16 or x17.
-
-// 重点是在: 1. 在 restore 之前完成所有工作 2. 利用 restore 过程修改 pc.
-
-// 当然也有其他做法, 比如最后一个操作是 ldr pc, [sp, #?], 也没啥问题.
-
-// 14 = 5 + 8 + 1
-
-// 按理说应该最先进入 ctx_save, 之后才能保证即使各种操作寄存器不被污染,
-// 几个理想方案 1. 把 ctx_save 归属为 trampoline, 优点: 优先进行寄存器状态保存,
-// 缺点: ctx_save 重复多次 2. 把 ctx_save 归属为 thunk, 统一做寄存器保存,
-// trampline 入口处进行参数保存至栈. 优点: ctx_save 可以作为公用. 缺点:
-// 操作复杂, 耦合略强. 3. 把 ctx_save 进行拆分, 缺点: 模块化设计差, 耦合强
-// (frida-gum采用)
-
 __attribute__((__naked__)) void ctx_save() {
     __asm__ volatile(".arm\n"
                      "sub sp, sp, #(14*4)\n"
@@ -69,17 +44,17 @@ __attribute__((__naked__)) void ctx_restore() {
 }
 
 // just like pre_call, wow!
-void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+void function_context_begin_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                        zz_ptr_t caller_ret_addr) {
 
     ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
-    ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ThreadStack *threadstack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!threadstack) {
-        threadstack = ZzNewThreadStack(entry->thread_local_key);
+        threadstack = ThreadStackAllocate(entry->thread_local_key);
     }
-    ZzCallStack *callstack = ZzNewCallStack();
-    ZzPushCallStack(threadstack, callstack);
+    CallStack *callstack = CallStackAllocate();
+    ThreadStackPushCallStack(threadstack, callstack);
 
     /* call pre_call */
     if (entry->pre_call) {
@@ -104,17 +79,17 @@ void function_context_begin_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next
     }
 }
 
-void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs,
+void insn_context_end_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs,
                                  zz_ptr_t caller_ret_addr) {
     ZZ_DEBUG_LOG("target %p insn_context__end_invocation", entry->target_ptr);
 
-    ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ThreadStack *threadstack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!threadstack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
-    ZzCallStack *callstack = ZzPopCallStack(threadstack);
+    CallStack *callstack = ThreadStackPopCallStack(threadstack);
 
     if (entry->post_call) {
         POSTCALL post_call;
@@ -128,10 +103,10 @@ void insn_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, 
     // set next hop
     *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->next_insn_addr;
 
-    ZzFreeCallStack(callstack);
+    CallStackFree(callstack);
 }
 
-void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
+void dynamic_binary_instrumentation_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs) {
 
     /* call pre_call */
     if (entry->stub_call) {
@@ -147,16 +122,16 @@ void dynamic_binary_instrumentation_invocation(ZzHookFunctionEntry *entry, zz_pt
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_hop, RegState *rs) {
+void function_context_end_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs) {
     ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
-    ZzThreadStack *threadstack = ZzGetCurrentThreadStack(entry->thread_local_key);
+    ThreadStack *threadstack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!threadstack) {
 #if defined(DEBUG_MODE)
         debug_break();
 #endif
     }
-    ZzCallStack *callstack = ZzPopCallStack(threadstack);
+    CallStack *callstack = ThreadStackPopCallStack(threadstack);
 
     if (entry->post_call) {
         POSTCALL post_call;
@@ -170,7 +145,7 @@ void function_context_end_invocation(ZzHookFunctionEntry *entry, zz_ptr_t next_h
     // set next hop
     *(zz_ptr_t *)next_hop = callstack->caller_ret_addr;
 
-    ZzFreeCallStack(callstack);
+    CallStackFree(callstack);
 }
 
 void zz_thumb_thunker_build_enter_thunk(ZzThumbAssemblerWriter *writer) {
@@ -331,10 +306,10 @@ void zz_thumb_thunker_build_leave_thunk(ZzThumbAssemblerWriter *writer) {
     zz_thumb_writer_put_ldr_index_reg_reg_offset(writer, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
 }
 
-ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
+void BridgeBuildAll(InterceptorBackend *self) {
     char temp_code_slice[512]            = {0};
     ZzThumbAssemblerWriter *thumb_writer = NULL;
-    ZzCodeSlice *code_slice              = NULL;
+    CodeSlice *code_slice              = NULL;
     ZZSTATUS status                      = ZZ_SUCCESS;
 
     thumb_writer = &self->thumb_writer;
@@ -342,7 +317,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     // buid enter_thunk
     zz_thumb_writer_reset(thumb_writer, temp_code_slice, 0);
     zz_thumb_thunker_build_enter_thunk(thumb_writer);
-    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->emm, 0, 0);
 
     if (code_slice)
         self->enter_thunk = code_slice->data + 1;
@@ -354,7 +329,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "%s\n", "BridgeBuildAll:");
         for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
              p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
@@ -370,7 +345,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_leave_thunk(thumb_writer);
 
     // code patch
-    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->emm, 0, 0);
     if (code_slice)
         self->leave_thunk = code_slice->data + 1;
     else
@@ -381,7 +356,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "%s\n", "BridgeBuildAll:");
         for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
              p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
@@ -397,7 +372,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_insn_leave_thunk(thumb_writer);
 
     // code patch
-    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->emm, 0, 0);
     if (code_slice)
         self->insn_leave_thunk = code_slice->data + 1;
     else
@@ -408,7 +383,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "%s\n", "BridgeBuildAll:");
         for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
              p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);
@@ -424,7 +399,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
     zz_thumb_thunker_build_dynamic_binary_instrumentation_thunk(thumb_writer);
 
     // code patch
-    code_slice = zz_thumb_code_patch(thumb_writer, self->allocator, 0, 0);
+    code_slice = zz_thumb_code_patch(thumb_writer, self->emm, 0, 0);
     if (code_slice)
         self->dynamic_binary_instrumentation_thunk = code_slice->data + 1;
     else
@@ -435,7 +410,7 @@ ZZSTATUS ZzThunkerBuildThunk(ZzInterceptorBackend *self) {
         char buffer[2048]       = {};
         char thunk_buffer[2048] = {};
         int t                   = 0;
-        sprintf(buffer + strlen(buffer), "%s\n", "ZzThunkerBuildThunk:");
+        sprintf(buffer + strlen(buffer), "%s\n", "BridgeBuildAll:");
         for (zz_addr_t p = thumb_writer->w_start_address; p < thumb_writer->w_start_address + thumb_writer->size;
              p++, t = t + 5) {
             sprintf(thunk_buffer + t, "0x%.2x ", *(unsigned char *)p);

@@ -1,276 +1,269 @@
-#include "allocator.h"
+#include "emm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 
-ZzAllocator *ZzNewAllocator() {
-    if (!ZzMemoryIsSupportAllocateRXPage())
+ExecuteMemoryManager *ExecuteMemoryManagerSharedInstance() {
+    if (!MemoryIsSupportAllocateRXMemory())
         return NULL;
 
-    ZzAllocator *allocator;
-    allocator               = (ZzAllocator *)zz_malloc_with_zero(sizeof(ZzAllocator));
-    allocator->memory_pages = (ZzMemoryPage **)zz_malloc_with_zero(sizeof(ZzMemoryPage *) * DEFAULT_ALLOCATOR_CAPACITY);
-    if (!allocator->memory_pages)
+    ExecuteMemoryManager *emm;
+    emm = (ExecuteMemoryManager *)malloc0(sizeof(ExecuteMemoryManager));
+    emm->execute_memory_block_ptr_list =
+        (ExecuteMemoryBlock **)malloc0(sizeof(ExecuteMemoryBlock *) * DEFAULT_ALLOCATOR_CAPACITY);
+    if (!emm->execute_memory_block_ptr_list)
         return NULL;
-    allocator->size     = 0;
-    allocator->capacity = DEFAULT_ALLOCATOR_CAPACITY;
-    return allocator;
+    emm->size     = 0;
+    emm->capacity = DEFAULT_ALLOCATOR_CAPACITY;
+    return emm;
 }
 
-ZzMemoryPage *ZzNewMemoryPage() {
-    zz_size_t page_size = ZzMemoryGetPageSzie();
-    zz_ptr_t page_ptr   = NULL;
-    zz_ptr_t cave_ptr   = NULL;
-    ZzMemoryPage *page  = NULL;
+static ExecuteMemoryBlock *AllocateExecuteMemoryPage() {
+    zz_size_t page_size     = MemoryGetPageSize();
+    zz_ptr_t page_ptr       = NULL;
+    ExecuteMemoryBlock *emb = NULL;
 
-    page_ptr = ZzMemoryAllocatePages(1);
+    page_ptr = MemoryAllocatePage(1);
     if (!page_ptr) {
         return NULL;
     }
-    if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        ZZ_ERROR_LOG("ZzMemoryProtectAsExecutable error at %p", page_ptr);
+    if (!MemoryHelperProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
+        ZZ_ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
+    }
+
+    emb                  = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
+    emb->start_address   = page_ptr;
+    emb->current_address = page_ptr;
+    emb->total_size      = page_size;
+    emb->used_size       = 0;
+    return emb;
+}
+
+ExecuteMemoryBlock *AllocateNearExecuteMemoryPage(zz_addr_t address, zz_size_t redirect_range_size) {
+    zz_size_t page_size     = MemoryGetPageSize();
+    zz_ptr_t page_ptr       = NULL;
+    ExecuteMemoryBlock *emb = NULL;
+
+    page_ptr = MemoryHelperAllocateNearPage(address, redirect_range_size, 1);
+    if (!page_ptr) {
+        return NULL;
+    }
+
+    if (!MemoryHelperProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
+        ZZ_ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
         ZZ_DEBUG_BREAK();
         exit(1);
     }
 
-    page            = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
-    page->base      = page_ptr;
-    page->curr_pos  = page_ptr;
-    page->size      = page_size;
-    page->used_size = 0;
-    return page;
-}
+    emb = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
 
-ZzMemoryPage *ZzNewNearMemoryPage(zz_addr_t address, zz_size_t redirect_range_size) {
-    zz_size_t page_size = ZzMemoryGetPageSzie();
-    zz_ptr_t page_ptr   = NULL;
-    zz_ptr_t cave_ptr   = NULL;
-    ZzMemoryPage *page  = NULL;
-
-    page_ptr = ZzMemoryAllocateNearPages(address, redirect_range_size, 1);
-    if (!page_ptr) {
-        return NULL;
-    }
-
-    if (!ZzMemoryProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        ZZ_ERROR_LOG("ZzMemoryProtectAsExecutable error at %p", page_ptr);
-        ZZ_DEBUG_BREAK();
-        exit(1);
-    }
-
-    page = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
-
-    page->base = page_ptr;
+    emb->start_address = page_ptr;
 
     if ((zz_addr_t)page_ptr > address && ((zz_addr_t)page_ptr + page_size) > (address + redirect_range_size)) {
-        page->size      = (address + redirect_range_size) - (zz_addr_t)page_ptr;
-        page->used_size = 0;
-        page->curr_pos  = page_ptr;
+        emb->total_size      = (address + redirect_range_size) - (zz_addr_t)page_ptr;
+        emb->used_size       = 0;
+        emb->current_address = page_ptr;
     } else if ((zz_addr_t)page_ptr < address && (zz_addr_t)page_ptr < (address - redirect_range_size)) {
-        page->size      = page_size;
-        page->used_size = (address - redirect_range_size) - (zz_addr_t)page_ptr;
-        page->curr_pos  = (zz_ptr_t)(address - redirect_range_size);
+        emb->total_size      = page_size;
+        emb->used_size       = (address - redirect_range_size) - (zz_addr_t)page_ptr;
+        emb->current_address = (zz_ptr_t)(address - redirect_range_size);
     } else {
-        page->size      = page_size;
-        page->used_size = 0;
-        page->curr_pos  = page_ptr;
+        emb->total_size      = page_size;
+        emb->used_size       = 0;
+        emb->current_address = page_ptr;
     }
-    page->isCodeCave = FALSE;
-    return page;
+    emb->is_code_cave = FALSE;
+    return emb;
 }
 
-ZzMemoryPage *ZzNewNearCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t code_slice_size) {
-    zz_size_t page_size = ZzMemoryGetPageSzie();
-    zz_ptr_t cave_ptr   = NULL;
-    ZzMemoryPage *page  = NULL;
-    zz_size_t cave_size = code_slice_size;
+static ExecuteMemoryBlock *AllocateNearCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t cave_size) {
+    zz_size_t page_size     = MemoryGetPageSize();
+    zz_ptr_t cave_ptr       = NULL;
+    ExecuteMemoryBlock *emb = NULL;
 
-    cave_ptr = ZzMemorySearchCodeCave(address, redirect_range_size, cave_size);
+    cave_ptr = MemoryHelperSearchCodeCave(address, redirect_range_size, cave_size);
 
     if (!cave_ptr)
         return NULL;
 
-    page             = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
-    page->base       = cave_ptr;
-    page->curr_pos   = cave_ptr;
-    page->size       = cave_size;
-    page->used_size  = 0;
-    page->isCodeCave = TRUE;
-    return page;
+    emb                  = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
+    emb->start_address   = cave_ptr;
+    emb->current_address = cave_ptr;
+    emb->total_size      = cave_size;
+    emb->used_size       = 0;
+    emb->is_code_cave    = TRUE;
+    return emb;
 }
 
-ZZSTATUS ZzAddMemoryPage(ZzAllocator *allocator, ZzMemoryPage *page) {
-    if (!allocator)
+ZZSTATUS ExecuteMemoryManagerAdd(ExecuteMemoryManager *emm, ExecuteMemoryBlock *emb) {
+    if (!emm)
         return ZZ_FAILED;
-    if (allocator->size >= allocator->capacity) {
-        ZzMemoryPage **pages = realloc(allocator->memory_pages, sizeof(ZzMemoryPage) * (allocator->capacity) * 2);
-        if (!pages) {
+    if (emm->size >= emm->capacity) {
+        ExecuteMemoryBlock **execute_memory_block_ptr_list =
+            realloc(emm->execute_memory_block_ptr_list, sizeof(ExecuteMemoryBlock) * (emm->capacity) * 2);
+        if (!execute_memory_block_ptr_list) {
             return ZZ_FAILED;
         }
-        allocator->capacity     = allocator->capacity * 2;
-        allocator->memory_pages = pages;
+        emm->capacity                      = emm->capacity * 2;
+        emm->execute_memory_block_ptr_list = execute_memory_block_ptr_list;
     }
-    allocator->memory_pages[allocator->size++] = page;
+    emm->execute_memory_block_ptr_list[emm->size++] = emb;
     return ZZ_SUCCESS;
 }
 
 //  1. try allocate from the history pages
-//  2. try allocate a new page
-//  3. add it to the page manager
-ZzCodeSlice *ZzNewCodeSlice(ZzAllocator *allocator, zz_size_t code_slice_size) {
-    ZzCodeSlice *code_slice = NULL;
-    ZzMemoryPage *page      = NULL;
+//  2. try allocate a new emb
+//  3. add it to the emb manager
+CodeSlice *ExecuteMemoryManagerAllocateCodeSlice(ExecuteMemoryManager *emm, zz_size_t cs_size) {
+    CodeSlice *cs           = NULL;
+    ExecuteMemoryBlock *emb = NULL;
     int i;
 
-    for (i = 0; i < allocator->size; i++) {
-        page = allocator->memory_pages[i];
-        // 1. page is initialized
-        // 2. can't be codecave
-        // 3. the rest memory of this page is enough for code_slice_size
-        // 4. the page address is near
+    for (i = 0; i < emm->size; i++) {
+        emb = emm->execute_memory_block_ptr_list[i];
 
-        if ((zz_addr_t)page->curr_pos % 4) {
-            int t = 4 - (zz_addr_t)page->curr_pos % 4;
-            page->used_size += t;
-            page->curr_pos += t;
+        if ((zz_addr_t)emb->current_address % 4) {
+            int t = 4 - (zz_addr_t)emb->current_address % 4;
+            emb->used_size += t;
+            emb->current_address += t;
         }
 
-        if (page->base && !page->isCodeCave && (page->size - page->used_size) > code_slice_size) {
-            code_slice       = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
-            code_slice->data = page->curr_pos;
-            code_slice->size = code_slice_size;
+        if (emb->start_address && !emb->is_code_cave && (emb->total_size - emb->used_size) > cs_size) {
+            cs       = (CodeSlice *)malloc0(sizeof(CodeSlice));
+            cs->data = emb->current_address;
+            cs->size = cs_size;
 
-            page->curr_pos += code_slice_size;
-            page->used_size += code_slice_size;
-            return code_slice;
+            emb->current_address += cs_size;
+            emb->used_size += cs_size;
+            return cs;
         }
     }
 
-    page = ZzNewMemoryPage();
-    ZzAddMemoryPage(allocator, page);
+    emb = AllocateExecuteMemoryPage();
+    ExecuteMemoryManagerAdd(emm, emb);
 
-    if ((zz_addr_t)page->curr_pos % 4) {
-        int t = 4 - (zz_addr_t)page->curr_pos % 4;
-        page->used_size += t;
-        page->curr_pos += t;
+    if ((zz_addr_t)emb->current_address % 4) {
+        int t = 4 - (zz_addr_t)emb->current_address % 4;
+        emb->used_size += t;
+        emb->current_address += t;
     }
 
-    code_slice       = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
-    code_slice->data = page->curr_pos;
-    code_slice->size = code_slice_size;
+    cs       = (CodeSlice *)malloc0(sizeof(CodeSlice));
+    cs->data = emb->current_address;
+    cs->size = cs_size;
 
-    page->curr_pos += code_slice_size;
-    page->used_size += code_slice_size;
+    emb->current_address += cs_size;
+    emb->used_size += cs_size;
 
-    return code_slice;
+    return cs;
 }
 
 //  1. try allocate from the history pages
-//  2. try allocate a new near page
-//  3. add it to the page manager
-ZzCodeSlice *ZzNewNearCodeSlice(ZzAllocator *allocator, zz_addr_t address, zz_size_t redirect_range_size,
-                                zz_size_t code_slice_size) {
-    ZzCodeSlice *code_slice = NULL;
-    ZzMemoryPage *page      = NULL;
+//  2. try allocate a new near emb
+//  3. add it to the emb manager
+CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, zz_addr_t address,
+                                                     zz_size_t redirect_range_size, zz_size_t cs_size) {
+    CodeSlice *cs           = NULL;
+    ExecuteMemoryBlock *emb = NULL;
     int i;
-    for (i = 0; i < allocator->size; i++) {
-        page = allocator->memory_pages[i];
-        // 1. page is initialized
+    for (i = 0; i < emm->size; i++) {
+        emb = emm->execute_memory_block_ptr_list[i];
+        // 1. emb is initialized
         // 2. can't be codecave
-        // 3. the rest memory of this page is enough for code_slice_size
-        // 4. the page address is near
-        if (page->base && !page->isCodeCave) {
+        // 3. the rest memory of this emb is enough for cs_size
+        // 4. the emb address is near
+        if (emb->start_address && !emb->is_code_cave) {
             int flag             = 0;
             zz_addr_t split_addr = 0;
 
-            if ((zz_addr_t)page->curr_pos < address) {
-                if (address - redirect_range_size < (zz_addr_t)page->curr_pos) {
-                    // enough for code_slice_size
-                    if ((page->size - page->used_size) < code_slice_size)
+            if ((zz_addr_t)emb->current_address < address) {
+                if (address - redirect_range_size < (zz_addr_t)emb->current_address) {
+                    // enough for cs_size
+                    if ((emb->total_size - emb->used_size) < cs_size)
                         continue;
                     flag = 1;
-                } else if (address - redirect_range_size > (zz_addr_t)page->curr_pos &&
-                           (address - redirect_range_size) < ((zz_addr_t)page->base + page->size)) {
-                    // enough for code_slice_size
-                    if (((zz_addr_t)page->base + page->size) - (address - redirect_range_size) < code_slice_size)
+                } else if (address - redirect_range_size > (zz_addr_t)emb->current_address &&
+                           (address - redirect_range_size) < ((zz_addr_t)emb->start_address + emb->total_size)) {
+                    // enough for cs_size
+                    if (((zz_addr_t)emb->start_address + emb->total_size) - (address - redirect_range_size) < cs_size)
                         continue;
                     split_addr = address - redirect_range_size;
                     flag       = 2;
                 }
             } else {
-                if (address + redirect_range_size > ((zz_addr_t)page->base + page->size)) {
-                    // enough for code_slice_size
-                    if ((page->size - page->used_size) < code_slice_size)
+                if (address + redirect_range_size > ((zz_addr_t)emb->start_address + emb->total_size)) {
+                    // enough for cs_size
+                    if ((emb->total_size - emb->used_size) < cs_size)
                         continue;
                     flag = 1;
-                } else if ((address + redirect_range_size) > (zz_addr_t)page->curr_pos &&
-                           (address + redirect_range_size) < ((zz_addr_t)page->base + page->size)) {
-                    if ((address + redirect_range_size) - (zz_addr_t)page->curr_pos > code_slice_size)
+                } else if ((address + redirect_range_size) > (zz_addr_t)emb->current_address &&
+                           (address + redirect_range_size) < ((zz_addr_t)emb->start_address + emb->total_size)) {
+                    if ((address + redirect_range_size) - (zz_addr_t)emb->current_address > cs_size)
                         continue;
                     flag = 1;
                 }
             }
 
             if (1 == flag) {
-                code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
-                code_slice->isCodeCave = page->isCodeCave;
-                code_slice->data       = page->curr_pos;
-                code_slice->size       = code_slice_size;
+                cs               = (CodeSlice *)malloc0(sizeof(CodeSlice));
+                cs->is_code_cave = emb->is_code_cave;
+                cs->data         = emb->current_address;
+                cs->size         = cs_size;
 
-                page->curr_pos += code_slice_size;
-                page->used_size += code_slice_size;
-                return code_slice;
+                emb->current_address += cs_size;
+                emb->used_size += cs_size;
+                return cs;
             } else if (2 == flag) {
 
-                // new page
-                ZzMemoryPage *new_page = (ZzMemoryPage *)zz_malloc_with_zero(sizeof(ZzMemoryPage));
-                new_page->base         = (zz_ptr_t)split_addr;
-                new_page->size         = ((zz_addr_t)page->base + page->size) - split_addr;
-                new_page->used_size    = 0;
-                new_page->curr_pos     = (zz_ptr_t)split_addr;
-                ZzAddMemoryPage(allocator, new_page);
+                // new emb
+                ExecuteMemoryBlock *new_emb = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
+                new_emb->start_address      = (zz_ptr_t)split_addr;
+                new_emb->size               = ((zz_addr_t)emb->start_address + emb->total_size) - split_addr;
+                new_emb->used_size          = 0;
+                new_emb->current_address    = (zz_ptr_t)split_addr;
+                ExecuteMemoryManagerAdd(emm, new_emb);
 
-                // origin page
-                page->size = split_addr - (zz_addr_t)page->base;
+                // origin emb
+                emb->total_size = split_addr - (zz_addr_t)emb->start_address;
 
-                code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
-                code_slice->isCodeCave = FALSE;
-                code_slice->data       = new_page->curr_pos;
-                code_slice->size       = code_slice_size;
+                cs               = (CodeSlice *)malloc0(sizeof(CodeSlice));
+                cs->is_code_cave = FALSE;
+                cs->data         = new_emb->current_address;
+                cs->size         = cs_size;
 
-                new_page->curr_pos += code_slice_size;
-                new_page->used_size += code_slice_size;
-                return code_slice;
+                new_emb->current_address += cs_size;
+                new_emb->used_size += cs_size;
+                return cs;
             }
         }
     }
 
 #if 0
-    page = ZzNewNearMemoryPage(address, redirect_range_size);
-    // try allocate again, avoid the boundary page
-    if (page && (page->size - page->used_size) < code_slice_size) {
-        page = ZzNewNearMemoryPage(address, redirect_range_size);
+    emb = ExecuteMemoryManagerTryAddNearExecuteMemoryPage(address, redirect_range_size);
+    // try allocate again, avoid the boundary emb
+    if (emb && (emb->total_size - emb->used_size) < cs_size) {
+        emb = ExecuteMemoryManagerTryAddNearExecuteMemoryPage(address, redirect_range_size);
     }
 #endif
-    page = NULL;
+    emb = NULL;
 
-    if (!page) {
-        page = ZzNewNearCodeCave(address, redirect_range_size, code_slice_size);
-        if (!page)
+    if (!emb) {
+        emb = AllocateNearCodeCave(address, redirect_range_size, cs_size);
+        if (!emb)
             return NULL;
     }
-    if (!page)
+    if (!emb)
         return NULL;
 
-    code_slice             = (ZzCodeSlice *)zz_malloc_with_zero(sizeof(ZzCodeSlice));
-    code_slice->isCodeCave = page->isCodeCave;
-    code_slice->data       = page->curr_pos;
-    code_slice->size       = code_slice_size;
+    cs               = (CodeSlice *)malloc0(sizeof(CodeSlice));
+    cs->is_code_cave = emb->is_code_cave;
+    cs->data         = emb->current_address;
+    cs->size         = cs_size;
 
-    page->curr_pos += code_slice_size;
-    page->used_size += code_slice_size;
+    emb->current_address += cs_size;
+    emb->used_size += cs_size;
 
-    return code_slice;
+    return cs;
 }

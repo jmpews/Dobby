@@ -23,7 +23,7 @@ ZzInstruction *writer_put_jmp(zz_ptr_t address) {
         0xFF, 0x25, 0x00000000, // FF25 00000000: JMP [RIP+6]
         0x0000000000000000ULL   // Absolute destination address
     };
-    ZzInstruction *ins = (ZzInstruction *)zz_malloc_with_zero(sizeof(ZzInstruction));
+    ZzInstruction *ins = (ZzInstruction *)malloc0(sizeof(ZzInstruction));
     jmp.address        = address;
     ins->size          = sizeof(jmp);
     memcpy(ins->bytes, &jmp, sizeof(jmp));

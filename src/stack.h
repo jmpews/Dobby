@@ -23,39 +23,39 @@
 #include "memory.h"
 #include "thread.h"
 
-typedef struct _ZzCallStackItem {
+typedef struct _CallStackEntry {
     char *key;
     zz_ptr_t value;
-} ZzCallStackItem;
+} CallStackEntry;
 
-typedef struct _ZzCallStack {
+typedef struct _CallStack {
     zz_size_t call_id;
     ThreadStack *threadstack;
     zz_size_t size;
     zz_size_t capacity;
-    zz_ptr_t sp;
+    zz_ptr_t reg_sp;
     zz_ptr_t caller_ret_addr;
-    ZzCallStackItem *items;
-} ZzCallStack;
+    CallStackEntry *callstack_entry_list;
+} CallStack;
 
-typedef struct _ZzThreadStack {
+typedef struct _ThreadStack {
     zz_size_t thread_id;
     zz_size_t size;
     zz_size_t capacity;
-    zz_ptr_t key_ptr;
-    ZzCallStack **callstacks;
-} ZzThreadStack;
+    zz_ptr_t thread_local_key;
+    CallStack **callstack_ptr_list;
+} ThreadStack;
 
-ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr);
+ThreadStack *ThreadStackAllocate(zz_ptr_t thread_local_key);
 
-ZzCallStack *ZzNewCallStack();
+CallStack *CallStackAllocate();
 
-ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr);
+ThreadStack *ThreadStackGetByThreadLocalKey(zz_ptr_t thread_local_key);
 
-bool ZzPushCallStack(ZzThreadStack *theadstack, ZzCallStack *callstack);
+bool ThreadStackPushCallStack(ThreadStack *theadstack, CallStack *callstack);
 
-ZzCallStack *ZzPopCallStack(ZzThreadStack *stack);
+CallStack *ThreadStackPopCallStack(ThreadStack *stack);
 
-void ZzFreeCallStack(ZzCallStack *callstack);
+void CallStackFree(CallStack *callstack);
 
 #endif

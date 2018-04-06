@@ -3,114 +3,114 @@
 
 #include "stack.h"
 
-ZzThreadStack *ZzGetCurrentThreadStack(zz_ptr_t key_ptr) {
-    ZzThreadStack *threadstack = (ZzThreadStack *)ZzThreadGetCurrentThreadData(key_ptr);
+ThreadStack *ThreadStackGetByThreadLocalKey(zz_ptr_t thread_local_key) {
+    ThreadStack *threadstack = (ThreadStack *)ThreadGetThreadLocalValue(thread_local_key);
     if (!threadstack)
         return NULL;
     return threadstack;
 }
 
-ZzThreadStack *ZzNewThreadStack(zz_ptr_t key_ptr) {
-    ZzThreadStack *threadstack;
-    threadstack              = (ZzThreadStack *)zz_malloc_with_zero(sizeof(ZzThreadStack));
+ThreadStack *ThreadStackAllocate(zz_ptr_t thread_local_key) {
+    ThreadStack *threadstack;
+    threadstack              = (ThreadStack *)malloc0(sizeof(ThreadStack));
     threadstack->capacity    = 4;
-    ZzCallStack **callstacks = (ZzCallStack **)zz_malloc_with_zero(sizeof(ZzCallStack *) * (threadstack->capacity));
-    if (!callstacks)
+    CallStack **callstack_ptr_list = (CallStack **)malloc0(sizeof(CallStack *) * (threadstack->capacity));
+    if (!callstack_ptr_list)
         return NULL;
-    threadstack->callstacks = callstacks;
+    threadstack->callstack_ptr_list = callstack_ptr_list;
     threadstack->size       = 0;
-    threadstack->key_ptr    = key_ptr;
-    threadstack->thread_id  = ZzThreadGetCurrentThreadID();
-    ZzThreadSetCurrentThreadData(key_ptr, (zz_ptr_t)threadstack);
+    threadstack->thread_local_key    = thread_local_key;
+    threadstack->thread_id  = ThreadGetCurrentThreadID();
+    ThreadSetThreadLocalValue(thread_local_key, (zz_ptr_t)threadstack);
     return threadstack;
 }
 
-ZzCallStack *ZzNewCallStack() {
-    ZzCallStack *callstack;
-    callstack           = (ZzCallStack *)zz_malloc_with_zero(sizeof(ZzCallStack));
+CallStack *CallStackAllocate() {
+    CallStack *callstack;
+    callstack           = (CallStack *)malloc0(sizeof(CallStack));
     callstack->capacity = 4;
-    callstack->items    = (ZzCallStackItem *)malloc(sizeof(ZzCallStackItem) * callstack->capacity);
+    callstack->callstack_entry_list    = (CallStackEntry *)malloc(sizeof(CallStackEntry) * callstack->capacity);
     callstack->size     = 0;
-    if (!callstack->items)
+    if (!callstack->callstack_entry_list)
         return NULL;
     return callstack;
 }
 
-void ZzFreeCallStack(ZzCallStack *callstack) {
-    free(callstack->items);
+void CallStackFree(CallStack *callstack) {
+    free(callstack->callstack_entry_list);
     free(callstack);
     callstack = NULL;
 }
 
-ZzCallStack *ZzPopCallStack(ZzThreadStack *stack) {
+CallStack *ThreadStackPopCallStack(ThreadStack *stack) {
     if (stack->size > 0)
         stack->size--;
     else
         return NULL;
-    ZzCallStack *callstack = stack->callstacks[stack->size];
+    CallStack *callstack = stack->callstack_ptr_list[stack->size];
     return callstack;
 }
 
-bool ZzPushCallStack(ZzThreadStack *stack, ZzCallStack *callstack) {
+bool ThreadStackPushCallStack(ThreadStack *stack, CallStack *callstack) {
     if (!stack)
         return FALSE;
 
     if (stack->size >= stack->capacity) {
-        // add extra callstacks
-        ZzCallStack **callstacks =
-            (ZzCallStack **)realloc(stack->callstacks, sizeof(ZzCallStack *) * (stack->capacity) * 2);
-        if (!callstacks)
+        // add extra callstack_ptr_list
+        CallStack **callstack_ptr_list =
+            (CallStack **)realloc(stack->callstack_ptr_list, sizeof(CallStack *) * (stack->capacity) * 2);
+        if (!callstack_ptr_list)
             return FALSE;
-        stack->callstacks = callstacks;
+        stack->callstack_ptr_list = callstack_ptr_list;
         stack->capacity   = stack->capacity * 2;
     }
 
     callstack->call_id     = stack->size;
     callstack->threadstack = (ThreadStack *)stack;
 
-    stack->callstacks[stack->size++] = callstack;
+    stack->callstack_ptr_list[stack->size++] = callstack;
     return TRUE;
 }
 
 zz_ptr_t ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
-    ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
+    CallStack *callstack = (CallStack *)callstack_ptr;
     if (!callstack)
         return NULL;
     int i;
     for (i = 0; i < callstack->size; ++i) {
-        if (!strcmp(callstack->items[i].key, key)) {
-            return callstack->items[i].value;
+        if (!strcmp(callstack->callstack_entry_list[i].key, key)) {
+            return callstack->callstack_entry_list[i].value;
         }
     }
     return NULL;
 }
 
-ZzCallStackItem *ZzNewCallStackData(ZzCallStack *callstack) {
+CallStackEntry *CallStackAllocateData(CallStack *callstack) {
     if (!callstack)
         return NULL;
     if (callstack->size >= callstack->capacity) {
-        // add extra callstackitems
-        ZzCallStackItem *callstackitems =
-            (ZzCallStackItem *)realloc(callstack->items, sizeof(ZzCallStackItem) * callstack->capacity * 2);
-        if (!callstackitems)
+        // add extra callstackcallstack_entry_list
+        CallStackEntry *callstackcallstack_entry_list =
+            (CallStackEntry *)realloc(callstack->callstack_entry_list, sizeof(CallStackEntry) * callstack->capacity * 2);
+        if (!callstackcallstack_entry_list)
             return NULL;
-        callstack->items    = callstackitems;
+        callstack->callstack_entry_list    = callstackcallstack_entry_list;
         callstack->capacity = callstack->capacity * 2;
     }
-    return &(callstack->items[callstack->size++]);
+    return &(callstack->callstack_entry_list[callstack->size++]);
 }
 
 bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size) {
-    ZzCallStack *callstack = (ZzCallStack *)callstack_ptr;
+    CallStack *callstack = (CallStack *)callstack_ptr;
     if (!callstack)
         return FALSE;
 
-    ZzCallStackItem *item = ZzNewCallStackData(callstack);
+    CallStackEntry *item = CallStackAllocateData(callstack);
 
-    char *key_tmp = (char *)zz_malloc_with_zero(strlen(key) + 1);
+    char *key_tmp = (char *)malloc0(strlen(key) + 1);
     strncpy(key_tmp, key, strlen(key) + 1);
 
-    zz_ptr_t value_tmp = (zz_ptr_t)zz_malloc_with_zero(value_size);
+    zz_ptr_t value_tmp = (zz_ptr_t)malloc0(value_size);
     memcpy(value_tmp, value_ptr, value_size);
     item->key   = key_tmp;
     item->value = value_tmp;

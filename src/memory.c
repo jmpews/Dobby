@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void *zz_malloc_with_zero(zz_size_t size) {
+void *malloc0(zz_size_t size) {
     void *tmp = (void *)malloc(size);
     memset(tmp, 0, size);
     return tmp;
@@ -27,7 +27,7 @@ void *zz_malloc_with_zero(zz_size_t size) {
 
 ZZSTATUS ZzRuntimeCodePatch(void *address, void *codedata, unsigned long codedata_size) {
     //    zz_addr_t address_aligned = (zz_addr_t)address & ~(zz_addr_t)1;
-    if (!ZzMemoryPatchCode((zz_addr_t)address, codedata, codedata_size))
+    if (!MemoryHelperPatchCode((zz_addr_t)address, codedata, codedata_size))
         return ZZ_FAILED;
     return ZZ_SUCCESS;
 }

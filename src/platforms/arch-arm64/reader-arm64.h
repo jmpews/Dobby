@@ -30,9 +30,9 @@ typedef struct _ZzARM64Reader {
     zz_size_t size;
 } ZzARM64Reader;
 
-ZzARM64Reader *zz_arm64_reader_new(zz_ptr_t insn_address);
-void zz_arm64_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address);
-void zz_arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address);
-void zz_arm64_reader_free(ZzARM64Reader *self);
-ZzARM64Instruction *zz_arm64_reader_read_one_instruction(ZzARM64Reader *self);
+ZzARM64Reader *arm64_reader_new(zz_ptr_t insn_address);
+void arm64_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address);
+void arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address);
+void arm64_reader_free(ZzARM64Reader *self);
+ZzARM64Instruction *arm64_reader_read_one_instruction(ZzARM64Reader *self);
 #endif

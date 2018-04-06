@@ -14,7 +14,7 @@ void zz_arm64_relocator_init(ZzARM64Relocator *relocator, ZzARM64Reader *input, 
     relocator->try_relocated_length = 0;
 
     //    relocator->literal_insns =
-    //        (ZzARM64Instruction **)zz_malloc_with_zero(MAX_LITERAL_INSN_SIZE * sizeof(ZzARM64Instruction *));
+    //        (ZzARM64Instruction **)malloc0(MAX_LITERAL_INSN_SIZE * sizeof(ZzARM64Instruction *));
 }
 
 void zz_arm64_relocator_free(ZzARM64Relocator *relocator) {
