@@ -1,9 +1,10 @@
 #include "debuglog.h"
 
-ZzDebugLogControler gDebugLogControler;
+DebugLogControler gDebugLogControler;
 
-void ZzIsEnableLog() { gDebugLogControler.is_enable_log = true; }
+void DebugLogControlerEnableLog() { gDebugLogControler.is_enable_log = true; }
 
-bool ZzIsEnableDebugbreak() { return gDebugLogControler.is_enable_debugbreak; }
+bool DebugLogControlerIsEnableLog() { return gDebugLogControler.is_enable_log; }
+bool DebugLogControlerIsEnableDebugbreak() { return gDebugLogControler.is_enable_debugbreak; }
 
-ZzDebugLogControler *ZzDebugLogControlerSharedInstance(void) { return &gDebugLogControler; }
+DebugLogControler *DebugLogControlerSharedInstance(void) { return &gDebugLogControler; }

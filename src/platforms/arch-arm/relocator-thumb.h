@@ -4,7 +4,7 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "memory.h"
+#include "memhelper.h"
 #include "writer.h"
 
 #include "instructions.h"

@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-#include "thunker-x86.h"
+#include "bridge-x86.h"
 #include "zzinfo.h"
 #include <string.h>
 
 // just like pre_call, wow!
-void function_context_begin_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs,
-                                       zz_ptr_t caller_ret_addr) {
+void function_context_begin_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs,
+                                       zz_ptr_t retAddr) {
     ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
@@ -39,20 +39,20 @@ void function_context_begin_invocation(HookEntry *entry, zz_ptr_t next_hop, RegS
 
     /* set next hop */
     if (entry->replace_call) {
-        *(zz_ptr_t *)next_hop = entry->replace_call;
+        *(zz_ptr_t *)nextHop = entry->replace_call;
     } else {
-        *(zz_ptr_t *)next_hop = entry->on_invoke_trampoline;
+        *(zz_ptr_t *)nextHop = entry->on_invoke_trampoline;
     }
 
     if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
-        callstack->caller_ret_addr   = *(zz_ptr_t *)caller_ret_addr;
-        *(zz_ptr_t *)caller_ret_addr = entry->on_leave_trampoline;
+        callstack->retAddr   = *(zz_ptr_t *)retAddr;
+        *(zz_ptr_t *)retAddr = entry->on_leave_trampoline;
     }
 }
 
 // just like post_call, wow!
-void function_context_half_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs,
-                                      zz_ptr_t caller_ret_addr) {
+void function_context_half_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs,
+                                      zz_ptr_t retAddr) {
     ZZ_DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
@@ -71,13 +71,13 @@ void function_context_half_invocation(HookEntry *entry, zz_ptr_t next_hop, RegSt
     }
 
     /*  set next hop */
-    *(zz_ptr_t *)next_hop = (zz_ptr_t)entry->target_half_ret_addr;
+    *(zz_ptr_t *)nextHop = (zz_ptr_t)entry->target_half_ret_addr;
 
     CallStackFree(callstack);
 }
 
 // just like post_call, wow!
-void function_context_end_invocation(HookEntry *entry, zz_ptr_t next_hop, RegState *rs) {
+void function_context_end_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs) {
     ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
@@ -96,14 +96,14 @@ void function_context_end_invocation(HookEntry *entry, zz_ptr_t next_hop, RegSta
     }
 
     /* set next hop */
-    *(zz_ptr_t *)next_hop = callstack->caller_ret_addr;
+    *(zz_ptr_t *)nextHop = callstack->retAddr;
     CallStackFree(callstack);
 }
 
-void zz_x86_thunker_build_enter_thunk(ZzAssemblerWriter *writer) {}
+void zz_x86_bridge_build_enter_bridge(ZzAssemblerWriter *writer) {}
 
-void zz_x86_thunker_build_insn_leave_thunk(ZzAssemblerWriter *writer) {}
+void zz_x86_bridge_build_insn_leave_bridge(ZzAssemblerWriter *writer) {}
 
-void zz_x86_thunker_build_leave_thunk(ZzAssemblerWriter *writer) {}
+void zz_x86_bridge_build_leave_bridge(ZzAssemblerWriter *writer) {}
 
-void BridgeBuildAll(InterceptorBackend *self) { return ZZ_FAILED; }
+void BridgeBuildAll(InterceptorBackend *self) { return RS_FAILED; }

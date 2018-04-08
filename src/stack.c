@@ -72,7 +72,7 @@ bool ThreadStackPushCallStack(ThreadStack *stack, CallStack *callstack) {
     return TRUE;
 }
 
-zz_ptr_t ZzGetCallStackData(CallStack *callstack_ptr, char *key) {
+zz_ptr_t CallStackGetThreadLocalData(CallStackPublic *callstack_ptr, char *key) {
     CallStack *callstack = (CallStack *)callstack_ptr;
     if (!callstack)
         return NULL;
@@ -100,7 +100,7 @@ CallStackEntry *CallStackAllocateData(CallStack *callstack) {
     return &(callstack->callstack_entry_list[callstack->size++]);
 }
 
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size) {
+bool CallStackSetThreadLocalData(CallStackPublic *callstack_ptr, char *key, zz_ptr_t value_ptr, zz_size_t value_size) {
     CallStack *callstack = (CallStack *)callstack_ptr;
     if (!callstack)
         return FALSE;

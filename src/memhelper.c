@@ -14,19 +14,20 @@
  *    limitations under the License.
  */
 
-#ifndef platforms_backend_arm64_thunker_arm64
-#define platforms_backend_arm64_thunker_arm64
+#include "memhelper.h"
 
-#include "hookzz.h"
-#include "zkit.h"
+#include <stdlib.h>
+#include <string.h>
 
-#include "stack.h"
-#include "thunker.h"
-#include "tools.h"
+void *malloc0(zz_size_t size) {
+    void *tmp = (void *)malloc(size);
+    memset(tmp, 0, size);
+    return tmp;
+}
 
-#include "platforms/arch-arm64/relocator-arm64.h"
-#include "platforms/arch-arm64/writer-arm64.h"
-
-#include "interceptor-arm64.h"
-
-#endif
+RetStatus ZzRuntimeCodePatch(void *address, void *codedata, unsigned long codedata_size) {
+    //    zz_addr_t address_aligned = (zz_addr_t)address & ~(zz_addr_t)1;
+    if (!MemoryHelperPatchCode((zz_addr_t)address, codedata, codedata_size))
+        return RS_FAILED;
+    return RS_SUCCESS;
+}

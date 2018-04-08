@@ -20,7 +20,7 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "memory.h"
+#include "memhelper.h"
 
 #include "CommonKit/memory/common_memory_kit.h"
 #include "DarwinKit/MemoryKit/darwin_memory_kit.h"

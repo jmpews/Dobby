@@ -25,8 +25,10 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef RegStateStruct
+#define RegStateStruct
 #if defined(__arm64__) || defined(__aarch64__)
-typedef union FPReg_ {
+typedef union _FPReg {
     __int128_t q;
     struct {
         double d1;
@@ -81,119 +83,78 @@ typedef struct _RegState {
 typedef struct _RegState {
 } RegState;
 #endif
+#endif
 
-typedef enum _ZZSTATUS {
-    ZZ_UNKOWN = -1,
-    ZZ_DONE = 0,
-    ZZ_SUCCESS,
-    ZZ_FAILED,
-    ZZ_DONE_HOOK,
-    ZZ_DONE_INIT,
-    ZZ_DONE_ENABLE,
-    ZZ_ALREADY_HOOK,
-    ZZ_ALREADY_INIT,
-    ZZ_ALREADY_ENABLED,
-    ZZ_NEED_INIT,
-    ZZ_NO_BUILD_HOOK
-} ZZSTATUS;
+typedef enum _RetStatus {
+    RS_UNKOWN = -1,
+    RS_DONE = 0,
+    RS_SUCCESS,
+    RS_FAILED,
+    RS_DONE_HOOK,
+    RS_DONE_INIT,
+    RS_DONE_ENABLE,
+    RS_ALREADY_HOOK,
+    RS_ALREADY_INIT,
+    RS_ALREADY_ENABLED,
+    RS_NEED_INIT,
+    RS_NO_BUILD_HOOK
+} RetStatus;
 
 typedef enum _ZZHOOKTYPE {
-    HOOK_TYPE_ONE_INSTRUCTION = 0,
-    HOOK_TYPE_FUNCTION_via_PRE_POST,
+//  HOOK_TYPE_SINGLE_INSTRUCTION_DELETED = 0,
+    HOOK_TYPE_FUNCTION_via_PRE_POST = 0,
     HOOK_TYPE_FUNCTION_via_REPLACE,
     HOOK_TYPE_FUNCTION_via_GOT,
     HOOK_TYPE_DBI
 }ZZHOOKTYPE;
 
-typedef struct _CallStack {
+typedef struct _CallStackPublic {
     unsigned long call_id;
     struct _ThreadStack *ts;
-} CallStack;
+} CallStackPublic;
 
-typedef struct _ThreadStack {
+typedef struct _ThreadStackPublic {
     unsigned long thread_id;
     unsigned long size;
-} ThreadStack;
+} ThreadStackPublic;
 
 typedef struct _HookEntryInfo {
     unsigned long hook_id;
     void *hook_address;
 } HookEntryInfo;
 
-
-/* ------- example -------
-void common_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    puts((char *)rs->general.regs.r0);
-    STACK_SET(cs, "format", rs->general.regs.r0, char *);
-}
-
-void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    if (STACK_CHECK_KEY(cs, "format"))
-    {
-        char *format = STACK_GET(cs, "format", char *);
-        puts(format);
-    }
-}
-------- example end ------- */
-
-typedef void (*PRECALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
-typedef void (*POSTCALL)(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info);
-
+typedef void (*PRECALL)(RegState *rs, ThreadStackPublic *ts, CallStackPublic *cs, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegState *rs, ThreadStackPublic *ts, CallStackPublic *cs, const HookEntryInfo *info);
 typedef void (*STUBCALL)(RegState *rs, const HookEntryInfo *info);
 
-// ------- export API -------
+#define STACK_CHECK_KEY(cs, key) (bool)CallStackGetThreadLocalData(cs, key)
+#define STACK_GET(cs, key, type) *(type *)CallStackGetThreadLocalData(cs, key)
+#define STACK_SET(cs, key, value, type) CallStackSetThreadLocalData(cs, key, &(value), sizeof(type))
 
-#define STACK_CHECK_KEY(cs, key) (bool)ZzGetCallStackData(cs, key)
-#define STACK_GET(cs, key, type) *(type *)ZzGetCallStackData(cs, key)
-#define STACK_SET(cs, key, value, type) ZzSetCallStackData(cs, key, &(value), sizeof(type))
+void *CallStackGetThreadLocalData(CallStackPublic *callstack_ptr, char *key_str);
+bool CallStackSetThreadLocalData(CallStackPublic *callstack_ptr, char *key_str, void *value_ptr, unsigned long value_size);
 
-/* ------- example -------
-void common_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    puts((char *)rs->general.regs.r0);
-    STACK_SET(cs, "format", rs->general.regs.r0, char *);
-}
+RetStatus ZzHook(void *target_ptr, void *replace_call, void **origin_call_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
+RetStatus ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+RetStatus ZzHookReplace(void *target_ptr, void *replace_call, void **origin_call_ptr);
 
-void printf_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    if (STACK_CHECK_KEY(cs, "format"))
-    {
-        char *format = STACK_GET(cs, "format", char *);
-        puts(format);
-    }
-}
-------- example end ------- */
+// got hook (only support darwin)
+RetStatus ZzHookGOT(const char *name, void *replace_call, void **origin_call_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 
-void *ZzGetCallStackData(CallStack *callstack_ptr, char *key_str);
-bool ZzSetCallStackData(CallStack *callstack_ptr, char *key_str, void *value_ptr, unsigned long value_size);
-
-ZZSTATUS ZzBuildHook(void *target_ptr, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump, ZZHOOKTYPE hook_type);
-ZZSTATUS ZzEnableHook(void *target_ptr);
-
-ZZSTATUS ZzHook(void *target_ptr, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
-ZZSTATUS ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
-ZZSTATUS ZzHookReplace(void *target_ptr, void *replace_ptr, void **origin_ptr);
+// dynamic binary instrumentation
+RetStatus ZzDynamicBinaryInstrumentation(void *address, STUBCALL stub_call_ptr);
 
 // hook only one instruciton with instruction address
-ZZSTATUS ZzHookOneInstruction(void *insn_address, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
-
-// got hook (only support macho)
-ZZSTATUS ZzHookGOT(const char *name, void *replace_ptr, void **origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+// void ZzHookSingleInstruction(void *insn_address, PRECALL pre_call_ptr, POSTCALL post_call_ptr, bool try_near_jump);
 
 // runtime code patch
-ZZSTATUS ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_length);
-
-ZZSTATUS ZzDynamicBinaryInstrumentation(void *address, STUBCALL stub_call_ptr);
+RetStatus ZzRuntimeCodePatch(void *address, void *code_data, unsigned long code_length);
 
 // enable debug info
-void HookZzDebugInfoEnable(void);
+void DebugLogControlerEnableLog();
 
 // disable hook
-ZZSTATUS ZzDisableHook(void *target_ptr);
-
-// ------- export API end -------
+RetStatus ZzDisableHook(void *target_ptr);
 
 #if defined(__arm64__) || defined(__aarch64__)
 #if defined(__APPLE__) && defined(__MACH__)
@@ -204,7 +165,7 @@ ZZSTATUS ZzDisableHook(void *target_ptr);
 #endif
 #endif
 #ifdef TARGET_IS_IOS
-ZZSTATUS StaticBinaryInstrumentation(void *target_fileoff, void *replace_call_ptr, void **origin_ptr, PRECALL pre_call_ptr,
+RetStatus StaticBinaryInstrumentation(void *target_fileoff, void *replace_call_ptr, void **origin_call_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);
 #endif
 

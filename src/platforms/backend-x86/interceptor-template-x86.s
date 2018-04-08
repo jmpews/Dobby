@@ -11,8 +11,8 @@
 
 .globl cdecl(ctx_save)
 .globl cdecl(ctx_restore)
-.globl cdecl(enter_thunk_template)
-.globl cdecl(leave_thunk_template)
+.globl cdecl(enter_bridge_template)
+.globl cdecl(leave_bridge_template)
 .globl cdecl(on_enter_trampoline_template)
 .globl cdecl(on_invoke_trampoline_template)
 .globl cdecl(on_leave_trampoline_template)

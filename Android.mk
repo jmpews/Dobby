@@ -7,7 +7,9 @@ include $(CLEAR_VARS)
 
 # ------------ zkit make env ---------------
 
-zkit_PATH := $(LOCAL_PATH)/src/zkit
+zkit_PATH := $(LOCAL_PATH)/src/SaitamaKit
+
+$(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
 
 zkit_INCLUDE := $(zkit_PATH) \
 			$(zkit_PATH)/include
@@ -27,7 +29,6 @@ zkit_ALLFILES := $(foreach src_path,$(zkit_FILES_PATH), $(call walk,$(src_path),
 # $(warning zkit_ALLFILES $(zkit_ALLFILES))
 zkit_FILE_LIST  := $(filter $(zkit_FILES_SUFFIX),$(zkit_ALLFILES))
 zkit_SRC_FILES := $(zkit_FILE_LIST:$(LOCAL_PATH)/%=%)
-# $(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
 
 # ------------ zkit make env end ---------------
 

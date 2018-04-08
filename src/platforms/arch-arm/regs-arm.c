@@ -30,7 +30,7 @@ void zz_arm_register_describe(ZzARMReg reg, ZzARMRegInfo *ri) {
         ri->width = 32;
         ri->meta  = reg;
     } else {
-        ZZ_ERROR_LOG_STR("zz_arm64_register_describe error.");
+        ZZ_ERROR_LOG_STR("arm64_register_describe error.");
 #if defined(DEBUG_MODE)
         debug_break();
 #endif

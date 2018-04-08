@@ -18,9 +18,9 @@
 
 #include "memory-darwin.h"
 
-zz_size_t MemoryGetPageSize() { return zz_posix_vm_get_page_size(); }
+zz_size_t MemoryHelperGetPageSize() { return zz_posix_vm_get_page_size(); }
 
-zz_ptr_t MemoryAllocatePage(zz_size_t n_pages) {
+zz_ptr_t MemoryHelperAllocatePage(zz_size_t n_pages) {
     return zz_darwin_vm_allocate_pages_via_task(mach_task_self(), n_pages);
 }
 
@@ -30,7 +30,7 @@ zz_ptr_t MemoryAllocateNearPage(zz_addr_t address, zz_size_t redirect_range_size
 
 zz_ptr_t MemoryAllocate(zz_size_t size) { return zz_darwin_vm_allocate_via_task(mach_task_self(), size); }
 
-bool MemoryPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size) {
+bool MemoryHelperPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size) {
     return zz_darwin_vm_patch_code_via_task(mach_task_self(), address, codedata, codedata_size);
 }
 
@@ -48,4 +48,4 @@ zz_ptr_t MemorySearchCodeCave(zz_addr_t address, zz_size_t redirect_range_size, 
     return zz_darwin_vm_search_code_cave(address, redirect_range_size, size);
 }
 
-bool MemoryIsSupportAllocateRXMemory() { return zz_darwin_vm_can_allocate_rx_page(); }
+bool MemoryHelperIsSupportAllocateRXMemory() { return zz_darwin_vm_can_allocate_rx_page(); }

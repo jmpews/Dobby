@@ -22,8 +22,8 @@ typedef enum _ARMInsnType {
 typedef struct _ZzARMReader {
     ZzARMInstruction *insns[MAX_INSN_SIZE];
     zz_size_t insn_size;
-    zz_addr_t r_start_address;
-    zz_addr_t r_current_address;
+    zz_addr_t start_address;
+    zz_addr_t current_address;
     zz_addr_t start_pc;
     zz_addr_t current_pc;
     zz_size_t size;

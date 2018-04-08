@@ -11,8 +11,8 @@
 // 写 writer 部分, 需要参考, `Instrcution Set Encoding` 部分
 // `witer` REF: `ZzInstruction Set Encoding`
 
-ZzARM64AssemblerWriter *arm64_writer_new(zz_ptr_t data_ptr) {
-    ZzARM64AssemblerWriter *writer = (ZzARM64AssemblerWriter *)malloc0(sizeof(ZzARM64AssemblerWriter));
+ARM64AssemblerWriter *arm64_writer_new(zz_ptr_t data_ptr) {
+    ARM64AssemblerWriter *writer = (ARM64AssemblerWriter *)malloc0(sizeof(ARM64AssemblerWriter));
     zz_addr_t align_address        = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     writer->w_current_address      = align_address;
     writer->w_start_address        = align_address;
@@ -23,11 +23,11 @@ ZzARM64AssemblerWriter *arm64_writer_new(zz_ptr_t data_ptr) {
     return writer;
 }
 
-void arm64_writer_init(ZzARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+void arm64_writer_init(ARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     arm64_writer_reset(self, data_ptr, target_ptr);
 }
 
-void arm64_writer_reset(ZzARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+void arm64_writer_reset(ARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address        = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     zz_addr_t target_align_address = (zz_addr_t)target_ptr & ~(zz_addr_t)3;
     self->w_current_address        = align_address;
@@ -44,7 +44,7 @@ void arm64_writer_reset(ZzARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr
     self->insn_size = 0;
 }
 
-void arm64_writer_free(ZzARM64AssemblerWriter *self) {
+void arm64_writer_free(ARM64AssemblerWriter *self) {
     if (self->insn_size) {
         for (int i = 0; i < self->insn_size; i++) {
             free(self->insns[i]);
@@ -55,20 +55,20 @@ void arm64_writer_free(ZzARM64AssemblerWriter *self) {
 
 // ======= user custom =======
 
-void arm64_writer_put_ldr_br_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void arm64_writer_put_ldr_br_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address) {
     arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     arm64_writer_put_br_reg(self, reg);
     arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
-void arm64_writer_put_ldr_blr_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void arm64_writer_put_ldr_blr_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address) {
     arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     arm64_writer_put_blr_reg(self, reg);
     arm64_writer_put_b_imm(self, 0xc);
     arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
-void arm64_writer_put_ldr_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void arm64_writer_put_ldr_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address) {
     arm64_writer_put_ldr_reg_imm(self, reg, 0x8);
     arm64_writer_put_b_imm(self, 0xc);
     arm64_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(address));
@@ -76,7 +76,7 @@ void arm64_writer_put_ldr_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg
 
 zz_size_t arm64_writer_near_jump_range_size() { return ((1 << 25) << 2); }
 
-void arm64_writer_put_ldr_br_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address) {
+void arm64_writer_put_ldr_br_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address) {
     arm64_writer_put_ldr_reg_imm(self, reg, 0xc);
     arm64_writer_put_br_reg(self, reg);
     arm64_writer_put_b_imm(self, 0xc);
@@ -85,13 +85,13 @@ void arm64_writer_put_ldr_br_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64
 
 // ======= default =======
 
-void arm64_writer_put_bytes(ZzARM64AssemblerWriter *self, char *data, zz_size_t data_size) {
+void arm64_writer_put_bytes(ARM64AssemblerWriter *self, char *data, zz_size_t data_size) {
     memcpy((zz_ptr_t)self->w_current_address, data, data_size);
     self->w_current_address = self->w_current_address + data_size;
     self->current_pc += data_size;
     self->size += data_size;
 
-    ZzARM64Instruction *arm64_insn = (ZzARM64Instruction *)malloc0(sizeof(ZzARM64Instruction));
+    ARM64Instruction *arm64_insn = (ARM64Instruction *)malloc0(sizeof(ARM64Instruction));
     arm64_insn->pc                 = self->current_pc - data_size;
     arm64_insn->address            = self->w_current_address - data_size;
     arm64_insn->size               = data_size;
@@ -99,13 +99,13 @@ void arm64_writer_put_bytes(ZzARM64AssemblerWriter *self, char *data, zz_size_t 
     self->insns[self->insn_size++] = arm64_insn;
 }
 
-void arm64_writer_put_instruction(ZzARM64AssemblerWriter *self, uint32_t insn) {
+void arm64_writer_put_instruction(ARM64AssemblerWriter *self, uint32_t insn) {
     *(uint32_t *)(self->w_current_address) = insn;
     self->w_current_address                = self->w_current_address + sizeof(uint32_t);
     self->current_pc += 4;
     self->size += 4;
 
-    ZzARM64Instruction *arm64_insn = (ZzARM64Instruction *)malloc0(sizeof(ZzARM64Instruction));
+    ARM64Instruction *arm64_insn = (ARM64Instruction *)malloc0(sizeof(ARM64Instruction));
     arm64_insn->pc                 = self->current_pc - 4;
     arm64_insn->address            = self->w_current_address - 4;
     arm64_insn->size               = 4;
@@ -113,8 +113,8 @@ void arm64_writer_put_instruction(ZzARM64AssemblerWriter *self, uint32_t insn) {
     self->insns[self->insn_size++] = arm64_insn;
 }
 
-void arm64_writer_put_ldr_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, uint32_t offset) {
-    ZzARM64RegInfo ri;
+void arm64_writer_put_ldr_reg_imm(ARM64AssemblerWriter *self, ARM64Reg reg, uint32_t offset) {
+    ARM64RegInfo ri;
     arm64_register_describe(reg, &ri);
 
     uint32_t imm19, Rt_ndx;
@@ -127,9 +127,9 @@ void arm64_writer_put_ldr_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, 
 }
 
 // PAGE: C6-871
-void arm64_writer_put_str_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg,
+void arm64_writer_put_str_reg_reg_offset(ARM64AssemblerWriter *self, ARM64Reg src_reg, ARM64Reg dst_reg,
                                          uint64_t offset) {
-    ZzARM64RegInfo rs, rd;
+    ARM64RegInfo rs, rd;
 
     arm64_register_describe(src_reg, &rs);
     arm64_register_describe(dst_reg, &rd);
@@ -148,9 +148,9 @@ void arm64_writer_put_str_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Re
     return;
 }
 
-void arm64_writer_put_ldr_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg,
+void arm64_writer_put_ldr_reg_reg_offset(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg src_reg,
                                          uint64_t offset) {
-    ZzARM64RegInfo rs, rd;
+    ARM64RegInfo rs, rd;
 
     arm64_register_describe(src_reg, &rs);
     arm64_register_describe(dst_reg, &rd);
@@ -170,8 +170,8 @@ void arm64_writer_put_ldr_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Re
 }
 
 // C6-562
-void arm64_writer_put_br_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg) {
-    ZzARM64RegInfo ri;
+void arm64_writer_put_br_reg(ARM64AssemblerWriter *self, ARM64Reg reg) {
+    ARM64RegInfo ri;
     arm64_register_describe(reg, &ri);
 
     uint32_t op = 0, Rn_ndx;
@@ -181,8 +181,8 @@ void arm64_writer_put_br_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg) {
 }
 
 // C6-561
-void arm64_writer_put_blr_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg) {
-    ZzARM64RegInfo ri;
+void arm64_writer_put_blr_reg(ARM64AssemblerWriter *self, ARM64Reg reg) {
+    ARM64RegInfo ri;
     arm64_register_describe(reg, &ri);
 
     uint32_t op = 0b01, Rn_ndx;
@@ -194,7 +194,7 @@ void arm64_writer_put_blr_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg) {
 }
 
 // C6-550
-void arm64_writer_put_b_imm(ZzARM64AssemblerWriter *self, uint64_t offset) {
+void arm64_writer_put_b_imm(ARM64AssemblerWriter *self, uint64_t offset) {
     uint32_t op = 0b0, imm26;
     imm26       = (offset >> 2) & 0x03ffffff;
     arm64_writer_put_instruction(self, 0x14000000 | op << 31 | imm26);
@@ -203,7 +203,7 @@ void arm64_writer_put_b_imm(ZzARM64AssemblerWriter *self, uint64_t offset) {
 
 // TODO: standard form, need fix others
 // PAGE: C6-549
-void arm64_writer_put_b_cond_imm(ZzARM64AssemblerWriter *self, uint32_t condition, uint64_t imm) {
+void arm64_writer_put_b_cond_imm(ARM64AssemblerWriter *self, uint32_t condition, uint64_t imm) {
     uint32_t imm19, cond;
     cond  = condition;
     imm19 = (imm >> 2) & 0x7ffff;
@@ -212,9 +212,9 @@ void arm64_writer_put_b_cond_imm(ZzARM64AssemblerWriter *self, uint32_t conditio
 }
 
 // C6-525
-void arm64_writer_put_add_reg_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+void arm64_writer_put_add_reg_reg_imm(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
                                       uint64_t imm) {
-    ZzARM64RegInfo rd, rl;
+    ARM64RegInfo rd, rl;
 
     arm64_register_describe(dst_reg, &rd);
     arm64_register_describe(left_reg, &rl);
@@ -231,9 +231,9 @@ void arm64_writer_put_add_reg_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg d
 }
 
 // C6-930
-void arm64_writer_put_sub_reg_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+void arm64_writer_put_sub_reg_reg_imm(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
                                       uint64_t imm) {
-    ZzARM64RegInfo rd, rl;
+    ARM64RegInfo rd, rl;
 
     arm64_register_describe(dst_reg, &rd);
     arm64_register_describe(left_reg, &rl);

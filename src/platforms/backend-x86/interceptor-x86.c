@@ -22,7 +22,7 @@
 #define ZZ_X86_TINY_REDIRECT_SIZE 4
 #define ZZ_X86_FULL_REDIRECT_SIZE 16
 
-InterceptorBackend *ZzBuildInteceptorBackend(ExecuteMemoryManager *emm) { return NULL; }
+InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) { return NULL; }
 
 CodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
                                       zz_size_t range_size) {
@@ -55,16 +55,16 @@ void TrampolineFree(HookEntry *entry) {
     }
 }
 
-void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineBuildForInstructionLeave(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineBuildForInstructionLeave(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }
 
-void TrampolineActivateAll(InterceptorBackend *self, HookEntry *entry) { return ZZ_FAILED; }
+void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) { return RS_FAILED; }

@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
 
-ZZSTATUS ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+RetStatus ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                    POSTCALL post_call_ptr) {
     intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
     pub_dyld_get_image_slide         = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
@@ -26,10 +26,10 @@ ZZSTATUS ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr,
     // TODO: fix here
     rebind_symbols_image((void *)header, slide,
                          (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
-    return ZZ_SUCCESS;
+    return RS_SUCCESS;
 }
 
-ZZSTATUS ZzDisableHookGOT(const char *name) {
+RetStatus ZzDisableHookGOT(const char *name) {
     intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
     pub_dyld_get_image_slide         = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
     zz_ptr_t target_ptr              = dlsym((void *)dlopen(0, RTLD_LAZY), name);
@@ -38,12 +38,12 @@ ZZSTATUS ZzDisableHookGOT(const char *name) {
     HookEntry *entry       = InterceptorFindHookEntry((zz_ptr_t)name);
 
     rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, target_ptr, NULL}}, 1);
-    return ZZ_SUCCESS;
+    return RS_SUCCESS;
 }
 
-// ZZSTATUS StaticBinaryInstrumentation(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr,
+// RetStatus StaticBinaryInstrumentation(zz_ptr_t target_fileoff, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr,
 //                                      PRECALL pre_call_ptr, POSTCALL post_call_ptr) {
-//     ZZSTATUS status                                 = ZZ_DONE_HOOK;
+//     RetStatus status                                 = RS_DONE_HOOK;
 //     ZzInterceptor *interceptor                      = g_interceptor;
 //     HookEntrySet *hook_function_entry_set = NULL;
 //     HookEntry *entry                      = NULL;
@@ -51,7 +51,7 @@ ZZSTATUS ZzDisableHookGOT(const char *name) {
 //     if (!interceptor) {
 //         InterceptorInitialize();
 //         if (!g_interceptor)
-//             return ZZ_FAILED;
+//             return RS_FAILED;
 //     }
 
 //     interceptor         = g_interceptor;

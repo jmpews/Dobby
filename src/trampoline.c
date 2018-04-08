@@ -2,12 +2,7 @@
 #include <stdlib.h>
 
 void TrampolineBuildAll(struct _InterceptorBackend *self, HookEntry *entry) {
-    if (entry->hook_type == HOOK_TYPE_ONE_INSTRUCTION) {
-        TrampolinePrepare(self, entry);
-        TrampolineBuildForEnter(self, entry);
-        TrampolineBuildForInstructionLeave(self, entry);
-        TrampolineBuildForInvoke(self, entry);
-    } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
+if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
         TrampolinePrepare(self, entry);
         TrampolineBuildForEnter(self, entry);
         TrampolineBuildForInvoke(self, entry);
@@ -24,5 +19,5 @@ void TrampolineBuildAll(struct _InterceptorBackend *self, HookEntry *entry) {
         TrampolineBuildForDynamicBinaryInstrumentation(self, entry);
         TrampolineBuildForInvoke(self, entry);
     }
-    return ZZ_SUCCESS;
+    return;
 }

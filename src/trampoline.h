@@ -28,7 +28,7 @@ void TrampolinePrepare(struct _InterceptorBackend *self, HookEntry *entry);
 
 void TrampolineBuildAll(struct _InterceptorBackend *self, HookEntry *entry);
 
-void TrampolineActivateAll(struct _InterceptorBackend *self, HookEntry *entry);
+void TrampolineActivate(struct _InterceptorBackend *self, HookEntry *entry);
 
 void TrampolineBuildForEnter(struct _InterceptorBackend *self, HookEntry *entry);
 
@@ -43,7 +43,7 @@ void TrampolineBuildForLeave(struct _InterceptorBackend *self, HookEntry *entry)
 void TrampolineBuildForDynamicBinaryInstrumentation(struct _InterceptorBackend *self, HookEntry *entry);
 
 #ifdef TARGET_IS_IOS
-// ZZSTATUS ZzActivateSolidifyTrampoline(HookEntry *entry, zz_addr_t target_fileoff);
+// RetStatus ZzActivateSolidifyTrampoline(HookEntry *entry, zz_addr_t target_fileoff);
 #endif
 
 #endif

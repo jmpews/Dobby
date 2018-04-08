@@ -6,7 +6,7 @@
 
 #include "emm.h"
 #include "interceptor.h"
-#include "thunker.h"
+#include "bridge.h"
 #include "tools.h"
 
 #include "platforms/arch-arm/relocator-arm.h"
@@ -14,7 +14,7 @@
 #include "platforms/arch-arm/writer-arm.h"
 #include "platforms/arch-arm/writer-thumb.h"
 
-// (next_hop + general_regs + sp)
+// (nextHop + general_regs + sp)
 #define CTX_SAVE_STACK_OFFSET (4 * 14)
 
 typedef struct _InterceptorBackend {
@@ -26,10 +26,9 @@ typedef struct _InterceptorBackend {
     ZzARMReader arm_reader;
     ZzARMReader thumb_reader;
 
-    zz_ptr_t enter_thunk;
-    zz_ptr_t insn_leave_thunk;
-    zz_ptr_t leave_thunk;
-    zz_ptr_t dynamic_binary_instrumentation_thunk;
+    zz_ptr_t enter_bridge;
+    zz_ptr_t leave_bridge;
+    zz_ptr_t dynamic_binary_instrumentation_bridge;
 
 } InterceptorBackend;
 

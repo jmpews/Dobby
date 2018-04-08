@@ -7,7 +7,7 @@
 
 #include "instructions.h"
 
-typedef enum _ZzARM64Reg {
+typedef enum _ARM64Reg {
     ZZ_ARM64_REG_X0 = 0,
     ZZ_ARM64_REG_X1,
     ZZ_ARM64_REG_X2,
@@ -43,15 +43,15 @@ typedef enum _ZzARM64Reg {
     ZZ_ARM64_REG_FP = ZZ_ARM64_REG_X29,
     ZZ_ARM64_REG_LR = ZZ_ARM64_REG_X30,
     ZZ_ARM64_REG_SP = ZZ_ARM64_REG_X31
-} ZzARM64Reg;
+} ARM64Reg;
 
-typedef struct _ZzARM64RegInfo {
+typedef struct _ARM64RegInfo {
     int index;
     int meta;
     int width;
     bool is_integer;
-} ZzARM64RegInfo;
+} ARM64RegInfo;
 
-void zz_arm64_register_describe(ZzARM64Reg reg, ZzARM64RegInfo *ri);
+void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri);
 
 #endif

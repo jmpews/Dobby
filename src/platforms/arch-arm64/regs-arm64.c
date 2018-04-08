@@ -1,6 +1,6 @@
 #include "regs-arm64.h"
 
-void arm64_register_describe(ZzARM64Reg reg, ZzARM64RegInfo *ri) {
+void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri) {
     if (reg >= ZZ_ARM64_REG_X0 && reg <= ZZ_ARM64_REG_X28) {
         ri->is_integer = TRUE;
         ri->width      = 64;

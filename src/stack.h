@@ -20,7 +20,7 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "memory.h"
+#include "memhelper.h"
 #include "thread.h"
 
 typedef struct _CallStackEntry {
@@ -28,13 +28,15 @@ typedef struct _CallStackEntry {
     zz_ptr_t value;
 } CallStackEntry;
 
+struct _ThreadStack;
+
 typedef struct _CallStack {
     zz_size_t call_id;
-    ThreadStack *threadstack;
+    struct _ThreadStack *threadstack;
     zz_size_t size;
     zz_size_t capacity;
     zz_ptr_t reg_sp;
-    zz_ptr_t caller_ret_addr;
+    zz_ptr_t retAddr;
     CallStackEntry *callstack_entry_list;
 } CallStack;
 

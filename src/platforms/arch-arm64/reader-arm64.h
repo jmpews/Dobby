@@ -20,19 +20,19 @@ typedef enum _ARM64InsnType {
 ARM64InsnType GetARM64InsnType(uint32_t insn);
 
 #define MAX_INSN_SIZE 256
-typedef struct _ZzARM64Reader {
-    ZzARM64Instruction *insns[MAX_INSN_SIZE];
+typedef struct _ARM64Reader {
+    ARM64Instruction *insns[MAX_INSN_SIZE];
     zz_size_t insn_size;
-    zz_addr_t r_start_address;
-    zz_addr_t r_current_address;
+    zz_addr_t start_address;
+    zz_addr_t current_address;
     zz_addr_t start_pc;
     zz_addr_t current_pc;
     zz_size_t size;
-} ZzARM64Reader;
+} ARM64Reader;
 
-ZzARM64Reader *arm64_reader_new(zz_ptr_t insn_address);
-void arm64_reader_init(ZzARM64Reader *self, zz_ptr_t insn_address);
-void arm64_reader_reset(ZzARM64Reader *self, zz_ptr_t insn_address);
-void arm64_reader_free(ZzARM64Reader *self);
-ZzARM64Instruction *arm64_reader_read_one_instruction(ZzARM64Reader *self);
+ARM64Reader *arm64_reader_new(zz_ptr_t insn_address);
+void arm64_reader_init(ARM64Reader *self, zz_ptr_t insn_address);
+void arm64_reader_reset(ARM64Reader *self, zz_ptr_t insn_address);
+void arm64_reader_free(ARM64Reader *self);
+ARM64Instruction *arm64_reader_read_one_instruction(ARM64Reader *self);
 #endif

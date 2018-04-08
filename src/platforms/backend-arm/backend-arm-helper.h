@@ -6,7 +6,7 @@
 
 #include "emm.h"
 #include "interceptor.h"
-#include "thunker.h"
+#include "bridge.h"
 #include "tools.h"
 
 #include "platforms/arch-arm/relocator-arm.h"

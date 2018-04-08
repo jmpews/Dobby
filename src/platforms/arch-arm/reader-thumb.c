@@ -15,8 +15,8 @@ bool insn_is_thumb2(uint32_t insn) {
 ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address) {
     ZzARMReader *reader = (ZzARMReader *)malloc0(sizeof(ZzARMReader));
 
-    reader->r_start_address   = (zz_addr_t)insn_address;
-    reader->r_current_address = (zz_addr_t )insn_address;
+    reader->start_address   = (zz_addr_t)insn_address;
+    reader->current_address = (zz_addr_t )insn_address;
     reader->start_pc                = (zz_addr_t )insn_address + 4;
     reader->current_pc                = (zz_addr_t )insn_address + 4;
     reader->size              = 0;
@@ -27,8 +27,8 @@ ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address) {
 void zz_thumb_reader_init(ZzARMReader *self, zz_ptr_t insn_address) { zz_thumb_reader_reset(self, insn_address); }
 
 void zz_thumb_reader_reset(ZzARMReader *self, zz_ptr_t insn_address) {
-    self->r_start_address   = (zz_addr_t )insn_address;
-    self->r_current_address = (zz_addr_t )insn_address;
+    self->start_address   = (zz_addr_t )insn_address;
+    self->current_address = (zz_addr_t )insn_address;
     self->start_pc                = (zz_addr_t )insn_address + 4;
     self->current_pc                = (zz_addr_t )insn_address + 4;
     self->size              = 0;
@@ -48,8 +48,8 @@ ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
     ZzARMInstruction *insn_ctx          = (ZzARMInstruction *)malloc0(sizeof(ZzARMInstruction));
     insn_ctx->type    = THUMB_INSN;
     insn_ctx->pc      = (zz_addr_t)self->current_pc;
-    insn_ctx->address = (zz_addr_t)self->r_current_address;
-    insn_ctx->insn    = *(uint32_t *)self->r_current_address;
+    insn_ctx->address = (zz_addr_t)self->current_address;
+    insn_ctx->insn    = *(uint32_t *)self->current_address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -65,7 +65,7 @@ ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self) {
     }
 
     self->current_pc += insn_ctx->size;
-    self->r_current_address += insn_ctx->size;
+    self->current_address += insn_ctx->size;
     self->size += insn_ctx->size;
     self->insns[self->insn_size++] = insn_ctx;
     return insn_ctx;

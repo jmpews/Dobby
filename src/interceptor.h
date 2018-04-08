@@ -4,10 +4,9 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "emm.h"
+#include "memory.h"
 #include "stack.h"
 #include "thread.h"
-#include "thunker.h"
 #include "writer.h"
 
 typedef struct _FunctionBackup {
@@ -37,7 +36,6 @@ typedef struct _HookEntry {
 
     zz_ptr_t on_enter_transfer_trampoline;
     zz_ptr_t on_enter_trampoline;
-    zz_ptr_t on_insn_leave_trampoline;
     zz_ptr_t on_invoke_trampoline;
     zz_ptr_t on_leave_trampoline;
     zz_ptr_t on_dynamic_binary_instrumentation_trampoline;
@@ -62,9 +60,9 @@ typedef struct _ZzInterceptor {
     ExecuteMemoryManager *emm;
 } ZzInterceptor;
 
-ZZSTATUS ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
-                        POSTCALL post_call_ptr);
-ZZSTATUS ZzDisableHookGOT(const char *name);
+RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 
-void ZzFreeHookEntry(HookEntry *entry);
+RetStatus ZzDisableHookGOT(const char *name);
+
+struct _InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm);
 #endif

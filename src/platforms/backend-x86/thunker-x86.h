@@ -14,8 +14,8 @@
  *    limitations under the License.
  */
 
-#ifndef platforms_backend_x86_thunker_x86
-#define platforms_backend_x86_thunker_x86
+#ifndef platforms_backend_x86_bridge_x86
+#define platforms_backend_x86_bridge_x86
 
 // platforms
 #include "platforms/arch-x86/relocator-x86.h"
@@ -25,7 +25,7 @@
 
 // hookzz
 #include "stack.h"
-#include "thunker.h"
+#include "bridge.h"
 
 // zzdeps
 #include "hookzz.h"

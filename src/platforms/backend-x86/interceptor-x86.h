@@ -24,7 +24,7 @@
 // hookzz
 #include "emm.h"
 #include "interceptor.h"
-#include "thunker.h"
+#include "bridge.h"
 
 // zzdeps
 #include "hookzz.h"
@@ -43,8 +43,8 @@ typedef struct _ZzX86HookFuntionEntryBackend {
 
 void ctx_save();
 void ctx_restore();
-void enter_thunk_template();
-void leave_thunk_template();
+void enter_bridge_template();
+void leave_bridge_template();
 void on_enter_trampoline_template();
 void on_invoke_trampoline_template();
 void on_leave_trampoline_template();

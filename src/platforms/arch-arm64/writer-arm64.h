@@ -19,7 +19,7 @@
 
 #include "zkit.h"
 
-#include "memory.h"
+#include "memhelper.h"
 #include "writer.h"
 
 #include "instructions.h"
@@ -28,58 +28,58 @@
 
 #define MAX_INSN_SIZE 256
 
-typedef struct _ZzARM64AssemblerWriter {
-    ZzARM64Instruction *insns[MAX_INSN_SIZE];
+typedef struct _ARM64AssemblerWriter {
+    ARM64Instruction *insns[MAX_INSN_SIZE];
     zz_size_t insn_size;
     zz_addr_t w_start_address;
     zz_addr_t w_current_address;
     zz_addr_t start_pc;
     zz_addr_t current_pc;
     zz_size_t size;
-} ZzARM64AssemblerWriter;
+} ARM64AssemblerWriter;
 
-ZzARM64AssemblerWriter *arm64_writer_new(zz_ptr_t data_ptr);
-void arm64_writer_init(ZzARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
-void arm64_writer_reset(ZzARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
-void arm64_writer_free(ZzARM64AssemblerWriter *self);
+ARM64AssemblerWriter *arm64_writer_new(zz_ptr_t data_ptr);
+void arm64_writer_init(ARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void arm64_writer_reset(ARM64AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void arm64_writer_free(ARM64AssemblerWriter *self);
 zz_size_t arm64_writer_near_jump_range_size();
 
 // ======= user custom =======
 
-void arm64_writer_put_ldr_br_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address);
+void arm64_writer_put_ldr_br_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address);
 
-void arm64_writer_put_ldr_blr_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address);
+void arm64_writer_put_ldr_blr_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address);
 
-void arm64_writer_put_ldr_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address);
+void arm64_writer_put_ldr_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address);
 
-void arm64_writer_put_ldr_br_b_reg_address(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, zz_addr_t address);
+void arm64_writer_put_ldr_br_b_reg_address(ARM64AssemblerWriter *self, ARM64Reg reg, zz_addr_t address);
 
 // ======= default =======
 
-void arm64_writer_put_ldr_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg reg, uint32_t offset);
+void arm64_writer_put_ldr_reg_imm(ARM64AssemblerWriter *self, ARM64Reg reg, uint32_t offset);
 
-void arm64_writer_put_str_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Reg src_reg, ZzARM64Reg dst_reg,
+void arm64_writer_put_str_reg_reg_offset(ARM64AssemblerWriter *self, ARM64Reg src_reg, ARM64Reg dst_reg,
                                          uint64_t offset);
 
-void arm64_writer_put_ldr_reg_reg_offset(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg src_reg,
+void arm64_writer_put_ldr_reg_reg_offset(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg src_reg,
                                          uint64_t offset);
 
-void arm64_writer_put_br_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg);
+void arm64_writer_put_br_reg(ARM64AssemblerWriter *self, ARM64Reg reg);
 
-void arm64_writer_put_blr_reg(ZzARM64AssemblerWriter *self, ZzARM64Reg reg);
+void arm64_writer_put_blr_reg(ARM64AssemblerWriter *self, ARM64Reg reg);
 
-void arm64_writer_put_b_imm(ZzARM64AssemblerWriter *self, uint64_t offset);
+void arm64_writer_put_b_imm(ARM64AssemblerWriter *self, uint64_t offset);
 
-void arm64_writer_put_b_cond_imm(ZzARM64AssemblerWriter *self, uint32_t condition, uint64_t imm);
+void arm64_writer_put_b_cond_imm(ARM64AssemblerWriter *self, uint32_t condition, uint64_t imm);
 
-void arm64_writer_put_add_reg_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+void arm64_writer_put_add_reg_reg_imm(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
                                       uint64_t imm);
 
-void arm64_writer_put_sub_reg_reg_imm(ZzARM64AssemblerWriter *self, ZzARM64Reg dst_reg, ZzARM64Reg left_reg,
+void arm64_writer_put_sub_reg_reg_imm(ARM64AssemblerWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
                                       uint64_t imm);
 
-void arm64_writer_put_bytes(ZzARM64AssemblerWriter *self, char *data, zz_size_t size);
+void arm64_writer_put_bytes(ARM64AssemblerWriter *self, char *data, zz_size_t size);
 
-void arm64_writer_put_instruction(ZzARM64AssemblerWriter *self, uint32_t insn);
+void arm64_writer_put_instruction(ARM64AssemblerWriter *self, uint32_t insn);
 
 #endif

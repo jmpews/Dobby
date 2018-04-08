@@ -24,36 +24,26 @@
 #include "platforms/arch-arm64/relocator-arm64.h"
 #include "platforms/arch-arm64/writer-arm64.h"
 
-#include "emm.h"
+#include "memory.h"
 #include "interceptor.h"
-#include "thunker.h"
-#include "tools.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
 typedef struct _InterceptorBackend {
     ExecuteMemoryManager *emm;
-    ZzARM64Relocator arm64_relocator;
-    ZzARM64AssemblerWriter arm64_writer;
-    ZzARM64Reader arm64_reader;
+    ARM64Relocator arm64_relocator;
+    ARM64AssemblerWriter arm64_writer;
+    ARM64Reader arm64_reader;
 
-    zz_ptr_t enter_thunk;
-    zz_ptr_t insn_leave_thunk;
-    zz_ptr_t leave_thunk;
-    zz_ptr_t dynamic_binary_instrumentation_thunk;
+    zz_ptr_t enter_bridge;
+    zz_ptr_t insn_leave_bridge;
+    zz_ptr_t leave_bridge;
+    zz_ptr_t dynamic_binary_instrumentation_bridge;
 } InterceptorBackend;
 
-typedef struct _ZzARM64HookFuntionEntryBackend {
+typedef struct _ARM64HookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzARM64HookEntryBackend;
-
-void ctx_save();
-void ctx_restore();
-void enter_thunk_template();
-void leave_thunk_template();
-void on_enter_trampoline_template();
-void on_invoke_trampoline_template();
-void on_leave_trampoline_template();
+} ARM64HookEntryBackend;
 
 #endif

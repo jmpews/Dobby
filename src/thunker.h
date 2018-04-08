@@ -1,5 +1,5 @@
-#ifndef thunker_h
-#define thunker_h
+#ifndef bridge_h
+#define bridge_h
 
 #include "hookzz.h"
 #include "zkit.h"
