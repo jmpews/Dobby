@@ -46,14 +46,14 @@ typedef enum _ZzReg {
     ZZ_ARM_REG_SP = ZZ_ARM_REG_R13,
     ZZ_ARM_REG_LR = ZZ_ARM_REG_R14,
     ZZ_ARM_REG_PC = ZZ_ARM_REG_R15
-} ZzARMReg;
+} ARMReg;
 
-typedef struct _ZzARMRegInfo {
+typedef struct _ARMRegInfo {
     int index;
     int meta;
     int width;
-} ZzARMRegInfo;
+} ARMRegInfo;
 
-void zz_arm_register_describe(ZzARMReg reg, ZzARMRegInfo *ri);
+void arm_register_describe(ARMReg reg, ARMRegInfo *ri);
 
 #endif

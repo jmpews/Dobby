@@ -5,21 +5,19 @@
 #define cdecl(s) _##s
 #else
 #define cdecl(s) s
-#endi
+#endif
 
 .globl cdecl(closure_bridge_trampoline_template)
 .globl cdecl(closure_bridge_template)
 
 cdecl(closure_bridge_trampoline_template):
-    .code 32
     .arm
-    ldr r7, [pc, #-4]
+    ldr r7, [pc, #0]
     ldr pc, [pc, #0]
     .long 0
     .long 0
 
 cdecl(closure_bridge_template):
-    .code 32
     .arm
     sub sp, sp, #(14*4)
     str lr, [sp, #(13*4)]
@@ -37,10 +35,16 @@ cdecl(closure_bridge_template):
     str r1, [sp, #(1*4)]
     str r0, [sp, #(0*4)]
 
+    // dummy align
+    sub sp, sp, #8
+
     mov r0, sp
     mov r1, r7
     bl  cdecl(common_bridge_handler)
-    
+
+    // dummy align
+    add sp, sp, #8
+
     ldr r0, [sp], #4
     ldr r1, [sp], #4
     ldr r2, [sp], #4
@@ -56,4 +60,9 @@ cdecl(closure_bridge_template):
     ldr r12, [sp], #4
     ldr lr, [sp], #4
 
-    br r7
+#if 1
+    str r7, [sp, #-4]
+    ldr pc, [sp, #-4]
+#else
+    mov pc, r7
+#endif

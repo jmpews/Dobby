@@ -12,46 +12,46 @@
 #include "regs-arm.h"
 #include "writer-arm.h"
 
-typedef struct _ZzARMRelocatorInstruction {
-    ZzARMInstruction *origin_insn;
-    ZzARMInstruction **relocated_insns;
+typedef struct _ARMRelocatorInstruction {
+    ARMInstruction *origin_insn;
+    ARMInstruction **relocated_insns;
     zz_size_t output_index_start;
     zz_size_t ouput_index_end;
     zz_size_t relocated_insn_size;
     zz_size_t size;
-} ZzARMRelocatorInstruction;
+} ARMRelocatorInstruction;
 
-typedef struct _ZzARMRelocator {
+typedef struct _ARMRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
-    ZzARMAssemblerWriter *output;
-    ZzARMReader *input;
+    ARMAssemblerWriter *output;
+    ARMReader *input;
     int inpos;
     int outpos;
 
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
+    ARMInstruction *literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
 
     // record for every instruction need to be relocated
-    ZzARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    ARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
     zz_size_t relocator_insn_size;
-} ZzARMRelocator;
+} ARMRelocator;
 
-void zz_arm_relocator_init(ZzARMRelocator *relocator, ZzARMReader *input, ZzARMAssemblerWriter *output);
+void arm_relocator_init(ARMRelocator *relocator, ARMReader *input, ARMAssemblerWriter *output);
 
-void zz_arm_relocator_free(ZzARMRelocator *relocator);
+void arm_relocator_free(ARMRelocator *relocator);
 
-void zz_arm_relocator_reset(ZzARMRelocator *self, ZzARMReader *input, ZzARMAssemblerWriter *output);
+void arm_relocator_reset(ARMRelocator *self, ARMReader *input, ARMAssemblerWriter *output);
 
-void zz_arm_relocator_relocate_writer(ZzARMRelocator *relocator, zz_addr_t final_relocate_address);
+void arm_relocator_relocate_writer(ARMRelocator *relocator, zz_addr_t final_relocate_address);
 
-void zz_arm_relocator_write_all(ZzARMRelocator *self);
+void arm_relocator_write_all(ARMRelocator *self);
 
-void zz_arm_relocator_read_one(ZzARMRelocator *self, ZzARMInstruction *instruction);
+void arm_relocator_read_one(ARMRelocator *self, ARMInstruction *instruction);
 
-void zz_arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
+void arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
-bool zz_arm_relocator_write_one(ZzARMRelocator *self);
+bool arm_relocator_write_one(ARMRelocator *self);
 
 #endif

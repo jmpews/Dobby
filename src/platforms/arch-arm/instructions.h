@@ -6,7 +6,7 @@
 
 typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN, UNKOWN_INSN } InsnType;
 
-typedef struct _ZzARMInstruction {
+typedef struct _ARMInstruction {
     InsnType type;
     zz_addr_t pc;
     zz_addr_t address;
@@ -23,7 +23,7 @@ typedef struct _ZzARMInstruction {
     uint16_t insn1;
     uint16_t insn2;
     char *data;
-} ZzARMInstruction;
+} ARMInstruction;
 
 uint32_t get_insn_sub(uint32_t insn, int start, int length);
 bool insn_equal(uint32_t insn, char *opstr);

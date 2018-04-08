@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#define closure_bridge_trampoline_template_length (7 * 4)
+#define closure_bridge_trampoline_template_length (4 * 4)
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
 
@@ -87,12 +87,12 @@ ClosureBridgeData *ClosureBridgeAllocate(void *user_data, void *user_code) {
             closure_bridge_trampoline_template_length * trampoline_used_count);
 
     // bind data to trampline
-    void *tmp = (void *) ((intptr_t) bridgeData->redirect_trampoline + 4 * 3);
+    void *tmp = (void *) ((intptr_t) bridgeData->redirect_trampoline + 4 * 2);
     memcpy(tmp, &bridgeData, sizeof(ClosureBridgeData *));
 
     // set trampoline to bridge
     void *tmpX = (void *) closure_bridge_template;
-    tmp = (void *) ((intptr_t) bridgeData->redirect_trampoline + 4 * 5);
+    tmp = (void *) ((intptr_t) bridgeData->redirect_trampoline + 4 * 3);
     memcpy(tmp, &tmpX, sizeof(void *));
 
     table->used_count++;

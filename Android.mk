@@ -9,7 +9,7 @@ include $(CLEAR_VARS)
 
 zkit_PATH := $(LOCAL_PATH)/src/SaitamaKit
 
-$(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
+# $(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
 
 zkit_INCLUDE := $(zkit_PATH) \
 			$(zkit_PATH)/include
@@ -44,7 +44,8 @@ HOOKZZ_SRC_FILES := $(wildcard $(LOCAL_PATH)/src/*.c) \
 
 ifeq ($(TARGET_ARCH), arm)
 	HOOKZZ_SRC_FILES += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm/*.c) \
-			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm/*.c)
+			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm/*.c) \
+			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm/*.S)
 else ifeq ($(TARGET_ARCH), arm64)
 	HOOKZZ_SRC_FILES += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm64/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.c) \

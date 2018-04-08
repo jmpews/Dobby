@@ -31,8 +31,8 @@
 typedef struct _ARM64AssemblerWriter {
     ARM64Instruction *insns[MAX_INSN_SIZE];
     zz_size_t insn_size;
-    zz_addr_t w_start_address;
-    zz_addr_t w_current_address;
+    zz_addr_t start_address;
+    zz_addr_t current_address;
     zz_addr_t start_pc;
     zz_addr_t current_pc;
     zz_size_t size;

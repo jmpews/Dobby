@@ -17,23 +17,23 @@ typedef struct _ZzThumbRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
     ZzThumbAssemblerWriter *output;
-    ZzARMReader *input;
+    ARMReader *input;
     int inpos;
     int outpos;
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    ZzARMInstruction *literal_insns[MAX_INSN_SIZE];
+    ARMInstruction *literal_insns[MAX_INSN_SIZE];
     zz_size_t literal_insn_size;
 
     // record for every instruction need to be relocated
-    ZzARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    ARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
     zz_size_t relocator_insn_size;
 } ZzThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ZzARMReader *input, ZzThumbAssemblerWriter *writer);
+void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ARMReader *input, ZzThumbAssemblerWriter *writer);
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, ZzARMReader *input, ZzThumbAssemblerWriter *output);
+void zz_thumb_relocator_reset(ZzThumbRelocator *self, ARMReader *input, ZzThumbAssemblerWriter *output);
 
-void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ZzARMInstruction *instruction);
+void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ARMInstruction *instruction);
 
 bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
 

@@ -43,13 +43,13 @@ typedef union _FPReg {
 } FPReg;
 
 typedef struct _RegState {
-    uint64_t sp;
+    uint64_t dmmpy_0;
 
     union {
         uint64_t x[29];
         struct {
             uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21,
-                x22, x23, x24, x25, x26, x27, x28;
+                    x22, x23, x24, x25, x26, x27, x28;
         } regs;
     } general;
 
@@ -65,7 +65,8 @@ typedef struct _RegState {
 } RegState;
 #elif defined(__arm__)
 typedef struct _RegState {
-    uint32_t sp;
+    uint32_t dummy_0;
+    uint32_t dummy_1;
 
     union {
         uint32_t r[13];

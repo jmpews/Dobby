@@ -4,10 +4,9 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "emm.h"
+#include "memory.h"
 #include "interceptor.h"
-#include "bridge.h"
-#include "tools.h"
+
 
 #include "platforms/arch-arm/relocator-arm.h"
 #include "platforms/arch-arm/relocator-thumb.h"
@@ -19,12 +18,12 @@
 
 typedef struct _InterceptorBackend {
     ExecuteMemoryManager *emm;
-    ZzARMRelocator arm_relocator;
+    ARMRelocator arm_relocator;
     ZzThumbRelocator thumb_relocator;
-    ZzARMAssemblerWriter arm_writer;
+    ARMAssemblerWriter arm_writer;
     ZzThumbAssemblerWriter thumb_writer;
-    ZzARMReader arm_reader;
-    ZzARMReader thumb_reader;
+    ARMReader arm_reader;
+    ARMReader thumb_reader;
 
     zz_ptr_t enter_bridge;
     zz_ptr_t leave_bridge;
@@ -32,9 +31,9 @@ typedef struct _InterceptorBackend {
 
 } InterceptorBackend;
 
-typedef struct _ZzARMHookFuntionEntryBackend {
+typedef struct _ARMHookFuntionEntryBackend {
     bool is_thumb;
     zz_size_t redirect_code_size;
-} ZzARMHookEntryBackend;
+} ARMHookEntryBackend;
 
 #endif

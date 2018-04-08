@@ -25,9 +25,9 @@ typedef enum _THUMBInsnType {
 } THUMBInsnType;
 
 THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2);
-ZzARMReader *zz_thumb_reader_new(zz_ptr_t insn_address);
-void zz_thumb_reader_init(ZzARMReader *self, zz_ptr_t insn_address);
-void zz_thumb_reader_reset(ZzARMReader *self, zz_ptr_t insn_address);
-void zz_thumb_reader_free(ZzARMReader *self);
-ZzARMInstruction *zz_thumb_reader_read_one_instruction(ZzARMReader *self);
+ARMReader *zz_thumb_reader_new(zz_ptr_t insn_address);
+void zz_thumb_reader_init(ARMReader *self, zz_ptr_t insn_address);
+void zz_thumb_reader_reset(ARMReader *self, zz_ptr_t insn_address);
+void zz_thumb_reader_free(ARMReader *self);
+ARMInstruction *zz_thumb_reader_read_one_instruction(ARMReader *self);
 #endif

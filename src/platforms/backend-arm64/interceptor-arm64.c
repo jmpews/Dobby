@@ -351,7 +351,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
         }
     }
 
-    if (!MemoryHelperPatchCode((zz_addr_t) target_addr, (zz_ptr_t) arm64_writer->w_start_address,
+    if (!MemoryHelperPatchCode((zz_addr_t) target_addr, (zz_ptr_t) arm64_writer->start_address,
                                arm64_writer->size))
         status = RS_FAILED;
 

@@ -16,7 +16,7 @@ CodeSlice *arm64_code_patch(ARM64AssemblerWriter *arm64_writer, ExecuteMemoryMan
     if (!codeslice)
         return NULL;
 
-    if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)arm64_writer->w_start_address, arm64_writer->size)) {
+    if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)arm64_writer->start_address, arm64_writer->size)) {
         free(codeslice);
         return NULL;
     }
@@ -37,7 +37,7 @@ CodeSlice *arm64_relocate_code_patch(ARM64Relocator *relocator, ARM64AssemblerWr
 
     arm64_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
 
-    if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)arm64_writer->w_start_address, arm64_writer->size)) {
+    if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)arm64_writer->start_address, arm64_writer->size)) {
         free(codeslice);
         return NULL;
     }

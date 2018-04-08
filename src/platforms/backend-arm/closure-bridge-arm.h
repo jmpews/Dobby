@@ -39,7 +39,7 @@ typedef union _FPReg {
 } FPReg;
 
 typedef struct _RegState {
-    uint64_t sp;
+    uint64_t dmmpy_0;
 
     union {
         uint64_t x[29];
@@ -61,7 +61,8 @@ typedef struct _RegState {
 } RegState;
 #elif defined(__arm__)
 typedef struct _RegState {
-    uint32_t sp;
+    uint32_t dummy_0;
+    uint32_t dummy_1;
 
     union {
         uint32_t r[13];
