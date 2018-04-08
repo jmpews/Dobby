@@ -8,7 +8,7 @@ HOOKZZ_PATH := $(abspath .)
 LOCAL_PATH := $(abspath .)
 OUTPUT_DIR := $(abspath build)
 
-CFLAGS ?= -O0 -g
+CFLAGS ?= -O0 -g -std=c11
 CXXFLAGS = $(CFLAGS) -stdlib=libc++ -std=c++11 -gmodules
 LDFLAGS ?=
 LIBS_CFLAGS ?= -fPIC
@@ -130,46 +130,46 @@ endif
 
 # ------------ hookzz make env ---------------
 
-# ------------ zkit make env ---------------
+# ------------ SaitamaKit make env ---------------
 
-zkit_PATH := $(HOOKZZ_PATH)/src/zkit
+SaitamaKit_PATH := $(HOOKZZ_PATH)/src/SaitamaKit
 
-zkit_INCLUDE := $(zkit_PATH) \
-			$(zkit_PATH)/include
+SaitamaKit_INCLUDE := $(SaitamaKit_PATH) \
+			$(SaitamaKit_PATH)/include
 
 ifeq ($(BACKEND), ios)
-zkit_FILES_PATH := $(zkit_PATH)/CommonKit \
-			$(zkit_PATH)/PosixKit \
-			$(zkit_PATH)/MachoKit \
-			$(zkit_PATH)/DarwinKit
+SaitamaKit_FILES_PATH := $(SaitamaKit_PATH)/CommonKit \
+			$(SaitamaKit_PATH)/PosixKit \
+			$(SaitamaKit_PATH)/MachoKit \
+			$(SaitamaKit_PATH)/DarwinKit
 else ifeq ($(BACKEND), macos)
 else ifeq ($(BACKEND), android)
-zkit_FILES_PATH := $(zkit_PATH)/CommonKit \
-			$(zkit_PATH)/PosixKit \
-			$(zkit_PATH)/ELFKit\
-			$(zkit_PATH)/LinuxKit
+SaitamaKit_FILES_PATH := $(SaitamaKit_PATH)/CommonKit \
+			$(SaitamaKit_PATH)/PosixKit \
+			$(SaitamaKit_PATH)/ELFKit\
+			$(SaitamaKit_PATH)/LinuxKit
 endif
-zkit_FILES_SUFFIX := %.cpp %.c
+SaitamaKit_FILES_SUFFIX := %.cpp %.c
 
 define walk
     $(wildcard $(1)) $(foreach e, $(wildcard $(1)/*), $(call walk, $(e)))
 endef
 
-zkit_ALLFILES := $(foreach src_path,$(zkit_FILES_PATH), $(call walk,$(src_path),*.*) )
-zkit_FILE_LIST  := $(filter $(zkit_FILES_SUFFIX),$(zkit_ALLFILES))
-zkit_SRC_FILES := $(zkit_FILE_LIST:$(LOCAL_PATH)/%=%)
+SaitamaKit_ALLFILES := $(foreach src_path,$(SaitamaKit_FILES_PATH), $(call walk,$(src_path),*.*) )
+SaitamaKit_FILE_LIST  := $(filter $(SaitamaKit_FILES_SUFFIX),$(SaitamaKit_ALLFILES))
+SaitamaKit_SRC_FILES := $(SaitamaKit_FILE_LIST:$(LOCAL_PATH)/%=%)
 
-# $(warning zkit_SRC_FILES= $(zkit_SRC_FILES))
+# $(warning SaitamaKit_SRC_FILES= $(SaitamaKit_SRC_FILES))
 # $(warning HOOKZZ_SRC_FILES= $(HOOKZZ_SRC_FILES))
 
-# ------------ zkit make env end ---------------
+# ------------ SaitamaKit make env end ---------------
 
-HOOKZZ_INCLUDE += $(zkit_INCLUDE)
+HOOKZZ_INCLUDE += $(SaitamaKit_INCLUDE)
 
 HOOKZZ_SRC_FILES := $(HOOKZZ_SRC_FILES:$(LOCAL_PATH)/%=%)
 
 HOOKZZ_C_CPP_SRC_FILES := $(filter %.c,$(HOOKZZ_SRC_FILES)) \
-				$(zkit_SRC_FILES)
+				$(SaitamaKit_SRC_FILES)
 HOOKZZ_ASM_SRC_FILES := $(filter %.S,$(HOOKZZ_SRC_FILES))
 
 HOOKZZ_C_CPP_OBJ_FILES := $(HOOKZZ_C_CPP_SRC_FILES:.c=.o)

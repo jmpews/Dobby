@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# !!! Do Not Use This
+echo "justdummy CMakeLists.txt"
+
+exit(1)
 
 export PWD=`pwd`
 export PREFIX=${PWD}/system
