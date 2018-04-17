@@ -52,4 +52,4 @@ wechat: winter1ife
 QQ: 858982985
 ```
 
-<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fq5qkcu3cij20iq0owtad.jpg" alt="qrcode">
+<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fqgamse4qij20fo0lumyj.jpg" alt="qrcode">
