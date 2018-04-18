@@ -7,6 +7,7 @@
 #define cdecl(s) s
 #endif
 
+.align 4
 
 .globl cdecl(closure_bridge_trampoline_template)
 .globl cdecl(closure_bridge_template)

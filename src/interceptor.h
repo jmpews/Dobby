@@ -60,9 +60,12 @@ typedef struct _ZzInterceptor {
     ExecuteMemoryManager *emm;
 } ZzInterceptor;
 
-RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+                         POSTCALL post_call_ptr);
 
 RetStatus ZzDisableHookGOT(const char *name);
+
+HookEntry *InterceptorFindHookEntry(zz_ptr_t target_ptr);
 
 struct _InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm);
 #endif

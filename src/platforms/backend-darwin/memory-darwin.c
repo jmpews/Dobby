@@ -24,26 +24,26 @@ zz_ptr_t MemoryHelperAllocatePage(zz_size_t n_pages) {
     return zz_darwin_vm_allocate_pages_via_task(mach_task_self(), n_pages);
 }
 
-zz_ptr_t MemoryAllocateNearPage(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t n_pages) {
+zz_ptr_t MemoryHelperAllocateNearPage(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t n_pages) {
     return zz_darwin_vm_allocate_near_pages_via_task(mach_task_self(), address, redirect_range_size, n_pages);
 }
 
-zz_ptr_t MemoryAllocate(zz_size_t size) { return zz_darwin_vm_allocate_via_task(mach_task_self(), size); }
+zz_ptr_t MemoryHelperAllocate(zz_size_t size) { return zz_darwin_vm_allocate_via_task(mach_task_self(), size); }
 
 bool MemoryHelperPatchCode(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size) {
     return zz_darwin_vm_patch_code_via_task(mach_task_self(), address, codedata, codedata_size);
 }
 
-bool MemoryProtectAsExecutable(const zz_addr_t address, zz_size_t size) {
+bool MemoryHelperProtectAsExecutable(const zz_addr_t address, zz_size_t size) {
 
     return zz_darwin_vm_protect_as_executable_via_task(mach_task_self(), address, size);
 }
 
-bool MemoryProtectAsWritable(const zz_addr_t address, zz_size_t size) {
+bool MemoryHelperProtectAsWritable(const zz_addr_t address, zz_size_t size) {
     return zz_darwin_vm_protect_as_writable_via_task(mach_task_self(), address, size);
 }
 
-zz_ptr_t MemorySearchCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t size) {
+zz_ptr_t MemoryHelperSearchCodeCave(zz_addr_t address, zz_size_t redirect_range_size, zz_size_t size) {
     // return zz_darwin_vm_search_text_code_cave_via_dylibs(address, redirect_range_size, size);
     return zz_darwin_vm_search_code_cave(address, redirect_range_size, size);
 }
