@@ -120,6 +120,7 @@ else ifeq ($(BACKEND), android)
 endif
 
 ifeq ($(ARCH), arm)
+HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/backend-arm/*.S)
 HOOKZZ_SRC_FILES += $(wildcard $(HOOKZZ_PATH)/src/platforms/arch-arm/*.c) \
 			$(wildcard $(HOOKZZ_PATH)/src/platforms/backend-arm/*.c)
 else ifeq ($(ARCH), arm64)
