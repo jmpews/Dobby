@@ -20,6 +20,8 @@ ifeq ($(HOST), Darwin)
 
 endif
 
+$(shell mkdir -p build)
+
 # ------------ hookzz make env ---------------
 
 HOOKZZ_INCLUDE := $(HOOKZZ_PATH)/include \
@@ -183,7 +185,6 @@ HOOKZZ_INCLUDE := $(foreach n, $(HOOKZZ_INCLUDE), -I$(n))
 
 # $(warning HOOKZZ_C_CPP_OBJ_FILES= $(HOOKZZ_C_CPP_OBJ_FILES))
 $(HOOKZZ_NAME) : $(HOOKZZ_SRC_OBJ_FILES)
-
 	@$(ZZ_GCC_SOURCE) $(ZZ_CFLAGS) $(CFLAGS) $(LDFLAGS) $(HOOKZZ_INCLUDE) $(HOOKZZ_BUILD_SRC_OBJ_FILES) -o $(OUTPUT_DIR)/$(ZZ_DLL)
 	@$(ZZ_AR_BIN) -rcs $(OUTPUT_DIR)/lib$(HOOKZZ_NAME).static.a $(HOOKZZ_BUILD_SRC_OBJ_FILES)
 
