@@ -31,7 +31,7 @@ static ExecuteMemoryBlock *AllocateExecuteMemoryPage() {
         return NULL;
     }
     if (!MemoryHelperProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        ZZ_ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
+        ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
     }
 
     emb                  = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
@@ -53,7 +53,7 @@ ExecuteMemoryBlock *AllocateNearExecuteMemoryPage(zz_addr_t address, zz_size_t r
     }
 
     if (!MemoryHelperProtectAsExecutable((zz_addr_t)page_ptr, page_size)) {
-        ZZ_ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
+        ERROR_LOG("MemoryHelperProtectAsExecutable error at %p", page_ptr);
         ZZ_DEBUG_BREAK();
         exit(1);
     }

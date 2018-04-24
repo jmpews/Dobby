@@ -21,7 +21,7 @@
 // just like pre_call, wow!
 void function_context_begin_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs,
                                        zz_ptr_t retAddr) {
-    ZZ_DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
+    DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!stack) {
@@ -53,7 +53,7 @@ void function_context_begin_invocation(HookEntry *entry, zz_ptr_t nextHop, RegSt
 // just like post_call, wow!
 void function_context_half_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs,
                                       zz_ptr_t retAddr) {
-    ZZ_DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
+    DEBUG_LOG("target %p call half-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!stack) {
@@ -78,7 +78,7 @@ void function_context_half_invocation(HookEntry *entry, zz_ptr_t nextHop, RegSta
 
 // just like post_call, wow!
 void function_context_end_invocation(HookEntry *entry, zz_ptr_t nextHop, RegState *rs) {
-    ZZ_DEBUG_LOG("%p call end-invocation", entry->target_ptr);
+    DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
     ThreadStack *stack = ThreadStackGetByThreadLocalKey(entry->thread_local_key);
     if (!stack) {

@@ -169,7 +169,7 @@ static bool arm_relocator_rewrite_LDR_literal_A1(ARMRelocator *self, const ARMIn
     int Rt_ndx = get_insn_sub(insn, 12, 4);
 
     //    if(target_address > self->input->start_pc && target_address < (self->input->start_pc+ self->input->size)) {
-    //        ZZ_ERROR_LOG("instruction-fix-failed at %p", self->input->current_pc);
+    //        ERROR_LOG("instruction-fix-failed at %p", self->input->current_pc);
     //    }
 
     arm_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);

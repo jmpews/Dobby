@@ -271,7 +271,7 @@ void macho_insert_segment(string target_path, string new_target_path) {
     fix_macho_load_command(new_target_path.c_str());
 }
 
-typedef struct _ZzInterceptorBackendNoJB {
+typedef struct _InterceptorBackendNoJB {
     void *enter_thunk; // hardcode
     void *leave_thunk; // hardcode
     void *function_context_begin_invocation;
@@ -279,16 +279,16 @@ typedef struct _ZzInterceptorBackendNoJB {
     unsigned long num_of_entry;
     unsigned long code_seg_offset;
     unsigned long data_seg_offset;
-} ZzInterceptorBackendNoJB;
+} InterceptorBackendNoJB;
 
-typedef struct _ZzHookFunctionEntryNoJB {
+typedef struct _HookEntryNoJB {
     void *target_fileoff;
     unsigned long is_near_jump;
     void *entry_address;
     void *on_enter_trampoline;  // HookZzData, 99% hardcode
     void *on_invoke_trampoline; // HookZzData, fixed instructions
     void *on_leave_trampoline;  // HookZzData, 99% hardcode
-} ZzHookFunctionEntryNoJB;
+} HookEntryNoJB;
 
 //------------------------------------------------------------
 //-----------       Created with 010 Editor        -----------
@@ -339,7 +339,7 @@ unsigned char on_leave_trampoline_template[84] = {
 
 #define ON_LEAVE_TRAMPOLINE_SIZE 84
 
-void ZzSolidifyBuildEnterTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHookFunctionEntryNoJB *nojb_entry,
+void ZzSolidifyBuildEnterTrampoline(InterceptorBackendNoJB *nojb_backend, HookEntryNoJB *nojb_entry,
                                     MachoFD *machofd) {
 
     const char *target_path = machofd->getPath();
@@ -352,8 +352,8 @@ void ZzSolidifyBuildEnterTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHo
     Sinfo("[*] solidify build on_enter_trampoline");
     memcpy(on_enter_trampoline_tp, (void *)on_enter_trampoline_template, ENTER_TRAMPOLINE_SIZE);
 
-    zaddr data_vmaddr = (zaddr)data_seg_info->vmaddr + sizeof(ZzInterceptorBackendNoJB) +
-                        nojb_backend->num_of_entry * sizeof(ZzHookFunctionEntryNoJB) + 2 * sizeof(void *);
+    zaddr data_vmaddr = (zaddr)data_seg_info->vmaddr + sizeof(InterceptorBackendNoJB) +
+                        nojb_backend->num_of_entry * sizeof(HookEntryNoJB) + 2 * sizeof(void *);
     zaddr codepatch_vmaddr = code_seg_info->vmaddr + +2 * 4;
     zaddr offset = data_vmaddr - codepatch_vmaddr;
     *(unsigned long *)&on_enter_trampoline_tp[5 * 4] = (unsigned long)offset;
@@ -369,7 +369,7 @@ void ZzSolidifyBuildEnterTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHo
     nojb_backend->code_seg_offset += ENTER_TRAMPOLINE_SIZE;
 }
 
-void ZzSolidifyBuildInvokeTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHookFunctionEntryNoJB *nojb_entry,
+void ZzSolidifyBuildInvokeTrampoline(InterceptorBackendNoJB *nojb_backend, HookEntryNoJB *nojb_entry,
                                      MachoFD *machofd) {
     const char *target_path = machofd->getPath();
     const segment_command_64_info_t *code_seg_info = machofd->get_seg_by_name((char *)"HookZzCode");
@@ -400,7 +400,7 @@ void ZzSolidifyBuildInvokeTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzH
     nojb_backend->code_seg_offset += INVOKE_TRAMPOLINE_SIZE;
 }
 
-void ZzSolidifyBuildLeaveTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHookFunctionEntryNoJB *nojb_entry,
+void ZzSolidifyBuildLeaveTrampoline(InterceptorBackendNoJB *nojb_backend, HookEntryNoJB *nojb_entry,
                                     MachoFD *machofd) {
 
     const char *target_path = machofd->getPath();
@@ -413,8 +413,8 @@ void ZzSolidifyBuildLeaveTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHo
     Sinfo("[*] solidify build on_leave_trampoline");
     memcpy(on_leave_trampoline_tp, (void *)on_leave_trampoline_template, LEAVE_TRAMPOLINE_SIZE);
 
-    zaddr data_vmaddr = (zaddr)data_seg_info->vmaddr + sizeof(ZzInterceptorBackendNoJB) +
-                        nojb_backend->num_of_entry * sizeof(ZzHookFunctionEntryNoJB) + 2 * sizeof(void *);
+    zaddr data_vmaddr = (zaddr)data_seg_info->vmaddr + sizeof(InterceptorBackendNoJB) +
+                        nojb_backend->num_of_entry * sizeof(HookEntryNoJB) + 2 * sizeof(void *);
     zaddr codepatch_vmaddr = code_seg_info->vmaddr + +2 * 4;
     zaddr offset = data_vmaddr - codepatch_vmaddr;
     *(unsigned long *)&on_leave_trampoline_tp[5 * 4] = (unsigned long)offset;
@@ -430,17 +430,17 @@ void ZzSolidifyBuildLeaveTrampoline(ZzInterceptorBackendNoJB *nojb_backend, ZzHo
     nojb_backend->code_seg_offset += LEAVE_TRAMPOLINE_SIZE;
 }
 
-void ZzSolidifyHookInitilize(ZzInterceptorBackendNoJB *nojb_backend, MachoFD *machofd) {
+void ZzSolidifyHookInitilize(InterceptorBackendNoJB *nojb_backend, MachoFD *machofd) {
     const char *target_path = machofd->getPath();
     const segment_command_64_info_t *code_seg_info = machofd->get_seg_by_name((char *)"HookZzCode");
     const segment_command_64_info_t *data_seg_info = machofd->get_seg_by_name((char *)"HookZzData");
 
     Sinfo("[*] solidify hook initilize");
-    zz_file_read(target_path, data_seg_info->fileoff, nojb_backend, sizeof(ZzInterceptorBackendNoJB));
+    zz_file_read(target_path, data_seg_info->fileoff, nojb_backend, sizeof(InterceptorBackendNoJB));
     nojb_backend->code_seg_offset = 0;
 }
 
-void ZzSolidifyHookActivate(ZzHookFunctionEntryNoJB *nojb_entry, MachoFD *machofd) {
+void ZzSolidifyHookActivate(HookEntryNoJB *nojb_entry, MachoFD *machofd) {
     zpointer target_fileoff = nojb_entry->target_fileoff;
     const char *target_path = machofd->getPath();
 
@@ -458,8 +458,8 @@ void ZzSolidifyHook(zpointer target_fileoff, MachoFD *machofd) {
     const segment_command_64_info_t *code_seg_info = machofd->get_seg_by_name((char *)"HookZzCode");
     const segment_command_64_info_t *data_seg_info = machofd->get_seg_by_name((char *)"HookZzData");
 
-    ZzInterceptorBackendNoJB nojb_backend;
-    ZzHookFunctionEntryNoJB nojb_entry;
+    InterceptorBackendNoJB nojb_backend;
+    HookEntryNoJB nojb_entry;
     ZzSolidifyHookInitilize(&nojb_backend, machofd);
 
     Xinfo("[*] start solidify hook at %p", target_fileoff);
@@ -470,12 +470,12 @@ void ZzSolidifyHook(zpointer target_fileoff, MachoFD *machofd) {
     ZzSolidifyBuildLeaveTrampoline(&nojb_backend, &nojb_entry, machofd);
 
     /* solidify new hook entry to file */
-    zz_file_write(target_path, data_seg_info->fileoff + sizeof(ZzHookFunctionEntryNoJB) * nojb_backend.num_of_entry,
-                  &nojb_entry, sizeof(ZzHookFunctionEntryNoJB));
+    zz_file_write(target_path, data_seg_info->fileoff + sizeof(HookEntryNoJB) * nojb_backend.num_of_entry,
+                  &nojb_entry, sizeof(HookEntryNoJB));
 
     /* solidify update interceptor backend to file */
     nojb_backend.num_of_entry += 1;
-    zz_file_write(target_path, data_seg_info->fileoff, &nojb_backend, sizeof(ZzInterceptorBackendNoJB));
+    zz_file_write(target_path, data_seg_info->fileoff, &nojb_backend, sizeof(InterceptorBackendNoJB));
 
     ZzSolidifyHookActivate(&nojb_entry, machofd);
 }

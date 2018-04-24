@@ -19,7 +19,7 @@ void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri) {
         ri->meta       = ZZ_ARM64_REG_X31;
     } else {
         ri->index = 0;
-        ZZ_ERROR_LOG_STR("arm64_register_describe error.");
+        ERROR_LOG_STR("arm64_register_describe error.");
     }
     ri->index = ri->meta - ZZ_ARM64_REG_X0;
 }

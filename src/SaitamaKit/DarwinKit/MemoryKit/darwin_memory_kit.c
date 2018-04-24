@@ -236,13 +236,13 @@ zz_ptr_t zz_darwin_vm_search_text_code_cave_via_task(task_t task, zz_addr_t addr
     target_search_start = aligned_addr - range_size;
     target_search_end   = aligned_addr + range_size;
 
-    ZZ_DEBUG_LOG("searching for %p cave...", (zz_ptr_t)address);
+    DEBUG_LOG("searching for %p cave...", (zz_ptr_t)address);
     // TODO: check the memory region attributes
     for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_darwin_vm_read_data_via_task(task, tmp_addr, readZeroArray, 128)) {
             if (!memcmp(readZeroArray, zeroArray, 128)) {
                 *size_ptr = 0x1000;
-                ZZ_DEBUG_LOG("found a cave at %p, size %d", (void *)tmp_addr, 0x1000);
+                DEBUG_LOG("found a cave at %p, size %d", (void *)tmp_addr, 0x1000);
                 return (void *)tmp_addr;
             }
         }

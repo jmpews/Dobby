@@ -27,7 +27,7 @@ void capstone_init(void) {
     err = cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &handle);
 #endif
     if (err) {
-        ZZ_ERROR_LOG("Failed on cs_open() with error returned: %u\n", err);
+        ERROR_LOG("Failed on cs_open() with error returned: %u\n", err);
         exit(-1);
     }
 
@@ -95,7 +95,7 @@ void relocator_read_one(ZzInstruction *old_ins, ZzInstruction *new_ins) {
             zz_ptr_t internal_jmp_dest = 0;
             if (internal_jmp_dest < dest) {
                 internal_jmp_dest = dest;
-                ZZ_ERROR_LOG("origin: %p, trampoline: %p is trampoline-internal-jmp !", old_ins->address,
+                ERROR_LOG("origin: %p, trampoline: %p is trampoline-internal-jmp !", old_ins->address,
                              new_ins->address);
                 return;
             }

@@ -74,7 +74,7 @@ bool zz_posix_vm_protect(const zz_addr_t address, zz_size_t size, int page_prot)
 
     r = mprotect((zz_ptr_t)aligned_addr, aligned_size, page_prot);
     if (r == -1) {
-        ZZ_ERROR_LOG("r = %d, at (%p) error!", r, (zz_ptr_t)address);
+        ERROR_LOG("r = %d, at (%p) error!", r, (zz_ptr_t)address);
         return FALSE;
     }
     return TRUE;
@@ -163,7 +163,7 @@ zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_si
     target_search_start = aligned_addr - range_size;
     target_search_end   = aligned_addr + range_size;
 
-    ZZ_DEBUG_LOG("searching for %p cave, use 0x1000 interval.", (zz_ptr_t)address);
+    DEBUG_LOG("searching for %p cave, use 0x1000 interval.", (zz_ptr_t)address);
     for (tmp_addr = target_search_start; tmp_addr < target_search_end; tmp_addr += 0x1000) {
         if (zz_posix_vm_check_address_valid_via_signal((zz_ptr_t)tmp_addr))
             if (memcpy(readZeroArray, (zz_ptr_t)tmp_addr, 128)) {

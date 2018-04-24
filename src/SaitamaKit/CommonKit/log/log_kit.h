@@ -1,10 +1,10 @@
 #ifndef commonkit_log_kit_h
 #define commonkit_log_kit_h
 
-#define EnablePrintErrnoString 1
-#define EnableColorLog 1
+#define ENABLE_PRINT_ERROR_STRING 1
+#define ENABLE_COLOR_LOG 0
 
-#if EnableColorLog
+#if ENABLE_COLOR_LOG
 #define RED "\x1B[31m"
 #define GRN "\x1B[32m"
 #define YEL "\x1B[33m"
@@ -24,52 +24,51 @@
 #define RESET ""
 #endif
 
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
-
 
 // Important!!!
 // STDERR before STDOUT, because sync
 
-#define ZZ_INFO_LOG(fmt, ...)                                                                                          \
+#define INFO_LOG(fmt, ...)                                                                                             \
+    do {                                                                                                               \
+        fprintf(stdout, "xxx" RESET fmt "\n", __VA_ARGS__);                                                            \
+    } while (0)
+
+#define INFO_LOG_STR(MSG) INFO_LOG("%s", MSG)
+
+#define DEBUG_LOG(fmt, ...)                                                                                            \
     do {                                                                                                               \
         fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                  \
     } while (0)
+#define DEBUG_LOG_STR(MSG) DEBUG_LOG("%s", MSG)
 
-#define ZZ_INFO_LOG_STR(MSG) ZZ_INFO_LOG("%s", MSG)
-
-#define ZZ_DEBUG_LOG(fmt, ...)                                                                                         \
-    do {                                                                                                               \
-        fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                  \
-    } while (0)
-#define ZZ_DEBUG_LOG_STR(MSG) ZZ_DEBUG_LOG("%s", MSG)
-
-#define ZZ_ERROR_LOG(fmt, ...)                                                                                         \
+#define ERROR_LOG(fmt, ...)                                                                                            \
     do {                                                                                                               \
         fprintf(stderr, "======= ERROR LOG ======= \n");                                                               \
         fprintf(stderr,                                                                                                \
                 RED "[!] "                                                                                             \
                     "%s:%d:%s(): " fmt RESET "\n",                                                                     \
                 __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
-        if (EnablePrintErrnoString) {                                                                                  \
+        if (ENABLE_PRINT_ERROR_STRING) {                                                                               \
             fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                            \
             perror(strerror(errno));                                                                                   \
         }                                                                                                              \
-        fprintf(stderr, "======= Error Log End ======= \n");                                                            \
+        fprintf(stderr, "======= Error Log End ======= \n");                                                           \
     } while (0)
 
-#define ZZ_ERROR_LOG_STR(MSG) ZZ_ERROR_LOG("%s", MSG)
+#define ERROR_LOG_STR(MSG) ERROR_LOG("%s", MSG)
 
-#define ZZ_COMMON_ERROR_LOG()                                                                                          \
+#define COMMON_ERROR_LOG()                                                                                             \
     do {                                                                                                               \
         fprintf(stderr, "======= ERROR LOG ======= \n");                                                               \
         fprintf(stderr, RED "[!]error occur at %s:%d:%s()\n", __FILE__, __LINE__, __func__);                           \
-        if (EnablePrintErrnoString) {                                                                                  \
+        if (ENABLE_PRINT_ERROR_STRING) {                                                                               \
             fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                            \
             perror(strerror(errno));                                                                                   \
         }                                                                                                              \
-        fprintf(stderr, "======= Error Log End ======= \n");                                                            \
+        fprintf(stderr, "======= Error Log End ======= \n");                                                           \
     } while (0)
 
 #endif

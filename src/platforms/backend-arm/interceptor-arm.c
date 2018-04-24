@@ -11,7 +11,7 @@
 
 InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
     if (!MemoryHelperIsSupportAllocateRXMemory()) {
-        ZZ_DEBUG_LOG_STR("memory is not support allocate r-x Page!");
+        DEBUG_LOG_STR("memory is not support allocate r-x Page!");
         return NULL;
     }
 
@@ -244,7 +244,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
 
     bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_enter_trampoline = bridgeData->redirect_trampoline;
@@ -279,7 +279,7 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
 
     bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
@@ -456,7 +456,7 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
 
     bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_leave_trampoline = bridgeData->redirect_trampoline;

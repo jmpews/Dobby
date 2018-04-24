@@ -14,7 +14,7 @@
 
 cdecl(closure_bridge_trampoline_template):
     .arm
-    ldr r7, [pc, #0]
+    ldr r12, [pc, #0]
     ldr pc, [pc, #0]
     .long 0
     .long 0
@@ -41,7 +41,7 @@ cdecl(closure_bridge_template):
     sub sp, sp, #8
 
     mov r0, sp
-    mov r1, r7
+    mov r1, r12
     bl  cdecl(common_bridge_handler)
 
     // dummy align
@@ -63,8 +63,8 @@ cdecl(closure_bridge_template):
     ldr lr, [sp], #4
 
 #if 1
-    str r7, [sp, #-4]
+    str r12, [sp, #-4]
     ldr pc, [sp, #-4]
 #else
-    mov pc, r7
+    mov pc, r12
 #endif

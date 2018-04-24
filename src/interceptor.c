@@ -49,7 +49,7 @@ static ZzInterceptor *InterceptorSharedInstance(void) {
         if (!g_interceptor)
             return NULL;
         if (!g_interceptor->is_support_rx_page) {
-            ZZ_ERROR_LOG_STR("current device does not support allocating r-x memory page!");
+            ERROR_LOG_STR("current device does not support allocating r-x memory page!");
             return NULL;
         }
     }
@@ -156,7 +156,7 @@ RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *
                      POSTCALL post_call_ptr, bool try_near_jump, ZZHOOKTYPE hook_type) {
 // HookZz do not support x86 now.
 #if defined(__i386__) || defined(__x86_64__)
-    DEBUG_LOG("%s", "x86 & x86_64 arch not support");
+    COMMON_LOG("%s", "x86 & x86_64 arch not support");
     return RS_FAILED;
 #endif
 
@@ -194,7 +194,7 @@ RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *
 RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr) {
 #if defined(__i386__) || defined(__x86_64__)
-    DEBUG_LOG("%s", "x86 & x86_64 arch not support");
+    COMMON_LOG("%s", "x86 & x86_64 arch not support");
     return RS_FAILED;
 #endif
 
@@ -243,13 +243,13 @@ void ZzEnableHook(zz_ptr_t target_ptr) {
 
     if (!entry) {
         status = RS_NO_BUILD_HOOK;
-        ZZ_ERROR_LOG(" %p not build HookEntry!", target_ptr);
+        ERROR_LOG(" %p not build HookEntry!", target_ptr);
         return;
     }
 
     if (entry->isEnabled) {
         status = RS_ALREADY_ENABLED;
-        ZZ_ERROR_LOG("%p already enable!", target_ptr);
+        ERROR_LOG("%p already enable!", target_ptr);
         return;
     } else {
         entry->isEnabled = true;

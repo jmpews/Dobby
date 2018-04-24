@@ -13,7 +13,7 @@
 
 InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
     if (!MemoryHelperIsSupportAllocateRXMemory()) {
-        ZZ_DEBUG_LOG_STR("memory is not support allocate r-x Page!");
+        COMMON_LOG("memory is not support allocate r-x page!");
         return NULL;
     }
 
@@ -38,7 +38,7 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
         sprintf(buffer + strlen(buffer), "\t\tinsn_leave_bridge: %p\n", backend->insn_leave_bridge);
         sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_bridge: %p\n",
                 backend->dynamic_binary_instrumentation_bridge);
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     return backend;
@@ -149,7 +149,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             sprintf(buffer + strlen(buffer), "\t\tjump_target: on_enter_trampoline(%p)\n",
                     (void *)entry->on_enter_trampoline);
         }
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     free(codeslice);
@@ -163,7 +163,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
 
     bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_enter_trampoline = bridgeData->redirect_trampoline;
@@ -180,7 +180,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "\n======= EnterTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n", bridgeData->redirect_trampoline);
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -192,7 +192,7 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
 
     bridgeData = ClosureBridgeAllocate(entry, dynamic_binary_instrumentationn_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
@@ -210,7 +210,7 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
         sprintf(buffer + strlen(buffer), "======= DynamicBinaryInstrumentationTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_trampoline: %p\n",
                 entry->on_dynamic_binary_instrumentation_trampoline);
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -278,7 +278,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
                     (zz_ptr_t)self->arm64_relocator.relocator_insns[i].relocated_insns[0]->address,
                     self->arm64_relocator.relocator_insns[i].relocated_insn_size);
         }
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     free(codeslice);
@@ -291,7 +291,7 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
 
     bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
     if (bridgeData == NULL) {
-        ZZ_ERROR_LOG_STR("build closure bridge failed!!!");
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
     entry->on_leave_trampoline = bridgeData->redirect_trampoline;
@@ -301,7 +301,7 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "======= LeaveTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -375,7 +375,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
             sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
             sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
         }
-        DEBUG_LOG("%s", buffer);
+        COMMON_LOG("%s", buffer);
     }
 
     return;
