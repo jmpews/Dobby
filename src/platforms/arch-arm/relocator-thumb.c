@@ -412,10 +412,18 @@ bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ARMInstru
     uint32_t imm10_2 = get_insn_sub(insn_ctx->insn2, 1, 10);
     uint32_t I1      = (~(J1 ^ S)) & 0x1;
     uint32_t I2      = (~(J2 ^ S)) & 0x1;
-    ;
+    
     uint32_t H = get_insn_sub(insn_ctx->insn2, 0, 1);
-    uint32_t imm32 =
-        imm10_2 << 2 | imm10_1 << (2 + 10) | I1 << (2 + 10 + 6) | I2 << (2 + 10 + 6 + 1) | S << (2 + 10 + 6 + 1 + 1);
+
+    int imm10_2_off = 2;
+    int imm10_1_off = imm10_2_off + 10;
+    int I1_off = imm10_1_off + 10;
+    int I2_off = I1_off + 1;
+    int S_off = I2_off + 1;
+
+    uint32_t sign_extend = (int)(S << 31) >> (31 - S_off);
+
+    uint32_t imm32 = imm10_2 << imm10_2_off | imm10_1 << imm10_1_off | I1 << I1_off | I2 << I2_off | sign_extend;
     zz_addr_t target_address;
 
     // CurrentInstrSet = thumb
