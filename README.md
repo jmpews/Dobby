@@ -30,11 +30,31 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - it's cute, **100kb**
 
+## Compile
+
+tip: `CMakeLists.txt` and `build.sh` just dummy files. (so do not use it.)
+
+**`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
+
+#### iOS
+
+just `make clean; make BACKEND=ios ARCH=arm64`
+
+#### Android
+
+`ndkbuild` or use `Android Studio`
+
 ## How it works ?
 
 [Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
 
 ## Demo
+
+#### iOS
+
+[DemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/iOS/DemoTemplate.zip)
+
+#### Android
 
 [HookZzAndroidDemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/HookZzAndroidDemoTemplate.zip)
 

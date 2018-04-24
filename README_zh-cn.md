@@ -10,20 +10,38 @@
 
 ## 特点
 
-- **静态化Hook aka 静态二进制插桩, 可以静态 Patch 文件**
+- **静态化 Hook aka 静态二进制插桩, 可以静态 Patch 文件**
 - **GOT Hook 但执行 HookZz 的流程, 对 APM 有帮助**
-- 可以操作寄存器的能力
+- 操作寄存器的能力
 - 直接替换函数
 - 为目标函数添加 `pre_call` 和 `post_call` 处理
-- 动态插桩 aka 指令级Hook
-- 动态代码Patch
+- 动态插桩 aka 指令级 Hook
+- 动态代码 Patch
 - 很小 aka 100kb
+
+## 编译
+
+注意: 请不要使用 `CMakeLists.txt` 和 `build.sh`, 只是未完成的占位符文件.
+
+需要先 clone 工程 **`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
+
+#### iOS
+
+`make clean; make BACKEND=ios ARCH=arm64` 编译后的文件在 `build` 目录内
+
+#### Android
+
+可以使用 `ndkbuild` 或者使用 `Android Studio` 整合进入您的工程, 详情见 `Demo`
 
 ## HookZz 原理
 
 可以参考文档 [HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
 
 ## Demo 工程
+
+#### iOS
+
+#### Android
 
 可以参考 [HookZzAndroidDemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/HookZzAndroidDemoTemplate.zip)
 
