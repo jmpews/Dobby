@@ -14,8 +14,8 @@ static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
 void common_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
 
     USER_CODE_CALL userCodeCall = cbd->user_code;
-    printf("CommonBridgeHandler:");
-    printf("\tTrampoline Address: %p", cbd->redirect_trampoline);
+    // printf("CommonBridgeHandler:");
+    // printf("\tTrampoline Address: %p", cbd->redirect_trampoline);
     userCodeCall(rs, cbd);
     // set return address
     rs->general.x[17] = rs->general.x[17];

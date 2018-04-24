@@ -13,7 +13,7 @@
 
 InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
     if (!MemoryHelperIsSupportAllocateRXMemory()) {
-        COMMON_LOG("memory is not support allocate r-x page!");
+        ERROR_LOG_STR("memory is not support allocate r-x page!");
         return NULL;
     }
 
