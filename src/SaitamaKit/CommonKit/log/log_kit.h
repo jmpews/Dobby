@@ -33,7 +33,7 @@
 
 #define INFO_LOG(fmt, ...)                                                                                             \
     do {                                                                                                               \
-        fprintf(stdout, "xxx" RESET fmt "\n", __VA_ARGS__);                                                            \
+        fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                            \
     } while (0)
 
 #define INFO_LOG_STR(MSG) INFO_LOG("%s", MSG)
