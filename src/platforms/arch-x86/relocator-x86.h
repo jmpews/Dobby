@@ -1,64 +1,56 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #ifndef platforms_arch_x86_relocator_h
 #define platforms_arch_x86_relocator_h
 
-// platforms
+#include "zkit.h"
+
+#include "memhelper.h"
+#include "writer.h"
+
 #include "instructions.h"
 #include "reader-x86.h"
 #include "regs-x86.h"
 #include "writer-x86.h"
 
-// hookzz
-#include "writer.h"
+typedef struct _X86RelocatorInstruction {
+    X86Instruction *origin_insn;
+    X86Instruction **relocated_insns;
+    zz_size_t output_index_start;
+    zz_size_t ouput_index_end;
+    zz_size_t relocated_insn_size;
+    zz_size_t size;
+} X86RelocatorInstruction;
 
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
-
-typedef struct _ZzX86Relocator {
+typedef struct _X86Relocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
-    zz_ptr_t input_start;
-    zz_ptr_t input_cur;
-    zz_addr_t input_pc;
+    X86AssemblerWriter *output;
+    X86Reader *input;
     int inpos;
     int outpos;
-    ZzInstruction *input_insns;
-    ZzRelocateInstruction *output_insns;
-    ZzX86Writer *output;
-    ZzLiteralInstruction **relocate_literal_insns;
-    zz_size_t relocate_literal_insns_size;
-} ZzX86Relocator;
 
-void zz_x86_relocator_init(ZzX86Relocator *relocator, zz_ptr_t input_code, ZzX86Writer *writer);
+    // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
+    X86Instruction *literal_insns[MAX_INSN_SIZE];
+    zz_size_t literal_insn_size;
 
-void zz_x86_relocator_free(ZzX86Relocator *relocator);
+    // record for every instruction need to be relocated
+    X86RelocatorInstruction relocator_insns[MAX_INSN_SIZE];
+    zz_size_t relocator_insn_size;
+} X86Relocator;
 
-void zz_x86_relocator_reset(ZzX86Relocator *self, zz_ptr_t input_code, ZzX86Writer *output);
+void x86_relocator_init(X86Relocator *relocator, X86Reader *input, X86AssemblerWriter *output);
 
-zz_size_t zz_x86_relocator_read_one(ZzX86Relocator *self, ZzInstruction *instruction);
+void x86_relocator_free(X86Relocator *relocator);
 
-bool zz_x86_relocator_write_one(ZzX86Relocator *self);
+void x86_relocator_reset(X86Relocator *self, X86Reader *input, X86AssemblerWriter *output);
 
-void zz_x86_relocator_write_all(ZzX86Relocator *self);
+void x86_relocator_relocate_writer(X86Relocator *relocator, zz_addr_t final_relocate_address);
 
-void zz_x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
+void x86_relocator_write_all(X86Relocator *self);
+
+void x86_relocator_read_one(X86Relocator *self, X86Instruction *instruction);
+
+void x86_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
+
+bool x86_relocator_write_one(X86Relocator *self);
 
 #endif

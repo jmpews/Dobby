@@ -39,7 +39,7 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
         sprintf(buffer + strlen(buffer), "\t\tleave_bridge: %p\n", backend->leave_bridge);
         sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_bridge: %p\n",
                 backend->dynamic_binary_instrumentation_bridge);
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     if (status == RS_FAILED) {
@@ -226,7 +226,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             sprintf(buffer + strlen(buffer), "\t\tjump_target: on_enter_trampoline(%p)\n",
                     (void *) entry->on_enter_trampoline);
         }
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     free(codeslice);
@@ -262,7 +262,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
         sprintf(buffer + strlen(buffer), "======= EnterTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n",
                 entry->on_enter_trampoline);
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -299,7 +299,7 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
                 "======= DynamicBinaryInstrumentationTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_trampoline: %p\n",
                 entry->on_dynamic_binary_instrumentation_trampoline);
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -443,7 +443,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
                         self->arm_relocator.relocator_insns[i].relocated_insn_size);
             }
         }
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     free(codeslice);
@@ -468,7 +468,7 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
         sprintf(buffer + strlen(buffer), "======= LeaveTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n",
                 entry->on_leave_trampoline);
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
     return;
@@ -611,7 +611,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
             sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n",
                     entry->on_leave_trampoline);
         }
-        DEBUG_LOG("%s", buffer);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
     }
     return;
 }

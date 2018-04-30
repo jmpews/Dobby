@@ -1,37 +1,32 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #ifndef platforms_arch_x86_reader_h
 #define platforms_arch_x86_reader_h
 
-// platforms
+#include "zkit.h"
+
 #include "instructions.h"
 
-// hookzz
+#include "platforms/backend-linux/memory-linux.h"
 
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
-
-typedef enum _X86InsnType { X86_UNDEF } X86InsnType;
+typedef enum _X86InsnType {
+    ARM64_UNDEF
+} X86InsnType;
 
 X86InsnType GetX86InsnType(uint32_t insn);
 
-zz_ptr_t zz_x86_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx);
+#define MAX_INSN_SIZE 256
+typedef struct _X86Reader {
+    X86Instruction *insns[MAX_INSN_SIZE];
+    zz_size_t insn_size;
+    zz_addr_t start_address;
+    zz_addr_t current_address;
+    zz_addr_t start_pc;
+    zz_addr_t current_pc;
+    zz_size_t size;
+} X86Reader;
 
+X86Reader *x86_reader_new(zz_ptr_t insn_address);
+void x86_reader_init(X86Reader *self, zz_ptr_t insn_address);
+void x86_reader_reset(X86Reader *self, zz_ptr_t insn_address);
+void x86_reader_free(X86Reader *self);
+X86Instruction *x86_reader_read_one_instruction(X86Reader *self);
 #endif

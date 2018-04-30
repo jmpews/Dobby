@@ -1,23 +1,23 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 #include "reader-x86.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+X86Reader *x86_reader_new(zz_ptr_t insn_address) {
+    return NULL;
+}
 
-zz_ptr_t zz_x86_reader_read_one_instruction(zz_ptr_t address, ZzInstruction *insn_ctx) { return NULL; }
+void x86_reader_init(X86Reader *self, zz_ptr_t insn_address) {
+    
+}
 
-X86InsnType GetX86InsnType(uint32_t insn) { return X86_UNDEF; }
+void x86_reader_reset(X86Reader *self, zz_ptr_t insn_address) {
+ 
+}
+
+void x86_reader_free(X86Reader *self) {
+  
+}
+
+X86Instruction *x86_reader_read_one_instruction(X86Reader *self) {
+}
+
+X86InsnType GetX86InsnType(uint32_t insn) {
+  
+}

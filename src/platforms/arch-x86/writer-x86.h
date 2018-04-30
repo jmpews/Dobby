@@ -17,36 +17,39 @@
 #ifndef platforms_arch_x86_writer_h
 #define platforms_arch_x86_writer_h
 
-// platforms
+#include "zkit.h"
+
+#include "memhelper.h"
+#include "writer.h"
+
 #include "instructions.h"
 #include "regs-x86.h"
 #include "writer-x86.h"
 
-// hookzz
-#include "writer.h"
+#define MAX_INSN_SIZE 256
 
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
+typedef struct _X86AssemblerWriter {
+    X86Instruction *insns[MAX_INSN_SIZE];
+    zz_size_t insn_size;
+    zz_addr_t start_address;
+    zz_addr_t current_address;
+    zz_addr_t start_pc;
+    zz_addr_t current_pc;
+    zz_size_t size;
+} X86AssemblerWriter;
 
-typedef ZzAssemblerWriter ZzX86Writer;
+X86AssemblerWriter *x86_writer_new(zz_ptr_t data_ptr);
 
-ZzX86Writer *zz_x86_writer_new(zz_ptr_t data_ptr);
+void x86_writer_init(X86AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 
-void zz_x86_writer_reset(ZzX86Writer *self, zz_ptr_t data_ptr);
+void x86_writer_reset(X86AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
 
-void zz_x86_writer_init(ZzX86Writer *self, zz_ptr_t target_addr);
+void x86_writer_free(X86AssemblerWriter *self);
 
-zz_size_t zz_x86_writer_near_jump_range_size();
-void zz_x86_writer_put_bytes(ZzAssemblerWriter *self, char *data, zz_size_t size);
-void zz_x86_writer_put_instruction(ZzAssemblerWriter *self, uint32_t insn);
+zz_size_t x86_writer_near_jump_range_size();
 
-// ======= user custom =======
+void x86_writer_put_bytes(X86AssemblerWriter *self, char *data, zz_size_t size);
 
-// ======= default =======
-
-// ======= relocator =======
+void x86_writer_put_instruction(X86AssemblerWriter *self, char *insn);
 
 #endif

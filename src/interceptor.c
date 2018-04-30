@@ -4,6 +4,7 @@
 
 #include "interceptor.h"
 #include "trampoline.h"
+#include "debuglog.h"
 
 #define ZZHOOKENTRIES_DEFAULT 100
 ZzInterceptor *g_interceptor = NULL;
@@ -156,7 +157,7 @@ RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *
                      POSTCALL post_call_ptr, bool try_near_jump, ZZHOOKTYPE hook_type) {
 // HookZz do not support x86 now.
 #if defined(__i386__) || defined(__x86_64__)
-    COMMON_LOG("%s", "x86 & x86_64 arch not support");
+    DEBUGLOG_COMMON_LOG("%s", "x86 & x86_64 arch not support");
     return RS_FAILED;
 #endif
 
@@ -194,7 +195,7 @@ RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *
 RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr) {
 #if defined(__i386__) || defined(__x86_64__)
-    COMMON_LOG("%s", "x86 & x86_64 arch not support");
+    DEBUGLOG_COMMON_LOG("%s", "x86 & x86_64 arch not support");
     return RS_FAILED;
 #endif
 

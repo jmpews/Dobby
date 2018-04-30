@@ -15,10 +15,10 @@ bool DebugLogControlerIsEnableDebugbreak();
 
 #if defined(__ANDROID__)
 #include <android/log.h>
-#define COMMON_LOG(fmt, ...)                                                                                            \
+#define DEBUGLOG_COMMON_LOG(fmt, ...)                                                                                            \
     { __android_log_print(ANDROID_LOG_INFO, "HookDEBUG", fmt, __VA_ARGS__); }
 #else
-#define COMMON_LOG(fmt, ...)                                                                                            \
+#define DEBUGLOG_COMMON_LOG(fmt, ...)                                                                                            \
     { INFO_LOG(fmt, __VA_ARGS__); }
 #endif
 

@@ -50,7 +50,6 @@ else ifeq ($(TARGET_ARCH), arm64)
 	HOOKZZ_SRC_FILES += $(wildcard $(LOCAL_PATH)/src/platforms/arch-arm64/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-arm64/*.S)
-
 else ifeq ($(TARGET_ARCH), x86)
 	HOOKZZ_SRC_FILES += $(wildcard $(LOCAL_PATH)/src/platforms/arch-x86/*.c) \
 			$(wildcard $(LOCAL_PATH)/src/platforms/backend-x86/*.c)

@@ -17,38 +17,33 @@
 #ifndef platforms_backend_x86_intercetor_x86
 #define platforms_backend_x86_intercetor_x86
 
-// platforms
+#include "hookzz.h"
+#include "zkit.h"
+
+#include "platforms/arch-x86/reader-x86.h"
 #include "platforms/arch-x86/relocator-x86.h"
 #include "platforms/arch-x86/writer-x86.h"
 
-// hookzz
-#include "emm.h"
+#include "memory.h"
 #include "interceptor.h"
-#include "bridge.h"
-
-// zzdeps
-#include "hookzz.h"
-#include "zzdefs.h"
-#include "zzdeps/common/debugbreak.h"
-#include "zzdeps/zz.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
 typedef struct _InterceptorBackend {
+    ExecuteMemoryManager *emm;
+    X86Relocator x86_relocator;
+    X86AssemblerWriter x86_writer;
+    X86Reader x86_reader;
 
+    zz_ptr_t enter_bridge;
+    zz_ptr_t insn_leave_bridge;
+    zz_ptr_t leave_bridge;
+    zz_ptr_t dynamic_binary_instrumentation_bridge;
 } InterceptorBackend;
 
-typedef struct _ZzX86HookFuntionEntryBackend {
-} ZzX86HookEntryBackend;
+typedef struct _X86HookFuntionEntryBackend {
+    bool is_thumb;
+    zz_size_t redirect_code_size;
+} X86HookEntryBackend;
 
-void ctx_save();
-void ctx_restore();
-void enter_bridge_template();
-void leave_bridge_template();
-void on_enter_trampoline_template();
-void on_invoke_trampoline_template();
-void on_leave_trampoline_template();
-
-CodeSlice *zz_code_patch_x86_writer(ZzX86Writer *x86_writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
-                                      zz_size_t range_size);
 #endif
