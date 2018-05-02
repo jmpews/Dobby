@@ -60,18 +60,18 @@ zz_size_t arm_writer_near_jump_range_size() { return ((1 << 23) << 2); }
 // ------- user custom -------
 
 void arm_writer_put_ldr_b_reg_address(ARMAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
-    arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, 0);
+    arm_writer_put_ldr_reg_reg_imm(self, reg, ARM_REG_PC, 0);
     arm_writer_put_b_imm(self, 0x0);
     arm_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 
 void arm_writer_put_bx_to_thumb(ARMAssemblerWriter *self) {
-    arm_writer_put_sub_reg_reg_imm(self, ZZ_ARM_REG_SP, ZZ_ARM_REG_SP, 0x8);
-    arm_writer_put_str_reg_reg_imm(self, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x0);
-    arm_writer_put_add_reg_reg_imm(self, ZZ_ARM_REG_R1, ZZ_ARM_REG_PC, 9);
-    arm_writer_put_str_reg_reg_imm(self, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 0x4);
-    arm_writer_put_ldr_reg_reg_imm_index(self, ZZ_ARM_REG_R1, ZZ_ARM_REG_SP, 4, 0);
-    arm_writer_put_ldr_reg_reg_imm_index(self, ZZ_ARM_REG_PC, ZZ_ARM_REG_SP, 4, 0);
+    arm_writer_put_sub_reg_reg_imm(self, ARM_REG_SP, ARM_REG_SP, 0x8);
+    arm_writer_put_str_reg_reg_imm(self, ARM_REG_R1, ARM_REG_SP, 0x0);
+    arm_writer_put_add_reg_reg_imm(self, ARM_REG_R1, ARM_REG_PC, 9);
+    arm_writer_put_str_reg_reg_imm(self, ARM_REG_R1, ARM_REG_SP, 0x4);
+    arm_writer_put_ldr_reg_reg_imm_index(self, ARM_REG_R1, ARM_REG_SP, 4, 0);
+    arm_writer_put_ldr_reg_reg_imm_index(self, ARM_REG_PC, ARM_REG_SP, 4, 0);
 }
 // ------- architecture default -------
 void arm_writer_put_bytes(ARMAssemblerWriter *self, char *data, zz_size_t data_size) {
@@ -119,7 +119,7 @@ void arm_writer_put_ldr_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
     arm_register_describe(dst_reg, &rd);
     arm_register_describe(src_reg, &rs);
 
-    if (rs.meta == ZZ_ARM_REG_PC) {
+    if (rs.meta == ARM_REG_PC) {
         arm_writer_put_ldr_reg_imm_literal(self, dst_reg, imm);
     } else {
         bool P = 1;
@@ -185,7 +185,7 @@ void arm_writer_put_str_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
 }
 
 void arm_writer_put_ldr_reg_address(ARMAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
-    arm_writer_put_ldr_reg_reg_imm(self, reg, ZZ_ARM_REG_PC, -4);
+    arm_writer_put_ldr_reg_reg_imm(self, reg, ARM_REG_PC, -4);
     arm_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
 }
 

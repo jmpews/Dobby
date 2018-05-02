@@ -21,8 +21,8 @@
 
 #define PRIAVE
 
-#ifndef RegStateStruct
-#define RegStateStruct
+#ifndef REGISTER_STATE_STRUCT
+#define REGISTER_STATE_STRUCT
 #if defined(__x86__) || defined(__aarch64__)
 typedef union _FPReg {
     __int128_t q;

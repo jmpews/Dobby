@@ -188,7 +188,7 @@ static bool arm64_relocator_rewrite_B(ARM64Relocator *self, const ARM64Instructi
     zz_addr_t target_address;
     target_address = insn_ctx->pc + offset;
 
-    arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+    arm64_writer_put_ldr_br_reg_address(self->output, ARM64_REG_X17, target_address);
     arm64_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
 
     return TRUE;
@@ -204,9 +204,9 @@ static bool arm64_relocator_rewrite_BL(ARM64Relocator *self, const ARM64Instruct
     zz_addr_t target_address;
     target_address = insn_ctx->pc + offset;
 
-    arm64_writer_put_ldr_blr_b_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+    arm64_writer_put_ldr_blr_b_reg_address(self->output, ARM64_REG_X17, target_address);
     arm64_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, insn_ctx->pc + 4);
+    arm64_writer_put_ldr_br_reg_address(self->output, ARM64_REG_X17, insn_ctx->pc + 4);
     arm64_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
 
     return TRUE;
@@ -237,7 +237,7 @@ static bool arm64_relocator_rewrite_B_cond(ARM64Relocator *self, const ARM64Inst
 
     arm64_writer_put_b_cond_imm(self->output, cond, 0x8);
     arm64_writer_put_b_imm(self->output, 0x14);
-    arm64_writer_put_ldr_br_reg_address(self->output, ZZ_ARM64_REG_X17, target_address);
+    arm64_writer_put_ldr_br_reg_address(self->output, ARM64_REG_X17, target_address);
     arm64_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
 
     return TRUE;

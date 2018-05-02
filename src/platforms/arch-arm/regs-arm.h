@@ -27,25 +27,25 @@
 // A2.4 Registers
 
 typedef enum _ZzReg {
-    ZZ_ARM_REG_R0 = 0,
-    ZZ_ARM_REG_R1,
-    ZZ_ARM_REG_R2,
-    ZZ_ARM_REG_R3,
-    ZZ_ARM_REG_R4,
-    ZZ_ARM_REG_R5,
-    ZZ_ARM_REG_R6,
-    ZZ_ARM_REG_R7,
-    ZZ_ARM_REG_R8,
-    ZZ_ARM_REG_R9,
-    ZZ_ARM_REG_R10,
-    ZZ_ARM_REG_R11,
-    ZZ_ARM_REG_R12,
-    ZZ_ARM_REG_R13,
-    ZZ_ARM_REG_R14,
-    ZZ_ARM_REG_R15,
-    ZZ_ARM_REG_SP = ZZ_ARM_REG_R13,
-    ZZ_ARM_REG_LR = ZZ_ARM_REG_R14,
-    ZZ_ARM_REG_PC = ZZ_ARM_REG_R15
+    ARM_REG_R0 = 0,
+    ARM_REG_R1,
+    ARM_REG_R2,
+    ARM_REG_R3,
+    ARM_REG_R4,
+    ARM_REG_R5,
+    ARM_REG_R6,
+    ARM_REG_R7,
+    ARM_REG_R8,
+    ARM_REG_R9,
+    ARM_REG_R10,
+    ARM_REG_R11,
+    ARM_REG_R12,
+    ARM_REG_R13,
+    ARM_REG_R14,
+    ARM_REG_R15,
+    ARM_REG_SP = ARM_REG_R13,
+    ARM_REG_LR = ARM_REG_R14,
+    ARM_REG_PC = ARM_REG_R15
 } ARMReg;
 
 typedef struct _ARMRegInfo {

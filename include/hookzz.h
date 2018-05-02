@@ -25,9 +25,13 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifndef RegStateStruct
-#define RegStateStruct
+#ifndef REGISTER_STATE_STRUCT
+#define REGISTER_STATE_STRUCT
 #if defined(__arm64__) || defined(__aarch64__)
+#define Tx(type) type##arm64
+#define TX() type##ARM64
+#define xT() arm64##type
+#define XT() ARM64##type
 typedef union _FPReg {
     __int128_t q;
     struct {
@@ -64,6 +68,10 @@ typedef struct _RegState {
     } floating;
 } RegState;
 #elif defined(__arm__)
+#define Tx(type) type##arm
+#define TX() type##ARM
+#define xT() arm##type
+#define XT() ARM##type
 typedef struct _RegState {
     uint32_t dummy_0;
     uint32_t dummy_1;
@@ -78,9 +86,17 @@ typedef struct _RegState {
     uint32_t lr;
 } RegState;
 #elif defined(__i386__)
+#define Tx(type) type##arm
+#define TX() type##ARM
+#define xT() arm##type
+#define XT() ARM##type
 typedef struct _RegState {
 } RegState;
 #elif defined(__x86_64__)
+#define Tx(type) type##x64
+#define TX() type##X64
+#define xT() x64##type
+#define XT() X64##type
 typedef struct _RegState {
 } RegState;
 #endif

@@ -166,7 +166,7 @@ static bool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const AR
     }
     zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111110100000111) | 0);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     // register literal instruction
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
@@ -182,14 +182,14 @@ static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, c
     DN      = get_insn_sub(insn1, 7, 1);
     Rd_ndx  = (DN << 3) | Rdn_ndx;
 
-    if (Rm_ndx != ZZ_ARM_REG_PC) {
+    if (Rm_ndx != ARM_REG_PC) {
         return FALSE;
     }
 
-    zz_thumb_writer_put_push_reg(self->output, ZZ_ARM_REG_R7);
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_R7, insn_ctx->pc);
-    zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111111110000111) | ZZ_ARM_REG_R7 << 3);
-    zz_thumb_writer_put_pop_reg(self->output, ZZ_ARM_REG_R7);
+    zz_thumb_writer_put_push_reg(self->output, ARM_REG_R7);
+    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_R7, insn_ctx->pc);
+    zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111111110000111) | ARM_REG_R7 << 3);
+    zz_thumb_writer_put_pop_reg(self->output, ARM_REG_R7);
 
     return TRUE;
 }
@@ -299,7 +299,7 @@ bool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ARMInstructio
     }
     zz_thumb_writer_put_instruction(self->output, (insn1 & 0xFF00) | 0);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
@@ -312,7 +312,7 @@ bool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ARMInstructio
     uint32_t imm32           = imm11 << 1;
     zz_addr_t target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
@@ -346,7 +346,7 @@ bool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ARMInstructio
     zz_thumb_writer_put_instruction(self->output, insn_ctx->insn1 & 0b1111101111000000);
     zz_thumb_writer_put_instruction(self->output, (insn_ctx->insn2 & 0b1101000000000000) | 0b1);
     zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
@@ -367,7 +367,7 @@ bool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ARMInstructio
     zz_addr_t target_address;
     target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
@@ -392,11 +392,11 @@ bool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, const
     // targetInstrSet = arm
     target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1);
+    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     // register literal instruction
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address + 1);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
@@ -430,9 +430,9 @@ bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ARMInstru
     // targetInstrSet = arm
     target_address = ALIGN_4(insn_ctx->pc) + imm32;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc + 1);
+    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
     zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }

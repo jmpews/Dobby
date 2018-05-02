@@ -53,14 +53,14 @@ void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ARMReg 
     arm_register_describe(reg, &ri);
 
     if ((((zz_addr_t)self->current_pc) % 4)) {
-        if (ri.meta <= ZZ_ARM_REG_R7) {
+        if (ri.meta <= ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
             zz_thumb_writer_put_nop(self);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
         }
     } else {
-        if (ri.meta <= ZZ_ARM_REG_R7) {
+        if (ri.meta <= ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
@@ -78,7 +78,7 @@ void zz_thumb_writer_put_ldr_reg_address(ZzThumbAssemblerWriter *self, ARMReg re
     arm_register_describe(reg, &ri);
 
     if ((((zz_addr_t)self->current_pc) % 4)) {
-        if (ri.meta <= ZZ_ARM_REG_R7) {
+        if (ri.meta <= ARM_REG_R7) {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
             zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
@@ -86,7 +86,7 @@ void zz_thumb_writer_put_ldr_reg_address(ZzThumbAssemblerWriter *self, ARMReg re
         }
     } else {
         zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
-        if (ri.meta <= ZZ_ARM_REG_R7)
+        if (ri.meta <= ARM_REG_R7)
             zz_thumb_writer_put_nop(self);
     }
 
@@ -209,7 +209,7 @@ void zz_thumb_writer_put_ldr_reg_imm(ZzThumbAssemblerWriter *self, ARMReg reg, i
 
     arm_register_describe(reg, &ri);
 
-    if (ri.meta <= ZZ_ARM_REG_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
+    if (ri.meta <= ARM_REG_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
 
         zz_thumb_writer_put_instruction(self, 0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
     } else if (imm < (1 << 12)) {
@@ -234,7 +234,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbAssemblerWriter *self
     if (right_offset < 0)
         return FALSE;
 
-    if (lr.meta <= ZZ_ARM_REG_R7 && rr.meta <= ZZ_ARM_REG_R7 && right_offset < ((1 << 5) << 2)) {
+    if (lr.meta <= ARM_REG_R7 && rr.meta <= ARM_REG_R7 && right_offset < ((1 << 5) << 2)) {
         insn = 0x6000 | (right_offset / 4) << 6 | (rr.index << 3) | lr.index;
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
@@ -256,7 +256,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbAssemblerWriter *self
     if (right_offset < 0)
         return FALSE;
 
-    if (rr.meta == ZZ_ARM_REG_SP && lr.meta <= ZZ_ARM_REG_R7 && right_offset < ((1 << 8) << 2)) {
+    if (rr.meta == ARM_REG_SP && lr.meta <= ARM_REG_R7 && right_offset < ((1 << 8) << 2)) {
         insn = 0x9000 | (lr.index << 8) | (right_offset / 4);
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
@@ -279,7 +279,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbAssemblerWriter *self
         return FALSE;
 
     if (right_offset < (1 << 12)) {
-        if (rr.meta == ZZ_ARM_REG_PC) {
+        if (rr.meta == ARM_REG_PC) {
             zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         }
         zz_thumb_writer_put_instruction(self,
@@ -302,7 +302,7 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbAssemblerWriter *self
     uint16_t insn;
 
     if (ABS(right_offset) < (1 << 8)) {
-        if (rr.meta == ZZ_ARM_REG_PC) {
+        if (rr.meta == ARM_REG_PC) {
             zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         } else {
             bool add = 0;
@@ -376,7 +376,7 @@ void zz_thumb_writer_put_add_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_re
     arm_register_describe(dst_reg, &dst);
 
     sign_mask = 0x0000;
-    if (dst.meta == ZZ_ARM_REG_SP) {
+    if (dst.meta == ARM_REG_SP) {
 
         if (imm < 0)
             sign_mask = 0x0080;
@@ -410,7 +410,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
         return zz_thumb_writer_put_add_reg_imm(self, dst_reg, right_value);
     }
 
-    if (dst.meta <= ZZ_ARM_REG_R7 && left.meta <= ZZ_ARM_REG_R7 && ABS(right_value) < (1 << 3)) {
+    if (dst.meta <= ARM_REG_R7 && left.meta <= ARM_REG_R7 && ABS(right_value) < (1 << 3)) {
         uint32_t sign_mask = 0;
 
         if (right_value < 0)
@@ -418,11 +418,11 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
 
         insn = 0x1c00 | sign_mask | (ABS(right_value) << 6) | (left.index << 3) | dst.index;
         zz_thumb_writer_put_instruction(self, insn);
-    } else if ((left.meta == ZZ_ARM_REG_SP || left.meta == ZZ_ARM_REG_PC) && dst.meta <= ZZ_ARM_REG_R7 &&
+    } else if ((left.meta == ARM_REG_SP || left.meta == ARM_REG_PC) && dst.meta <= ARM_REG_R7 &&
                right_value > 0 && (right_value % 4 == 0) && right_value < (1 << 8)) {
         uint16_t base_mask;
 
-        if (left.meta == ZZ_ARM_REG_SP)
+        if (left.meta == ARM_REG_SP)
             base_mask = 0x0800;
         else
             base_mask = 0x0000;

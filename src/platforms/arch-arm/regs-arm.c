@@ -17,16 +17,16 @@
 #include "regs-arm.h"
 
 void arm_register_describe(ARMReg reg, ARMRegInfo *ri) {
-    if (reg >= ZZ_ARM_REG_R0 && reg <= ZZ_ARM_REG_R12) {
+    if (reg >= ARM_REG_R0 && reg <= ARM_REG_R12) {
         ri->width = 32;
         ri->meta  = reg;
-    } else if (reg == ZZ_ARM_REG_SP) {
+    } else if (reg == ARM_REG_SP) {
         ri->width = 32;
         ri->meta  = reg;
-    } else if (reg == ZZ_ARM_REG_LR) {
+    } else if (reg == ARM_REG_LR) {
         ri->width = 32;
         ri->meta  = reg;
-    } else if (reg == ZZ_ARM_REG_PC) {
+    } else if (reg == ARM_REG_PC) {
         ri->width = 32;
         ri->meta  = reg;
     } else {
@@ -36,5 +36,5 @@ void arm_register_describe(ARMReg reg, ARMRegInfo *ri) {
 #endif
         ri->index = 0;
     }
-    ri->index = reg - ZZ_ARM_REG_R0;
+    ri->index = reg - ARM_REG_R0;
 }

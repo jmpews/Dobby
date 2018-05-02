@@ -143,15 +143,15 @@ static bool arm_relocator_rewrite_ADD_register_A1(ARMRelocator *self, const ARMI
     Rd_ndx = get_insn_sub(insn, 12, 4);
     Rm_ndx = get_insn_sub(insn, 0, 4);
 
-    if (Rn_ndx != ZZ_ARM_REG_PC) {
+    if (Rn_ndx != ARM_REG_PC) {
         return FALSE;
     }
     // push R7
-    arm_writer_put_push_reg(self->output, ZZ_ARM_REG_R7);
-    arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_R7, insn_ctx->pc);
-    arm_writer_put_instruction(self->output, (insn & 0xFFF0FFFF) | ZZ_ARM_REG_R7 << 16);
+    arm_writer_put_push_reg(self->output, ARM_REG_R7);
+    arm_writer_put_ldr_b_reg_address(self->output, ARM_REG_R7, insn_ctx->pc);
+    arm_writer_put_instruction(self->output, (insn & 0xFFF0FFFF) | ARM_REG_R7 << 16);
     // pop R7
-    arm_writer_put_pop_reg(self->output, ZZ_ARM_REG_R7);
+    arm_writer_put_pop_reg(self->output, ARM_REG_R7);
     return TRUE;
 }
 
@@ -222,7 +222,7 @@ static bool arm_relocator_rewrite_B_A1(ARMRelocator *self, const ARMInstruction 
 
     arm_writer_put_instruction(self->output, (insn & 0xFF000000) | 0);
     arm_writer_put_b_imm(self->output, 0x4);
-    arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    arm_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
     arm_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
@@ -254,9 +254,9 @@ static bool arm_relocator_rewrite_BLBLX_immediate_A1(ARMRelocator *self, const A
     // convert 'bl' to 'b', but save 'cond'
     arm_writer_put_instruction(self->output, (insn & 0xF0000000) | 0b1010 << 24 | 0);
     arm_writer_put_b_imm(self->output, 0);
-    arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc - 4);
+    arm_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc - 4);
     arm_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    arm_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
     arm_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
 
     return TRUE;
@@ -271,10 +271,10 @@ static bool arm_relocator_rewrite_BLBLX_immediate_A2(ARMRelocator *self, const A
     zz_addr_t target_address;
     target_address = insn_ctx->pc + imm32;
 
-    arm_writer_put_ldr_b_reg_address(self->output, ZZ_ARM_REG_LR, insn_ctx->pc - 4);
+    arm_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc - 4);
     // if(target_address > self->input->start_pc && target_address < (self->input->start_pc+ self->input->size))
     arm_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    arm_writer_put_ldr_reg_address(self->output, ZZ_ARM_REG_PC, target_address);
+    arm_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
     arm_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
 
     return TRUE;

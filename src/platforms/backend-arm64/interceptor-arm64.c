@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ZZ_ARM64_TINY_REDIRECT_SIZE 4
-#define ZZ_ARM64_FULL_REDIRECT_SIZE 16
+#define ARM64_TINY_REDIRECT_SIZE 4
+#define ARM64_FULL_REDIRECT_SIZE 16
 
 InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
     if (!MemoryHelperIsSupportAllocateRXMemory()) {
@@ -32,14 +32,20 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
 
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= Global Interceptor Info ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\tenter_bridge: %p\n", backend->enter_bridge);
-        sprintf(buffer + strlen(buffer), "\t\tleave_bridge: %p\n", backend->leave_bridge);
-        sprintf(buffer + strlen(buffer), "\t\tinsn_leave_bridge: %p\n", backend->insn_leave_bridge);
-        sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_bridge: %p\n",
+        sprintf(buffer + strlen(buffer), "\n======= Global Interceptor Info ======= \n");
+        sprintf(buffer + strlen(buffer), "\tenter_bridge: %p\n", backend->enter_bridge);
+        sprintf(buffer + strlen(buffer), "\tleave_bridge: %p\n", backend->leave_bridge);
+        sprintf(buffer + strlen(buffer), "\tinsn_leave_bridge: %p\n", backend->insn_leave_bridge);
+        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_bridge: %p\n",
                 backend->dynamic_binary_instrumentation_bridge);
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
+
+    if (status == RS_FAILED) {
+        DEBUG_LOG("%s", "BridgeBuildAll return RS_FAILED\n");
+        return NULL;
+    }
+
 
     return backend;
 }
@@ -76,18 +82,18 @@ void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) {
     entry->backend = (struct _HookEntryBackend *)entry_backend;
 
     if (entry->try_near_jump) {
-        entry_backend->redirect_code_size = ZZ_ARM64_TINY_REDIRECT_SIZE;
+        entry_backend->redirect_code_size = ARM64_TINY_REDIRECT_SIZE;
     } else {
         // check the first few instructions, preparatory work of instruction-fix
-        arm64_relocator_try_relocate((zz_ptr_t)target_addr, ZZ_ARM64_FULL_REDIRECT_SIZE, &redirect_limit);
-        if (redirect_limit != 0 && redirect_limit > ZZ_ARM64_TINY_REDIRECT_SIZE &&
-            redirect_limit < ZZ_ARM64_FULL_REDIRECT_SIZE) {
+        arm64_relocator_try_relocate((zz_ptr_t)target_addr, ARM64_FULL_REDIRECT_SIZE, &redirect_limit);
+        if (redirect_limit != 0 && redirect_limit > ARM64_TINY_REDIRECT_SIZE &&
+            redirect_limit < ARM64_FULL_REDIRECT_SIZE) {
             entry->try_near_jump              = TRUE;
-            entry_backend->redirect_code_size = ZZ_ARM64_TINY_REDIRECT_SIZE;
-        } else if (redirect_limit != 0 && redirect_limit < ZZ_ARM64_TINY_REDIRECT_SIZE) {
+            entry_backend->redirect_code_size = ARM64_TINY_REDIRECT_SIZE;
+        } else if (redirect_limit != 0 && redirect_limit < ARM64_TINY_REDIRECT_SIZE) {
             return;
         } else {
-            entry_backend->redirect_code_size = ZZ_ARM64_FULL_REDIRECT_SIZE;
+            entry_backend->redirect_code_size = ARM64_FULL_REDIRECT_SIZE;
         }
     }
 
@@ -115,15 +121,15 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     arm64_writer = &self->arm64_writer;
     arm64_writer_reset(arm64_writer, temp_codeslice, 0);
     if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-        arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->replace_call);
+        arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zz_addr_t)entry->replace_call);
     } else if (entry->hook_type == HOOK_TYPE_DBI) {
-        arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
+        arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17,
                                             (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
     } else {
-        arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
+        arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
     }
 
-    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+    if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
         codeslice = arm64_code_patch(arm64_writer, self->emm, target_addr, arm64_writer_near_jump_range_size() - 0x10);
     } else {
         codeslice = arm64_code_patch(arm64_writer, self->emm, 0, 0);
@@ -134,23 +140,26 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     else
         return;
 
-    if (DebugLogControlerIsEnableLog()) {
+// DELETE ?
+#if 0
+   if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= EnterTransferTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\ton_enter_transfer_trampoline: %p\n", entry->on_enter_transfer_trampoline);
-        sprintf(buffer + strlen(buffer), "\t\ttrampoline_length: %ld\n", codeslice->size);
-        sprintf(buffer + strlen(buffer), "\t\thook_entry: %p\n", (void *)entry);
+        sprintf(buffer + strlen(buffer), "\n======= EnterTransferTrampoline ======= \n");
+        sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n", entry->on_enter_transfer_trampoline);
+        sprintf(buffer + strlen(buffer), "\ttrampoline_length: %ld\n", codeslice->size);
+        sprintf(buffer + strlen(buffer), "\thook_entry: %p\n", (void *)entry);
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            sprintf(buffer + strlen(buffer), "\t\tjump_target: replace_call(%p)\n", (void *)entry->replace_call);
+            sprintf(buffer + strlen(buffer), "\tjump_target: replace_call(%p)\n", (void *)entry->replace_call);
         } else if (entry->hook_type == HOOK_TYPE_DBI) {
-            sprintf(buffer + strlen(buffer), "\t\tjump_target: on_dynamic_binary_instrumentation_trampoline(%p)\n",
+            sprintf(buffer + strlen(buffer), "\tjump_target: on_dynamic_binary_instrumentation_trampoline(%p)\n",
                     (void *)entry->on_dynamic_binary_instrumentation_trampoline);
         } else {
-            sprintf(buffer + strlen(buffer), "\t\tjump_target: on_enter_trampoline(%p)\n",
+            sprintf(buffer + strlen(buffer), "\tjump_target: on_enter_trampoline(%p)\n",
                     (void *)entry->on_enter_trampoline);
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
+#endif
 
     free(codeslice);
     return;
@@ -169,19 +178,22 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     entry->on_enter_trampoline = bridgeData->redirect_trampoline;
 
     // build the double trampline aka enter_transfer_trampoline
-    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+    if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
         if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
             TrampolineBuildForEnterTransfer(self, entry);
         }
     }
 
+// DELETE ?
+#if 0
     // debug log
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "\n======= EnterTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n", bridgeData->redirect_trampoline);
+        sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", bridgeData->redirect_trampoline);
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
+#endif
 
     return;
 }
@@ -198,20 +210,23 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
     entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
 
     // build the double trampline aka enter_transfer_trampoline
-    if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+    if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
         if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
             TrampolineBuildForEnterTransfer(self, entry);
         }
     }
 
+// DELETE ?
+#if 0
     // debug log
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= DynamicBinaryInstrumentationTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\tdynamic_binary_instrumentation_trampoline: %p\n",
+        sprintf(buffer + strlen(buffer), "\n======= DynamicBinaryInstrumentationTrampoline ======= \n");
+        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_trampoline: %p\n",
                 entry->on_dynamic_binary_instrumentation_trampoline);
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
+#endif
 
     return;
 }
@@ -243,7 +258,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
 
     // jump to rest target address
     restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm64_relocator->input->size);
-    arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)restore_next_insn_addr);
+    arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zz_addr_t)restore_next_insn_addr);
 
     codeslice = arm64_relocate_code_patch(arm64_relocator, arm64_writer, self->emm, 0, 0);
     if (codeslice)
@@ -251,29 +266,30 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     else
         return;
 
-    /* debug log */
+    // debug log
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024]         = {};
         char origin_prologue[256] = {0};
         int t                     = 0;
+        sprintf(buffer + strlen(buffer), "\n======= Origin Code Relocator ======= \n");
         for (zz_addr_t p = self->arm64_relocator.input->start_address; p < self->arm64_relocator.input->current_address;
              p++, t = t + 5) {
             sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
         }
-        sprintf(buffer + strlen(buffer), "\t\t\tARM Origin Prologue: %s\n", origin_prologue);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Input Start Address: %p\n",
+        sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Start Address: %p\n",
                 (zz_ptr_t)self->arm64_relocator.input->start_address);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Input Instruction Number: %ld\n",
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Instruction Number: %ld\n",
                 self->arm64_relocator.input->insn_size);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Input Size: %p\n",
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Size: %p\n",
                 (zz_ptr_t)self->arm64_relocator.input->size);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Output Start Address: %p\n", codeslice->data);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Output Instruction Number: %p\n",
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Start Address: %p\n", codeslice->data);
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Instruction Number: %p\n",
                 (zz_ptr_t)self->arm64_relocator.input->insn_size);
-        sprintf(buffer + strlen(buffer), "\t\tARM Relocator Output Size: %ld\n", self->arm64_relocator.input->size);
+        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm64_relocator.input->size);
         for (int i = 0; i < self->arm64_relocator.relocator_insn_size; i++) {
             sprintf(buffer + strlen(buffer),
-                    "\t\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
+                    "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                     (zz_ptr_t)self->arm64_relocator.relocator_insns[i].origin_insn->address,
                     (zz_ptr_t)self->arm64_relocator.relocator_insns[i].relocated_insns[0]->address,
                     self->arm64_relocator.relocator_insns[i].relocated_insn_size);
@@ -296,13 +312,16 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
 
     entry->on_leave_trampoline = bridgeData->redirect_trampoline;
 
+// DELETE ?
+#if 0
     // debug log
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= LeaveTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
+        sprintf(buffer + strlen(buffer), "\n======= LeaveTrampoline ======= \n");
+        sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
+#endif
 
     return;
 }
@@ -319,19 +338,19 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     arm64_writer_reset(arm64_writer, temp_codeslice, target_addr);
 
     if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+        if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
             arm64_writer_put_b_imm(arm64_writer,
                                    (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm64_writer->start_pc);
         } else {
-            arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17,
+            arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17,
                                                 (zz_addr_t)entry->on_enter_transfer_trampoline);
         }
     } else {
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
+        if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
             arm64_writer_put_b_imm(arm64_writer,
                                    (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm64_writer->start_pc);
         } else {
-            arm64_writer_put_ldr_br_reg_address(arm64_writer, ZZ_ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
+            arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zz_addr_t)entry->on_enter_trampoline);
         }
     }
 
@@ -341,39 +360,39 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     // debug log
     if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= ActiveTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\t\tHookZz Target Address: %p\n", entry->target_ptr);
+        sprintf(buffer + strlen(buffer), "\n======= Trampoline Summary ======= \n");
+        sprintf(buffer + strlen(buffer), "\tHookZz Target Address: %p\n", entry->target_ptr);
 
-        sprintf(buffer + strlen(buffer), "\t\tHookZz Target Address Arch Mode: ARM64\n");
-        if (entry_backend->redirect_code_size == ZZ_ARM64_TINY_REDIRECT_SIZE) {
-            sprintf(buffer + strlen(buffer), "\t\tARM64 Jump Type: Near Jump(B xxx)\n");
-        } else if (entry_backend->redirect_code_size == ZZ_ARM64_FULL_REDIRECT_SIZE) {
-            sprintf(buffer + strlen(buffer), "\t\tARM64 Brach Jump Type: Abs Jump(ldr r17, #4; .long address)\n");
+        sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: ARM64\n");
+        if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
+            sprintf(buffer + strlen(buffer), "\tARM64 Jump Type: Near Jump(B xxx)\n");
+        } else if (entry_backend->redirect_code_size == ARM64_FULL_REDIRECT_SIZE) {
+            sprintf(buffer + strlen(buffer), "\tARM64 Brach Jump Type: Abs Jump(ldr r17, #4; .long address)\n");
         }
 
         if (entry->try_near_jump && entry->on_enter_transfer_trampoline)
-            sprintf(buffer + strlen(buffer), "\t\ton_enter_transfer_trampoline: %p\n",
+            sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
                     entry->on_enter_transfer_trampoline);
 
         if (entry->hook_type == HOOK_TYPE_DBI) {
-            sprintf(buffer + strlen(buffer), "\t\tHook Type: HOOK_TYPE_DBI\n");
-            sprintf(buffer + strlen(buffer), "\t\ton_dynamic_binary_instrumentation_trampoline: %p\n",
+            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_DBI\n");
+            sprintf(buffer + strlen(buffer), "\ton_dynamic_binary_instrumentation_trampoline: %p\n",
                     entry->on_dynamic_binary_instrumentation_trampoline);
-            sprintf(buffer + strlen(buffer), "\t\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
         } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
-            sprintf(buffer + strlen(buffer), "\t\tHook Type: HOOK_TYPE_FUNCTION_via_PRE_POST\n");
-            sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
-            sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
-            sprintf(buffer + strlen(buffer), "\t\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_PRE_POST\n");
+            sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
+            sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
+            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
         } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            sprintf(buffer + strlen(buffer), "\t\tHook Type: HOOK_TYPE_FUNCTION_via_REPLACE\n");
-            sprintf(buffer + strlen(buffer), "\t\ton_enter_transfer_trampoline: %p\n",
+            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_REPLACE\n");
+            sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
                     entry->on_enter_transfer_trampoline);
-            sprintf(buffer + strlen(buffer), "\t\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
         } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
-            sprintf(buffer + strlen(buffer), "\t\tHook Type: HOOK_TYPE_FUNCTION_via_GOT\n");
-            sprintf(buffer + strlen(buffer), "\t\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
-            sprintf(buffer + strlen(buffer), "\t\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
+            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_GOT\n");
+            sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
+            sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
