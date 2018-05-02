@@ -46,7 +46,6 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
         return NULL;
     }
 
-
     return backend;
 }
 
@@ -178,7 +177,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     entry->on_enter_trampoline = bridgeData->redirect_trampoline;
 
     // build the double trampline aka enter_transfer_trampoline
-    if (entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
+    if (entry_backend && entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
         if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
             TrampolineBuildForEnterTransfer(self, entry);
         }
@@ -288,8 +287,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
                 (zz_ptr_t)self->arm64_relocator.input->insn_size);
         sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm64_relocator.input->size);
         for (int i = 0; i < self->arm64_relocator.relocator_insn_size; i++) {
-            sprintf(buffer + strlen(buffer),
-                    "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
+            sprintf(buffer + strlen(buffer), "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                     (zz_ptr_t)self->arm64_relocator.relocator_insns[i].origin_insn->address,
                     (zz_ptr_t)self->arm64_relocator.relocator_insns[i].relocated_insns[0]->address,
                     self->arm64_relocator.relocator_insns[i].relocated_insn_size);

@@ -241,12 +241,13 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     entry->on_enter_trampoline = bridgeData->redirect_trampoline;
 
     // build the double trampline aka enter_transfer_trampoline
-    if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-        (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
-        if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
-            TrampolineBuildForEnterTransfer(self, entry);
+    if (entry_backend)
+        if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
+            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+            if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
+                TrampolineBuildForEnterTransfer(self, entry);
+            }
         }
-    }
 
 // DELETE ?
 #if 0
@@ -395,8 +396,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Start Address: %p\n", codeslice->data);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Instruction Number: %p\n",
                     (zz_ptr_t)self->thumb_relocator.input->insn_size);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n",
-                    self->thumb_relocator.input->size);
+            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n", self->thumb_relocator.input->size);
             for (int i = 0; i < self->thumb_relocator.relocator_insn_size; i++) {
                 sprintf(buffer + strlen(buffer),
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
@@ -513,8 +513,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
                 arm_writer_put_b_imm(arm_writer,
                                      (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
             } else {
-                arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
-                                               (zz_addr_t)entry->on_enter_transfer_trampoline);
+                arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
         } else {
             if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
