@@ -19,9 +19,9 @@
 typedef struct _InterceptorBackend {
     ExecuteMemoryManager *emm;
     ARMRelocator arm_relocator;
-    ZzThumbRelocator thumb_relocator;
+    ThumbRelocator thumb_relocator;
     ARMAssemblerWriter arm_writer;
-    ZzThumbAssemblerWriter thumb_writer;
+    ThumbAssemblerWriter thumb_writer;
     ARMReader arm_reader;
     ARMReader thumb_reader;
 

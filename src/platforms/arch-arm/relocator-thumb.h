@@ -13,10 +13,10 @@
 #include "relocator-arm.h"
 #include "writer-thumb.h"
 
-typedef struct _ZzThumbRelocator {
+typedef struct _ThumbRelocator {
     bool try_relocated_again;
     zz_size_t try_relocated_length;
-    ZzThumbAssemblerWriter *output;
+    ThumbAssemblerWriter *output;
     ARMReader *input;
     int inpos;
     int outpos;
@@ -27,20 +27,20 @@ typedef struct _ZzThumbRelocator {
     // record for every instruction need to be relocated
     ARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
     zz_size_t relocator_insn_size;
-} ZzThumbRelocator;
+} ThumbRelocator;
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ARMReader *input, ZzThumbAssemblerWriter *writer);
+void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblerWriter *writer);
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, ARMReader *input, ZzThumbAssemblerWriter *output);
+void thumb_relocator_reset(ThumbRelocator *self, ARMReader *input, ThumbAssemblerWriter *output);
 
-void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ARMInstruction *instruction);
+void thumb_relocator_read_one(ThumbRelocator *self, ARMInstruction *instruction);
 
-bool zz_thumb_relocator_write_one(ZzThumbRelocator *self);
+bool thumb_relocator_write_one(ThumbRelocator *self);
 
-void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t final_relocate_address);
+void thumb_relocator_relocate_writer(ThumbRelocator *relocator, zz_addr_t final_relocate_address);
 
-void zz_thumb_relocator_write_all(ZzThumbRelocator *self);
+void thumb_relocator_write_all(ThumbRelocator *self);
 
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
+void thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
 #endif

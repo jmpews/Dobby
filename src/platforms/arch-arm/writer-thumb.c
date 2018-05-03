@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-ZzThumbAssemblerWriter *zz_thumb_writer_new() {
-    ZzThumbAssemblerWriter *writer = (ZzThumbAssemblerWriter *)malloc0(sizeof(ZzThumbAssemblerWriter));
+ThumbAssemblerWriter *thumb_writer_new() {
+    ThumbAssemblerWriter *writer = (ThumbAssemblerWriter *)malloc0(sizeof(ThumbAssemblerWriter));
     writer->current_address      = 0;
     writer->start_address        = 0;
     writer->current_pc             = 0 + 4;
@@ -13,11 +13,11 @@ ZzThumbAssemblerWriter *zz_thumb_writer_new() {
     return writer;
 }
 
-void zz_thumb_writer_init(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
-    zz_thumb_writer_reset(self, data_ptr, target_ptr);
+void thumb_writer_init(ThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+    thumb_writer_reset(self, data_ptr, target_ptr);
 }
 
-void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
+void thumb_writer_reset(ThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
     self->current_address = align_address;
     self->start_address   = align_address;
@@ -34,7 +34,7 @@ void zz_thumb_writer_reset(ZzThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_a
     self->insn_size = 0;
 }
 
-void zz_thumb_writer_free(ZzThumbAssemblerWriter *self) {
+void thumb_writer_free(ThumbAssemblerWriter *self) {
     if (self->insn_size) {
         for (int i = 0; i < self->insn_size; i++) {
             free(self->insns[i]);
@@ -44,63 +44,63 @@ void zz_thumb_writer_free(ZzThumbAssemblerWriter *self) {
     free(self);
 }
 
-zz_size_t zz_thumb_writer_near_jump_range_size() { return ((1 << 23) << 1); }
+zz_size_t thumb_writer_near_jump_range_size() { return ((1 << 23) << 1); }
 
 // ------- custom -------
 
-void zz_thumb_writer_put_ldr_b_reg_address(ZzThumbAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
+void thumb_writer_put_ldr_b_reg_address(ThumbAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
     if ((((zz_addr_t)self->current_pc) % 4)) {
         if (ri.meta <= ARM_REG_R7) {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-            zz_thumb_writer_put_nop(self);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+            thumb_writer_put_nop(self);
         } else {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
         }
     } else {
         if (ri.meta <= ARM_REG_R7) {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-            zz_thumb_writer_put_nop(self);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+            thumb_writer_put_nop(self);
         }
     }
 
-    zz_thumb_writer_put_b_imm(self, 0x2);
-    zz_thumb_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
+    thumb_writer_put_b_imm(self, 0x2);
+    thumb_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
     return;
 }
 
-void zz_thumb_writer_put_ldr_reg_address(ZzThumbAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
+void thumb_writer_put_ldr_reg_address(ThumbAssemblerWriter *self, ARMReg reg, zz_addr_t address) {
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
     if ((((zz_addr_t)self->current_pc) % 4)) {
         if (ri.meta <= ARM_REG_R7) {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
-            zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
-            zz_thumb_writer_put_nop(self);
+            thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
+            thumb_writer_put_nop(self);
         }
     } else {
-        zz_thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
+        thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         if (ri.meta <= ARM_REG_R7)
-            zz_thumb_writer_put_nop(self);
+            thumb_writer_put_nop(self);
     }
 
-    zz_thumb_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
+    thumb_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
     return;
 }
 
 // ------- architecture default -------
-void zz_thumb_writer_put_nop(ZzThumbAssemblerWriter *self) {
-    zz_thumb_writer_put_instruction(self, 0x46c0);
+void thumb_writer_put_nop(ThumbAssemblerWriter *self) {
+    thumb_writer_put_instruction(self, 0x46c0);
     return;
 }
 
-void zz_thumb_writer_put_bytes(ZzThumbAssemblerWriter *self, char *data, zz_size_t data_size) {
+void thumb_writer_put_bytes(ThumbAssemblerWriter *self, char *data, zz_size_t data_size) {
     memcpy((zz_ptr_t)self->current_address, data, data_size);
     self->current_address = self->current_address + data_size;
     self->current_pc += data_size;
@@ -118,7 +118,7 @@ void zz_thumb_writer_put_bytes(ZzThumbAssemblerWriter *self, char *data, zz_size
     return;
 }
 
-void zz_thumb_writer_put_instruction(ZzThumbAssemblerWriter *self, uint16_t insn) {
+void thumb_writer_put_instruction(ThumbAssemblerWriter *self, uint16_t insn) {
     *(uint16_t *)(self->current_address) = insn;
     self->current_address                = self->current_address + sizeof(uint16_t);
     self->current_pc += 2;
@@ -136,37 +136,37 @@ void zz_thumb_writer_put_instruction(ZzThumbAssemblerWriter *self, uint16_t insn
     return;
 }
 
-void zz_thumb_writer_put_b_imm(ZzThumbAssemblerWriter *self, uint32_t imm) {
+void thumb_writer_put_b_imm(ThumbAssemblerWriter *self, uint32_t imm) {
 
-    zz_thumb_writer_put_instruction(self, 0xe000 | ((imm / 2) & ZZ_INT11_MASK));
+    thumb_writer_put_instruction(self, 0xe000 | ((imm / 2) & ZZ_INT11_MASK));
     return;
 }
 
-void zz_thumb_writer_put_bx_reg(ZzThumbAssemblerWriter *self, ARMReg reg) {
+void thumb_writer_put_bx_reg(ThumbAssemblerWriter *self, ARMReg reg) {
     ARMRegInfo ri;
 
     arm_register_describe(reg, &ri);
 
     if ((((zz_addr_t)self->current_pc) % 4)) {
-        zz_thumb_writer_put_nop(self);
+        thumb_writer_put_nop(self);
     }
 
-    zz_thumb_writer_put_instruction(self, 0x4700 | (ri.index << 3));
-    zz_thumb_writer_put_nop(self);
+    thumb_writer_put_instruction(self, 0x4700 | (ri.index << 3));
+    thumb_writer_put_nop(self);
     return;
 }
 
-void zz_thumb_writer_put_blx_reg(ZzThumbAssemblerWriter *self, ARMReg reg) {
+void thumb_writer_put_blx_reg(ThumbAssemblerWriter *self, ARMReg reg) {
     ARMRegInfo ri;
 
     arm_register_describe(reg, &ri);
 
-    zz_thumb_writer_put_instruction(self, 0x4780 | (ri.index << 3));
+    thumb_writer_put_instruction(self, 0x4780 | (ri.index << 3));
     return;
 }
 
 // A8.8.18
-void zz_thumb_writer_put_branch_imm(ZzThumbAssemblerWriter *self, uint32_t imm, bool link, bool thumb) {
+void thumb_writer_put_branch_imm(ThumbAssemblerWriter *self, uint32_t imm, bool link, bool thumb) {
     union {
         int32_t i;
         uint32_t u;
@@ -182,47 +182,47 @@ void zz_thumb_writer_put_branch_imm(ZzThumbAssemblerWriter *self, uint32_t imm, 
     imm10 = (distance.u >> 11) & ZZ_INT10_MASK;
     imm11 = distance.u & ZZ_INT11_MASK;
 
-    zz_thumb_writer_put_instruction(self, 0xf000 | (s << 10) | imm10);
-    zz_thumb_writer_put_instruction(self, 0x8000 | (link << 14) | (j1 << 13) | (thumb << 12) | (j2 << 11) | imm11);
+    thumb_writer_put_instruction(self, 0xf000 | (s << 10) | imm10);
+    thumb_writer_put_instruction(self, 0x8000 | (link << 14) | (j1 << 13) | (thumb << 12) | (j2 << 11) | imm11);
     return;
 }
 
-void zz_thumb_writer_put_bl_imm(ZzThumbAssemblerWriter *self, uint32_t imm) {
-    zz_thumb_writer_put_branch_imm(self, imm, TRUE, TRUE);
+void thumb_writer_put_bl_imm(ThumbAssemblerWriter *self, uint32_t imm) {
+    thumb_writer_put_branch_imm(self, imm, TRUE, TRUE);
     return;
 }
 
-void zz_thumb_writer_put_blx_imm(ZzThumbAssemblerWriter *self, uint32_t imm) {
-    zz_thumb_writer_put_branch_imm(self, imm, TRUE, FALSE);
+void thumb_writer_put_blx_imm(ThumbAssemblerWriter *self, uint32_t imm) {
+    thumb_writer_put_branch_imm(self, imm, TRUE, FALSE);
     return;
 }
 
-void zz_thumb_writer_put_b_imm32(ZzThumbAssemblerWriter *self, uint32_t imm) {
-    zz_thumb_writer_put_branch_imm(self, imm, FALSE, TRUE);
+void thumb_writer_put_b_imm32(ThumbAssemblerWriter *self, uint32_t imm) {
+    thumb_writer_put_branch_imm(self, imm, FALSE, TRUE);
     return;
 }
 
 // PAGE: A8-410
 // A8.8.64 LDR (literal)
-void zz_thumb_writer_put_ldr_reg_imm(ZzThumbAssemblerWriter *self, ARMReg reg, int32_t imm) {
+void thumb_writer_put_ldr_reg_imm(ThumbAssemblerWriter *self, ARMReg reg, int32_t imm) {
     ARMRegInfo ri;
 
     arm_register_describe(reg, &ri);
 
     if (ri.meta <= ARM_REG_R7 && imm >= 0 && imm < ((1 << 8) << 2)) {
 
-        zz_thumb_writer_put_instruction(self, 0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
+        thumb_writer_put_instruction(self, 0x4800 | (ri.index << 8) | ((imm / 4) & ZZ_INT8_MASK));
     } else if (imm < (1 << 12)) {
         bool add = 0;
         if (imm >= 0)
             add = 1;
-        zz_thumb_writer_put_instruction(self, 0xf85f | (add << 7));
-        zz_thumb_writer_put_instruction(self, (ri.index << 12) | ABS(imm));
+        thumb_writer_put_instruction(self, 0xf85f | (add << 7));
+        thumb_writer_put_instruction(self, (ri.index << 12) | ABS(imm));
     }
     return;
 }
 
-bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
+bool thumb_writer_put_transfer_reg_reg_offset_T1(ThumbAssemblerWriter *self, ThumbMemoryOperation operation,
                                                     ARMReg left_reg, ARMReg right_reg, int32_t right_offset) {
     ARMRegInfo lr, rr;
 
@@ -238,13 +238,13 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T1(ZzThumbAssemblerWriter *self
         insn = 0x6000 | (right_offset / 4) << 6 | (rr.index << 3) | lr.index;
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
-        zz_thumb_writer_put_instruction(self, insn);
+        thumb_writer_put_instruction(self, insn);
         return TRUE;
     }
     return FALSE;
 }
 
-bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
+bool thumb_writer_put_transfer_reg_reg_offset_T2(ThumbAssemblerWriter *self, ThumbMemoryOperation operation,
                                                     ARMReg left_reg, ARMReg right_reg, int32_t right_offset) {
     ARMRegInfo lr, rr;
 
@@ -260,13 +260,13 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T2(ZzThumbAssemblerWriter *self
         insn = 0x9000 | (lr.index << 8) | (right_offset / 4);
         if (operation == ZZ_THUMB_MEMORY_LOAD)
             insn |= 0x0800;
-        zz_thumb_writer_put_instruction(self, insn);
+        thumb_writer_put_instruction(self, insn);
         return TRUE;
     }
     return FALSE;
 }
 
-bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
+bool thumb_writer_put_transfer_reg_reg_offset_T3(ThumbAssemblerWriter *self, ThumbMemoryOperation operation,
                                                     ARMReg left_reg, ARMReg right_reg, int32_t right_offset) {
     ARMRegInfo lr, rr;
 
@@ -280,18 +280,18 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T3(ZzThumbAssemblerWriter *self
 
     if (right_offset < (1 << 12)) {
         if (rr.meta == ARM_REG_PC) {
-            zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
+            thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         }
-        zz_thumb_writer_put_instruction(self,
+        thumb_writer_put_instruction(self,
                                         0xf8c0 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) | rr.index);
-        zz_thumb_writer_put_instruction(self, (lr.index << 12) | right_offset);
+        thumb_writer_put_instruction(self, (lr.index << 12) | right_offset);
 
         return TRUE;
     }
     return FALSE;
 }
 
-bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
+bool thumb_writer_put_transfer_reg_reg_offset_T4(ThumbAssemblerWriter *self, ThumbMemoryOperation operation,
                                                     ARMReg left_reg, ARMReg right_reg, int32_t right_offset,
                                                     bool index, bool wback) {
     ARMRegInfo lr, rr;
@@ -303,14 +303,14 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbAssemblerWriter *self
 
     if (ABS(right_offset) < (1 << 8)) {
         if (rr.meta == ARM_REG_PC) {
-            zz_thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
+            thumb_writer_put_ldr_reg_imm(self, left_reg, right_offset);
         } else {
             bool add = 0;
             if (right_offset > 0)
                 add = 1;
-            zz_thumb_writer_put_instruction(self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) |
+            thumb_writer_put_instruction(self, 0xf840 | ((operation == ZZ_THUMB_MEMORY_LOAD) ? 0x0010 : 0x0000) |
                                                       rr.index);
-            zz_thumb_writer_put_instruction(self, 0x0800 | (lr.index << 12) | (index << 10) | (add << 9) |
+            thumb_writer_put_instruction(self, 0x0800 | (lr.index << 12) | (index << 10) | (add << 9) |
                                                       (wback << 8) | (ABS(right_offset)));
             return TRUE;
         }
@@ -320,56 +320,56 @@ bool zz_thumb_writer_put_transfer_reg_reg_offset_T4(ZzThumbAssemblerWriter *self
 
 // PAGE: A8-406
 // PAGE: A8.8.203 STR (immediate, Thumb)
-static void zz_thumb_writer_put_transfer_reg_reg_offset(ZzThumbAssemblerWriter *self, ZzThumbMemoryOperation operation,
+static void thumb_writer_put_transfer_reg_reg_offset(ThumbAssemblerWriter *self, ThumbMemoryOperation operation,
                                                         ARMReg left_reg, ARMReg right_reg, int32_t right_offset) {
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T1(self, operation, left_reg, right_reg, right_offset))
+    if (thumb_writer_put_transfer_reg_reg_offset_T1(self, operation, left_reg, right_reg, right_offset))
         return;
 
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T2(self, operation, left_reg, right_reg, right_offset))
+    if (thumb_writer_put_transfer_reg_reg_offset_T2(self, operation, left_reg, right_reg, right_offset))
         return;
 
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T3(self, operation, left_reg, right_reg, right_offset))
+    if (thumb_writer_put_transfer_reg_reg_offset_T3(self, operation, left_reg, right_reg, right_offset))
         return;
-    if (zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, operation, left_reg, right_reg, right_offset, 1, 0))
+    if (thumb_writer_put_transfer_reg_reg_offset_T4(self, operation, left_reg, right_reg, right_offset, 1, 0))
         return;
     return;
 }
 
-void zz_thumb_writer_put_ldr_reg_reg_offset(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
+void thumb_writer_put_ldr_reg_reg_offset(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
                                             int32_t src_offset) {
-    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset);
+    thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset);
     return;
 }
 
-void zz_thumb_writer_put_str_reg_reg_offset(ZzThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg,
+void thumb_writer_put_str_reg_reg_offset(ThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg,
                                             int32_t dst_offset) {
-    zz_thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset);
+    thumb_writer_put_transfer_reg_reg_offset(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset);
     return;
 }
 
-void zz_thumb_writer_put_ldr_index_reg_reg_offset(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
+void thumb_writer_put_ldr_index_reg_reg_offset(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
                                                   int32_t src_offset, bool index) {
-    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset, index, 1);
+    thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_LOAD, dst_reg, src_reg, src_offset, index, 1);
     return;
 }
 
-void zz_thumb_writer_put_str_index_reg_reg_offset(ZzThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg,
+void thumb_writer_put_str_index_reg_reg_offset(ThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg,
                                                   int32_t dst_offset, bool index) {
-    zz_thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset, index, 1);
+    thumb_writer_put_transfer_reg_reg_offset_T4(self, ZZ_THUMB_MEMORY_STORE, src_reg, dst_reg, dst_offset, index, 1);
     return;
 }
 
-void zz_thumb_writer_put_str_reg_reg(ZzThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg) {
-    zz_thumb_writer_put_str_reg_reg_offset(self, src_reg, dst_reg, 0);
+void thumb_writer_put_str_reg_reg(ThumbAssemblerWriter *self, ARMReg src_reg, ARMReg dst_reg) {
+    thumb_writer_put_str_reg_reg_offset(self, src_reg, dst_reg, 0);
     return;
 }
 
-void zz_thumb_writer_put_ldr_reg_reg(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg) {
-    zz_thumb_writer_put_ldr_reg_reg_offset(self, dst_reg, src_reg, 0);
+void thumb_writer_put_ldr_reg_reg(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg) {
+    thumb_writer_put_ldr_reg_reg_offset(self, dst_reg, src_reg, 0);
     return;
 }
 
-void zz_thumb_writer_put_add_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
+void thumb_writer_put_add_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
     ARMRegInfo dst;
     uint16_t sign_mask, insn;
 
@@ -389,16 +389,16 @@ void zz_thumb_writer_put_add_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_re
         insn = 0x3000 | sign_mask | (dst.index << 8) | ABS(imm);
     }
 
-    zz_thumb_writer_put_instruction(self, insn);
+    thumb_writer_put_instruction(self, insn);
     return;
 }
 
-void zz_thumb_writer_put_sub_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
-    zz_thumb_writer_put_add_reg_imm(self, dst_reg, -imm);
+void thumb_writer_put_sub_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
+    thumb_writer_put_add_reg_imm(self, dst_reg, -imm);
     return;
 }
 
-void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
+void thumb_writer_put_add_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
                                          int32_t right_value) {
     ARMRegInfo dst, left;
     uint16_t insn;
@@ -407,7 +407,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
     arm_register_describe(left_reg, &left);
 
     if (left.meta == dst.meta) {
-        return zz_thumb_writer_put_add_reg_imm(self, dst_reg, right_value);
+        return thumb_writer_put_add_reg_imm(self, dst_reg, right_value);
     }
 
     if (dst.meta <= ARM_REG_R7 && left.meta <= ARM_REG_R7 && ABS(right_value) < (1 << 3)) {
@@ -417,7 +417,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
             sign_mask = 1 << 9;
 
         insn = 0x1c00 | sign_mask | (ABS(right_value) << 6) | (left.index << 3) | dst.index;
-        zz_thumb_writer_put_instruction(self, insn);
+        thumb_writer_put_instruction(self, insn);
     } else if ((left.meta == ARM_REG_SP || left.meta == ARM_REG_PC) && dst.meta <= ARM_REG_R7 &&
                right_value > 0 && (right_value % 4 == 0) && right_value < (1 << 8)) {
         uint16_t base_mask;
@@ -428,7 +428,7 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
             base_mask = 0x0000;
 
         insn = 0xa000 | base_mask | (dst.index << 8) | (right_value / 4);
-        zz_thumb_writer_put_instruction(self, insn);
+        thumb_writer_put_instruction(self, insn);
     } else {
         uint16_t insn1, insn2;
         zz_size_t i, imm3, imm8;
@@ -439,44 +439,44 @@ void zz_thumb_writer_put_add_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg ds
         // A8-708, sub
         // A8-306 add
         if (right_value < 0)
-            zz_thumb_writer_put_instruction(self, 0b1111001010100000 | i << 10 | left.index);
+            thumb_writer_put_instruction(self, 0b1111001010100000 | i << 10 | left.index);
         else
-            zz_thumb_writer_put_instruction(self, 0b1111001000000000 | i << 10 | left.index);
-        zz_thumb_writer_put_instruction(self, 0b0 | imm3 << 12 | dst.index << 8 | imm8);
+            thumb_writer_put_instruction(self, 0b1111001000000000 | i << 10 | left.index);
+        thumb_writer_put_instruction(self, 0b0 | imm3 << 12 | dst.index << 8 | imm8);
     }
 
     return;
 }
 
-void zz_thumb_writer_put_sub_reg_reg_imm(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
+void thumb_writer_put_sub_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
                                          int32_t right_value) {
-    zz_thumb_writer_put_add_reg_reg_imm(self, dst_reg, left_reg, -right_value);
+    thumb_writer_put_add_reg_reg_imm(self, dst_reg, left_reg, -right_value);
     return;
 }
 
-void zz_thumb_writer_put_push_reg(ZzThumbAssemblerWriter *self, ARMReg reg) {
+void thumb_writer_put_push_reg(ThumbAssemblerWriter *self, ARMReg reg) {
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
     uint16_t M, register_list;
     M = 0;
 
-    zz_thumb_writer_put_instruction(self, 0b1011010000000000 | M << 8 | 1 << ri.index);
+    thumb_writer_put_instruction(self, 0b1011010000000000 | M << 8 | 1 << ri.index);
     return;
 }
 
-void zz_thumb_writer_put_pop_reg(ZzThumbAssemblerWriter *self, ARMReg reg) {
+void thumb_writer_put_pop_reg(ThumbAssemblerWriter *self, ARMReg reg) {
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
     uint16_t P, register_list;
     P = 0;
 
-    zz_thumb_writer_put_instruction(self, 0b1011110000000000 | P << 8 | 1 << ri.index);
+    thumb_writer_put_instruction(self, 0b1011110000000000 | P << 8 | 1 << ri.index);
     return;
 }
 
-void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
+void thumb_writer_put_add_reg_reg_reg(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
                                          ARMReg right_reg) {
     ARMRegInfo dst, left, right;
     arm_register_describe(dst_reg, &dst);
@@ -488,6 +488,6 @@ void zz_thumb_writer_put_add_reg_reg_reg(ZzThumbAssemblerWriter *self, ARMReg ds
     Rm_ndx = right.index;
     Rn_ndx = left.index;
 
-    zz_thumb_writer_put_instruction(self, 0b0001100000000000 | Rm_ndx << 6 | Rn_ndx << 3 | Rd_ndx);
+    thumb_writer_put_instruction(self, 0b0001100000000000 | Rm_ndx << 6 | Rn_ndx << 3 | Rd_ndx);
     return;
 }

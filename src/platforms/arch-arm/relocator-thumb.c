@@ -6,8 +6,8 @@
 
 #define MAX_RELOCATOR_INSTRUCIONS_SIZE 64
 
-void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ARMReader *input, ZzThumbAssemblerWriter *output) {
-    memset(relocator, 0, sizeof(ZzThumbRelocator));
+void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblerWriter *output) {
+    memset(relocator, 0, sizeof(ThumbRelocator));
     relocator->inpos                = 0;
     relocator->outpos               = 0;
     relocator->input                = input;
@@ -15,13 +15,13 @@ void zz_thumb_relocator_init(ZzThumbRelocator *relocator, ARMReader *input, ZzTh
     relocator->try_relocated_length = 0;
 }
 
-void zz_thumb_relocator_free(ZzThumbRelocator *relocator) {
-    zz_thumb_reader_free(relocator->input);
-    zz_thumb_writer_free(relocator->output);
+void thumb_relocator_free(ThumbRelocator *relocator) {
+    thumb_reader_free(relocator->input);
+    thumb_writer_free(relocator->output);
     free(relocator);
 }
 
-void zz_thumb_relocator_reset(ZzThumbRelocator *self, ARMReader *input, ZzThumbAssemblerWriter *output) {
+void thumb_relocator_reset(ThumbRelocator *self, ARMReader *input, ThumbAssemblerWriter *output) {
     self->inpos                = 0;
     self->outpos               = 0;
     self->input                = input;
@@ -30,10 +30,10 @@ void zz_thumb_relocator_reset(ZzThumbRelocator *self, ARMReader *input, ZzThumbA
     self->try_relocated_length = 0;
 }
 
-void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ARMInstruction *instruction) {
+void thumb_relocator_read_one(ThumbRelocator *self, ARMInstruction *instruction) {
     ARMInstruction *insn_ctx;
 
-    zz_thumb_reader_read_one_instruction(self->input);
+    thumb_reader_read_one_instruction(self->input);
 
     // switch (1) {}
 
@@ -43,7 +43,7 @@ void zz_thumb_relocator_read_one(ZzThumbRelocator *self, ARMInstruction *instruc
         *instruction = *insn_ctx;
 }
 
-void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
+void thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes) {
     int tmp_size = 0;
     bool is_thumb;
     zz_ptr_t target_addr;
@@ -51,10 +51,10 @@ void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
     is_thumb       = INSTRUCTION_IS_THUMB((zz_addr_t)address);
 
     ARMInstruction *insn_ctx;
-    ARMReader *reader = zz_thumb_reader_new(address);
+    ARMReader *reader = thumb_reader_new(address);
 
     do {
-        insn_ctx = zz_thumb_reader_read_one_instruction(reader);
+        insn_ctx = thumb_reader_read_one_instruction(reader);
         switch (GetTHUMBInsnType(insn_ctx->insn1, insn_ctx->insn2)) {
         case THUMB_INS_B_T2:
             early_end = TRUE;
@@ -72,12 +72,12 @@ void zz_thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_s
         *max_bytes = tmp_size;
     }
 
-    zz_thumb_reader_free(reader);
+    thumb_reader_free(reader);
     return;
 }
 
 #if 0
-zz_addr_t zz_thumb_relocator_get_insn_relocated_offset(ZzThumbRelocator *self, zz_addr_t address) {
+zz_addr_t thumb_relocator_get_insn_relocated_offset(ThumbRelocator *self, zz_addr_t address) {
     const ARMInstruction *insn_ctx;
     const ZzRelocateInstruction *re_insn_ctx;
     int i;
@@ -94,7 +94,7 @@ zz_addr_t zz_thumb_relocator_get_insn_relocated_offset(ZzThumbRelocator *self, z
 
 #endif
 
-static ARMRelocatorInstruction *zz_thumb_relocator_get_relocator_insn_with_address(ZzThumbRelocator *self,
+static ARMRelocatorInstruction *thumb_relocator_get_relocator_insn_with_address(ThumbRelocator *self,
                                                                                      zz_addr_t insn_address) {
     for (int i = 0; i < self->relocator_insn_size; ++i) {
         if ((self->relocator_insns[i].origin_insn->pc - 4) == insn_address) {
@@ -103,7 +103,7 @@ static ARMRelocatorInstruction *zz_thumb_relocator_get_relocator_insn_with_addre
     }
     return NULL;
 }
-void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t final_relocate_address) {
+void thumb_relocator_relocate_writer(ThumbRelocator *relocator, zz_addr_t final_relocate_address) {
     ARMRelocatorInstruction *relocated_insn;
     if (relocator->literal_insn_size) {
         zz_addr_t *literal_target_address_ptr;
@@ -113,7 +113,7 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t f
             if (*literal_target_address_ptr > (relocator->input->start_pc - 4) &&
                 *literal_target_address_ptr < (relocator->input->start_pc - 4 + relocator->input->size)) {
                 relocated_insn =
-                    zz_thumb_relocator_get_relocator_insn_with_address(relocator, *literal_target_address_ptr);
+                    thumb_relocator_get_relocator_insn_with_address(relocator, *literal_target_address_ptr);
                 assert(relocated_insn);
                 *literal_target_address_ptr =
                     (*relocated_insn->relocated_insns)->pc - relocator->output->start_pc + final_relocate_address;
@@ -122,15 +122,15 @@ void zz_thumb_relocator_relocate_writer(ZzThumbRelocator *relocator, zz_addr_t f
     }
 }
 
-void zz_thumb_relocator_write_all(ZzThumbRelocator *self) {
+void thumb_relocator_write_all(ThumbRelocator *self) {
     int count                           = 0;
     int outpos                          = self->outpos;
-    ZzThumbAssemblerWriter thumb_writer = *self->output;
-    while (zz_thumb_relocator_write_one(self))
+    ThumbAssemblerWriter thumb_writer = *self->output;
+    while (thumb_relocator_write_one(self))
         count++;
 }
 
-void zz_thumb_relocator_register_literal_insn(ZzThumbRelocator *self, ARMInstruction *insn_ctx) {
+void thumb_relocator_register_literal_insn(ThumbRelocator *self, ARMInstruction *insn_ctx) {
     self->literal_insns[self->literal_insn_size++] = insn_ctx;
     // convert the temportary absolute address with offset.
     //    zz_addr_t *temp_address = (zz_addr_t *)insn_ctx->address;
@@ -143,7 +143,7 @@ void zz_thumb_relocator_register_literal_insn(ZzThumbRelocator *self, ARMInstruc
 // 4: ldr pc, #0
 // 8: .long ?
 // c: next insn
-static bool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+static bool thumb_relocator_rewrite_CBNZ_CBZ(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
 
     uint32_t insn1 = insn_ctx->insn1;
     uint16_t op, i, imm5, Rn_ndx;
@@ -162,18 +162,18 @@ static bool zz_thumb_relocator_rewrite_CBNZ_CBZ(ZzThumbRelocator *self, const AR
     /* for align , simple solution, maybe the correct solution is get `ldr_reg_address` length and adjust the immediate
      * of `b_imm`. */
     if ((zz_addr_t)self->output->current_pc % 4) {
-        zz_thumb_writer_put_nop(self->output);
+        thumb_writer_put_nop(self->output);
     }
-    zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111110100000111) | 0);
-    zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_writer_put_instruction(self->output, (insn1 & 0b1111110100000111) | 0);
+    thumb_writer_put_b_imm(self->output, 0x6);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     // register literal instruction
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
 
 // PAGE: A8-310
-static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+static bool thumb_relocator_rewrite_ADD_register_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
 
     uint16_t Rm_ndx, Rdn_ndx, DN, Rd_ndx;
@@ -186,16 +186,16 @@ static bool zz_thumb_relocator_rewrite_ADD_register_T2(ZzThumbRelocator *self, c
         return FALSE;
     }
 
-    zz_thumb_writer_put_push_reg(self->output, ARM_REG_R7);
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_R7, insn_ctx->pc);
-    zz_thumb_writer_put_instruction(self->output, (insn1 & 0b1111111110000111) | ARM_REG_R7 << 3);
-    zz_thumb_writer_put_pop_reg(self->output, ARM_REG_R7);
+    thumb_writer_put_push_reg(self->output, ARM_REG_R7);
+    thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_R7, insn_ctx->pc);
+    thumb_writer_put_instruction(self->output, (insn1 & 0b1111111110000111) | ARM_REG_R7 << 3);
+    thumb_writer_put_pop_reg(self->output, ARM_REG_R7);
 
     return TRUE;
 }
 
 // PAGE: A8-410
-bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_LDR_literal_T1(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t imm8  = get_insn_sub(insn1, 0, 8);
     uint32_t imm32 = imm8 << 2;
@@ -203,15 +203,15 @@ bool zz_thumb_relocator_rewrite_LDR_literal_T1(ZzThumbRelocator *self, const ARM
     zz_addr_t target_address = ALIGN_4(insn_ctx->pc) + imm32;
     int Rt_ndx               = get_insn_sub(insn1, 8, 3);
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
+    thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
 
     return TRUE;
 }
 
 // PAGE: A8-410
-bool zz_thumb_relocator_rewrite_LDR_literal_T2(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_LDR_literal_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -226,15 +226,15 @@ bool zz_thumb_relocator_rewrite_LDR_literal_T2(ZzThumbRelocator *self, const ARM
         target_address = ALIGN_4(insn_ctx->pc) - imm32;
     int Rt_ndx = get_insn_sub(insn_ctx->insn2, 12, 4);
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
+    thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_reg_offset(self->output, Rt_ndx, Rt_ndx, 0);
 
     return TRUE;
 }
 
 // PAGE: A8-322
-bool zz_thumb_relocator_rewrite_ADR_T1(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_ADR_T1(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
 
     uint32_t imm8            = get_insn_sub(insn1, 0, 8);
@@ -242,12 +242,12 @@ bool zz_thumb_relocator_rewrite_ADR_T1(ZzThumbRelocator *self, const ARMInstruct
     zz_addr_t target_address = insn_ctx->pc + imm32;
     int Rt_ndx               = get_insn_sub(insn1, 8, 3);
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     return TRUE;
 }
 
 // PAGE: A8-322
-bool zz_thumb_relocator_rewrite_ADR_T2(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_ADR_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -257,12 +257,12 @@ bool zz_thumb_relocator_rewrite_ADR_T2(ZzThumbRelocator *self, const ARMInstruct
     zz_addr_t target_address;
     target_address = insn_ctx->pc - imm32;
     int Rt_ndx     = get_insn_sub(insn_ctx->insn2, 8, 4);
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     return TRUE;
 }
 
 // PAGE: A8-322
-bool zz_thumb_relocator_rewrite_ADR_T3(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_ADR_T3(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -273,7 +273,7 @@ bool zz_thumb_relocator_rewrite_ADR_T3(ZzThumbRelocator *self, const ARMInstruct
     target_address = insn_ctx->pc + imm32;
     int Rt_ndx     = get_insn_sub(insn_ctx->insn2, 8, 4);
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
+    thumb_writer_put_ldr_b_reg_address(self->output, Rt_ndx, target_address);
     return TRUE;
 }
 
@@ -284,7 +284,7 @@ bool zz_thumb_relocator_rewrite_ADR_T3(ZzThumbRelocator *self, const ARMInstruct
 // 0x00c : remain code
 
 // PAGE: A8-334
-bool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_B_T1(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     // uint32_t insn2 = insn_ctx->insn2;
 
@@ -295,25 +295,25 @@ bool zz_thumb_relocator_rewrite_B_T1(ZzThumbRelocator *self, const ARMInstructio
     /* for align , simple solution, maybe the correct solution is get `ldr_reg_address` length and adjust the immediate
      * of `b_imm`. */
     if ((zz_addr_t)self->output->current_pc % 4) {
-        zz_thumb_writer_put_nop(self->output);
+        thumb_writer_put_nop(self->output);
     }
-    zz_thumb_writer_put_instruction(self->output, (insn1 & 0xFF00) | 0);
-    zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_instruction(self->output, (insn1 & 0xFF00) | 0);
+    thumb_writer_put_b_imm(self->output, 0x6);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
 
 // PAGE: A8-334
-bool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_B_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
 
     uint32_t imm11           = get_insn_sub(insn1, 0, 11);
     uint32_t imm32           = imm11 << 1;
     zz_addr_t target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
 
@@ -324,7 +324,7 @@ bool zz_thumb_relocator_rewrite_B_T2(ZzThumbRelocator *self, const ARMInstructio
 // 0x010 : remain code
 
 // PAGE: A8-334
-bool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_B_T3(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -341,17 +341,17 @@ bool zz_thumb_relocator_rewrite_B_T3(ZzThumbRelocator *self, const ARMInstructio
     /* for align , simple solution, maybe the correct solution is get `ldr_reg_address` length and adjust the immediate
      * of `b_imm`. */
     if ((zz_addr_t)self->output->current_pc % 4 == 0) {
-        zz_thumb_writer_put_nop(self->output);
+        thumb_writer_put_nop(self->output);
     }
-    zz_thumb_writer_put_instruction(self->output, insn_ctx->insn1 & 0b1111101111000000);
-    zz_thumb_writer_put_instruction(self->output, (insn_ctx->insn2 & 0b1101000000000000) | 0b1);
-    zz_thumb_writer_put_b_imm(self->output, 0x6);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_writer_put_instruction(self->output, insn_ctx->insn1 & 0b1111101111000000);
+    thumb_writer_put_instruction(self->output, (insn_ctx->insn2 & 0b1101000000000000) | 0b1);
+    thumb_writer_put_b_imm(self->output, 0x6);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
 // PAGE: A8-334
-bool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_B_T4(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -367,13 +367,13 @@ bool zz_thumb_relocator_rewrite_B_T4(ZzThumbRelocator *self, const ARMInstructio
     zz_addr_t target_address;
     target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
 
 // PAGE: A8-348
-bool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_BLBLX_immediate_T1(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -392,16 +392,16 @@ bool zz_thumb_relocator_rewrite_BLBLX_immediate_T1(ZzThumbRelocator *self, const
     // targetInstrSet = arm
     target_address = insn_ctx->pc + imm32;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     // register literal instruction
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address + 1);
     return TRUE;
 }
 
 // PAGE: A8-348
-bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ARMInstruction *insn_ctx) {
+bool thumb_relocator_rewrite_BLBLX_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
     uint32_t insn1 = insn_ctx->insn1;
     uint32_t insn2 = insn_ctx->insn2;
 
@@ -430,14 +430,14 @@ bool zz_thumb_relocator_rewrite_BLBLX_T2(ZzThumbRelocator *self, const ARMInstru
     // targetInstrSet = arm
     target_address = ALIGN_4(insn_ctx->pc) + imm32;
 
-    zz_thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
-    zz_thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
-    zz_thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc + 1);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
+    thumb_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
+    thumb_relocator_register_literal_insn(self, self->output->insns[self->output->insn_size - 1]);
     return TRUE;
 }
 
-bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
+bool thumb_relocator_write_one(ThumbRelocator *self) {
     ARMInstruction *insn_ctx, **input_insns;
     ARMRelocatorInstruction *relocator_insn;
     relocator_insn = self->relocator_insns + self->relocator_insn_size;
@@ -456,43 +456,43 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
 
     switch (GetTHUMBInsnType(insn_ctx->insn1, insn_ctx->insn2)) {
     case THUMB_INS_CBNZ_CBZ:
-        rewritten = zz_thumb_relocator_rewrite_CBNZ_CBZ(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_CBNZ_CBZ(self, insn_ctx);
         break;
     case THUMB_INS_ADD_register_T2:
-        rewritten = zz_thumb_relocator_rewrite_ADD_register_T2(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_ADD_register_T2(self, insn_ctx);
         break;
     case THUMB_INS_LDR_literal_T1:
-        rewritten = zz_thumb_relocator_rewrite_LDR_literal_T1(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_LDR_literal_T1(self, insn_ctx);
         break;
     case THUMB_INS_LDR_literal_T2:
-        rewritten = zz_thumb_relocator_rewrite_LDR_literal_T2(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_LDR_literal_T2(self, insn_ctx);
         break;
     case THUMB_INS_ADR_T1:
-        rewritten = zz_thumb_relocator_rewrite_ADR_T1(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_ADR_T1(self, insn_ctx);
         break;
     case THUMB_INS_ADR_T2:
-        rewritten = zz_thumb_relocator_rewrite_ADR_T2(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_ADR_T2(self, insn_ctx);
         break;
     case THUMB_INS_ADR_T3:
-        rewritten = zz_thumb_relocator_rewrite_ADR_T3(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_ADR_T3(self, insn_ctx);
         break;
     case THUMB_INS_B_T1:
-        rewritten = zz_thumb_relocator_rewrite_B_T1(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_B_T1(self, insn_ctx);
         break;
     case THUMB_INS_B_T2:
-        rewritten = zz_thumb_relocator_rewrite_B_T2(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_B_T2(self, insn_ctx);
         break;
     case THUMB_INS_B_T3:
-        rewritten = zz_thumb_relocator_rewrite_B_T3(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_B_T3(self, insn_ctx);
         break;
     case THUMB_INS_B_T4:
-        rewritten = zz_thumb_relocator_rewrite_B_T4(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_B_T4(self, insn_ctx);
         break;
     case THUMB_INS_BLBLX_immediate_T1:
-        rewritten = zz_thumb_relocator_rewrite_BLBLX_immediate_T1(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_BLBLX_immediate_T1(self, insn_ctx);
         break;
     case THUMB_INS_BLBLX_immediate_T2:
-        rewritten = zz_thumb_relocator_rewrite_BLBLX_T2(self, insn_ctx);
+        rewritten = thumb_relocator_rewrite_BLBLX_T2(self, insn_ctx);
         break;
     case THUMB_UNDEF:
         rewritten = FALSE;
@@ -500,7 +500,7 @@ bool zz_thumb_relocator_write_one(ZzThumbRelocator *self) {
     }
 
     if (!rewritten) {
-        zz_thumb_writer_put_bytes(self->output, (char *)&insn_ctx->insn, insn_ctx->size);
+        thumb_writer_put_bytes(self->output, (char *)&insn_ctx->insn, insn_ctx->size);
     } else {
     }
 

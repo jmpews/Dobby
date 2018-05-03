@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-CodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
+CodeSlice *thumb_code_patch(ThumbAssemblerWriter *thumb_writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
                                  zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
@@ -21,7 +21,7 @@ CodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ExecuteMemo
     return codeslice;
 }
 
-CodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *relocator, ZzThumbAssemblerWriter *thumb_writer,
+CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWriter *thumb_writer,
                                           ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
@@ -32,7 +32,7 @@ CodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *relocator, ZzThumbAsse
     if (!codeslice)
         return NULL;
 
-    zz_thumb_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
+    thumb_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
 
     if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)thumb_writer->start_address, thumb_writer->size)) {
 
