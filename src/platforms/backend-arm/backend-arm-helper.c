@@ -7,7 +7,7 @@ CodeSlice *zz_thumb_code_patch(ZzThumbAssemblerWriter *thumb_writer, ExecuteMemo
                                  zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
-        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, thumb_writer->size);
+        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, thumb_writer->size + 4);
     } else {
         codeslice = ExecuteMemoryManagerAllocateCodeSlice(emm, thumb_writer->size + 4);
     }
@@ -25,7 +25,7 @@ CodeSlice *zz_thumb_relocate_code_patch(ZzThumbRelocator *relocator, ZzThumbAsse
                                           ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
-        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, thumb_writer->size);
+        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, thumb_writer->size + 4);
     } else {
         codeslice = ExecuteMemoryManagerAllocateCodeSlice(emm, thumb_writer->size + 4);
     }
@@ -46,7 +46,7 @@ CodeSlice *arm_code_patch(ARMAssemblerWriter *arm_writer, ExecuteMemoryManager *
                                zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
-        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, arm_writer->size);
+        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, arm_writer->size + 4);
     } else {
         codeslice = ExecuteMemoryManagerAllocateCodeSlice(emm, arm_writer->size + 4);
     }
@@ -64,7 +64,7 @@ CodeSlice *arm_relocate_code_patch(ARMRelocator *relocator, ARMAssemblerWriter *
                                         ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
-        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, arm_writer->size);
+        codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, arm_writer->size + 4);
     } else {
         codeslice = ExecuteMemoryManagerAllocateCodeSlice(emm, arm_writer->size + 4);
     }

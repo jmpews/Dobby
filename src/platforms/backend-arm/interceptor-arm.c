@@ -150,11 +150,14 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+
     if (is_thumb) {
         thumb_writer = &self->thumb_writer;
-        zz_thumb_writer_reset(thumb_writer, temp_codeslice, (zz_addr_t)temp_codeslice);
+        zz_thumb_writer_reset(thumb_writer, temp_codeslice_align, 0);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
         } else if (entry->hook_type == HOOK_TYPE_DBI) {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
@@ -162,8 +165,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
         } else {
             zz_thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
         }
-        if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+        if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
             codeslice = zz_thumb_code_patch(thumb_writer, self->emm, target_addr,
                                             zz_thumb_writer_near_jump_range_size() - 0x10);
         } else {
@@ -176,7 +178,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             return;
     } else {
         arm_writer = &self->arm_writer;
-        arm_writer_reset(arm_writer, temp_codeslice, 0);
+        arm_writer_reset(arm_writer, temp_codeslice_align, 0);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
@@ -187,8 +189,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
         }
 
-        if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+        if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
             codeslice = arm_code_patch(arm_writer, self->emm, target_addr, arm_writer_near_jump_range_size() - 0x10);
         } else {
             codeslice = arm_code_patch(arm_writer, self->emm, 0, 0);
@@ -314,6 +315,8 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+
     if (is_thumb) {
         ZzThumbRelocator *thumb_relocator;
         ZzThumbAssemblerWriter *thumb_writer;
@@ -322,7 +325,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
         thumb_writer    = &self->thumb_writer;
         thumb_reader    = &self->thumb_reader;
 
-        zz_thumb_writer_reset(thumb_writer, temp_codeslice, 0);
+        zz_thumb_writer_reset(thumb_writer, temp_codeslice_align, 0);
         zz_thumb_reader_reset(thumb_reader, (zz_ptr_t)target_addr);
         zz_thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
 
@@ -351,7 +354,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
         arm_writer    = &self->arm_writer;
         arm_reader    = &self->arm_reader;
 
-        arm_writer_reset(arm_writer, temp_codeslice, 0);
+        arm_writer_reset(arm_writer, temp_codeslice_align, 0);
         arm_reader_reset(arm_reader, (zz_ptr_t)target_addr);
         arm_relocator_reset(arm_relocator, arm_reader, arm_writer);
 
@@ -471,10 +474,12 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+
     if (is_thumb) {
         ZzThumbAssemblerWriter *thumb_writer;
         thumb_writer = &self->thumb_writer;
-        zz_thumb_writer_reset(thumb_writer, temp_codeslice, target_addr);
+        zz_thumb_writer_reset(thumb_writer, temp_codeslice_align, target_addr);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
@@ -506,7 +511,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     } else {
         ARMAssemblerWriter *arm_writer;
         arm_writer = &self->arm_writer;
-        arm_writer_reset(arm_writer, temp_codeslice, target_addr);
+        arm_writer_reset(arm_writer, temp_codeslice_align, target_addr);
 
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {

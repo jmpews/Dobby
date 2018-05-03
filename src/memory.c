@@ -179,6 +179,8 @@ CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, 
             int flag             = 0;
             zz_addr_t split_addr = 0;
 
+            // 1. [---[-]-]
+
             if ((zz_addr_t)emb->current_address < address) {
                 if (address - redirect_range_size < (zz_addr_t)emb->current_address) {
                     // enough for cs_size
@@ -208,6 +210,13 @@ CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, 
             }
 
             if (1 == flag) {
+
+                if ((zz_addr_t)emb->current_address % 4) {
+                    int t = 4 - (zz_addr_t)emb->current_address % 4;
+                    emb->used_size += t;
+                    emb->current_address += t;
+                }
+
                 cs               = (CodeSlice *)malloc0(sizeof(CodeSlice));
                 cs->is_code_cave = emb->is_code_cave;
                 cs->data         = emb->current_address;
@@ -216,8 +225,7 @@ CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, 
                 emb->current_address += cs_size;
                 emb->used_size += cs_size;
                 return cs;
-            } else if (2 == flag) {
-
+            } else if (2 == flag && 0) {
                 // new emb
                 ExecuteMemoryBlock *new_emb = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
                 new_emb->start_address      = (zz_ptr_t)split_addr;
@@ -255,8 +263,12 @@ CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, 
         if (!emb)
             return NULL;
     }
-    if (!emb)
-        return NULL;
+
+    if ((zz_addr_t)emb->current_address % 4) {
+        int t = 4 - (zz_addr_t)emb->current_address % 4;
+        emb->used_size += t;
+        emb->current_address += t;
+    }
 
     cs               = (CodeSlice *)malloc0(sizeof(CodeSlice));
     cs->is_code_cave = emb->is_code_cave;
