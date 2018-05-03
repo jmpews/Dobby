@@ -150,7 +150,7 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
-    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_addr_t)temp_codeslice, 4);
 
     if (is_thumb) {
         thumb_writer = &self->thumb_writer;
@@ -161,13 +161,13 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
         } else if (entry->hook_type == HOOK_TYPE_DBI) {
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                                (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
+                                             (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
         } else {
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
         }
         if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-            codeslice = thumb_code_patch(thumb_writer, self->emm, target_addr,
-                                            thumb_writer_near_jump_range_size() - 0x10);
+            codeslice =
+                thumb_code_patch(thumb_writer, self->emm, target_addr, thumb_writer_near_jump_range_size() - 0x10);
         } else {
             codeslice = thumb_code_patch(thumb_writer, self->emm, 0, 0);
         }
@@ -316,7 +316,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
-    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_addr_t)temp_codeslice, 4);
 
     if (is_thumb) {
         ThumbRelocator *thumb_relocator;
@@ -474,7 +474,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     if (is_thumb)
         target_addr = (zz_addr_t)entry->target_ptr & ~(zz_addr_t)1;
 
-    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_ptr_t)temp_codeslice, 4);
+    zz_ptr_t temp_codeslice_align = (zz_ptr_t)zz_vm_align_ceil((zz_addr_t)temp_codeslice, 4);
 
     if (is_thumb) {
         ThumbAssemblerWriter *thumb_writer;
@@ -484,20 +484,20 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
         if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 thumb_writer_put_b_imm32(thumb_writer,
-                                            ((zz_addr_t)entry->on_enter_transfer_trampoline & ~(zz_addr_t)1) -
-                                                (zz_addr_t)thumb_writer->start_pc);
+                                         ((zz_addr_t)entry->on_enter_transfer_trampoline & ~(zz_addr_t)1) -
+                                             (zz_addr_t)thumb_writer->start_pc);
             } else {
                 // target address is not aligne 4, need align
                 if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
                     thumb_writer_put_nop(thumb_writer);
                 thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                                    (zz_addr_t)entry->on_enter_transfer_trampoline);
+                                                 (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
         } else {
             if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 thumb_writer_put_b_imm32(thumb_writer,
-                                            ((zz_addr_t)entry->on_enter_transfer_trampoline & ~(zz_addr_t)1) -
-                                                (zz_addr_t)thumb_writer->start_pc);
+                                         ((zz_addr_t)entry->on_enter_transfer_trampoline & ~(zz_addr_t)1) -
+                                             (zz_addr_t)thumb_writer->start_pc);
             } else {
                 // target address is not aligne 4, need align
                 if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
