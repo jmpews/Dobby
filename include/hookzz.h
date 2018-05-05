@@ -100,6 +100,8 @@ typedef struct _RegState {
 typedef struct _RegState {
 } RegState;
 #endif
+
+#define REG_SP(rs) (void *)((uintptr_t)rs + sizeof(RegState))
 #endif
 
 typedef enum _RetStatus {
