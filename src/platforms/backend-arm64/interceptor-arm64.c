@@ -290,7 +290,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
             sprintf(buffer + strlen(buffer), "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                     (zz_ptr_t)self->arm64_relocator.relocator_insnCTXs[i].origin_insn->address,
                     (zz_ptr_t)self->arm64_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
-                    self->arm64_relocator.relocator_insnCTXs[i].relocated_insn_size);
+                    self->arm64_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }

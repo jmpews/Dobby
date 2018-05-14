@@ -278,18 +278,18 @@ static bool arm_relocator_rewrite_BLBLX_immediate_A2(ARMRelocator *self, const A
 
 bool arm_relocator_write_one(ARMRelocator *self) {
     ARMInstruction *insn_ctx, **input_insnCTXs;
-    ARMRelocatorInstruction *relocator_insn;
+    ARMRelocatorInstruction *relocator_insn_ctx;
     zz_size_t tmp_size;
-    relocator_insn = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
+    relocator_insn_ctx = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
 
     bool rewritten = FALSE;
 
     if (self->needRelocateInputCount != self->doneRelocateInputCount) {
         input_insnCTXs                        = self->input->insnCTXs;
         insn_ctx                           = input_insnCTXs[self->doneRelocateInputCount];
-        relocator_insn->origin_insn        = insn_ctx;
-        relocator_insn->relocated_insnCTXs    = self->output->insnCTXs + self->output->insnCTXs_count;
-        relocator_insn->output_index_start = self->output->insnCTXs_count;
+        relocator_insn_ctx->origin_insn        = insn_ctx;
+        relocator_insn_ctx->relocated_insnCTXs    = self->output->insnCTXs + self->output->insnCTXs_count;
+        relocator_insn_ctx->output_index_start = self->output->insnCTXs_count;
         tmp_size                           = self->output->insns_size;
         self->doneRelocateInputCount++;
         self->relocated_insnCTXs_count++;
@@ -327,9 +327,9 @@ bool arm_relocator_write_one(ARMRelocator *self) {
     } else {
     }
 
-    relocator_insn->size                = self->output->insns_size - tmp_size;
-    relocator_insn->ouput_index_end     = self->output->insnCTXs_count;
-    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end - relocator_insn->output_index_start;
+    relocator_insn_ctx->size                = self->output->insns_size - tmp_size;
+    relocator_insn_ctx->ouput_index_end     = self->output->insnCTXs_count;
+    relocator_insn_ctx->relocated_insnCTXs_count = relocator_insn_ctx->ouput_index_end - relocator_insn_ctx->output_index_start;
 
     return TRUE;
 }

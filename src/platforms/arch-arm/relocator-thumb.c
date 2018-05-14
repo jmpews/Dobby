@@ -443,16 +443,16 @@ bool thumb_relocator_rewrite_BLBLX_T2(ThumbRelocator *self, const ARMInstruction
 
 bool thumb_relocator_write_one(ThumbRelocator *self) {
     ARMInstruction *insn_ctx, **input_insnCTXs;
-    ARMRelocatorInstruction *relocator_insn;
-    relocator_insn = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
+    ARMRelocatorInstruction *relocator_insn_ctx;
+    relocator_insn_ctx = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
     bool rewritten = FALSE;
 
     if (self->needRelocateInputCount != self->doneRelocateInputCount) {
         input_insnCTXs                        = self->input->insnCTXs;
         insn_ctx                           = input_insnCTXs[self->doneRelocateInputCount];
-        relocator_insn->origin_insn        = insn_ctx;
-        relocator_insn->relocated_insnCTXs    = self->output->insnCTXs + self->output->insnCTXs_count;
-        relocator_insn->output_index_start = self->output->insnCTXs_count;
+        relocator_insn_ctx->origin_insn        = insn_ctx;
+        relocator_insn_ctx->relocated_insnCTXs    = self->output->insnCTXs + self->output->insnCTXs_count;
+        relocator_insn_ctx->output_index_start = self->output->insnCTXs_count;
         self->doneRelocateInputCount++;
         self->relocated_insnCTXs_count++;
     } else
@@ -508,8 +508,8 @@ bool thumb_relocator_write_one(ThumbRelocator *self) {
     } else {
     }
 
-    relocator_insn->ouput_index_end     = self->output->insnCTXs_count;
-    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end - relocator_insn->output_index_start;
+    relocator_insn_ctx->ouput_index_end     = self->output->insnCTXs_count;
+    relocator_insn_ctx->relocated_insnCTXs_count = relocator_insn_ctx->ouput_index_end - relocator_insn_ctx->output_index_start;
 
     return TRUE;
 }

@@ -5,6 +5,8 @@
 
 #include "instructions.h"
 
+#include "ARM64AssemblyCore.h"
+
 #include "platforms/backend-linux/memory-linux.h"
 
 typedef enum _ARM64InsnType {
@@ -17,7 +19,7 @@ typedef enum _ARM64InsnType {
     ARM64_UNDEF
 } ARM64InsnType;
 
-ARM64InsnType GetARM64InsnType(uint32_t insn);
+ARM64InstID GetARM64InsnType(uint32_t insn);
 
 #define MAX_INSN_SIZE 256
 typedef struct _ARM64Reader {

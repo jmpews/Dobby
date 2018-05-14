@@ -17,7 +17,7 @@ typedef struct _ARMRelocatorInstruction {
     ARMInstruction **relocated_insnCTXs;
     zz_size_t output_index_start;
     zz_size_t ouput_index_end;
-    zz_size_t relocated_insn_size;
+    zz_size_t relocated_insnCTXs_count;
     zz_size_t size;
 } ARMRelocatorInstruction;
 

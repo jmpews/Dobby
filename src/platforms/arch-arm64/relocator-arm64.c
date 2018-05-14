@@ -7,11 +7,11 @@
 
 void arm64_relocator_init(ARM64Relocator *relocator, ARM64AssemblyReader *input, ARM64AssemblyrWriter *output) {
     memset(relocator, 0, sizeof(ARM64Relocator));
-    relocator->needRelocateInputCount                = 0;
-    relocator->doneRelocateInputCount               = 0;
-    relocator->input                = input;
-    relocator->output               = output;
-    relocator->try_relocated_length = 0;
+    relocator->needRelocateInputCount = 0;
+    relocator->doneRelocateInputCount = 0;
+    relocator->input                  = input;
+    relocator->output                 = output;
+    relocator->try_relocated_length   = 0;
 
     //    relocator->literal_insnCTXs =
     //        (ARM64InstructionCTX **)malloc0(MAX_LITERAL_INSN_SIZE * sizeof(ARM64InstructionCTX *));
@@ -24,12 +24,12 @@ void arm64_relocator_free(ARM64Relocator *relocator) {
 }
 
 void arm64_relocator_reset(ARM64Relocator *self, ARM64AssemblyReader *input, ARM64AssemblyrWriter *output) {
-    self->needRelocateInputCount                = 0;
-    self->doneRelocateInputCount               = 0;
-    self->input                = input;
-    self->output               = output;
-    self->literal_insnCTXs_count    = 0;
-    self->try_relocated_length = 0;
+    self->needRelocateInputCount = 0;
+    self->doneRelocateInputCount = 0;
+    self->input                  = input;
+    self->output                 = output;
+    self->literal_insnCTXs_count = 0;
+    self->try_relocated_length   = 0;
 }
 
 void arm64_relocator_read_one(ARM64Relocator *self, ARM64InstructionCTX *instruction) {
@@ -72,7 +72,7 @@ void arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size
 }
 
 static ARM64RelocatorInstruction *arm64_relocator_get_relocator_insn_with_address(ARM64Relocator *self,
-                                                                                       zz_addr_t insn_address) {
+                                                                                  zz_addr_t insn_address) {
     for (int i = 0; i < self->relocated_insnCTXs_count; ++i) {
         if ((self->relocator_insnCTXs[i].origin_insn->pc) == insn_address) {
             return &self->relocator_insnCTXs[i];
@@ -101,8 +101,8 @@ void arm64_relocator_relocate_writer(ARM64Relocator *relocator, zz_addr_t final_
 }
 
 void arm64_relocator_write_all(ARM64Relocator *self) {
-    int count                           = 0;
-    int doneRelocateInputCount                          = self->doneRelocateInputCount;
+    int count                   = 0;
+    int doneRelocateInputCount  = self->doneRelocateInputCount;
     ARM64AssemblyrWriter writer = *self->output;
 
     while (arm64_relocator_write_one(self))
@@ -113,10 +113,43 @@ static void arm64_relocator_register_literal_insn(ARM64Relocator *self, ARM64Ins
     self->literal_insnCTXs[self->literal_insnCTXs_count++] = insn_ctx;
 }
 
-// ###### ATTENTION ######
-// refer llvm/lib/Target/AArch64/AArch64InstrInfo.td & AArch64InstrFormats.td
-// keywords: CmpBranch CBZ CBNZ
-static bool arm64_relocator_rewrite_CmpBranch_CBZ_CBNZ(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
+static bool arm64_relocator_rewrite_LoadLiteral(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
+    ARM64InstructionX instX;
+    ARM64AssemblyrWriter *writer = self->output;
+    uint32_t opc, V, Rt, label;
+    zz_addr_t target_address;
+    _LoadLiteral(&instX, OP_DECODE, &opc, &V, &Rt, &label);
+    target_address = (label << 2) + insn_ctx->pc;
+
+    arm64_writer_put_ldr_reg_imm(writer, Rt, 0x8);
+    arm64_writer_put_b_imm(writer, 0xc);
+    arm64_relocator_register_literal_insn(self, writer->insnCTXs[self->output->insnCTXs_count]);
+    arm64_writer_put_bytes(writer, (zz_ptr_t)&target_address, sizeof(label));
+    arm64_writer_put_ldr_reg_reg_offset(writer, Rt, Rt, 0);
+
+    return true;
+};
+
+static bool arm64_relocator_rewrite_BaseCmpBranch(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
+    ARM64InstructionX instX;
+    instX.Inst                   = insn_ctx->insn;
+    ARM64AssemblyrWriter *writer = self->output;
+    uint32_t op, target, Rt;
+    zz_addr_t target_address;
+
+    _BaseCmpBranch(&instX, OP_DECODE, &op, &target, &Rt);
+
+    target_address = (target << 2) + insn_ctx->pc;
+
+    target = 0x8 >> 2;
+    _BaseCmpBranch(&instX, OP_ENCODE, &op, &target, &Rt);
+    arm64_writer_put_instruction(writer, instX.Inst);
+
+    arm64_writer_put_b_imm(writer, 0x14);
+    arm64_writer_put_ldr_reg_imm(writer, ARM64_REG_X17, 0x8);
+    arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+    arm64_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count]);
+    arm64_writer_put_bytes(writer, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
     return true;
 };
 
@@ -240,24 +273,24 @@ static bool arm64_relocator_rewrite_B_cond(ARM64Relocator *self, const ARM64Inst
 
 bool arm64_relocator_write_one(ARM64Relocator *self) {
     ARM64InstructionCTX *insn_ctx, **input_insnCTXs;
-    ARM64RelocatorInstruction *relocator_insn;
+    ARM64RelocatorInstruction *relocator_insn_ctx;
     zz_size_t tmp_size;
-    relocator_insn = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
-    bool rewritten = FALSE;
+    relocator_insn_ctx = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
+    bool rewritten     = FALSE;
 
     if (self->needRelocateInputCount != self->doneRelocateInputCount) {
-        input_insnCTXs                        = self->input->insnCTXs;
-        insn_ctx                           = input_insnCTXs[self->doneRelocateInputCount];
-        relocator_insn->origin_insn        = insn_ctx;
-        relocator_insn->relocated_insnCTXs    = self->output->insnCTXs + self->output->insnCTXs_count;
-        relocator_insn->output_index_start = self->output->insnCTXs_count;
-        tmp_size                           = self->output->insns_size;
+        input_insnCTXs                         = self->input->insnCTXs;
+        insn_ctx                               = input_insnCTXs[self->doneRelocateInputCount];
+        relocator_insn_ctx->origin_insn        = insn_ctx;
+        relocator_insn_ctx->relocated_insnCTXs = self->output->insnCTXs + self->output->insnCTXs_count;
+        relocator_insn_ctx->output_index_start = self->output->insnCTXs_count;
+        tmp_size                               = self->output->insns_size;
         self->doneRelocateInputCount++;
         self->relocated_insnCTXs_count++;
     } else
         return FALSE;
     switch (GetARM64InsnType(insn_ctx->insn)) {
-    case ARM64_INS_LDR_literal:
+    case LoadLiteral:
         rewritten = arm64_relocator_rewrite_LDR_literal(self, insn_ctx);
         break;
     case ARM64_INS_ADR:
@@ -284,9 +317,10 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
     } else {
     }
 
-    relocator_insn->size                = self->output->insns_size - tmp_size;
-    relocator_insn->ouput_index_end     = self->output->insnCTXs_count;
-    relocator_insn->relocated_insn_size = relocator_insn->ouput_index_end - relocator_insn->output_index_start;
+    relocator_insn_ctx->size            = self->output->insns_size - tmp_size;
+    relocator_insn_ctx->ouput_index_end = self->output->insnCTXs_count;
+    relocator_insn_ctx->relocated_insnCTXs_count =
+        relocator_insn_ctx->ouput_index_end - relocator_insn_ctx->output_index_start;
 
     return TRUE;
 }

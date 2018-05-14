@@ -405,7 +405,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                         (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].origin_insn->address,
                         (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
-                        self->thumb_relocator.relocator_insnCTXs[i].relocated_insn_size);
+                        self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
             }
         } else {
             for(int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++) {
@@ -428,7 +428,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                         (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].origin_insn->address,
                         (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
-                        self->arm_relocator.relocator_insnCTXs[i].relocated_insn_size);
+                        self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
             }
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
