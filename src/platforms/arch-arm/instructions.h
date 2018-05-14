@@ -22,7 +22,6 @@ typedef struct _ARMInstruction {
     uint32_t insn;
     uint16_t insn1;
     uint16_t insn2;
-    char *data;
 } ARMInstruction;
 
 uint32_t get_insn_sub(uint32_t insn, int start, int length);

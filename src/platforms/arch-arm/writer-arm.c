@@ -4,12 +4,10 @@
 
 ARMAssemblerWriter *arm_writer_new() {
     ARMAssemblerWriter *writer = (ARMAssemblerWriter *)malloc0(sizeof(ARMAssemblerWriter));
-    writer->current_address = 0;
-    writer->start_address = 0;
-    writer->current_pc = 0+8;
     writer->start_pc = 0+8;
-    writer->size = 0;
-    writer->insn_size = 0;
+    writer->insns_buffer = 0;
+    writer->insns_size = 0;
+    writer->insnCTXs_count = 0;
     return writer;
 }
 
@@ -17,40 +15,36 @@ void arm_writer_init(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t targ
 
 void arm_writer_reset(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->current_address = align_address;
-    self->start_address = align_address;
-    self->current_pc = target_ptr+8;
     self->start_pc = target_ptr+8;
-    self->size = 0;
+    self->insns_buffer = align_address;
+    self->insns_size = 0;
 
-    if(self->insn_size) {
-        for (int i = 0; i < self->insn_size; ++i) {
-            free(self->insns[i]);
+    if(self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; ++i) {
+            free(self->insnCTXs[i]);
         }
     }
-    self->insn_size = 0;
+    self->insnCTXs_count = 0;
 }
 
 void arm_writer_reset_without_align(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->current_address = align_address;
-    self->start_address = align_address;
-    self->current_pc = target_ptr+8;
     self->start_pc = target_ptr+8;
-    self->size = 0;
+    self->insns_buffer = align_address;
+    self->insns_size = 0;
 
-    if(self->insn_size) {
-        for (int i = 0; i < self->insn_size; ++i) {
-            free(self->insns[i]);
+    if(self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; ++i) {
+            free(self->insnCTXs[i]);
         }
     }
-    self->insn_size = 0;
+    self->insnCTXs_count = 0;
 }
 
 void arm_writer_free(ARMAssemblerWriter *self) {
-    if (self->insn_size) {
-        for (int i = 0; i < self->insn_size; i++) {
-            free(self->insns[i]);
+    if (self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; i++) {
+            free(self->insnCTXs[i]);
         }
     }
     free(self);
@@ -75,38 +69,38 @@ void arm_writer_put_bx_to_thumb(ARMAssemblerWriter *self) {
 }
 // ------- architecture default -------
 void arm_writer_put_bytes(ARMAssemblerWriter *self, char *data, zz_size_t data_size) {
-    memcpy((zz_ptr_t )self->current_address, data, data_size);
-    self->current_address = self->current_address + data_size;
-    self->current_pc += data_size;
-    self->size += data_size;
+    zz_addr_t next_address = self->insns_buffer + self->insns_size;
+    zz_addr_t next_pc = self->start_pc + self->insns_size;
+    memcpy((void *)next_address, data, data_size);
+    self->insns_size += data_size;
 
-
-    ARMInstruction *arm_insn = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    arm_insn->pc = self->current_pc - data_size;
-    arm_insn->address = self->current_address-data_size;
-    arm_insn->size = data_size;
-    arm_insn->insn = 0;
-    arm_insn->insn1 = 0;
-    arm_insn->insn2 = 0;
-    arm_insn->type = UNKOWN_INSN;
-    self->insns[self->insn_size++] = arm_insn;
+    ARMInstruction *insn_ctx = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc = next_pc;
+    insn_ctx->address = next_address;
+    insn_ctx->size = data_size;
+    insn_ctx->insn = 0;
+    insn_ctx->insn1 = 0;
+    insn_ctx->insn2 = 0;
+    insn_ctx->type = UNKOWN_INSN;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
 void arm_writer_put_instruction(ARMAssemblerWriter *self, uint32_t insn) {
-    *(uint32_t *)(self->current_address) = insn;
-    self->current_address                = self->current_address + sizeof(uint32_t);
-    self->current_pc += 4;
-    self->size += 4;
+    zz_addr_t next_address = self->insns_buffer + sizeof(insn);
+    zz_addr_t next_pc = self->start_pc + sizeof(insn);
+    memcpy((void *)next_address, &insn, sizeof(insn));
 
-    ARMInstruction *arm_insn = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    arm_insn->pc = self->current_pc - 4;
-    arm_insn->address = self->current_address-4;
-    arm_insn->size = 4;
-    arm_insn->insn = insn;
-    arm_insn->insn1 = 0;
-    arm_insn->insn2 = 0;
-    arm_insn->type = ARM_INSN;
-    self->insns[self->insn_size++] = arm_insn;
+    self->insns_size += 4;
+
+    ARMInstruction *insn_ctx = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc = next_pc;
+    insn_ctx->address = next_address;
+    insn_ctx->size = 4;
+    insn_ctx->insn = insn;
+    insn_ctx->insn1 = 0;
+    insn_ctx->insn2 = 0;
+    insn_ctx->type = ARM_INSN;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
 void arm_writer_put_b_imm(ARMAssemblerWriter *self, uint32_t imm) {

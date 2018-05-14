@@ -1,5 +1,5 @@
-#ifndef platforms_arch_arm_relocator_thumb_h
-#define platforms_arch_arm_relocator_thumb_h
+#ifndef platforms_arch_relocator_thumb_h
+#define platforms_arch_relocator_thumb_h
 
 #include "hookzz.h"
 #include "zkit.h"
@@ -18,15 +18,15 @@ typedef struct _ThumbRelocator {
     zz_size_t try_relocated_length;
     ThumbAssemblerWriter *output;
     ARMReader *input;
-    int inpos;
-    int outpos;
+    int needRelocateInputCount;
+    int doneRelocateInputCount;
     // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    ARMInstruction *literal_insns[MAX_INSN_SIZE];
-    zz_size_t literal_insn_size;
+    ARMInstruction *literal_insnCTXs[MAX_INSN_SIZE];
+    zz_size_t literal_insnCTXs_count;
 
     // record for every instruction need to be relocated
-    ARMRelocatorInstruction relocator_insns[MAX_INSN_SIZE];
-    zz_size_t relocator_insn_size;
+    ARMRelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
+    zz_size_t relocated_insnCTXs_count;
 } ThumbRelocator;
 
 void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblerWriter *writer);

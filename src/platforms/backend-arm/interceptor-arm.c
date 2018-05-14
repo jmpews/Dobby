@@ -333,12 +333,12 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
         {
             do {
                 thumb_relocator_read_one(thumb_relocator, NULL);
-            } while (thumb_relocator->input->size < entry_backend->redirect_code_size);
+            } while (thumb_relocator->input->insns_size < entry_backend->redirect_code_size);
             thumb_relocator_write_all(thumb_relocator);
         }
 
         // jump to rest function instructions address
-        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + thumb_relocator->input->size);
+        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + thumb_relocator->input->insns_size);
         thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)(restore_next_insn_addr + 1));
 
         // code patch
@@ -362,12 +362,12 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
         {
             do {
                 arm_relocator_read_one(arm_relocator, NULL);
-            } while (arm_relocator->input->size < entry_backend->redirect_code_size);
+            } while (arm_relocator->input->insns_size < entry_backend->redirect_code_size);
             arm_relocator_write_all(arm_relocator);
         }
 
         // jump to rest target address
-        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm_relocator->input->size);
+        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm_relocator->input->insns_size);
         arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)restore_next_insn_addr);
 
         codeslice = arm_relocate_code_patch(arm_relocator, arm_writer, self->emm, 0, 0);
@@ -385,50 +385,50 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
 
         sprintf(buffer + strlen(buffer), "======= Origin Code Relocator ======= \n");
         if (is_thumb) {
-            for (zz_addr_t p = self->thumb_relocator.input->start_address;
-                 p < self->thumb_relocator.input->current_address; p++, t = t + 5) {
-                sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+            for(int i = 0; i < self->thumb_relocator.input->insnCTXs_count; i++) {
+                sprintf(origin_prologue + t, "0x%.2x ", self->thumb_relocator.input->insnCTXs[i]->insn);
+
             }
             sprintf(buffer + strlen(buffer), "\t\tThumb Origin Prologue:: %s\n", origin_prologue);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Start Address: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->start_address);
+                    (zz_ptr_t)self->thumb_relocator.input->insns_buffer);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Instruction Number: %ld\n",
-                    self->thumb_relocator.input->insn_size);
+                    self->thumb_relocator.input->insnCTXs_count);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Size: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->size);
+                    (zz_ptr_t)self->thumb_relocator.input->insns_size);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Start Address: %p\n", codeslice->data);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Instruction Number: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->insn_size);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n", self->thumb_relocator.input->size);
-            for (int i = 0; i < self->thumb_relocator.relocator_insn_size; i++) {
+                    (zz_ptr_t)self->thumb_relocator.input->insnCTXs_count);
+            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n", self->thumb_relocator.input->insns_size);
+            for (int i = 0; i < self->thumb_relocator.relocated_insnCTXs_count; i++) {
                 sprintf(buffer + strlen(buffer),
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
-                        (zz_ptr_t)self->thumb_relocator.relocator_insns[i].origin_insn->address,
-                        (zz_ptr_t)self->thumb_relocator.relocator_insns[i].relocated_insns[0]->address,
-                        self->thumb_relocator.relocator_insns[i].relocated_insn_size);
+                        (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].origin_insn->address,
+                        (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
+                        self->thumb_relocator.relocator_insnCTXs[i].relocated_insn_size);
             }
         } else {
-            for (zz_addr_t p = self->arm_relocator.input->start_address; p < self->arm_relocator.input->current_address;
-                 p++, t = t + 5) {
-                sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+            for(int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++) {
+                sprintf(origin_prologue + t, "0x%.2x ", self->arm_relocator.input->insnCTXs[i]->insn);
+
             }
             sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Input Start Address: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->start_address);
+                    (zz_ptr_t)self->arm_relocator.input->insns_buffer);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Input Instruction Number: %ld\n",
-                    self->arm_relocator.input->insn_size);
+                    self->arm_relocator.input->insnCTXs_count);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Input Size: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->size);
+                    (zz_ptr_t)self->arm_relocator.input->insns_size);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Output Start Address: %p\n", codeslice->data);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Output Instruction Number: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->insn_size);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm_relocator.input->size);
-            for (int i = 0; i < self->arm_relocator.relocator_insn_size; i++) {
+                    (zz_ptr_t)self->arm_relocator.input->insnCTXs_count);
+            sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm_relocator.input->insns_size);
+            for (int i = 0; i < self->arm_relocator.relocated_insnCTXs_count; i++) {
                 sprintf(buffer + strlen(buffer),
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
-                        (zz_ptr_t)self->arm_relocator.relocator_insns[i].origin_insn->address,
-                        (zz_ptr_t)self->arm_relocator.relocator_insns[i].relocated_insns[0]->address,
-                        self->arm_relocator.relocator_insns[i].relocated_insn_size);
+                        (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].origin_insn->address,
+                        (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
+                        self->arm_relocator.relocator_insnCTXs[i].relocated_insn_size);
             }
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
@@ -505,7 +505,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
                 thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }
-        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)thumb_writer->start_address, thumb_writer->size))
+        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)thumb_writer->insns_buffer, thumb_writer->insns_size))
             return;
         //        thumb_writer_free(thumb_writer);
     } else {
@@ -528,7 +528,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
                 arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }
-        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm_writer->start_address, arm_writer->size))
+        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm_writer->insns_buffer, arm_writer->insns_size))
             return;
         //        arm_writer_free(arm_writer);
     }

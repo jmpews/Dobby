@@ -3,13 +3,12 @@
 
 #include "zkit.h"
 
-typedef struct _ARM64Instruction {
+typedef struct _ARM64InstructionCTX {
     zz_addr_t pc;
     zz_addr_t address;
     uint8_t size;
     uint32_t insn;
-    char *data;
-} ARM64Instruction;
+} ARM64InstructionCTX;
 
 // get hex insn sub
 uint32_t get_insn_sub(uint32_t insn, int start, int length);

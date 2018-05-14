@@ -1,47 +1,41 @@
 #include "reader-arm64.h"
-ARM64Reader *arm64_reader_new(zz_ptr_t insn_address) {
-    ARM64Reader *reader = (ARM64Reader *)malloc0(sizeof(ARM64Reader));
+ARM64AssemblyReader *arm64_reader_new(zz_ptr_t insn_address) {
+    ARM64AssemblyReader *reader = (ARM64AssemblyReader *)malloc0(sizeof(ARM64AssemblyReader));
 
-    reader->start_address   = (zz_addr_t)insn_address;
-    reader->current_address = (zz_addr_t)insn_address;
     reader->start_pc          = (zz_addr_t)insn_address;
-    reader->current_pc        = (zz_addr_t)insn_address;
-    reader->size              = 0;
-    reader->insn_size         = 0;
+    reader->insns_buffer   = (zz_addr_t)insn_address;
+    reader->insns_size              = 0;
+    reader->insnCTXs_count         = 0;
     return reader;
 }
 
-void arm64_reader_init(ARM64Reader *self, zz_ptr_t insn_address) { arm64_reader_reset(self, insn_address); }
+void arm64_reader_init(ARM64AssemblyReader *self, zz_ptr_t insn_address) { arm64_reader_reset(self, insn_address); }
 
-void arm64_reader_reset(ARM64Reader *self, zz_ptr_t insn_address) {
-    self->start_address   = (zz_addr_t)insn_address;
-    self->current_address = (zz_addr_t)insn_address;
+void arm64_reader_reset(ARM64AssemblyReader *self, zz_ptr_t insn_address) {
     self->start_pc          = (zz_addr_t)insn_address;
-    self->current_pc        = (zz_addr_t)insn_address;
-    self->size              = 0;
-    self->insn_size         = 0;
+    self->insns_buffer   = (zz_addr_t)insn_address;
+    self->insns_size              = 0;
+    self->insnCTXs_count         = 0;
 }
 
-void arm64_reader_free(ARM64Reader *self) {
-    if (self->insn_size) {
-        for (int i = 0; i < self->insn_size; i++) {
-            free(self->insns[i]);
+void arm64_reader_free(ARM64AssemblyReader *self) {
+    if (self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; i++) {
+            free(self->insnCTXs[i]);
         }
     }
     free(self);
 }
 
-ARM64Instruction *arm64_reader_read_one_instruction(ARM64Reader *self) {
-    ARM64Instruction *insn_ctx = (ARM64Instruction *)malloc0(sizeof(ARM64Instruction));
-    insn_ctx->address            = (zz_addr_t)self->current_address;
-    insn_ctx->pc                 = (zz_addr_t)self->current_pc;
-    insn_ctx->insn               = *(uint32_t *)self->current_address;
+ARM64InstructionCTX *arm64_reader_read_one_instruction(ARM64AssemblyReader *self) {
+    ARM64InstructionCTX *insn_ctx = (ARM64InstructionCTX *)malloc0(sizeof(ARM64InstructionCTX));
+    zz_addr_t next_insn_address = (zz_addr_t)self->insns_buffer + self->insns_size;
+    insn_ctx->pc      = next_insn_address;
+    insn_ctx->address = next_insn_address;
+    insn_ctx->insn    = *(uint32_t *)next_insn_address;
     insn_ctx->size               = 4;
-
-    self->current_pc += insn_ctx->size;
-    self->current_address += insn_ctx->size;
-    self->insns[self->insn_size++] = insn_ctx;
-    self->size += insn_ctx->size;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
+    self->insns_size += insn_ctx->size;
     return insn_ctx;
 }
 

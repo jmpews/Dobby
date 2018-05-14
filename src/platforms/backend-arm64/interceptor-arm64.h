@@ -32,8 +32,8 @@
 typedef struct _InterceptorBackend {
     ExecuteMemoryManager *emm;
     ARM64Relocator arm64_relocator;
-    ARM64AssemblerWriter arm64_writer;
-    ARM64Reader arm64_reader;
+    ARM64AssemblyrWriter arm64_writer;
+    ARM64AssemblyReader arm64_reader;
 
     zz_ptr_t enter_bridge;
     zz_ptr_t insn_leave_bridge;

@@ -4,30 +4,26 @@
 ARMReader *arm_reader_new(zz_ptr_t insn_address) {
     ARMReader *reader = (ARMReader *)malloc0(sizeof(ARMReader));
 
-    reader->start_address   = (zz_addr_t)insn_address;
-    reader->current_address = (zz_addr_t)insn_address;
     reader->start_pc          = (zz_addr_t)insn_address + 8;
-    reader->current_pc        = (zz_addr_t)insn_address + 8;
-    reader->size              = 0;
-    reader->insn_size         = 0;
+    reader->insns_buffer   = (zz_addr_t)insn_address;
+    reader->insns_size              = 0;
+    reader->insnCTXs_count         = 0;
     return reader;
 }
 
 void arm_reader_init(ARMReader *self, zz_ptr_t insn_address) { arm_reader_reset(self, insn_address); }
 
 void arm_reader_reset(ARMReader *self, zz_ptr_t insn_address) {
-    self->start_address   = (zz_addr_t)insn_address;
-    self->current_address = (zz_addr_t)insn_address;
     self->start_pc          = (zz_addr_t)insn_address + 8;
-    self->current_pc        = (zz_addr_t)insn_address + 8;
-    self->size              = 0;
-    self->insn_size         = 0;
+    self->insns_buffer   = (zz_addr_t)insn_address;
+    self->insns_size              = 0;
+    self->insnCTXs_count         = 0;
 }
 
 void arm_reader_free(ARMReader *self) {
-    if (self->insn_size) {
-        for (int i = 0; i < self->insn_size; i++) {
-            free(self->insns[i]);
+    if (self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; i++) {
+            free(self->insnCTXs[i]);
         }
     }
     free(self);
@@ -35,16 +31,14 @@ void arm_reader_free(ARMReader *self) {
 
 ARMInstruction *arm_reader_read_one_instruction(ARMReader *self) {
     ARMInstruction *insn_ctx = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    zz_addr_t next_insn_address = (zz_addr_t)self->insns_buffer + self->insns_size;
     insn_ctx->type             = ARM_INSN;
-    insn_ctx->address          = (zz_addr_t)self->current_address;
-    insn_ctx->pc               = (zz_addr_t)self->current_pc;
-    insn_ctx->insn             = *(uint32_t *)self->current_address;
-    insn_ctx->size             = 4;
+    insn_ctx->pc      = next_insn_address;
+    insn_ctx->address = next_insn_address;
+    insn_ctx->insn    = *(uint32_t *)next_insn_address;
 
-    self->current_pc += insn_ctx->size;
-    self->current_address += insn_ctx->size;
-    self->insns[self->insn_size++] = insn_ctx;
-    self->size += insn_ctx->size;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
+    self->insns_size += insn_ctx->size;
     return insn_ctx;
 }
 

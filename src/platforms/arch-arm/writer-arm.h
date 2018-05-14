@@ -17,13 +17,11 @@
 
 #define MAX_INSN_SIZE 256
 typedef struct _ARMAssemblerWriter {
-    ARMInstruction *insns[MAX_INSN_SIZE];
-    zz_size_t insn_size;
-    zz_addr_t start_address;
-    zz_addr_t current_address;
+    ARMInstruction *insnCTXs[MAX_INSN_SIZE];
+    zz_size_t insnCTXs_count;
     zz_addr_t start_pc;
-    zz_addr_t current_pc;
-    zz_size_t size;
+    zz_addr_t insns_buffer;
+    zz_size_t insns_size;
 } ARMAssemblerWriter;
 
 ARMAssemblerWriter *arm_writer_new();

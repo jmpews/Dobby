@@ -1,5 +1,5 @@
-#ifndef platforms_arch_arm_writer_thumb_h
-#define platforms_arch_arm_writer_thumb_h
+#ifndef platforms_arch_thumb_writer_thumb_h
+#define platforms_arch_thumb_writer_thumb_h
 
 #include <string.h>
 

@@ -103,7 +103,7 @@ void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) {
     entry->origin_prologue.size    = entry_backend->redirect_code_size;
     entry->origin_prologue.address = (zz_ptr_t)target_addr;
 
-    // relocator initialize
+    // arm64_relocator initialize
     arm64_relocator_init(&self->arm64_relocator, (zz_ptr_t)target_addr, &self->arm64_writer);
     return;
 }
@@ -111,7 +111,7 @@ void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) {
 // double jump
 void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) {
     char temp_codeslice[256]             = {0};
-    ARM64AssemblerWriter *arm64_writer   = NULL;
+    ARM64AssemblyrWriter *arm64_writer   = NULL;
     CodeSlice *codeslice                 = NULL;
     ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
     RetStatus status                     = RS_SUCCESS;
@@ -238,8 +238,8 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     zz_addr_t target_addr                = (zz_addr_t)entry->target_ptr;
     zz_ptr_t restore_next_insn_addr;
     ARM64Relocator *arm64_relocator;
-    ARM64AssemblerWriter *arm64_writer;
-    ARM64Reader *arm64_reader;
+    ARM64AssemblyrWriter *arm64_writer;
+    ARM64AssemblyReader *arm64_reader;
 
     arm64_relocator = &self->arm64_relocator;
     arm64_writer    = &self->arm64_writer;
@@ -251,12 +251,12 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     {
         do {
             arm64_relocator_read_one(arm64_relocator, NULL);
-        } while (arm64_relocator->input->size < entry_backend->redirect_code_size);
+        } while (arm64_relocator->input->insns_size < entry_backend->redirect_code_size);
         arm64_relocator_write_all(arm64_relocator);
     }
 
     // jump to rest target address
-    restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm64_relocator->input->size);
+    restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm64_relocator->input->insns_size);
     arm64_writer_put_ldr_br_reg_address(arm64_writer, ARM64_REG_X17, (zz_addr_t)restore_next_insn_addr);
 
     codeslice = arm64_relocate_code_patch(arm64_relocator, arm64_writer, self->emm, 0, 0);
@@ -270,27 +270,27 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
         char buffer[1024]         = {};
         char origin_prologue[256] = {0};
         int t                     = 0;
-        sprintf(buffer + strlen(buffer), "\n======= Origin Code Relocator ======= \n");
-        for (zz_addr_t p = self->arm64_relocator.input->start_address; p < self->arm64_relocator.input->current_address;
-             p++, t = t + 5) {
-            sprintf(origin_prologue + t, "0x%.2x ", *(unsigned char *)p);
+        sprintf(buffer + strlen(buffer), "\n======= Origin Code arm64_relocator ======= \n");
+        for(int i = 0; i < self->arm64_relocator.input->insnCTXs_count; i++) {
+            sprintf(origin_prologue + t, "0x%.2x ", self->arm64_relocator.input->insnCTXs[i]->insn);
+
         }
         sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Start Address: %p\n",
-                (zz_ptr_t)self->arm64_relocator.input->start_address);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Instruction Number: %ld\n",
-                self->arm64_relocator.input->insn_size);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Input Size: %p\n",
-                (zz_ptr_t)self->arm64_relocator.input->size);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Start Address: %p\n", codeslice->data);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Instruction Number: %p\n",
-                (zz_ptr_t)self->arm64_relocator.input->insn_size);
-        sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm64_relocator.input->size);
-        for (int i = 0; i < self->arm64_relocator.relocator_insn_size; i++) {
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Input Start Address: %p\n",
+                (zz_ptr_t)self->arm64_relocator.input->insns_buffer);
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Input Instruction Number: %ld\n",
+                self->arm64_relocator.input->insnCTXs_count);
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Input Size: %p\n",
+                (zz_ptr_t)self->arm64_relocator.input->insns_size);
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Output Start Address: %p\n", codeslice->data);
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Output Instruction Number: %p\n",
+                (zz_ptr_t)self->arm64_relocator.input->insnCTXs_count);
+        sprintf(buffer + strlen(buffer), "\tARM arm64_relocator Output Size: %ld\n", self->arm64_relocator.input->insns_size);
+        for (int i = 0; i < self->arm64_relocator.relocated_insnCTXs_count; i++) {
             sprintf(buffer + strlen(buffer), "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
-                    (zz_ptr_t)self->arm64_relocator.relocator_insns[i].origin_insn->address,
-                    (zz_ptr_t)self->arm64_relocator.relocator_insns[i].relocated_insns[0]->address,
-                    self->arm64_relocator.relocator_insns[i].relocated_insn_size);
+                    (zz_ptr_t)self->arm64_relocator.relocator_insnCTXs[i].origin_insn->address,
+                    (zz_ptr_t)self->arm64_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
+                    self->arm64_relocator.relocator_insnCTXs[i].relocated_insn_size);
         }
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
@@ -330,7 +330,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
     ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
     RetStatus status                     = RS_SUCCESS;
     zz_addr_t target_addr                = (zz_addr_t)entry->target_ptr;
-    ARM64AssemblerWriter *arm64_writer;
+    ARM64AssemblyrWriter *arm64_writer;
 
     arm64_writer = &self->arm64_writer;
     arm64_writer_reset(arm64_writer, temp_codeslice, target_addr);
@@ -352,7 +352,7 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
         }
     }
 
-    if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm64_writer->start_address, arm64_writer->size))
+    if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm64_writer->insns_buffer, arm64_writer->insns_size))
         status = RS_FAILED;
 
     // debug log

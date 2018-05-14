@@ -4,12 +4,10 @@
 
 ThumbAssemblerWriter *thumb_writer_new() {
     ThumbAssemblerWriter *writer = (ThumbAssemblerWriter *)malloc0(sizeof(ThumbAssemblerWriter));
-    writer->current_address      = 0;
-    writer->start_address        = 0;
-    writer->current_pc             = 0 + 4;
     writer->start_pc               = 0 + 4;
-    writer->size                   = 0;
-    writer->insn_size              = 0;
+    writer->insns_buffer        = 0;
+    writer->insns_size                   = 0;
+    writer->insnCTXs_count              = 0;
     return writer;
 }
 
@@ -19,26 +17,24 @@ void thumb_writer_init(ThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t 
 
 void thumb_writer_reset(ThumbAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
     zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->current_address = align_address;
-    self->start_address   = align_address;
-    self->current_pc        = target_ptr + 4;
     self->start_pc          = target_ptr + 4;
-    self->size              = 0;
+    self->insns_buffer   = align_address;
+    self->insns_size              = 0;
 
-    if (self->insn_size) {
-        for (int i = 0; i < self->insn_size; ++i) {
-            free(self->insns[i]);
-            self->insns[i] = NULL;
+    if (self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; ++i) {
+            free(self->insnCTXs[i]);
+            self->insnCTXs[i] = NULL;
         }
     }
-    self->insn_size = 0;
+    self->insnCTXs_count = 0;
 }
 
 void thumb_writer_free(ThumbAssemblerWriter *self) {
-    if (self->insn_size) {
-        for (int i = 0; i < self->insn_size; i++) {
-            free(self->insns[i]);
-            self->insns[i] = NULL;
+    if (self->insnCTXs_count) {
+        for (int i = 0; i < self->insnCTXs_count; i++) {
+            free(self->insnCTXs[i]);
+            self->insnCTXs[i] = NULL;
         }
     }
     free(self);
@@ -52,7 +48,9 @@ void thumb_writer_put_ldr_b_reg_address(ThumbAssemblerWriter *self, ARMReg reg, 
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
-    if ((((zz_addr_t)self->current_pc) % 4)) {
+    zz_addr_t current_pc = self->start_pc + self->insns_size;
+
+    if (current_pc % 4) {
         if (ri.meta <= ARM_REG_R7) {
             thumb_writer_put_ldr_reg_imm(self, reg, 0x4);
             thumb_writer_put_nop(self);
@@ -77,7 +75,9 @@ void thumb_writer_put_ldr_reg_address(ThumbAssemblerWriter *self, ARMReg reg, zz
     ARMRegInfo ri;
     arm_register_describe(reg, &ri);
 
-    if ((((zz_addr_t)self->current_pc) % 4)) {
+    zz_addr_t current_pc = self->start_pc + self->insns_size;
+
+    if (current_pc % 4) {
         if (ri.meta <= ARM_REG_R7) {
             thumb_writer_put_ldr_reg_imm(self, reg, 0x0);
         } else {
@@ -101,38 +101,40 @@ void thumb_writer_put_nop(ThumbAssemblerWriter *self) {
 }
 
 void thumb_writer_put_bytes(ThumbAssemblerWriter *self, char *data, zz_size_t data_size) {
-    memcpy((zz_ptr_t)self->current_address, data, data_size);
-    self->current_address = self->current_address + data_size;
-    self->current_pc += data_size;
-    self->size += data_size;
+    zz_addr_t next_address = self->insns_buffer + self->insns_size;
+    zz_addr_t next_pc = self->start_pc + self->insns_size;
+    memcpy((void *)next_address, data, data_size);
 
-    ARMInstruction *arm_insn     = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    arm_insn->pc                   = self->current_pc - data_size;
-    arm_insn->address              = self->current_address - data_size;
-    arm_insn->size                 = data_size;
-    arm_insn->insn                 = 0;
-    arm_insn->insn1                = 0;
-    arm_insn->insn2                = 0;
-    arm_insn->type                 = UNKOWN_INSN;
-    self->insns[self->insn_size++] = arm_insn;
+    self->insns_size += data_size;
+
+    ARMInstruction *insn_ctx     = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc                   = next_pc;
+    insn_ctx->address              = next_address;
+    insn_ctx->size                 = data_size;
+    insn_ctx->insn                 = 0;
+    insn_ctx->insn1                = 0;
+    insn_ctx->insn2                = 0;
+    insn_ctx->type                 = UNKOWN_INSN;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
     return;
 }
 
 void thumb_writer_put_instruction(ThumbAssemblerWriter *self, uint16_t insn) {
-    *(uint16_t *)(self->current_address) = insn;
-    self->current_address                = self->current_address + sizeof(uint16_t);
-    self->current_pc += 2;
-    self->size += 2;
+    zz_addr_t next_address = self->insns_buffer + sizeof(insn);
+    zz_addr_t next_pc = self->start_pc + sizeof(insn);
+    memcpy((void *)next_address, &insn, sizeof(insn));
 
-    ARMInstruction *arm_insn     = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    arm_insn->pc                   = self->current_pc - 2;
-    arm_insn->address              = self->current_address - 2;
-    arm_insn->size                 = 2;
-    arm_insn->insn                 = 0;
-    arm_insn->insn1                = insn;
-    arm_insn->insn2                = 0;
-    arm_insn->type                 = THUMB_INSN;
-    self->insns[self->insn_size++] = arm_insn;
+    self->insns_size += 2;
+
+    ARMInstruction *insn_ctx     = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc                   = next_pc;
+    insn_ctx->address              = next_address;
+    insn_ctx->size                 = 2;
+    insn_ctx->insn                 = 0;
+    insn_ctx->insn1                = insn;
+    insn_ctx->insn2                = 0;
+    insn_ctx->type                 = THUMB_INSN;
+    self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
     return;
 }
 
@@ -144,10 +146,11 @@ void thumb_writer_put_b_imm(ThumbAssemblerWriter *self, uint32_t imm) {
 
 void thumb_writer_put_bx_reg(ThumbAssemblerWriter *self, ARMReg reg) {
     ARMRegInfo ri;
-
     arm_register_describe(reg, &ri);
 
-    if ((((zz_addr_t)self->current_pc) % 4)) {
+    zz_addr_t current_pc = self->start_pc + self->insns_size;
+
+    if (current_pc % 4) {
         thumb_writer_put_nop(self);
     }
 
