@@ -1,4 +1,5 @@
 #include "writer-arm64.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,26 +8,25 @@
 // C2.1 Understanding the A64 instruction descriptions
 // C2.1.3 The instruction encoding or encodings
 
-ARM64AssemblyrWriter *arm64_writer_new(zz_ptr_t data_ptr) {
+ARM64AssemblyrWriter *arm64_writer_new(zz_ptr_t insns_buffer) {
     ARM64AssemblyrWriter *writer = (ARM64AssemblyrWriter *)malloc0(sizeof(ARM64AssemblyrWriter));
-    zz_addr_t align_address        = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    writer->start_pc               = align_address;
-    writer->insnCTXs_count              = 0;
-    writer->insns_buffer        = align_address;
-    writer->insns_size = 0;
+    writer->start_pc             = 0 + 4;
+    writer->insns_buffer         = 0;
+    writer->insnCTXs_count       = 0;
+    writer->insns_size           = 0;
     return writer;
 }
 
-void arm64_writer_init(ARM64AssemblyrWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
-    arm64_writer_reset(self, data_ptr, target_ptr);
+void arm64_writer_init(ARM64AssemblyrWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
+    arm64_writer_reset(self, insns_buffer, targetPC);
 }
 
-void arm64_writer_reset(ARM64AssemblyrWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
-    zz_addr_t align_address        = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    zz_addr_t target_align_address = (zz_addr_t)target_ptr & ~(zz_addr_t)3;
-    self->start_pc                 = target_align_address;
-    self->insns_buffer          = align_address;
-    self->insns_size                     = 0;
+void arm64_writer_reset(ARM64AssemblyrWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
+    assert(insns_buffer % 4 == 0);
+    assert(targetPC % 4 == 0);
+    self->start_pc     = targetPC;
+    self->insns_buffer = insns_buffer;
+    self->insns_size   = 0;
 
     if (self->insnCTXs_count) {
         for (int i = 0; i < self->insnCTXs_count; ++i) {
@@ -44,7 +44,6 @@ void arm64_writer_free(ARM64AssemblyrWriter *self) {
     }
     free(self);
 }
-
 
 // ======= user custom =======
 
@@ -80,30 +79,30 @@ void arm64_writer_put_ldr_br_b_reg_address(ARM64AssemblyrWriter *self, ARM64Reg 
 
 void arm64_writer_put_bytes(ARM64AssemblyrWriter *self, char *data, zz_size_t data_size) {
     zz_addr_t next_address = self->insns_buffer + self->insns_size;
-    zz_addr_t next_pc = self->start_pc + self->insns_size;
+    zz_addr_t next_pc      = self->start_pc + self->insns_size;
     memcpy((void *)next_address, data, data_size);
     self->insns_size += data_size;
 
-    ARM64InstructionCTX *insn_ctx = (ARM64InstructionCTX *)malloc0(sizeof(ARM64InstructionCTX));
-    insn_ctx->pc                 = next_pc;
-    insn_ctx->address            = next_address;
-    insn_ctx->size               = data_size;
-    insn_ctx->insn               = 0;
+    ARM64InstructionCTX *insn_ctx          = (ARM64InstructionCTX *)malloc0(sizeof(ARM64InstructionCTX));
+    insn_ctx->pc                           = next_pc;
+    insn_ctx->address                      = next_address;
+    insn_ctx->size                         = data_size;
+    insn_ctx->insn                         = 0;
     self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
 void arm64_writer_put_instruction(ARM64AssemblyrWriter *self, uint32_t insn) {
-    zz_addr_t next_address = self->insns_buffer + sizeof(insn);
-    zz_addr_t next_pc = self->start_pc + sizeof(insn);
+    zz_addr_t next_address = self->insns_buffer + self->insns_size;
+    zz_addr_t next_pc      = self->start_pc + self->insns_size;
     memcpy((void *)next_address, &insn, sizeof(insn));
 
     self->insns_size += 4;
 
-    ARM64InstructionCTX *insn_ctx = (ARM64InstructionCTX *)malloc0(sizeof(ARM64InstructionCTX));
-    insn_ctx->pc                 = next_pc;
-    insn_ctx->address            = next_address;
-    insn_ctx->size               = 4;
-    insn_ctx->insn               = insn;
+    ARM64InstructionCTX *insn_ctx          = (ARM64InstructionCTX *)malloc0(sizeof(ARM64InstructionCTX));
+    insn_ctx->pc                           = next_pc;
+    insn_ctx->address                      = next_address;
+    insn_ctx->size                         = 4;
+    insn_ctx->insn                         = insn;
     self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
@@ -206,8 +205,7 @@ void arm64_writer_put_b_cond_imm(ARM64AssemblyrWriter *self, uint32_t condition,
 }
 
 // C6-525
-void arm64_writer_put_add_reg_reg_imm(ARM64AssemblyrWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
-                                      uint64_t imm) {
+void arm64_writer_put_add_reg_reg_imm(ARM64AssemblyrWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg, uint64_t imm) {
     ARM64RegInfo rd, rl;
 
     arm64_register_describe(dst_reg, &rd);
@@ -225,8 +223,7 @@ void arm64_writer_put_add_reg_reg_imm(ARM64AssemblyrWriter *self, ARM64Reg dst_r
 }
 
 // C6-930
-void arm64_writer_put_sub_reg_reg_imm(ARM64AssemblyrWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg,
-                                      uint64_t imm) {
+void arm64_writer_put_sub_reg_reg_imm(ARM64AssemblyrWriter *self, ARM64Reg dst_reg, ARM64Reg left_reg, uint64_t imm) {
     ARM64RegInfo rd, rl;
 
     arm64_register_describe(dst_reg, &rd);

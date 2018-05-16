@@ -1,25 +1,29 @@
 #include "writer-arm.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 ARMAssemblerWriter *arm_writer_new() {
     ARMAssemblerWriter *writer = (ARMAssemblerWriter *)malloc0(sizeof(ARMAssemblerWriter));
-    writer->start_pc = 0+8;
-    writer->insns_buffer = 0;
-    writer->insns_size = 0;
-    writer->insnCTXs_count = 0;
+    writer->start_pc           = 0 + 8;
+    writer->insns_buffer       = 0;
+    writer->insns_size         = 0;
+    writer->insnCTXs_count     = 0;
     return writer;
 }
 
-void arm_writer_init(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) { arm_writer_reset(self, data_ptr, target_ptr); }
+void arm_writer_init(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
+    arm_writer_reset(self, insns_buffer, targetPC);
+}
 
-void arm_writer_reset(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
-    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->start_pc = target_ptr+8;
-    self->insns_buffer = align_address;
-    self->insns_size = 0;
+void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
+    assert(insns_buffer % 4 == 0);
+    assert(targetPC % 4 == 0);
+    self->start_pc     = targetPC + 8;
+    self->insns_buffer = insns_buffer;
+    self->insns_size   = 0;
 
-    if(self->insnCTXs_count) {
+    if (self->insnCTXs_count) {
         for (int i = 0; i < self->insnCTXs_count; ++i) {
             free(self->insnCTXs[i]);
         }
@@ -27,13 +31,12 @@ void arm_writer_reset(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t tar
     self->insnCTXs_count = 0;
 }
 
-void arm_writer_reset_without_align(ARMAssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr) {
-    zz_addr_t align_address = (zz_addr_t)data_ptr & ~(zz_addr_t)3;
-    self->start_pc = target_ptr+8;
-    self->insns_buffer = align_address;
-    self->insns_size = 0;
+void arm_writer_reset_without_align(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
+    self->start_pc     = targetPC + 8;
+    self->insns_buffer = insns_buffer;
+    self->insns_size   = 0;
 
-    if(self->insnCTXs_count) {
+    if (self->insnCTXs_count) {
         for (int i = 0; i < self->insnCTXs_count; ++i) {
             free(self->insnCTXs[i]);
         }
@@ -70,36 +73,36 @@ void arm_writer_put_bx_to_thumb(ARMAssemblerWriter *self) {
 // ------- architecture default -------
 void arm_writer_put_bytes(ARMAssemblerWriter *self, char *data, zz_size_t data_size) {
     zz_addr_t next_address = self->insns_buffer + self->insns_size;
-    zz_addr_t next_pc = self->start_pc + self->insns_size;
+    zz_addr_t next_pc      = self->start_pc + self->insns_size;
     memcpy((void *)next_address, data, data_size);
     self->insns_size += data_size;
 
-    ARMInstruction *insn_ctx = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    insn_ctx->pc = next_pc;
-    insn_ctx->address = next_address;
-    insn_ctx->size = data_size;
-    insn_ctx->insn = 0;
-    insn_ctx->insn1 = 0;
-    insn_ctx->insn2 = 0;
-    insn_ctx->type = UNKOWN_INSN;
+    ARMInstruction *insn_ctx               = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc                           = next_pc;
+    insn_ctx->address                      = next_address;
+    insn_ctx->size                         = data_size;
+    insn_ctx->insn                         = 0;
+    insn_ctx->insn1                        = 0;
+    insn_ctx->insn2                        = 0;
+    insn_ctx->type                         = UNKOWN_INSN;
     self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
 void arm_writer_put_instruction(ARMAssemblerWriter *self, uint32_t insn) {
-    zz_addr_t next_address = self->insns_buffer + sizeof(insn);
-    zz_addr_t next_pc = self->start_pc + sizeof(insn);
+    zz_addr_t next_address = self->insns_buffer + self->insns_size;
+    zz_addr_t next_pc      = self->start_pc + self->insns_size;
     memcpy((void *)next_address, &insn, sizeof(insn));
 
     self->insns_size += 4;
 
-    ARMInstruction *insn_ctx = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-    insn_ctx->pc = next_pc;
-    insn_ctx->address = next_address;
-    insn_ctx->size = 4;
-    insn_ctx->insn = insn;
-    insn_ctx->insn1 = 0;
-    insn_ctx->insn2 = 0;
-    insn_ctx->type = ARM_INSN;
+    ARMInstruction *insn_ctx               = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    insn_ctx->pc                           = next_pc;
+    insn_ctx->address                      = next_address;
+    insn_ctx->size                         = 4;
+    insn_ctx->insn                         = insn;
+    insn_ctx->insn1                        = 0;
+    insn_ctx->insn2                        = 0;
+    insn_ctx->type                         = ARM_INSN;
     self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
 }
 
@@ -126,8 +129,8 @@ void arm_writer_put_ldr_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
     }
 }
 
-void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
-                                             int32_t imm, bool index) {
+void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, int32_t imm,
+                                          bool index) {
     ARMRegInfo rd, rs;
 
     arm_register_describe(dst_reg, &rd);
@@ -143,15 +146,15 @@ void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_r
 
     arm_writer_put_ldr_reg_reg_imm_A1(self, dst_reg, src_reg, ABS(imm), P, U, W);
 }
-void arm_writer_put_ldr_reg_reg_imm_A1(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm,
-                                          bool P, bool U, bool W) {
+void arm_writer_put_ldr_reg_reg_imm_A1(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm, bool P,
+                                       bool U, bool W) {
     ARMRegInfo rd, rs;
 
     arm_register_describe(dst_reg, &rd);
     arm_register_describe(src_reg, &rs);
 
     arm_writer_put_instruction(self, 0xe4100000 | rd.index << 12 | rs.index << 16 | P << 24 | U << 23 | W << 21 |
-                                            (imm & ZZ_INT12_MASK));
+                                         (imm & ZZ_INT12_MASK));
 }
 void arm_writer_put_ldr_reg_imm_literal(ARMAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
     ARMRegInfo rd;
@@ -175,7 +178,7 @@ void arm_writer_put_str_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
     if (imm >= 0)
         U = 1;
     arm_writer_put_instruction(self, 0xe4000000 | rd.index << 12 | rs.index << 16 | P << 24 | U << 23 | W << 21 |
-                                            (imm & ZZ_INT12_MASK));
+                                         (imm & ZZ_INT12_MASK));
 }
 
 void arm_writer_put_ldr_reg_address(ARMAssemblerWriter *self, ARMReg reg, zz_addr_t address) {

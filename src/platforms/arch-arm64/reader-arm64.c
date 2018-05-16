@@ -43,10 +43,10 @@ ARM64InstructionCTX *arm64_reader_read_one_instruction(ARM64AssemblyReader *self
 extern ARM64InstructionID ARM64InstructionIDTable[256];
 
 ARM64InstID GetARM64InsnType(uint32_t insn) {
-    ARM64InstructionID *insnID;
-    while (insnID->inst != 0) {
-        if ((insn & insnID->inst) == insnID->inst) {
-            return insnID->InstID;
+    ARM64InstructionID *instructionIDTable = ARM64InstructionIDTable;
+    for (int i = 0; instructionIDTable[i].inst != 0 && i < 256; i++) {
+        if ((insn & instructionIDTable[i].inst) == instructionIDTable[i].inst) {
+            return instructionIDTable[i].InstID;
         }
     }
     return UNKNOWN;

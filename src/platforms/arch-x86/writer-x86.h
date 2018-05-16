@@ -28,7 +28,8 @@
 
 #define MAX_INSN_SIZE 256
 
-typedef struct _X86AssemblerWriter {
+typedef struct _X86AssemblerWriter
+{
     X86Instruction *insnCTXs[MAX_INSN_SIZE];
     zz_size_t insnCTXs_count;
     zz_addr_t start_pc;
@@ -36,11 +37,11 @@ typedef struct _X86AssemblerWriter {
     zz_size_t insns_size;
 } X86AssemblerWriter;
 
-X86AssemblerWriter *x86_writer_new(zz_ptr_t data_ptr);
+X86AssemblerWriter *x86_writer_new(zz_ptr_t insns_buffer);
 
-void x86_writer_init(X86AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void x86_writer_init(X86AssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);
 
-void x86_writer_reset(X86AssemblerWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void x86_writer_reset(X86AssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);
 
 void x86_writer_free(X86AssemblerWriter *self);
 

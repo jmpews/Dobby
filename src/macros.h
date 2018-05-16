@@ -38,6 +38,7 @@
 #define ZZ_INT26_MASK 0x03ffffff
 #define ZZ_INT28_MASK 0x0fffffff
 
-#define THUMB_FUNCTION_ADDRESS(target_addr) (void *)((unsigned long)target_addr & ~(unsigned long)1)
-#define INSTRUCTION_IS_THUMB(insn_addr) ((insn_addr & 0x1) == 0x1)
-#define ALIGN_4(target_addr) ((unsigned long)target_addr & ~(unsigned long)3)
+#define THUMB_FUNCTION_ADDRESS(address) ((uintptr_t)address & ~(uintptr_t)1)
+#define INSTRUCTION_IS_THUMB(insn_addr) (((uintptr_t)insn_addr & 0x1) == 0x1)
+#define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
+#define ALIGN_CEIL(address, range) (((uintptr_t)address + (uintptr_t)range - 1) & ~((uintptr_t)range - 1))

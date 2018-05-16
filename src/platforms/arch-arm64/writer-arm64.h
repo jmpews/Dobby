@@ -28,7 +28,8 @@
 
 #define MAX_INSN_SIZE 256
 
-typedef struct _ARM64AssemblerWriter {
+typedef struct _ARM64AssemblerWriter
+{
     ARM64InstructionCTX *insnCTXs[MAX_INSN_SIZE];
     zz_size_t insnCTXs_count;
     zz_addr_t start_pc;
@@ -36,11 +37,11 @@ typedef struct _ARM64AssemblerWriter {
     zz_size_t insns_size;
 } ARM64AssemblyrWriter;
 
-ARM64AssemblyrWriter *arm64_writer_new(zz_ptr_t data_ptr);
+ARM64AssemblyrWriter *arm64_writer_new(zz_ptr_t insns_buffer);
 
-void arm64_writer_init(ARM64AssemblyrWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void arm64_writer_init(ARM64AssemblyrWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);
 
-void arm64_writer_reset(ARM64AssemblyrWriter *self, zz_ptr_t data_ptr, zz_addr_t target_ptr);
+void arm64_writer_reset(ARM64AssemblyrWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);
 
 void arm64_writer_free(ARM64AssemblyrWriter *self);
 
