@@ -2,6 +2,10 @@
 # export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DZARCH=arm64
 
+# windows build Android
+# set ANDROID_NDK=D:\TechnicalProgramFiles\Android-SDK\ndk-bundle
+# cmake -G "Android Gradle - Ninja" -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK\build\cmake\android.toolchain.cmake" -DCMAKE_MAKE_PROGRAME="D:\TechnicalProgramFiles\Android-SDK\cmake\3.6.4111459\bin\ninja.exe" -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DARCH=arm64
+
 # macOS build iOS
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=arm64
 
