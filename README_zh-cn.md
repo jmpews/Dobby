@@ -21,9 +21,40 @@
 
 ## 编译
 
-注意: 请不要使用 `CMakeLists.txt` 和 `build.sh`, 只是未完成的占位符文件.
+注意: 请不要使用 `build.sh`, 只是未完成的占位符文件.
 
 需要先 clone 工程 **`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
+
+#### CMake 更好一些 (你可能需要做一些调整)
+
+```
+# linux/macOS build Android
+#>>> export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
+## arm64
+#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DZARCH=arm64
+#>>> make
+## armv7
+#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=armeabi-v7a -DZPLATFORM=Android -DZARCH=armv7
+#>>> make
+
+# windows build Android
+#>>> set path=%path%;xxx\cmake\3.6.4111459\bin
+#>>> set ANDROID_NDK=D:\TechnicalProgramFiles\Android-SDK\ndk-bundle
+## arm64
+#>>> cmake .. -G "Android Gradle - Ninja" -DCMAKE_TOOLCHAIN_FILE=%ANDROID_NDK%\build\cmake\android.toolchain.cmake -DAN DROID_NDK=%ANDROID_NDK% -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DZARCH=arm64
+#>>> ninja
+## armv7
+#>>> cmake .. -G "Android Gradle - Ninja" -DCMAKE_TOOLCHAIN_FILE=%ANDROID_NDK%\build\cmake\android.toolchain.cmake -DAN DROID_NDK=%ANDROID_NDK% -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=armeabi-v7a -DZPLATFORM=Android -DZARCH=armv7
+#>>> ninja
+
+# macOS build iOS
+## arm64
+#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=arm64
+#>>> make
+## armv7
+#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=armv7 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=armv7
+#>>> make
+```
 
 #### iOS
 
@@ -54,4 +85,4 @@ wechat: winter1ife
 QQ: 858982985
 ```
 
-<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fq5qkcu3cij20iq0owtad.jpg" alt="qrcode">
+<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1frev72yg6mj20iq0owabp.jpg" alt="qrcode">
