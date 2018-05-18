@@ -10,6 +10,4 @@
 
 char *ZmmReadString(const char *address) { return zz_vm_read_string(address); }
 
-char *ZmmAllocateMemoryPage(size_t nPages) {
-    return NULL;
-}
+char *ZmmAllocateMemoryPage(size_t nPages) { return NULL; }

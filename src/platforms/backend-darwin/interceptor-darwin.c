@@ -9,7 +9,7 @@
 #include <mach-o/dyld.h>
 
 RetStatus ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
-                   POSTCALL post_call_ptr) {
+                    POSTCALL post_call_ptr) {
     intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
     pub_dyld_get_image_slide         = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
     zz_ptr_t target_ptr              = dlsym((void *)dlopen(0, RTLD_LAZY), name);
@@ -35,7 +35,7 @@ RetStatus ZzDisableHookGOT(const char *name) {
     zz_ptr_t target_ptr              = dlsym((void *)dlopen(0, RTLD_LAZY), name);
     const struct mach_header *header = _dyld_get_image_header(0);
     zz_size_t slide                  = pub_dyld_get_image_slide(header);
-    HookEntry *entry       = InterceptorFindHookEntry((zz_ptr_t)name);
+    HookEntry *entry                 = InterceptorFindHookEntry((zz_ptr_t)name);
 
     rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, target_ptr, NULL}}, 1);
     return RS_SUCCESS;

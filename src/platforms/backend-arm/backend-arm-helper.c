@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 CodeSlice *thumb_code_patch(ThumbAssemblerWriter *writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
-                                 zz_size_t range_size) {
+                            zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
         codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, writer->insns_size + 4);
@@ -21,8 +21,8 @@ CodeSlice *thumb_code_patch(ThumbAssemblerWriter *writer, ExecuteMemoryManager *
     return codeslice;
 }
 
-CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWriter *writer,
-                                          ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
+CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWriter *writer, ExecuteMemoryManager *emm,
+                                     zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
         codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, writer->insns_size + 4);
@@ -43,7 +43,7 @@ CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWr
 }
 
 CodeSlice *arm_code_patch(ARMAssemblerWriter *writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
-                               zz_size_t range_size) {
+                          zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
         codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, writer->insns_size + 4);
@@ -60,8 +60,8 @@ CodeSlice *arm_code_patch(ARMAssemblerWriter *writer, ExecuteMemoryManager *emm,
     return codeslice;
 }
 
-CodeSlice *arm_relocate_code_patch(ARMRelocator *relocator, ARMAssemblerWriter *writer,
-                                        ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
+CodeSlice *arm_relocate_code_patch(ARMRelocator *relocator, ARMAssemblerWriter *writer, ExecuteMemoryManager *emm,
+                                   zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
         codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, writer->insns_size + 4);

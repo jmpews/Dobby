@@ -1,25 +1,25 @@
 #pragma once
 
-#include<iostream>
+#include <iostream>
 
 namespace KeyBoardKit {
-	namespace HotKeyKit {
-		typedef int HotKeyIndentifier;
+namespace HotKeyKit {
+typedef int HotKeyIndentifier;
 
-		class HotKeyAction {
-			// TODO: need this?
-		};
+class HotKeyAction {
+    // TODO: need this?
+};
 
-		class HotKey {
-		public:
-			HotKey(UINT fsModifiers, UINT vk, void(*func)());
+class HotKey {
+  public:
+    HotKey(UINT fsModifiers, UINT vk, void (*func)());
 
-			static HotKey *CreateHotKeyByKeyString(std::string , void(*func)());
+    static HotKey *CreateHotKeyByKeyString(std::string, void (*func)());
 
-			std::string hotkey_str;
-			UINT m_fsModifiers;
-			UINT m_vk;
-			void(*m_func)();
-		};
-	}
-}
+    std::string hotkey_str;
+    UINT m_fsModifiers;
+    UINT m_vk;
+    void (*m_func)();
+};
+} // namespace HotKeyKit
+} // namespace KeyBoardKit

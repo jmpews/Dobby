@@ -12,25 +12,25 @@ ThreadStack *ThreadStackGetByThreadLocalKey(zz_ptr_t thread_local_key) {
 
 ThreadStack *ThreadStackAllocate(zz_ptr_t thread_local_key) {
     ThreadStack *threadstack;
-    threadstack              = (ThreadStack *)malloc0(sizeof(ThreadStack));
-    threadstack->capacity    = 4;
+    threadstack                    = (ThreadStack *)malloc0(sizeof(ThreadStack));
+    threadstack->capacity          = 4;
     CallStack **callstack_ptr_list = (CallStack **)malloc0(sizeof(CallStack *) * (threadstack->capacity));
     if (!callstack_ptr_list)
         return NULL;
     threadstack->callstack_ptr_list = callstack_ptr_list;
-    threadstack->size       = 0;
-    threadstack->thread_local_key    = thread_local_key;
-    threadstack->thread_id  = ThreadGetCurrentThreadID();
+    threadstack->size               = 0;
+    threadstack->thread_local_key   = thread_local_key;
+    threadstack->thread_id          = ThreadGetCurrentThreadID();
     ThreadSetThreadLocalValue(thread_local_key, (zz_ptr_t)threadstack);
     return threadstack;
 }
 
 CallStack *CallStackAllocate() {
     CallStack *callstack;
-    callstack           = (CallStack *)malloc0(sizeof(CallStack));
-    callstack->capacity = 4;
-    callstack->callstack_entry_list    = (CallStackEntry *)malloc(sizeof(CallStackEntry) * callstack->capacity);
-    callstack->size     = 0;
+    callstack                       = (CallStack *)malloc0(sizeof(CallStack));
+    callstack->capacity             = 4;
+    callstack->callstack_entry_list = (CallStackEntry *)malloc(sizeof(CallStackEntry) * callstack->capacity);
+    callstack->size                 = 0;
     if (!callstack->callstack_entry_list)
         return NULL;
     return callstack;
@@ -62,7 +62,7 @@ bool ThreadStackPushCallStack(ThreadStack *stack, CallStack *callstack) {
         if (!callstack_ptr_list)
             return FALSE;
         stack->callstack_ptr_list = callstack_ptr_list;
-        stack->capacity   = stack->capacity * 2;
+        stack->capacity           = stack->capacity * 2;
     }
 
     callstack->call_id     = stack->size;
@@ -90,12 +90,12 @@ CallStackEntry *CallStackAllocateData(CallStack *callstack) {
         return NULL;
     if (callstack->size >= callstack->capacity) {
         // add extra callstackcallstack_entry_list
-        CallStackEntry *callstackcallstack_entry_list =
-            (CallStackEntry *)realloc(callstack->callstack_entry_list, sizeof(CallStackEntry) * callstack->capacity * 2);
+        CallStackEntry *callstackcallstack_entry_list = (CallStackEntry *)realloc(
+            callstack->callstack_entry_list, sizeof(CallStackEntry) * callstack->capacity * 2);
         if (!callstackcallstack_entry_list)
             return NULL;
-        callstack->callstack_entry_list    = callstackcallstack_entry_list;
-        callstack->capacity = callstack->capacity * 2;
+        callstack->callstack_entry_list = callstackcallstack_entry_list;
+        callstack->capacity             = callstack->capacity * 2;
     }
     return &(callstack->callstack_entry_list[callstack->size++]);
 }

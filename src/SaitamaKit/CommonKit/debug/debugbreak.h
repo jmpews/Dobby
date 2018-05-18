@@ -56,9 +56,7 @@ __attribute__((gnu_inline, always_inline)) __inline__ static void trap_instructi
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
 };
-__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
-    __builtin_trap();
-}
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) { __builtin_trap(); }
 #elif defined(__thumb__)
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
@@ -91,9 +89,7 @@ __attribute__((gnu_inline, always_inline)) __inline__ static void trap_instructi
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
 };
-__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
-    __builtin_trap();
-}
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) { __builtin_trap(); }
 #elif defined(__arm__) && !defined(__thumb__)
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
@@ -109,9 +105,7 @@ __attribute__((gnu_inline, always_inline)) __inline__ static void trap_instructi
 enum {
     HAVE_TRAP_INSTRUCTION = 1,
 };
-__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) {
-    __builtin_trap();
-}
+__attribute__((gnu_inline, always_inline)) static void __inline__ trap_instruction(void) { __builtin_trap(); }
 #elif defined(__aarch64__)
 enum {
     HAVE_TRAP_INSTRUCTION = 1,

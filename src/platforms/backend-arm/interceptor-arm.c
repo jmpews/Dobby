@@ -9,10 +9,8 @@
 #define ARM_TINY_REDIRECT_SIZE 4
 #define ARM_FULL_REDIRECT_SIZE 8
 
-InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm)
-{
-    if (!MemoryHelperIsSupportAllocateRXMemory())
-    {
+InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
+    if (!MemoryHelperIsSupportAllocateRXMemory()) {
         DEBUG_LOG_STR("memory is not support allocate r-x Page!");
         return NULL;
     }
@@ -28,13 +26,12 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm)
     thumb_reader_init(&backend->thumb_reader, 0);
     thumb_relocator_init(&backend->thumb_relocator, &backend->thumb_reader, &backend->thumb_writer);
 
-    backend->emm = emm;
-    backend->enter_bridge = NULL;
-    backend->leave_bridge = NULL;
+    backend->emm                                   = emm;
+    backend->enter_bridge                          = NULL;
+    backend->leave_bridge                          = NULL;
     backend->dynamic_binary_instrumentation_bridge = NULL;
 
-    if (DebugLogControlerIsEnableLog())
-    {
+    if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "\n======= Global Interceptor Info ======= \n");
         sprintf(buffer + strlen(buffer), "\tenter_bridge: %p\n", backend->enter_bridge);
@@ -44,8 +41,7 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm)
         DEBUGLOG_COMMON_LOG("%s", buffer);
     }
 
-    if (status == RS_FAILED)
-    {
+    if (status == RS_FAILED) {
         DEBUG_LOG("%s", "BridgeBuildAll return RS_FAILED\n");
         return NULL;
     }
@@ -53,103 +49,76 @@ InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm)
     return backend;
 }
 
-void TrampolineFree(HookEntry *entry)
-{
-    if (entry->on_invoke_trampoline)
-    {
+void TrampolineFree(HookEntry *entry) {
+    if (entry->on_invoke_trampoline) {
         //TODO
     }
 
-    if (entry->on_enter_trampoline)
-    {
+    if (entry->on_enter_trampoline) {
         //TODO
     }
 
-    if (entry->on_enter_transfer_trampoline)
-    {
+    if (entry->on_enter_transfer_trampoline) {
         //TODO
     }
 
-    if (entry->on_leave_trampoline)
-    {
+    if (entry->on_leave_trampoline) {
         //TODO
     }
 
-    if (entry->on_invoke_trampoline)
-    {
+    if (entry->on_invoke_trampoline) {
         //TODO
     }
     return;
 }
 
-void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry)
-{
-    bool is_thumb = FALSE;
-    zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
+void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) {
+    bool is_thumb            = FALSE;
+    zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
     zz_size_t redirect_limit = 0;
     ARMHookEntryBackend *entry_backend;
 
-    entry_backend = (ARMHookEntryBackend *)malloc0(sizeof(ARMHookEntryBackend));
+    entry_backend  = (ARMHookEntryBackend *)malloc0(sizeof(ARMHookEntryBackend));
     entry->backend = (struct _HookEntryBackend *)entry_backend;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
     if (is_thumb)
         target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb)
-    {
-        if (entry->try_near_jump)
-        {
+    if (is_thumb) {
+        if (entry->try_near_jump) {
             entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
-        }
-        else
-        {
+        } else {
             // check the first few instructions, preparatory work of instruction-fixing
             thumb_relocator_try_relocate((zz_ptr_t)target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
             if (redirect_limit != 0 && redirect_limit > ZZ_THUMB_TINY_REDIRECT_SIZE &&
-                redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE)
-            {
-                entry->try_near_jump = TRUE;
+                redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE) {
+                entry->try_near_jump              = TRUE;
                 entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
-            }
-            else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE)
-            {
+            } else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 return;
-            }
-            else
-            {
+            } else {
                 // put nop to align !!!!
                 entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
-                if (target_addr % 4)
-                {
+                if (target_addr % 4) {
                     entry_backend->redirect_code_size += 2;
                 }
             }
         }
         self->thumb_relocator.try_relocated_length = entry_backend->redirect_code_size;
-    }
-    else
-    {
-        if (entry->try_near_jump)
-        {
+    } else {
+        if (entry->try_near_jump) {
             entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
-        }
-        else
-        {
+        } else {
             // check the first few instructions, preparatory work of instruction-fixing
             arm_relocator_try_relocate((zz_ptr_t)target_addr, ARM_FULL_REDIRECT_SIZE, &redirect_limit);
             if (redirect_limit != 0 && redirect_limit > ARM_TINY_REDIRECT_SIZE &&
-                redirect_limit < ARM_FULL_REDIRECT_SIZE)
-            {
-                entry->try_near_jump = TRUE;
+                redirect_limit < ARM_FULL_REDIRECT_SIZE) {
+                entry->try_near_jump              = TRUE;
                 entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
-            }
-            else if (redirect_limit != 0 && redirect_limit < ARM_TINY_REDIRECT_SIZE)
-            {
+            } else if (redirect_limit != 0 && redirect_limit < ARM_TINY_REDIRECT_SIZE) {
                 return;
-            }
-            else
-            {
+            } else {
                 entry_backend->redirect_code_size = ARM_FULL_REDIRECT_SIZE;
             }
         }
@@ -158,7 +127,7 @@ void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry)
 
     // save original prologue
     memcpy(entry->origin_prologue.data, (zz_ptr_t)target_addr, entry_backend->redirect_code_size);
-    entry->origin_prologue.size = entry_backend->redirect_code_size;
+    entry->origin_prologue.size    = entry_backend->redirect_code_size;
     entry->origin_prologue.address = (zz_ptr_t)target_addr;
 
     // relocator initialize
@@ -167,47 +136,37 @@ void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry)
     return;
 }
 
-void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
-{
-    char temp_codeslice[256] = {0};
-    ARMAssemblerWriter *arm_writer = NULL;
-    ARMAssemblerWriter *thumb_writer = NULL;
-    CodeSlice *codeslice = NULL;
+void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) {
+    char temp_codeslice[256]           = {0};
+    ARMAssemblerWriter *arm_writer     = NULL;
+    ARMAssemblerWriter *thumb_writer   = NULL;
+    CodeSlice *codeslice               = NULL;
     ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status = RS_SUCCESS;
-    bool is_thumb = TRUE;
-    zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
+    RetStatus status                   = RS_SUCCESS;
+    bool is_thumb                      = TRUE;
+    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
     if (is_thumb)
         target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb)
-    {
+    if (is_thumb) {
         thumb_writer = &self->thumb_writer;
         thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE)
-        {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
 
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
-        }
-        else if (entry->hook_type == HOOK_TYPE_DBI)
-        {
+        } else if (entry->hook_type == HOOK_TYPE_DBI) {
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
                                              (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
-        }
-        else
-        {
+        } else {
             thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
         }
-        if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE)
-        {
+        if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
             codeslice =
                 thumb_code_patch(thumb_writer, self->emm, target_addr, thumb_writer_near_jump_range_size() - 0x10);
-        }
-        else
-        {
+        } else {
             codeslice = thumb_code_patch(thumb_writer, self->emm, 0, 0);
         }
 
@@ -215,32 +174,22 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
             entry->on_enter_transfer_trampoline = codeslice->data + 1;
         else
             return;
-    }
-    else
-    {
+    } else {
         arm_writer = &self->arm_writer;
         arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE)
-        {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
-        }
-        else if (entry->hook_type == HOOK_TYPE_DBI)
-        {
+        } else if (entry->hook_type == HOOK_TYPE_DBI) {
             arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
                                            (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
-        }
-        else
-        {
+        } else {
             arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
         }
 
-        if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)
-        {
+        if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
             codeslice = arm_code_patch(arm_writer, self->emm, target_addr, arm_writer_near_jump_range_size() - 0x10);
-        }
-        else
-        {
+        } else {
             codeslice = arm_code_patch(arm_writer, self->emm, 0, 0);
         }
         if (codeslice)
@@ -274,10 +223,9 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     return;
 }
 
-void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry)
-{
+void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status = RS_SUCCESS;
+    RetStatus status                   = RS_SUCCESS;
     bool is_thumb;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
@@ -285,8 +233,7 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry)
     ClosureBridgeData *bridgeData;
 
     bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
-    if (bridgeData == NULL)
-    {
+    if (bridgeData == NULL) {
         ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
@@ -295,10 +242,8 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry)
     // build the double trampline aka enter_transfer_trampoline
     if (entry_backend)
         if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE))
-        {
-            if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT)
-            {
+            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+            if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
                 TrampolineBuildForEnterTransfer(self, entry);
             }
         }
@@ -317,10 +262,9 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry)
     return;
 }
 
-void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, HookEntry *entry)
-{
+void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, HookEntry *entry) {
     ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status = RS_SUCCESS;
+    RetStatus status                   = RS_SUCCESS;
     bool is_thumb;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
@@ -328,8 +272,7 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
     ClosureBridgeData *bridgeData;
 
     bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
-    if (bridgeData == NULL)
-    {
+    if (bridgeData == NULL) {
         ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
@@ -337,10 +280,8 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
 
     // build the double trampline aka enter_transfer_trampoline
     if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-        (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE))
-    {
-        if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT)
-        {
+        (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+        if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
             TrampolineBuildForEnterTransfer(self, entry);
         }
     }
@@ -360,36 +301,33 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
     return;
 }
 
-void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
-{
-    char temp_codeslice[256] = {0};
-    CodeSlice *codeslice = NULL;
+void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
+    char temp_codeslice[256]           = {0};
+    CodeSlice *codeslice               = NULL;
     ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status = RS_SUCCESS;
-    bool is_thumb = TRUE;
-    zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
+    RetStatus status                   = RS_SUCCESS;
+    bool is_thumb                      = TRUE;
+    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
     zz_ptr_t restore_next_insn_addr;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
     if (is_thumb)
         target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb)
-    {
+    if (is_thumb) {
         ThumbRelocator *thumb_relocator;
         ThumbAssemblerWriter *thumb_writer;
         ARMReader *thumb_reader;
         thumb_relocator = &self->thumb_relocator;
-        thumb_writer = &self->thumb_writer;
-        thumb_reader = &self->thumb_reader;
+        thumb_writer    = &self->thumb_writer;
+        thumb_reader    = &self->thumb_reader;
 
         thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
         thumb_reader_reset(thumb_reader, (zz_ptr_t)target_addr);
         thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
 
         {
-            do
-            {
+            do {
                 thumb_relocator_read_one(thumb_relocator, NULL);
             } while (thumb_relocator->input->insns_size < entry_backend->redirect_code_size);
             thumb_relocator_write_all(thumb_relocator);
@@ -405,23 +343,20 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
             entry->on_invoke_trampoline = codeslice->data + 1;
         else
             return;
-    }
-    else
-    {
+    } else {
         ARMRelocator *arm_relocator;
         ARMAssemblerWriter *arm_writer;
         ARMReader *arm_reader;
         arm_relocator = &self->arm_relocator;
-        arm_writer = &self->arm_writer;
-        arm_reader = &self->arm_reader;
+        arm_writer    = &self->arm_writer;
+        arm_reader    = &self->arm_reader;
 
         arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
         arm_reader_reset(arm_reader, (zz_ptr_t)target_addr);
         arm_relocator_reset(arm_relocator, arm_reader, arm_writer);
 
         {
-            do
-            {
+            do {
                 arm_relocator_read_one(arm_relocator, NULL);
             } while (arm_relocator->input->insns_size < entry_backend->redirect_code_size);
             arm_relocator_write_all(arm_relocator);
@@ -439,17 +374,14 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
     }
 
     // debug log
-    if (DebugLogControlerIsEnableLog())
-    {
-        char buffer[1024] = {};
+    if (DebugLogControlerIsEnableLog()) {
+        char buffer[1024]         = {};
         char origin_prologue[256] = {0};
-        int t = 0;
+        int t                     = 0;
 
         sprintf(buffer + strlen(buffer), "======= Origin Code Relocator ======= \n");
-        if (is_thumb)
-        {
-            for (int i = 0; i < self->thumb_relocator.input->insnCTXs_count; i++)
-            {
+        if (is_thumb) {
+            for (int i = 0; i < self->thumb_relocator.input->insnCTXs_count; i++) {
                 sprintf(origin_prologue + t, "0x%.2x ", self->thumb_relocator.input->insnCTXs[i]->insn);
             }
             sprintf(buffer + strlen(buffer), "\t\tThumb Origin Prologue:: %s\n", origin_prologue);
@@ -464,19 +396,15 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
                     (zz_ptr_t)self->thumb_relocator.input->insnCTXs_count);
             sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n",
                     self->thumb_relocator.input->insns_size);
-            for (int i = 0; i < self->thumb_relocator.relocated_insnCTXs_count; i++)
-            {
+            for (int i = 0; i < self->thumb_relocator.relocated_insnCTXs_count; i++) {
                 sprintf(buffer + strlen(buffer),
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                         (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].origin_insn->address,
                         (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
                         self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
             }
-        }
-        else
-        {
-            for (int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++)
-            {
+        } else {
+            for (int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++) {
                 sprintf(origin_prologue + t, "0x%.2x ", self->arm_relocator.input->insnCTXs[i]->insn);
             }
             sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
@@ -491,8 +419,7 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
                     (zz_ptr_t)self->arm_relocator.input->insnCTXs_count);
             sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n",
                     self->arm_relocator.input->insns_size);
-            for (int i = 0; i < self->arm_relocator.relocated_insnCTXs_count; i++)
-            {
+            for (int i = 0; i < self->arm_relocator.relocated_insnCTXs_count; i++) {
                 sprintf(buffer + strlen(buffer),
                         "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
                         (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].origin_insn->address,
@@ -507,13 +434,11 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry)
     return;
 }
 
-void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry)
-{
+void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
     ClosureBridgeData *bridgeData;
 
     bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
-    if (bridgeData == NULL)
-    {
+    if (bridgeData == NULL) {
         ERROR_LOG_STR("build closure bridge failed!!!");
     }
 
@@ -533,50 +458,39 @@ void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry)
     return;
 }
 
-void TrampolineActivate(InterceptorBackend *self, HookEntry *entry)
-{
-    char temp_codeslice[256] = {0};
-    CodeSlice *codeslice = NULL;
+void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
+    char temp_codeslice[256]           = {0};
+    CodeSlice *codeslice               = NULL;
     ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status = RS_SUCCESS;
-    bool is_thumb = TRUE;
-    zz_addr_t target_addr = (zz_addr_t)entry->target_ptr;
+    RetStatus status                   = RS_SUCCESS;
+    bool is_thumb                      = TRUE;
+    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
 
     is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
     if (is_thumb)
         target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb)
-    {
+    if (is_thumb) {
         ThumbAssemblerWriter *thumb_writer;
         thumb_writer = &self->thumb_writer;
         thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE)
-        {
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE)
-            {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
                                                            (zz_addr_t)thumb_writer->start_pc);
-            }
-            else
-            {
+            } else {
                 // target address is not aligne 4, need align
                 if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
                     thumb_writer_put_nop(thumb_writer);
                 thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
                                                  (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
-        }
-        else
-        {
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE)
-            {
+        } else {
+            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
                                                            (zz_addr_t)thumb_writer->start_pc);
-            }
-            else
-            {
+            } else {
                 // target address is not aligne 4, need align
                 if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
                     thumb_writer_put_nop(thumb_writer);
@@ -587,34 +501,23 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry)
                                    thumb_writer->insns_size))
             return;
         //        thumb_writer_free(thumb_writer);
-    }
-    else
-    {
+    } else {
         ARMAssemblerWriter *arm_writer;
         arm_writer = &self->arm_writer;
         arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
 
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE)
-        {
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)
-            {
+        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
                 arm_writer_put_b_imm(arm_writer,
                                      (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
-            }
-            else
-            {
+            } else {
                 arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
             }
-        }
-        else
-        {
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)
-            {
+        } else {
+            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
                 arm_writer_put_b_imm(arm_writer,
                                      (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
-            }
-            else
-            {
+            } else {
                 arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
             }
         }
@@ -624,37 +527,25 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry)
     }
 
     // debug log
-    if (DebugLogControlerIsEnableLog())
-    {
+    if (DebugLogControlerIsEnableLog()) {
         char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "======= Trampoline Summary ======= \n");
         sprintf(buffer + strlen(buffer), "\tHookZz Target Address: %p\n", entry->target_ptr);
-        if (is_thumb)
-        {
+        if (is_thumb) {
             sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: Thumb\n");
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE)
-            {
+            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
                 sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Near Jump(B xxx)\n");
-            }
-            else if (entry_backend->redirect_code_size == ZZ_THUMB_FULL_REDIRECT_SIZE)
-            {
+            } else if (entry_backend->redirect_code_size == ZZ_THUMB_FULL_REDIRECT_SIZE) {
                 sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Abs Jump(ldr pc, [pc, #x])\n");
-            }
-            else if ((((zz_addr_t)entry->target_ptr) % 4) &&
-                     entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
-            {
+            } else if ((((zz_addr_t)entry->target_ptr) % 4) &&
+                       entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2)) {
                 sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Align Abs Jump(nop; ldr pc, [pc, #x])\n");
             }
-        }
-        else
-        {
+        } else {
             sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: ARM\n");
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)
-            {
+            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
                 sprintf(buffer + strlen(buffer), "\tARM Jump Type: Near Jump(B xxx)\n");
-            }
-            else if (entry_backend->redirect_code_size == ARM_FULL_REDIRECT_SIZE)
-            {
+            } else if (entry_backend->redirect_code_size == ARM_FULL_REDIRECT_SIZE) {
                 sprintf(buffer + strlen(buffer), "\tARM Brach Jump Type: Abs Jump(ldr pc, [pc, #-4])\n");
             }
         }
@@ -663,29 +554,22 @@ void TrampolineActivate(InterceptorBackend *self, HookEntry *entry)
             sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
                     entry->on_enter_transfer_trampoline);
 
-        if (entry->hook_type == HOOK_TYPE_DBI)
-        {
+        if (entry->hook_type == HOOK_TYPE_DBI) {
             sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_DBI\n");
             sprintf(buffer + strlen(buffer), "\ton_dynamic_binary_instrumentation_trampoline: %p\n",
                     entry->on_dynamic_binary_instrumentation_trampoline);
             sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        }
-        else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST)
-        {
+        } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
             sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_PRE_POST\n");
             sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
             sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
             sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        }
-        else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE)
-        {
+        } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
             sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_REPLACE\n");
             sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
                     entry->on_enter_transfer_trampoline);
             sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        }
-        else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT)
-        {
+        } else if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
             sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_GOT\n");
             sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
             sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);

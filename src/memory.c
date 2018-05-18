@@ -1,8 +1,8 @@
 #include "memory.h"
+#include <SaitamaKit/CommonKit/log/log_kit.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SaitamaKit/CommonKit/log/log_kit.h>
 
 #define DEFAULT_ALLOCATOR_CAPACITY 4
 
@@ -229,7 +229,7 @@ CodeSlice *ExecuteMemoryManagerAllocateNearCodeSlice(ExecuteMemoryManager *emm, 
                 // new emb
                 ExecuteMemoryBlock *new_emb = (ExecuteMemoryBlock *)malloc0(sizeof(ExecuteMemoryBlock));
                 new_emb->start_address      = (zz_ptr_t)split_addr;
-                new_emb->total_size               = ((zz_addr_t)emb->start_address + emb->total_size) - split_addr;
+                new_emb->total_size         = ((zz_addr_t)emb->start_address + emb->total_size) - split_addr;
                 new_emb->used_size          = 0;
                 new_emb->current_address    = (zz_ptr_t)split_addr;
                 ExecuteMemoryManagerAdd(emm, new_emb);

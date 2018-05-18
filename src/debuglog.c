@@ -45,9 +45,7 @@ void Log_TrampolineBuildForEnter(HookEntry *entry) {
 void Log_TrampolineBuildForInvoke(HookEntry *entry, CodeSlice *codeslice) {
     // debug log
     if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024]         = {};
-        char origin_prologue[256] = {0};
-        int t                     = 0;
+        char buffer[1024] = {};
         sprintf(buffer + strlen(buffer), "\n======= InvokeTrampoline ======= \n");
         sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
         sprintf(buffer + strlen(buffer), "\ttrampoline_length: %ld\n", codeslice->size);

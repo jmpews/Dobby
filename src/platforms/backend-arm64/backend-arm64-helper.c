@@ -23,8 +23,8 @@ CodeSlice *arm64_code_patch(ARM64AssemblyrWriter *writer, ExecuteMemoryManager *
     return codeslice;
 }
 
-CodeSlice *arm64_relocate_code_patch(ARM64Relocator *relocator, ARM64AssemblyrWriter *writer,
-                                     ExecuteMemoryManager *emm, zz_addr_t target_addr, zz_size_t range_size) {
+CodeSlice *arm64_relocate_code_patch(ARM64Relocator *relocator, ARM64AssemblyrWriter *writer, ExecuteMemoryManager *emm,
+                                     zz_addr_t target_addr, zz_size_t range_size) {
     CodeSlice *codeslice = NULL;
     if (range_size > 0) {
         codeslice = ExecuteMemoryManagerAllocateNearCodeSlice(emm, target_addr, range_size, writer->insns_size + 4);

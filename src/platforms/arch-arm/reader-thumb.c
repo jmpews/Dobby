@@ -15,20 +15,20 @@ bool insn_is_thumb2(uint32_t insn) {
 ARMReader *thumb_reader_new(zz_ptr_t insn_address) {
     ARMReader *reader = (ARMReader *)malloc0(sizeof(ARMReader));
 
-    reader->start_pc                = (zz_addr_t )insn_address + 4;
+    reader->start_pc       = (zz_addr_t)insn_address + 4;
     reader->insns_buffer   = (zz_addr_t)insn_address;
-    reader->insns_size              = 0;
-    reader->insnCTXs_count         = 0;
+    reader->insns_size     = 0;
+    reader->insnCTXs_count = 0;
     return reader;
 }
 
 void thumb_reader_init(ARMReader *self, zz_ptr_t insn_address) { thumb_reader_reset(self, insn_address); }
 
 void thumb_reader_reset(ARMReader *self, zz_ptr_t insn_address) {
-    self->start_pc                = (zz_addr_t )insn_address + 4;
-    self->insns_buffer   = (zz_addr_t )insn_address;
-    self->insns_size              = 0;
-    self->insnCTXs_count         = 0;
+    self->start_pc       = (zz_addr_t)insn_address + 4;
+    self->insns_buffer   = (zz_addr_t)insn_address;
+    self->insns_size     = 0;
+    self->insnCTXs_count = 0;
 }
 
 void thumb_reader_free(ARMReader *self) {
@@ -41,12 +41,12 @@ void thumb_reader_free(ARMReader *self) {
 }
 
 ARMInstruction *thumb_reader_read_one_instruction(ARMReader *self) {
-    ARMInstruction *insn_ctx          = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
+    ARMInstruction *insn_ctx    = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
     zz_addr_t next_insn_address = (zz_addr_t)self->insns_buffer + self->insns_size;
-    insn_ctx->type    = THUMB_INSN;
-    insn_ctx->pc      = next_insn_address;
-    insn_ctx->address = next_insn_address;
-    insn_ctx->insn    = *(uint32_t *)next_insn_address;
+    insn_ctx->type              = THUMB_INSN;
+    insn_ctx->pc                = next_insn_address;
+    insn_ctx->address           = next_insn_address;
+    insn_ctx->insn              = *(uint32_t *)next_insn_address;
 
     // PAGE: A6-221
     if (insn_is_thumb2(insn_ctx->insn)) {
@@ -101,7 +101,7 @@ THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2) {
 
     if (!insn_is_thumb2(insn1) && insn_equal(insn1, "1101xxxxxxxxxxxx")) {
         int cond = get_insn_sub(insn1, 8, 4);
-        if(cond != 0b1110 && cond != 0b1111) {
+        if (cond != 0b1110 && cond != 0b1111) {
             return THUMB_INS_B_T1;
         }
     }

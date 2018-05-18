@@ -11,9 +11,7 @@
 #define ZZ_X86_TINY_REDIRECT_SIZE 4
 #define ZZ_X86_FULL_REDIRECT_SIZE 16
 
-InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
-   return NULL;
-}
+InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) { return NULL; }
 
 void TrampolineFree(HookEntry *entry) {
     if (entry->on_invoke_trampoline) {
@@ -38,31 +36,17 @@ void TrampolineFree(HookEntry *entry) {
     return;
 }
 
-void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolinePrepare(InterceptorBackend *self, HookEntry *entry) { return; }
 
 // double jump
-void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry) { return; }
 
-void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) { return; }
 
-void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, HookEntry *entry) { return; }
 
-void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) { return; }
 
-void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) { return; }
 
-void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) {
-    return;
-}
+void TrampolineActivate(InterceptorBackend *self, HookEntry *entry) { return; }
