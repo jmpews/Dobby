@@ -46,8 +46,8 @@ extern ARM64InstructionID ARM64InstructionIDTable[256];
 ARM64InstID GetARM64InsnType(uint32_t insn) {
     ARM64InstructionID *instructionIDTable = ARM64InstructionIDTable;
     for (int i = 0; instructionIDTable[i].inst != 0 && i < 256; i++) {
-        if ((insn & instructionIDTable[i].inst) == instructionIDTable[i].inst) {
-            return instructionIDTable[i].InstID;
+        if ((insn & instructionIDTable[i].mask) == instructionIDTable[i].inst) {
+            return instructionIDTable[i].id;
         }
     }
     return UNKNOWN;

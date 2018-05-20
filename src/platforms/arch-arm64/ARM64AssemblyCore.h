@@ -116,13 +116,15 @@ typedef struct {
 
 typedef struct _ARM64InstructionID {
     uint32_t inst;
-    ARM64InstID InstID;
+    uint32_t mask;
+    ARM64InstID id;
 } ARM64InstructionID;
 
 typedef struct _ARM64Instruction {
     uint32_t dummy0;
     ARM64InstID InstID;
     uint32_t Inst;
+    uint32_t Mask;
     uint32_t Opcode;
     Operand Operands[4];
 } ARM64InstructionX;
@@ -131,16 +133,18 @@ typedef struct _ARM64Assembler {
     void *dummy;
 } ARM64Assembler;
 
-#define BIT32_CONTROL_SET(inst, start, len, bits) inst = (inst & ~(((1 << len) - 1) << start) | (bits << start))
+#define BIT32_CONTROL_MASK_SET(inst, start, len) inst = (inst | (((1 << len) - 1) << start))
+#define BIT32_CONTROL_SET(inst, start, len, bits) inst = ((inst & ~(((1 << len) - 1) << start)) | (bits << start))
 #define BIT32_CONTROL_GETSET(inst, start, len, bits) bits = ((inst >> start) & ((1 << len) - 1))
 #define BIT32_CONTROL_GET(inst, start, len) ((inst >> start) & ((1 << len) - 1))
 
-uint32_t _BaseLoadStorePostIdx(ARM64InstructionX *inst, uint32_t sz, uint32_t V, uint32_t opc, uint32_t offset,
-                               uint32_t Rn, uint32_t Rt);
-uint32_t _LoadPostIdx(ARM64InstructionX *inst, uint32_t sz, uint32_t V, uint32_t opc, uint32_t offset, uint32_t Rn,
-                      uint32_t Rt);
-uint32_t _LDRWpost(ARM64InstructionX *inst, uint32_t offset, uint32_t Rn, uint32_t Rt);
-
+// clang-format off
+typedef struct {
+    ARM64InstID id;
+    uint32_t opc;
+    uint32_t V;
+} _LoadLiteral_OOP;
+// clang-format on
 typedef struct {
     uint32_t inst;
     OP opc;
@@ -148,11 +152,20 @@ typedef struct {
     OP Rt;
     OP label;
 } _LoadLiteralType;
-_LoadLiteralType _LoadLiteral(ARM64InstructionX *inst, OperationType optype, uint32_t *opc, uint32_t *V, uint32_t *Rt,
+_LoadLiteralType _LoadLiteral(ARM64InstructionX *inst, OperationType optype, int *oppindex, uint32_t *Rt,
                               uint32_t *label);
 uint32_t _LDRWl(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t _LDRXl(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
+// clang-format off
+typedef struct {
+    ARM64InstID id;
+    uint32_t op;
+} _BaseCmpBranch_OOP;
+typedef struct {
+    _BaseCmpBranch_OOP parent;
+} MULTICLASS(_CmpBranch, W_OOP), MULTICLASS(_CmpBranch, X_OOP);
+// clang-format on
 typedef struct {
     uint32_t inst;
     OP op;
@@ -168,6 +181,12 @@ uint32_t MULTICLASS(_CmpBranch, X)(ARM64InstructionX *inst, uint32_t op, uint32_
 uint32_t MULTICLASS(_CBZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t MULTICLASS(_CBNZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
+// clang-format off
+typedef struct {
+    ARM64InstID id;
+} _BranchCond_OOP;
+
+// clang-format on
 typedef struct {
     uint32_t inst;
     OP cond;
@@ -176,6 +195,15 @@ typedef struct {
 _BranchCondType _BranchCond(ARM64InstructionX *inst, OperationType optype, uint32_t *cond, uint32_t *target);
 uint32_t _Bcc(ARM64InstructionX *inst, uint32_t cond, uint32_t target);
 
+// clang-format off
+typedef struct {
+    ARM64InstID id;
+    uint32_t op;
+} _BaseTestBranch_OOP;
+typedef struct {
+    _BaseTestBranch_OOP parent;
+} MULTICLASS(_TestBranch, W_OOP), MULTICLASS(_TestBranch, X_OOP);
+// clang-format on
 typedef struct {
     uint32_t inst;
     OP op;
@@ -192,6 +220,15 @@ uint32_t MULTICLASS(_TestBranch, X)(ARM64InstructionX *inst, uint32_t op, uint32
 uint32_t MULTICLASS(_TBZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t MULTICLASS(_TBNZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
+// clang-format off
+typedef struct {
+    ARM64InstID id;
+    uint32_t op;
+} _BImm_OOP;
+typedef struct {
+    _BImm_OOP parent;
+} _BranchImm_OOP, _CallImm_OOP;
+// clang-format on
 typedef struct {
     uint32_t inst;
     OP op;

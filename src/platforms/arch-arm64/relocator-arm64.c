@@ -117,9 +117,10 @@ static bool arm64_relocator_rewrite_LoadLiteral(ARM64Relocator *self, const ARM6
     ARM64InstructionX instX;
     instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
-    uint32_t opc, V, Rt, label;
+    uint32_t Rt, label;
+    int index;
     zz_addr_t target_address;
-    _LoadLiteral(&instX, OP_DECODE, &opc, &V, &Rt, &label);
+    _LoadLiteral(&instX, OP_DECODE, &index, &Rt, &label);
     target_address = (label << 2) + insn_ctx->pc;
 
     /*
@@ -402,11 +403,20 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
 bool arm64_relocator_double_write(ARM64Relocator *self, zz_addr_t final_address) {
     assert(final_address % 4 == 0);
     ARM64AssemblyrWriter *writer = self->output;
+
+    int origin_insns_size = writer->insns_size;
+
     arm64_writer_reset(writer, writer->insns_buffer, final_address);
     self->doneRelocateInputCount   = 0;
     self->relocated_insnCTXs_count = 0;
     self->literal_insnCTXs_count   = 0;
-
+  
     arm64_relocator_write_all(self);
+
+    zz_addr_t not_relocate_insns_buffer = writer->insns_buffer + writer->insns_size;
+
+
+    arm64_writer_put_bytes(writer, (zz_ptr_t)not_relocate_insns_buffer, origin_insns_size - writer->insns_size);
+
     return true;
 }

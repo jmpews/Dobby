@@ -30,6 +30,8 @@ project(HookZz)
 
 set(CMAKE_CXX_STANDARD 11)
 enable_language(ASM)
+
+set(CMAKE_C_FLAGS "-g")
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(ZPLATFORM STREQUAL "iOS")
