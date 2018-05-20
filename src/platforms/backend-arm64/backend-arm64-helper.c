@@ -35,7 +35,11 @@ CodeSlice *arm64_relocate_code_patch(ARM64Relocator *relocator, ARM64AssemblyrWr
     if (!codeslice)
         return NULL;
 
+#if 0
     arm64_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
+#else
+    arm64_relocator_double_write(relocator, (zz_addr_t)codeslice->data);
+#endif
 
     if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)writer->insns_buffer, writer->insns_size)) {
         free(codeslice);

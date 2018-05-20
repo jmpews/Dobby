@@ -54,4 +54,6 @@ void arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size
 
 bool arm64_relocator_write_one(ARM64Relocator *self);
 
+bool arm64_relocator_double_write(ARM64Relocator *self, zz_addr_t final_address);
+
 #endif

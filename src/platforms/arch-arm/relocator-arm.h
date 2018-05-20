@@ -53,4 +53,6 @@ void arm_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t
 
 bool arm_relocator_write_one(ARMRelocator *self);
 
+bool arm_relocator_double_write(ThumbRelocator *self, zz_addr_t final_address);
+
 #endif

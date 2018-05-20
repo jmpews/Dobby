@@ -398,3 +398,14 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
 
     return TRUE;
 }
+
+bool arm64_relocator_double_write(ARM64Relocator *self, zz_addr_t final_address) {
+    assert(final_address % 4 == 0);
+    ARM64AssemblyrWriter *writer                                                            = self->output;
+    char temp_codeslice[256]                                                                = {0};
+    arm64_writer_reset(writer, temp_codeslice, final_adddress) self->doneRelocateInputCount = 0;
+    self->relocated_insnCTXs_count                                                          = 0;
+    self->literal_insnCTXs_count                                                            = 0;
+
+    arm64_relocator_write_all(self);
+}

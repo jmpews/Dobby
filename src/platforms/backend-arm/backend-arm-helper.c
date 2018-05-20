@@ -31,8 +31,11 @@ CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWr
     }
     if (!codeslice)
         return NULL;
-
+#if 0
     thumb_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
+#else
+    thumb_relocator_double_write(relocator, (zz_addr_t)codeslice->data);
+#endif
 
     if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)writer->insns_buffer, writer->insns_size)) {
 
@@ -71,7 +74,11 @@ CodeSlice *arm_relocate_code_patch(ARMRelocator *relocator, ARMAssemblerWriter *
     if (!codeslice)
         return NULL;
 
+#if 0
     arm_relocator_relocate_writer(relocator, (zz_addr_t)codeslice->data);
+#else
+    arm_relocator_double_write(relocator, (zz_addr_t)codeslice->data);
+#endif
 
     if (!MemoryHelperPatchCode((zz_addr_t)codeslice->data, (zz_ptr_t)writer->insns_buffer, writer->insns_size)) {
         free(codeslice);

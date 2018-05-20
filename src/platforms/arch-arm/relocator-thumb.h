@@ -43,4 +43,6 @@ void thumb_relocator_write_all(ThumbRelocator *self);
 
 void thumb_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size_t *max_bytes);
 
+bool thumb_relocator_double_write(ThumbRelocator *self, zz_addr_t final_address);
+
 #endif
