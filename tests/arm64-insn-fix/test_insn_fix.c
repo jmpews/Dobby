@@ -13,28 +13,28 @@ static void arm64_insn_need_fix() {
 #if 1
 __attribute__((constructor)) void test_insn_fix_arm64() {
 
-    ZzInterceptorBackend *backend  = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    InterceptorBackend *backend  = (InterceptorBackend *)malloc(sizeof(InterceptorBackend));
     char temp_code_slice_data[256] = {0};
 
-    zz_arm64_writer_init(&backend->arm64_writer, NULL);
-    zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);
-    zz_arm64_writer_init(&backend->arm64_writer, NULL);
-    zz_arm64_relocator_init(&backend->arm64_relocator, NULL, &backend->arm64_writer);
+    zz_writer_init(&backend->writer, NULL);
+    zz_relocator_init(&backend->relocator, NULL, &backend->writer);
+    zz_writer_init(&backend->writer, NULL);
+    zz_relocator_init(&backend->relocator, NULL, &backend->writer);
 
-    ZzARM64Relocator *arm64_relocator;
-    ZzARM64Writer *arm64_writer;
-    arm64_relocator = &backend->arm64_relocator;
-    arm64_writer    = &backend->arm64_writer;
+    ARM64Relocator *relocator;
+    ARM64Writer *writer;
+    relocator = &backend->relocator;
+    writer    = &backend->writer;
 
-    zz_arm64_writer_reset(arm64_writer, temp_code_slice_data);
+    zz_writer_reset(writer, temp_code_slice_data);
 
-    zz_arm64_relocator_reset(arm64_relocator, ((zz_addr_t)arm64_insn_need_fix & ~(zz_addr_t)1), arm64_writer);
+    zz_relocator_reset(relocator, ((zz_addr_t)arm64_insn_need_fix & ~(zz_addr_t)1), writer);
     zz_size_t tmp_relocator_insn_size = 0;
 
     do {
-        zz_arm64_relocator_read_one(arm64_relocator, NULL);
-        zz_arm64_relocator_write_one(arm64_relocator);
-        tmp_relocator_insn_size = arm64_relocator->input_cur - arm64_relocator->input_start;
+        zz_relocator_read_one(relocator, NULL);
+        zz_relocator_write_one(relocator);
+        tmp_relocator_insn_size = relocator->input_cur - relocator->input_start;
     } while (tmp_relocator_insn_size < 36);
 }
 #endif

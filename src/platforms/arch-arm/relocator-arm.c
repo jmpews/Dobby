@@ -278,7 +278,6 @@ static bool arm_relocator_rewrite_BLBLX_immediate_A2(ARMRelocator *self, const A
 bool arm_relocator_write_one(ARMRelocator *self) {
     ARMInstruction *insn_ctx, **input_insnCTXs;
     ARMRelocatorInstruction *relocator_insn_ctx;
-    zz_size_t tmp_size;
     relocator_insn_ctx = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
 
     bool rewritten = FALSE;
@@ -289,7 +288,6 @@ bool arm_relocator_write_one(ARMRelocator *self) {
         relocator_insn_ctx->origin_insn        = insn_ctx;
         relocator_insn_ctx->relocated_insnCTXs = self->output->insnCTXs + self->output->insnCTXs_count;
         relocator_insn_ctx->output_index_start = self->output->insnCTXs_count;
-        tmp_size                               = self->output->insns_size;
         self->doneRelocateInputCount++;
         self->relocated_insnCTXs_count++;
     } else
@@ -326,7 +324,6 @@ bool arm_relocator_write_one(ARMRelocator *self) {
     } else {
     }
 
-    relocator_insn_ctx->size            = self->output->insns_size - tmp_size;
     relocator_insn_ctx->ouput_index_end = self->output->insnCTXs_count;
     relocator_insn_ctx->relocated_insnCTXs_count =
         relocator_insn_ctx->ouput_index_end - relocator_insn_ctx->output_index_start;

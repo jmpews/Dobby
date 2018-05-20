@@ -30,28 +30,28 @@ static void thumb_insn_need_fix() {
 #if 1
 __attribute__((constructor)) void test_insn_fix_thumb() {
 
-    ZzInterceptorBackend *backend  = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    InterceptorBackend *backend  = (InterceptorBackend *)malloc(sizeof(InterceptorBackend));
     char temp_code_slice_data[256] = {0};
 
-    zz_arm_writer_init(&backend->arm_writer, NULL);
-    zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
-    zz_thumb_writer_init(&backend->thumb_writer, NULL);
-    zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
+    writer_init(&backend->writer, NULL);
+    relocator_init(&backend->relocator, NULL, &backend->writer);
+    zz_writer_init(&backend->writer, NULL);
+    zz_relocator_init(&backend->relocator, NULL, &backend->writer);
 
-    ZzThumbRelocator *thumb_relocator;
-    ZzThumbWriter *thumb_writer;
-    thumb_relocator = &backend->thumb_relocator;
-    thumb_writer    = &backend->thumb_writer;
+    ZzThumbRelocator *relocator;
+    ZzThumbWriter *writer;
+    relocator = &backend->relocator;
+    writer    = &backend->writer;
 
-    zz_thumb_writer_reset(thumb_writer, temp_code_slice_data);
+    zz_writer_reset(writer, temp_code_slice_data);
 
-    zz_thumb_relocator_reset(thumb_relocator, ((zz_addr_t)thumb_insn_need_fix & ~(zz_addr_t)1), thumb_writer);
+    zz_relocator_reset(relocator, ((zz_addr_t)thumb_insn_need_fix & ~(zz_addr_t)1), writer);
     zz_size_t tmp_relocator_insn_size = 0;
 
     do {
-        zz_thumb_relocator_read_one(thumb_relocator, NULL);
-        zz_thumb_relocator_write_one(thumb_relocator);
-        tmp_relocator_insn_size = thumb_relocator->input_cur - thumb_relocator->input_start;
+        zz_relocator_read_one(relocator, NULL);
+        zz_relocator_write_one(relocator);
+        tmp_relocator_insn_size = relocator->input_cur - relocator->input_start;
     } while (tmp_relocator_insn_size < 36);
 }
 #endif
@@ -79,28 +79,28 @@ __attribute__((__naked__)) void arm_insn_need_fix() {
 
 __attribute__((constructor)) void test_insn_fix_arm() {
 
-    ZzInterceptorBackend *backend = (ZzInterceptorBackend *)malloc(sizeof(ZzInterceptorBackend));
+    InterceptorBackend *backend = (InterceptorBackend *)malloc(sizeof(InterceptorBackend));
     char temp_code_slice_data[256] = {0};
 
-    zz_arm_writer_init(&backend->arm_writer, NULL);
-    zz_arm_relocator_init(&backend->arm_relocator, NULL, &backend->arm_writer);
-    zz_thumb_writer_init(&backend->thumb_writer, NULL);
-    zz_thumb_relocator_init(&backend->thumb_relocator, NULL, &backend->thumb_writer);
+    writer_init(&backend->writer, NULL);
+    relocator_init(&backend->relocator, NULL, &backend->writer);
+    zz_writer_init(&backend->writer, NULL);
+    zz_relocator_init(&backend->relocator, NULL, &backend->writer);
 
-    ZzARMRelocator *arm_relocator;
-    ZzARMWriter *arm_writer;
-    arm_relocator = &backend->arm_relocator;
-    arm_writer = &backend->arm_writer;
+    ARMRelocator *relocator;
+    ARMWriter *writer;
+    relocator = &backend->relocator;
+    writer = &backend->writer;
 
-    zz_arm_writer_reset(arm_writer, temp_code_slice_data);
+    writer_reset(writer, temp_code_slice_data);
 
-    zz_arm_relocator_reset(arm_relocator, ((zz_addr_t)arm_insn_need_fix & ~(zz_addr_t)1), arm_writer);
+    relocator_reset(relocator, ((zz_addr_t)arm_insn_need_fix & ~(zz_addr_t)1), writer);
     zz_size_t tmp_relocator_insn_size = 0;
 
     do {
-        zz_arm_relocator_read_one(arm_relocator, NULL);
-        zz_arm_relocator_write_one(arm_relocator);
-        tmp_relocator_insn_size = arm_relocator->input_cur - arm_relocator->input_start;
+        relocator_read_one(relocator, NULL);
+        relocator_write_one(relocator);
+        tmp_relocator_insn_size = relocator->input_cur - relocator->input_start;
     } while (tmp_relocator_insn_size < 36);
 }
 #endif

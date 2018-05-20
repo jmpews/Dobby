@@ -32,10 +32,12 @@ void arm_reader_free(ARMReader *self) {
 ARMInstruction *arm_reader_read_one_instruction(ARMReader *self) {
     ARMInstruction *insn_ctx    = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
     zz_addr_t next_insn_address = (zz_addr_t)self->insns_buffer + self->insns_size;
-    insn_ctx->type              = ARM_INSN;
-    insn_ctx->pc                = next_insn_address;
-    insn_ctx->address           = next_insn_address;
-    insn_ctx->insn              = *(uint32_t *)next_insn_address;
+    zz_addr_t next_pc           = (zz_addr_t)self->start_pc + self->insns_size;
+
+    insn_ctx->type    = ARM_INSN;
+    insn_ctx->pc      = next_pc;
+    insn_ctx->address = next_insn_address;
+    insn_ctx->insn    = *(uint32_t *)next_insn_address;
 
     self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
     self->insns_size += insn_ctx->size;

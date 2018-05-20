@@ -115,16 +115,24 @@ static void arm64_relocator_register_literal_insn(ARM64Relocator *self, ARM64Ins
 
 static bool arm64_relocator_rewrite_LoadLiteral(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
     ARM64InstructionX instX;
+    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
     uint32_t opc, V, Rt, label;
     zz_addr_t target_address;
     _LoadLiteral(&instX, OP_DECODE, &opc, &V, &Rt, &label);
     target_address = (label << 2) + insn_ctx->pc;
 
+    /*
+        0x1000: ldr Rt, #0x8
+        0x1004: b #0xc
+        0x1008: .long 0x4321
+        0x100c: .long 0x8765
+        0x1010: ldr Rt, Rt
+    */
     arm64_writer_put_ldr_reg_imm(writer, Rt, 0x8);
     arm64_writer_put_b_imm(writer, 0xc);
     arm64_relocator_register_literal_insn(self, writer->insnCTXs[self->output->insnCTXs_count]);
-    arm64_writer_put_bytes(writer, (zz_ptr_t)&target_address, sizeof(label));
+    arm64_writer_put_bytes(writer, (zz_ptr_t)&target_address, sizeof(target_address));
     arm64_writer_put_ldr_reg_reg_offset(writer, Rt, Rt, 0);
 
     return true;
@@ -345,7 +353,6 @@ static bool arm64_relocator_rewrite_B_cond(ARM64Relocator *self, const ARM64Inst
 bool arm64_relocator_write_one(ARM64Relocator *self) {
     ARM64InstructionCTX *insn_ctx, **input_insnCTXs;
     ARM64RelocatorInstruction *relocator_insn_ctx;
-    zz_size_t tmp_size;
     relocator_insn_ctx = self->relocator_insnCTXs + self->relocated_insnCTXs_count;
     bool rewritten     = FALSE;
 
@@ -355,7 +362,6 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
         relocator_insn_ctx->origin_insn        = insn_ctx;
         relocator_insn_ctx->relocated_insnCTXs = self->output->insnCTXs + self->output->insnCTXs_count;
         relocator_insn_ctx->output_index_start = self->output->insnCTXs_count;
-        tmp_size                               = self->output->insns_size;
         self->doneRelocateInputCount++;
         self->relocated_insnCTXs_count++;
     } else
@@ -386,7 +392,6 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
     } else {
     }
 
-    relocator_insn_ctx->size            = self->output->insns_size - tmp_size;
     relocator_insn_ctx->ouput_index_end = self->output->insnCTXs_count;
     relocator_insn_ctx->relocated_insnCTXs_count =
         relocator_insn_ctx->ouput_index_end - relocator_insn_ctx->output_index_start;

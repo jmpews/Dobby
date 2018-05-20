@@ -131,8 +131,6 @@ else()
     message(FATAL_ERROR "Pease Specify -DARCH = [armv7/arm64] !!!")
 endif()
 
-include_directories(${HookZz.Path} ${HookZz.Source_C_DIR})
-
 foreach(file_path ${HookZz.Source_C_DIR})
     file(GLOB file_source_c ${file_path}/*.c)
     set(HookZz.Source_C ${HookZz.Source_C} ${file_source_c})

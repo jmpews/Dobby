@@ -15,11 +15,9 @@ extern "C" {
 
 #define MULTICLASS(parent, child) parent##_##child
 
-typedef enum { OP_DECODE,
-               OP_ENCODE } OperationType;
+typedef enum { OP_DECODE, OP_ENCODE } OperationType;
 
-typedef enum { TReg32,
-               TReg64 } RegBitType;
+typedef enum { TReg32, TReg64 } RegBitType;
 
 typedef enum {
     REG_X0 = 0,
@@ -101,33 +99,27 @@ typedef enum {
     UNKNOWN
 } ARM64InstID;
 
-typedef enum { Invalid,
-               Register,
-               Immediate } OperandType;
+typedef enum { Invalid, Register, Immediate } OperandType;
 
-typedef struct
-{
+typedef struct {
     uint32_t op;
     uint16_t op_start;
     uint16_t op_len;
 } OP;
 
-typedef struct
-{
+typedef struct {
     OperandType type;
     uint8_t start;
     uint8_t len;
     uint32_t value;
 } Operand;
 
-typedef struct _ARM64InstructionID
-{
+typedef struct _ARM64InstructionID {
     uint32_t inst;
     ARM64InstID InstID;
 } ARM64InstructionID;
 
-typedef struct _ARM64Instruction
-{
+typedef struct _ARM64Instruction {
     uint32_t dummy0;
     ARM64InstID InstID;
     uint32_t Inst;
@@ -135,12 +127,11 @@ typedef struct _ARM64Instruction
     Operand Operands[4];
 } ARM64InstructionX;
 
-typedef struct _ARM64Assembler
-{
+typedef struct _ARM64Assembler {
     void *dummy;
 } ARM64Assembler;
 
-#define BIT32_CONTROL_SET(inst, start, len, bits) inst = (inst | ((bits & ((1 << len) - 1)) << start))
+#define BIT32_CONTROL_SET(inst, start, len, bits) inst = (inst & ~(((1 << len) - 1) << start) | (bits << start))
 #define BIT32_CONTROL_GETSET(inst, start, len, bits) bits = ((inst >> start) & ((1 << len) - 1))
 #define BIT32_CONTROL_GET(inst, start, len) ((inst >> start) & ((1 << len) - 1))
 
@@ -150,8 +141,7 @@ uint32_t _LoadPostIdx(ARM64InstructionX *inst, uint32_t sz, uint32_t V, uint32_t
                       uint32_t Rt);
 uint32_t _LDRWpost(ARM64InstructionX *inst, uint32_t offset, uint32_t Rn, uint32_t Rt);
 
-typedef struct
-{
+typedef struct {
     uint32_t inst;
     OP opc;
     OP V;
@@ -163,8 +153,7 @@ _LoadLiteralType _LoadLiteral(ARM64InstructionX *inst, OperationType optype, uin
 uint32_t _LDRWl(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t _LDRXl(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
-typedef struct
-{
+typedef struct {
     uint32_t inst;
     OP op;
     OP target;
@@ -179,8 +168,7 @@ uint32_t MULTICLASS(_CmpBranch, X)(ARM64InstructionX *inst, uint32_t op, uint32_
 uint32_t MULTICLASS(_CBZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t MULTICLASS(_CBNZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
-typedef struct
-{
+typedef struct {
     uint32_t inst;
     OP cond;
     OP target;
@@ -188,8 +176,7 @@ typedef struct
 _BranchCondType _BranchCond(ARM64InstructionX *inst, OperationType optype, uint32_t *cond, uint32_t *target);
 uint32_t _Bcc(ARM64InstructionX *inst, uint32_t cond, uint32_t target);
 
-typedef struct
-{
+typedef struct {
     uint32_t inst;
     OP op;
     OP bit_19_4;
@@ -205,8 +192,7 @@ uint32_t MULTICLASS(_TestBranch, X)(ARM64InstructionX *inst, uint32_t op, uint32
 uint32_t MULTICLASS(_TBZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 uint32_t MULTICLASS(_TBNZ, X)(ARM64InstructionX *inst, uint32_t label, uint32_t Rt);
 
-typedef struct
-{
+typedef struct {
     uint32_t inst;
     OP op;
     OP addr;

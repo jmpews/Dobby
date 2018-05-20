@@ -17,7 +17,6 @@ typedef struct _ARM64RelocatorInstruction {
     zz_size_t output_index_start;
     zz_size_t ouput_index_end;
     zz_size_t relocated_insnCTXs_count;
-    zz_size_t size;
 } ARM64RelocatorInstruction;
 
 typedef struct _ARM64Relocator {

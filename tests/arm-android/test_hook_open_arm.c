@@ -1,45 +1,59 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
 
-#include "hookzz.h"
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-void open_pre_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    void *t = (void *)0x1234;
-    STACK_SET(cs, "key_x", t, void *);
-    STACK_SET(cs, "key_y", t, void *);
+typedef uint8_t u8;
+typedef uint32_t u32;
+void checkbkpt(u8 *addr, u32 size) {
+    // 结果
+    u32 uRet = 0;
+    // 断点指令
+    // u8 armBkpt[4]={0xf0,0x01,0xf0,0xe7};
+    // u8 thumbBkpt[2]={0x10,0xde};
+    u8 armBkpt[4]   = {0};
+    armBkpt[0]      = 0xf0;
+    armBkpt[1]      = 0x01;
+    armBkpt[2]      = 0xf0;
+    armBkpt[3]      = 0xe7;
+    u8 thumbBkpt[2] = {0};
+    thumbBkpt[0]    = 0x10;
+    thumbBkpt[1]    = 0xde;
+    // 判断模式
+    int mode = (u32)addr % 2;
+    if (1 == mode) {
+        LOGA("checkbkpt:(thumb mode)该地址为thumb模式\n");
+        u8 *start = (u8 *)((u32)addr - 1);
+        u8 *end   = (u8 *)((u32)start + size);
+        // 遍历对比
+        while (1) {
+            if (start >= end) {
+                uRet = 0;
+                LOGA("checkbkpt:(no find bkpt)没有发现断点.\n");
+                break;
+            }
+            if (0 == memcmp(start, thumbBkpt, 2)) {
+                uRet = 1;
+                LOGA("checkbkpt:(find it)发现断点.\n");
+                break;
+            }
+            start = start + 2;
+        } //while
+    }     //if
+    else {
+        LOGA("checkbkpt:(arm mode)该地址为arm模式\n");
+        u8 *start = (u8 *)addr;
+        u8 *end   = (u8 *)((u32)start + size);
+        // 遍历对比
+        while (1) {
+            if (start >= end) {
+                uRet = 0;
+                LOGA("checkbkpt:(no find)没有发现断点.\n");
+                break;
+            }
+            if (0 == memcmp(start, armBkpt, 4)) {
+                uRet = 1;
+                LOGA("checkbkpt:(find it)发现断点.\n");
+                break;
+            }
+            start = start + 4;
+        } //while
+    }     //else
+    return;
 }
-
-void open_post_call(RegState *rs, ThreadStack *ts, CallStack *cs, const HookEntryInfo *info)
-{
-    void *x = STACK_GET(cs, "key_x", void *);
-    void *y = STACK_GET(cs, "key_y", void *);
-}
-
-__attribute__((constructor)) void test_hook_printf()
-{
-    void *open_ptr = (void *)open;
-
-    ZzEnableDebugMode();
-    ZzHookPrePost((void *)open_ptr, open_pre_call, open_post_call);
-
-    open("/home/zz", O_RDONLY);
-}
-
-int main(int args, char **argv) {}
