@@ -333,11 +333,12 @@ bool arm_relocator_write_one(ARMRelocator *self) {
 
 bool arm_relocator_double_write(ARMRelocator *self, zz_addr_t final_address) {
     assert(final_address % 4 == 0);
-    ARMAssemblerWriter *writer                                                            = self->output;
-    char temp_codeslice[256]                                                              = {0};
-    arm_writer_reset(writer, temp_codeslice, final_adddress) self->doneRelocateInputCount = 0;
-    self->relocated_insnCTXs_count                                                        = 0;
-    self->literal_insnCTXs_count                                                          = 0;
+    ARMAssemblerWriter *writer = self->output;
+    arm_writer_reset(writer, writer->insns_buffer, final_address);
+    self->doneRelocateInputCount   = 0;
+    self->relocated_insnCTXs_count = 0;
+    self->literal_insnCTXs_count   = 0;
 
     arm_relocator_write_all(self);
+    return true;
 }

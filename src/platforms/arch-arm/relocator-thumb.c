@@ -517,11 +517,11 @@ bool thumb_relocator_write_one(ThumbRelocator *self) {
 
 bool thumb_relocator_double_write(ThumbRelocator *self, zz_addr_t final_address) {
     assert(final_address % 2 == 0);
-    ThumbAssemblerWriter *writer                                                            = self->output;
-    char temp_codeslice[256]                                                                = {0};
-    thumb_writer_reset(writer, temp_codeslice, final_adddress) self->doneRelocateInputCount = 0;
-    self->relocated_insnCTXs_count                                                          = 0;
-    self->literal_insnCTXs_count                                                            = 0;
+    ThumbAssemblerWriter *writer = self->output;
+    thumb_writer_reset(writer, writer->insns_buffer, final_address);
+    self->doneRelocateInputCount   = 0;
+    self->relocated_insnCTXs_count = 0;
+    self->literal_insnCTXs_count   = 0;
 
     thumb_relocator_write_all(self);
     return true;
