@@ -7,6 +7,94 @@
 #define INST_FUNC_INITIALIZE(func, ...) func(inst, ##__VA_ARGS__)
 #define WORD_SIZE 8
 
+// clang-format off
+// automatic generation
+ARM64InstructionX ARM64InstArrary[1024];
+OP OPArray[1024];
+// clang-format on
+
+void intializeAssemblyCore() {
+    uintptr_t opIndex = 0;
+    ARM64InstId id;
+
+    id                              = LoadLiteral;
+    ARM64InstArrary[id].id          = id;
+    ARM64InstArrary[id].isClass     = 1;
+    ARM64InstArrary[id].parentIndex = -1;
+    ARM64InstArrary[id].inst32      = 0;
+    ARM64InstArrary[id].mask32      = 0;
+    ARM64InstArrary[id].opCount     = 4;
+    ARM64InstArrary[id].opIndex     = 0;
+    Encode(LoadLiteral, 0, 0, 0, 0);
+
+    id                  = LDRWl;
+    opIndex             = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[id] = (ARM64InstructionX){id, 0, LoadLiteral, 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    id                     = LDRXl;
+    opIndex                = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[LDRXl] = (ARM64InstructionX){id, 0, LoadLiteral, 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    //  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    id                              = BaseCmpBranch;
+    opIndex                         = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[id].id          = id;
+    ARM64InstArrary[id].isClass     = 1;
+    ARM64InstArrary[id].parentIndex = -1;
+    ARM64InstArrary[id].inst32      = 0;
+    ARM64InstArrary[id].mask32      = 0;
+    ARM64InstArrary[id].opCount     = 3;
+    ARM64InstArrary[id].opIndex     = opIndex;
+    Encode(LoadLiteral, 0, 0, 0);
+
+    id                              = MULTICLASS(CmpBranch, W);
+    opIndex                         = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[id].id          = id;
+    ARM64InstArrary[id].isClass     = 1;
+    ARM64InstArrary[id].parentIndex = BaseCmpBranch;
+    ARM64InstArrary[id].inst32      = 0;
+    ARM64InstArrary[id].mask32      = 0;
+    ARM64InstArrary[id].opCount     = 3;
+    ARM64InstArrary[id].opIndex     = opIndex;
+    Encode(LoadLiteral, 0, 0, 0);
+
+    id                     = MULTICLASS(CBZ, W);
+    opIndex                = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[LDRXl] = (ARM64InstructionX){id, 0, MULTICLASS(CmpBranch, W), 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    id                     = MULTICLASS(CBNZ, W);
+    opIndex                = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[LDRXl] = (ARM64InstructionX){id, 0, MULTICLASS(CmpBranch, W), 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    id                              = MULTICLASS(CmpBranch, X);
+    opIndex                         = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[id].id          = id;
+    ARM64InstArrary[id].isClass     = 1;
+    ARM64InstArrary[id].parentIndex = BaseCmpBranch;
+    ARM64InstArrary[id].inst32      = 0;
+    ARM64InstArrary[id].mask32      = 0;
+    ARM64InstArrary[id].opCount     = 3;
+    ARM64InstArrary[id].opIndex     = opIndex;
+    Encode(LoadLiteral, 0, 0, 0);
+
+    id                     = MULTICLASS(CBZ, X);
+    opIndex                = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[LDRXl] = (ARM64InstructionX){id, 0, MULTICLASS(CmpBranch, X), 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    id                     = MULTICLASS(CBNZ, X);
+    opIndex                = ARM64InstArrary[id - 1].opIndex + ARM64InstArrary[id - 1].opCount;
+    ARM64InstArrary[LDRXl] = (ARM64InstructionX){id, 0, MULTICLASS(CmpBranch, X), 0, 2, opIndex};
+    Encode(id, 0, 0);
+
+    //  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+}
+
 void Encode(ARM64InstId id, ...) {
     ARM64InstructionX *instX = (ARM64InstructionX *)((uintptr_t)ARM64InstArrary + (int)id * sizeof(ARM64InstructionX));
     int opCount              = instX->opCount;
@@ -53,7 +141,7 @@ void Encode(ARM64InstId id, ...) {
     } while (instX->parentIndex && instX->inst32);
 }
 
-ARM64InstId Decode(uint32_t inst32) {
+ARM64InstId getInstType(uint32_t inst32) {
     for (int i = 0; i < 1024; i++) {
         ARM64InstructionX *instX =
             (ARM64InstructionX *)((uintptr_t)ARM64InstArrary + (int)i * sizeof(ARM64InstructionX));

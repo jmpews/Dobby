@@ -109,16 +109,13 @@ typedef struct {
 
 typedef struct _ARM64InstructionX {
     ARM64InstId id;
-    bool isClass; // 暂时不分成两个数组, 仅通过 isClass 区分
+    int isClass; // 暂时不分成两个数组, 仅通过 isClass 区分
     int parentIndex;
     uint32_t inst32;
     uint32_t mask32;
     int opCount;
     uintptr_t opIndex;
 } ARM64InstructionX;
-
-OP OPArray[1024]                        = {0};
-ARM64InstructionX ARM64InstArrary[1024] = {0};
 
 #define BIT32_CONTROL_MASK_SET(inst, start, len) inst = (inst | (((1 << len) - 1) << start))
 #define BIT32_CONTROL_SET(inst, start, len, bits) inst = ((inst & ~(((1 << len) - 1) << start)) | (bits << start))
