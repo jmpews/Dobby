@@ -5,6 +5,7 @@
 #ifndef HOOKZZANDROIDDEMOTEMPLATE_ARM64ASSEMBLER_H
 #define HOOKZZANDROIDDEMOTEMPLATE_ARM64ASSEMBLER_H
 
+#include <stdarg.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -15,7 +16,7 @@ extern "C" {
 
 #define MULTICLASS(parent, child) parent##_##child
 
-typedef enum { OP_DECODE, OP_ENCODE } OperationType;
+typedef enum { DECODE, ENCODE, INIT } OperationType;
 
 typedef enum { TReg32, TReg64 } RegBitType;
 
@@ -113,14 +114,35 @@ typedef struct _ARM64InstructionX {
     int parentIndex;
     uint32_t inst32;
     uint32_t mask32;
-    int opCount;
-    uintptr_t opIndex;
 } ARM64InstructionX;
 
-#define BIT32_CONTROL_MASK_SET(inst, start, len) inst = (inst | (((1 << len) - 1) << start))
-#define BIT32_CONTROL_SET(inst, start, len, bits) inst = ((inst & ~(((1 << len) - 1) << start)) | (bits << start))
-#define BIT32_CONTROL_GETSET(inst, start, len, bits) bits = ((inst >> start) & ((1 << len) - 1))
-#define BIT32_CONTROL_GET(inst, start, len) ((inst >> start) & ((1 << len) - 1))
+inline void BIT32SET(uint32_t *inst32, int start, int len, uint32_t v) {
+    if (!inst32)
+        return;
+    *inst32 = *inst32 | (v << start);
+    // *inst32 = (*inst32 & ~(((1 << len) - 1) << start)) | (v << start);
+}
+
+inline void BIT32SETMASK(uint32_t *inst32, int start, int len) {
+    if (!inst32)
+        return;
+    *inst32 = *inst32 | (((1 << len) - 1) << start);
+}
+inline void BIT32MASKSET(uint32_t *inst32, uint32_t *mask32, int start, int len, uint32_t v) {
+    if (!inst32)
+        return;
+    *inst32 = *inst32 | (v << start);
+    *mask32 = *mask32 | (((1 << len) - 1) << start);
+}
+
+inline void BIT32GET(uint32_t inst32, int start, int len, uint32_t *v) {
+    if (!v)
+        return;
+    *v = (inst32 >> start) & ((1 << len) - 1);
+}
+
+void ARM64CoreINIT(ARM64InstId id);
+ARM64InstId getInstType(uint32_t inst32);
 
 #ifdef __cplusplus
 }
