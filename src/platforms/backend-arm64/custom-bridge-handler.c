@@ -47,7 +47,7 @@ void context_begin_invocation(RegState *rs, HookEntry *entry, void *nextHop, voi
 
 void context_begin_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
     HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x17;
+    void *nextHop_ptr = (void *)&rs->general.regs.x15;
     void *regLR_ptr   = (void *)&rs->lr;
     context_begin_invocation(rs, entry, nextHop_ptr, regLR_ptr);
     return;
@@ -79,7 +79,7 @@ void context_end_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
 
 void context_end_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
     HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x17;
+    void *nextHop_ptr = (void *)&rs->general.regs.x15;
     context_end_invocation(rs, entry, nextHop_ptr);
     return;
 }
@@ -102,7 +102,7 @@ void dynamic_binary_instrumentation_invocation(RegState *rs, HookEntry *entry, v
 
 void dynamic_binary_instrumentationn_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
     HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x17;
+    void *nextHop_ptr = (void *)&rs->general.regs.x15;
     dynamic_binary_instrumentation_invocation(rs, entry, nextHop_ptr);
     return;
 }

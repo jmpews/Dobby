@@ -13,9 +13,9 @@
 .globl cdecl(closure_bridge_template)
 
 cdecl(closure_bridge_trampoline_template):
-    ldr x16, #0xc
-    ldr x17, #0x10
-    br x17
+    ldr x14, #0xc
+    ldr x15, #0x10
+    br x15
     .long 0
     .long 0
     .long 0
@@ -70,7 +70,7 @@ cdecl(closure_bridge_template):
     // @x0: data_address
     // @x1: RegState stack address
     mov x0, sp
-    mov x1, x16
+    mov x1, x14
     bl cdecl(common_bridge_handler)
 
     // ======= RegState Restore =======
@@ -102,4 +102,4 @@ cdecl(closure_bridge_template):
     ldp q4, q5, [sp], #32
     ldp q6, q7, [sp], #32
 
-    br x17
+    br x15

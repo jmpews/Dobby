@@ -1,4 +1,5 @@
 #include "relocator-arm64.h"
+#include "ARM64AssemblyCore.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +54,7 @@ void arm64_relocator_try_relocate(zz_ptr_t address, zz_size_t min_bytes, zz_size
 
     do {
         insn_ctx = arm64_reader_read_one_instruction(reader);
-        switch (GetARM64InsnType(insn_ctx->insn)) {
+        switch (getInstType(insn_ctx->insn)) {
         case BImm:
             early_end = TRUE;
             break;
@@ -114,13 +115,12 @@ static void arm64_relocator_register_literal_insn(ARM64Relocator *self, ARM64Ins
 }
 
 static bool arm64_relocator_rewrite_LoadLiteral(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
-    ARM64InstructionX instX;
-    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
     uint32_t Rt, label;
     int index;
     zz_addr_t target_address;
-    _LoadLiteral(&instX, OP_DECODE, &index, &Rt, &label);
+    Rt             = get_insn_sub(insn_ctx->insn, 0, 5);
+    label          = get_insn_sub(insn_ctx->insn, 5, 19);
     target_address = (label << 2) + insn_ctx->pc;
 
     /*
@@ -140,19 +140,19 @@ static bool arm64_relocator_rewrite_LoadLiteral(ARM64Relocator *self, const ARM6
 };
 
 static bool arm64_relocator_rewrite_BaseCmpBranch(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
-    ARM64InstructionX instX;
-    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
-    uint32_t op, target, Rt;
+    uint32_t target;
+    uint32_t inst32;
     zz_addr_t target_address;
 
-    _BaseCmpBranch(&instX, OP_DECODE, &op, &target, &Rt);
+    inst32 = insn_ctx->insn;
 
+    target         = get_insn_sub(inst32, 5, 19);
     target_address = (target << 2) + insn_ctx->pc;
 
     target = 0x8 >> 2;
-    _BaseCmpBranch(&instX, OP_ENCODE, &op, &target, &Rt);
-    arm64_writer_put_instruction(writer, instX.Inst);
+    BIT32SET(&inst32, 5, 19, target);
+    arm64_writer_put_instruction(writer, inst32);
 
     arm64_writer_put_b_imm(writer, 0x14);
     arm64_writer_put_ldr_reg_imm(writer, ARM64_REG_X17, 0x8);
@@ -163,19 +163,19 @@ static bool arm64_relocator_rewrite_BaseCmpBranch(ARM64Relocator *self, const AR
 };
 
 static bool arm64_relocator_rewrite_BranchCond(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
-    ARM64InstructionX instX;
-    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
-    uint32_t cond, target;
+    uint32_t target;
+    uint32_t inst32;
     zz_addr_t target_address;
 
-    _BranchCond(&instX, OP_DECODE, &cond, &target);
+    inst32 = insn_ctx->insn;
 
+    target         = get_insn_sub(inst32, 5, 19);
     target_address = (target << 2) + insn_ctx->pc;
 
     target = 0x8 >> 2;
-    _BranchCond(&instX, OP_ENCODE, &cond, &target);
-    arm64_writer_put_instruction(writer, instX.Inst);
+    BIT32SET(&inst32, 5, 19, target);
+    arm64_writer_put_instruction(writer, inst32);
 
     arm64_writer_put_b_imm(writer, 0x14);
     arm64_writer_put_ldr_reg_imm(writer, ARM64_REG_X17, 0x8);
@@ -186,13 +186,11 @@ static bool arm64_relocator_rewrite_BranchCond(ARM64Relocator *self, const ARM64
 };
 
 static bool arm64_relocator_rewrite_B(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
-    ARM64InstructionX instX;
-    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
-    uint32_t op, addr;
+    uint32_t addr;
     zz_addr_t target_address;
 
-    _BImm(&instX, OP_DECODE, &op, &addr);
+    addr = get_insn_sub(insn_ctx->insn, 0, 26);
 
     target_address = (addr << 2) + insn_ctx->pc;
 
@@ -205,13 +203,11 @@ static bool arm64_relocator_rewrite_B(ARM64Relocator *self, const ARM64Instructi
 }
 
 static bool arm64_relocator_rewrite_BL(ARM64Relocator *self, const ARM64InstructionCTX *insn_ctx) {
-    ARM64InstructionX instX;
-    instX.Inst                   = insn_ctx->insn;
     ARM64AssemblyrWriter *writer = self->output;
     uint32_t op, addr;
     zz_addr_t target_address, next_pc_address;
 
-    _BImm(&instX, OP_DECODE, &op, &addr);
+    addr = get_insn_sub(insn_ctx->insn, 0, 26);
 
     target_address  = (addr << 2) + insn_ctx->pc;
     next_pc_address = insn_ctx->pc + 4;
@@ -367,7 +363,7 @@ bool arm64_relocator_write_one(ARM64Relocator *self) {
         self->relocated_insnCTXs_count++;
     } else
         return FALSE;
-    switch (GetARM64InsnType(insn_ctx->insn)) {
+    switch (getInstType(insn_ctx->insn)) {
     case LoadLiteral:
         rewritten = arm64_relocator_rewrite_LoadLiteral(self, insn_ctx);
         break;
@@ -410,11 +406,10 @@ bool arm64_relocator_double_write(ARM64Relocator *self, zz_addr_t final_address)
     self->doneRelocateInputCount   = 0;
     self->relocated_insnCTXs_count = 0;
     self->literal_insnCTXs_count   = 0;
-  
+
     arm64_relocator_write_all(self);
 
     zz_addr_t not_relocate_insns_buffer = writer->insns_buffer + writer->insns_size;
-
 
     arm64_writer_put_bytes(writer, (zz_ptr_t)not_relocate_insns_buffer, origin_insns_size - writer->insns_size);
 

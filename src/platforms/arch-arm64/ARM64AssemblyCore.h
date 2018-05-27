@@ -60,6 +60,7 @@ typedef enum {
 
 typedef enum {
 
+    ARM64_INST_START,
     BaseLoadStorePostIdx,
     LoadPostIdx,
     LDRWpost,
@@ -97,7 +98,7 @@ typedef enum {
     CallImm,
     BL,
 
-    UNKNOWN
+    ARM64_INST_END
 } ARM64InstId;
 
 typedef enum { Invalid, Register, Immediate } OperandType;
@@ -108,6 +109,7 @@ typedef struct {
     uint16_t op_len;
 } OP;
 
+#if 0
 typedef struct _ARM64InstructionX {
     ARM64InstId id;
     int isClass; // 暂时不分成两个数组, 仅通过 isClass 区分
@@ -115,33 +117,18 @@ typedef struct _ARM64InstructionX {
     uint32_t inst32;
     uint32_t mask32;
 } ARM64InstructionX;
+#else
+typedef struct _ARM64InstructionX {
+    uint32_t inst32;
+    uint32_t mask32;
+} ARM64InstructionX;
+#endif
 
-inline void BIT32SET(uint32_t *inst32, int start, int len, uint32_t v) {
-    if (!inst32)
-        return;
-    *inst32 = *inst32 | (v << start);
-    // *inst32 = (*inst32 & ~(((1 << len) - 1) << start)) | (v << start);
-}
+void BIT32SET(uint32_t *inst32, int start, int len, uint32_t v);
+void BIT32SETMASK(uint32_t *inst32, int start, int len);
+void BIT32MASKSET(uint32_t *inst32, uint32_t *mask32, int start, int len, uint32_t v);
+void BIT32GET(uint32_t inst32, int start, int len, uint32_t *v);
 
-inline void BIT32SETMASK(uint32_t *inst32, int start, int len) {
-    if (!inst32)
-        return;
-    *inst32 = *inst32 | (((1 << len) - 1) << start);
-}
-inline void BIT32MASKSET(uint32_t *inst32, uint32_t *mask32, int start, int len, uint32_t v) {
-    if (!inst32)
-        return;
-    *inst32 = *inst32 | (v << start);
-    *mask32 = *mask32 | (((1 << len) - 1) << start);
-}
-
-inline void BIT32GET(uint32_t inst32, int start, int len, uint32_t *v) {
-    if (!v)
-        return;
-    *v = (inst32 >> start) & ((1 << len) - 1);
-}
-
-void ARM64CoreINIT(ARM64InstId id);
 ARM64InstId getInstType(uint32_t inst32);
 
 #ifdef __cplusplus
