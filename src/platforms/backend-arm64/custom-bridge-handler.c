@@ -110,12 +110,12 @@ void dynamic_binary_instrumentationn_bridge_handler(RegState *rs, ClosureBridgeD
 void context_begin_only_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
     // DEBUG_LOG("target %p call begin-only-invocation", entry->target_ptr);
     /* call pre_call */
-    if (entry->stub_call) {
+    if (entry->pre_call) {
         STUBCALL stub_call;
         HookEntryInfo entryInfo;
         entryInfo.hook_id      = entry->id;
         entryInfo.hook_address = entry->target_ptr;
-        stub_call              = entry->stub_call;
+        stub_call              = entry->pre_call;
         (*stub_call)(rs, (const HookEntryInfo *)&entryInfo);
     }
 
