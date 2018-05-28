@@ -198,6 +198,39 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     return;
 }
 
+void TrampolineBuildForEnterOnly(InterceptorBackend *self, HookEntry *entry) {
+    ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
+    ClosureBridgeData *bridgeData;
+
+    bridgeData = ClosureBridgeAllocate(entry, context_begin_only_invocation_bridge_handler);
+    if (bridgeData == NULL) {
+        ERROR_LOG_STR("build closure bridge failed!!!");
+    }
+
+    entry->on_enter_trampoline = bridgeData->redirect_trampoline;
+
+    // build the double trampline aka enter_transfer_trampoline
+    if (entry_backend && entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
+        if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
+            TrampolineBuildForEnterTransfer(self, entry);
+        }
+    }
+
+// DELETE ?
+#if 0
+    // debug log
+    if (DebugLogControlerIsEnableLog()) {
+        char buffer[1024] = {};
+        sprintf(buffer + strlen(buffer), "\n======= DynamicBinaryInstrumentationTrampoline ======= \n");
+        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_trampoline: %p\n",
+                entry->on_dynamic_binary_instrumentation_trampoline);
+        DEBUGLOG_COMMON_LOG("%s", buffer);
+    }
+#endif
+
+    return;
+}
+
 void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, HookEntry *entry) {
     ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
     ClosureBridgeData *bridgeData;

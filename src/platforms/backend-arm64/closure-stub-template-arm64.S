@@ -10,8 +10,6 @@
 .align 4
 
 .globl cdecl(closure_bridge_trampoline_template)
-.globl cdecl(closure_bridge_template)
-
 cdecl(closure_bridge_trampoline_template):
     ldr x14, #0xc
     ldr x15, #0x10
@@ -21,6 +19,8 @@ cdecl(closure_bridge_trampoline_template):
     .long 0
     .long 0
 
+#if 0
+.globl cdecl(closure_bridge_template)
 cdecl(closure_bridge_template):
     // ======= RegState Save =======
 
@@ -103,3 +103,5 @@ cdecl(closure_bridge_template):
     ldp q6, q7, [sp], #32
 
     br x15
+
+#endif

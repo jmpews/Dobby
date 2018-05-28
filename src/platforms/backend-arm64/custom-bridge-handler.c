@@ -85,7 +85,7 @@ void context_end_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd)
 }
 
 void dynamic_binary_instrumentation_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
-    DEBUG_LOG("target %p call dynamic-binary-instrumentation-invocation", entry->target_ptr);
+    // DEBUG_LOG("target %p call dynamic-binary-instrumentation-invocation", entry->target_ptr);
 
     /* call pre_call */
     if (entry->stub_call) {
@@ -104,5 +104,27 @@ void dynamic_binary_instrumentationn_bridge_handler(RegState *rs, ClosureBridgeD
     HookEntry *entry  = cbd->user_data;
     void *nextHop_ptr = (void *)&rs->general.regs.x15;
     dynamic_binary_instrumentation_invocation(rs, entry, nextHop_ptr);
+    return;
+}
+
+void context_begin_only_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
+    // DEBUG_LOG("target %p call begin-only-invocation", entry->target_ptr);
+    /* call pre_call */
+    if (entry->stub_call) {
+        STUBCALL stub_call;
+        HookEntryInfo entryInfo;
+        entryInfo.hook_id      = entry->id;
+        entryInfo.hook_address = entry->target_ptr;
+        stub_call              = entry->stub_call;
+        (*stub_call)(rs, (const HookEntryInfo *)&entryInfo);
+    }
+
+    *(zz_ptr_t *)nextHop = entry->replace_call;
+}
+
+void context_begin_only_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
+    HookEntry *entry  = cbd->user_data;
+    void *nextHop_ptr = (void *)&rs->general.regs.x15;
+    context_begin_only_invocation(rs, entry, nextHop_ptr);
     return;
 }

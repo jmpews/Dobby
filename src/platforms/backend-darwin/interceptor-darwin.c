@@ -4,6 +4,7 @@
 #include "interceptor-darwin.h"
 #include "interceptor.h"
 #include "trampoline.h"
+#include <debuglog.h>
 
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
@@ -18,14 +19,19 @@ RetStatus ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr
 
     if (replace_ptr) {
         ZzBuildHookGOT((zz_ptr_t)name, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr);
+        HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
+        rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, replace_ptr, (void **)origin_ptr}}, 1);
     } else {
         ZzBuildHookGOT((zz_ptr_t)name, target_ptr, NULL, pre_call_ptr, post_call_ptr);
+        HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
+        rebind_symbols_image((void *)header, slide,
+                             (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
+        if (DebugLogControlerIsEnableLog()) {
+            DEBUGLOG_COMMON_LOG("ZzHookGOT: \n\ton_enter_trampoline: %p\n\ton_leave_trampoline: %p",
+                                entry->on_enter_trampoline, entry->on_leave_trampoline);
+        }
     }
 
-    HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
-    // TODO: fix here
-    rebind_symbols_image((void *)header, slide,
-                         (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
     return RS_SUCCESS;
 }
 
