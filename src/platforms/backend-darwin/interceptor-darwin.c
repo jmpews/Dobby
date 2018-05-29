@@ -9,6 +9,8 @@
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
 
+extern void closure_bridge_objc_msgSend();
+
 RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                     POSTCALL post_call_ptr) {
     intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
@@ -24,15 +26,23 @@ RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr
     }
 
     slide = pub_dyld_get_image_slide(macho_header);
-    // normal fishhook
     if (replace_ptr) {
+        // normal fishhook
         ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
                     HOOK_TYPE_FUNCTION_via_GOT);
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
         rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, replace_ptr, (void **)origin_ptr}}, 1);
-    } else if (strcmp(name, "objc_msgSend")) {
+    } else if (!strcmp(name, "objc_msgSend")) {
+        // specaical case objc_msgSend
         ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
                     HOOK_TYPE_FUNCTION_via_GOT);
+        HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
+        rebind_symbols_image((void *)header, slide,
+                             (struct rebinding[1]){{name, closure_bridge_objc_msgSend, (void **)origin_ptr}}, 1);
+        if (DebugLogControlerIsEnableLog()) {
+            DEBUGLOG_COMMON_LOG("ZzHookGOT: \n\ton_enter_trampoline: %p\n\ton_leave_trampoline: %p",
+                                entry->on_enter_trampoline, entry->on_leave_trampoline);
+        }
     } else {
         ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
                     HOOK_TYPE_FUNCTION_via_GOT);

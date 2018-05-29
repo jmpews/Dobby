@@ -358,15 +358,15 @@ zz_ptr_t zz_darwin_vm_search_text_code_cave_via_dylibs(zz_addr_t address, zz_siz
 
     zz_size_t n_dylibs = _dyld_image_count();
     for (size_t i = 0; i < n_dylibs; i++) {
-        struct mach_header_64 *header         = (struct mach_header_64 *)_dyld_get_image_header(i);
-        struct segment_command_64 *seg_cmd_64 = zz_macho_get_segment_64_via_name(header, "__TEXT");
+        mach_hdr *header  = (mach_hdr *)_dyld_get_image_header(i);
+        sgmt_cmd *sgmtCmd = zz_macho_get_segment_via_name(header, "__TEXT");
 
         // ATTENTION: as the __TEXT segment region is 'r-x', diffrent from
         // others, so it's page align.
         search_start = (zz_addr_t)header;
         // no need align again.
         search_start = zz_vm_align_floor(search_start, page_size);
-        search_end   = (zz_addr_t)header + seg_cmd_64->vmsize;
+        search_end   = (zz_addr_t)header + sgmtCmd->vmsize;
         // no need align again.
         search_end = zz_vm_align_ceil(search_end, page_size);
 

@@ -105,6 +105,7 @@ typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeData *cbd);
 ClosureBridgeData *ClosureBridgeAllocate(void *user_data, void *user_code);
 
 void closure_bridge_trampoline_template();
+
 void closure_bridge_template();
 
 #endif
