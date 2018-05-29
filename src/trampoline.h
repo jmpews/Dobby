@@ -32,8 +32,6 @@ void TrampolineActivate(struct _InterceptorBackend *self, HookEntry *entry);
 
 void TrampolineBuildForEnter(struct _InterceptorBackend *self, HookEntry *entry);
 
-void TrampolineBuildForEnterOnly(struct _InterceptorBackend *self, HookEntry *entry);
-
 void TrampolineBuildForEnterTransfer(struct _InterceptorBackend *self, HookEntry *entry);
 
 void TrampolineBuildForInstructionLeave(struct _InterceptorBackend *self, HookEntry *entry);

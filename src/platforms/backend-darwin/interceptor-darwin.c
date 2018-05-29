@@ -9,20 +9,33 @@
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
 
-RetStatus ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                     POSTCALL post_call_ptr) {
     intptr_t (*pub_dyld_get_image_slide)(const struct mach_header *mh);
-    pub_dyld_get_image_slide         = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
-    zz_ptr_t target_ptr              = dlsym((void *)dlopen(0, RTLD_LAZY), name);
-    const struct mach_header *header = _dyld_get_image_header(0);
-    zz_size_t slide                  = pub_dyld_get_image_slide(header);
+    pub_dyld_get_image_slide = dlsym((void *)dlopen(0, RTLD_LAZY), "_dyld_get_image_slide");
+    zz_ptr_t target_ptr;
+    zz_size_t slide;
+    const struct mach_header *macho_header = header;
 
+    target_ptr = dlsym((void *)dlopen(0, RTLD_LAZY), name);
+
+    if (!header) {
+        macho_header = _dyld_get_image_header(0);
+    }
+
+    slide = pub_dyld_get_image_slide(macho_header);
+    // normal fishhook
     if (replace_ptr) {
-        ZzBuildHookGOT((zz_ptr_t)name, replace_ptr, origin_ptr, pre_call_ptr, post_call_ptr);
+        ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
+                    HOOK_TYPE_FUNCTION_via_GOT);
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
         rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, replace_ptr, (void **)origin_ptr}}, 1);
+    } else if (strcmp(name, "objc_msgSend")) {
+        ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
+                    HOOK_TYPE_FUNCTION_via_GOT);
     } else {
-        ZzBuildHookGOT((zz_ptr_t)name, target_ptr, NULL, pre_call_ptr, post_call_ptr);
+        ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
+                    HOOK_TYPE_FUNCTION_via_GOT);
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
         rebind_symbols_image((void *)header, slide,
                              (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
@@ -31,7 +44,6 @@ RetStatus ZzHookGOT(const char *name, zz_ptr_t replace_ptr, zz_ptr_t *origin_ptr
                                 entry->on_enter_trampoline, entry->on_leave_trampoline);
         }
     }
-
     return RS_SUCCESS;
 }
 

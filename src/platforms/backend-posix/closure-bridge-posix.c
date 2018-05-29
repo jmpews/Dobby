@@ -1,26 +1,18 @@
-#include "closure-bridge-arm64.h"
-#include "backend-arm64-helper.h"
-#include <string.h>
+#include "closure-bridge-posix.h"
+#include "closurebridge.h"
 
 #include <CommonKit/log/log_kit.h>
 
+#include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+extern void common_bridge_handler(RegState *rs, ClosureBridgeData *cbd);
 
 #define closure_bridge_trampoline_template_length (7 * 4)
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
-
-void common_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
-
-    USER_CODE_CALL userCodeCall = cbd->user_code;
-    // printf("CommonBridgeHandler:");
-    // printf("\tTrampoline Address: %p", cbd->redirect_trampoline);
-    userCodeCall(rs, cbd);
-    // set return address
-    rs->general.x[17] = rs->general.x[17];
-    return;
-}
 
 static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) {
     void *mmap_page;

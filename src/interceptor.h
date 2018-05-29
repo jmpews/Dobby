@@ -18,7 +18,7 @@ typedef struct _FunctionBackup {
 struct _ZzInterceptor;
 struct _HookEntryBackend;
 typedef struct _HookEntry {
-    ZZHOOKTYPE hook_type;
+    HookType hook_type;
     unsigned long id;
     bool isEnabled;
     bool try_near_jump;
@@ -60,12 +60,17 @@ typedef struct _ZzInterceptor {
     ExecuteMemoryManager *emm;
 } ZzInterceptor;
 
-RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
-                         POSTCALL post_call_ptr);
-
-RetStatus ZzDisableHookGOT(const char *name);
-
 HookEntry *InterceptorFindHookEntry(zz_ptr_t target_ptr);
 
 struct _InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm);
+
+ZzInterceptor *InterceptorSharedInstance(void);
+
+void HookEntryInitialize(HookEntry *entry, HookType hook_type, zz_ptr_t target_ptr, zz_ptr_t replace_call,
+                         PRECALL pre_call, POSTCALL post_call, bool try_near_jump);
+
+RetStatus InterceptorAddHookEntry(HookEntry *entry);
+
+RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
+                      POSTCALL post_call_ptr, bool try_near_jump, HookType hook_type);
 #endif

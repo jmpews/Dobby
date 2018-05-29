@@ -1,10 +1,3 @@
-//
-// Created by z on 2018/4/7.
-//
-
-#include "custom-bridge-handler.h"
-#include "closure-bridge-arm64.h"
-#include <CommonKit/log/log_kit.h>
 #include <debuglog.h>
 #include <hookzz.h>
 
@@ -45,14 +38,6 @@ void context_begin_invocation(RegState *rs, HookEntry *entry, void *nextHop, voi
     }
 }
 
-void context_begin_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
-    HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x15;
-    void *regLR_ptr   = (void *)&rs->lr;
-    context_begin_invocation(rs, entry, nextHop_ptr, regLR_ptr);
-    return;
-}
-
 void context_end_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
     // DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
@@ -77,13 +62,6 @@ void context_end_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
     CallStackFree(callstack);
 }
 
-void context_end_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
-    HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x15;
-    context_end_invocation(rs, entry, nextHop_ptr);
-    return;
-}
-
 void dynamic_binary_instrumentation_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
     // DEBUG_LOG("target %p call dynamic-binary-instrumentation-invocation", entry->target_ptr);
 
@@ -98,33 +76,4 @@ void dynamic_binary_instrumentation_invocation(RegState *rs, HookEntry *entry, v
     }
 
     *(zz_ptr_t *)nextHop = entry->on_invoke_trampoline;
-}
-
-void dynamic_binary_instrumentationn_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
-    HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x15;
-    dynamic_binary_instrumentation_invocation(rs, entry, nextHop_ptr);
-    return;
-}
-
-void context_begin_only_invocation(RegState *rs, HookEntry *entry, void *nextHop) {
-    // DEBUG_LOG("target %p call begin-only-invocation", entry->target_ptr);
-    /* call pre_call */
-    if (entry->pre_call) {
-        STUBCALL stub_call;
-        HookEntryInfo entryInfo;
-        entryInfo.hook_id      = entry->id;
-        entryInfo.hook_address = entry->target_ptr;
-        stub_call              = entry->pre_call;
-        (*stub_call)(rs, (const HookEntryInfo *)&entryInfo);
-    }
-
-    *(zz_ptr_t *)nextHop = entry->replace_call;
-}
-
-void context_begin_only_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
-    HookEntry *entry  = cbd->user_data;
-    void *nextHop_ptr = (void *)&rs->general.regs.x15;
-    context_begin_only_invocation(rs, entry, nextHop_ptr);
-    return;
 }

@@ -1,21 +1,5 @@
-/**
- *    Copyright 2017 jmpews
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
-#ifndef platforms_backend_arm64_bridge_arm64
-#define platforms_backend_arm64_bridge_arm64
+#ifndef closurebridge_h
+#define closurebridge_h
 
 #include <stdint.h>
 
@@ -45,7 +29,7 @@ typedef struct _RegState {
         uint64_t x[29];
         struct {
             uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21,
-                    x22, x23, x24, x25, x26, x27, x28;
+                x22, x23, x24, x25, x26, x27, x28;
         } regs;
     } general;
 
@@ -104,7 +88,9 @@ typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeData *cbd);
 ClosureBridgeData *ClosureBridgeAllocate(void *user_data, void *user_code);
 
 void closure_bridge_trampoline_template();
+
 void closure_bridge_template();
 
+void dynamic_closure_trampoline_table_page();
 
 #endif

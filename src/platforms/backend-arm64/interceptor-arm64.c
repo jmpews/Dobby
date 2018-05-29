@@ -1,8 +1,9 @@
 #include "interceptor-arm64.h"
-#include "backend-arm64-helper.h"
-#include "closure-bridge-arm64.h"
+#include "backend-helper-arm64.h"
+#include "custom-bridge-handler-arm64.h"
 
-#include "custom-bridge-handler.h"
+#include "closurebridge.h"
+#include "invocation.h"
 #include "macros.h"
 
 #include <debuglog.h>
@@ -140,27 +141,6 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
     else
         return;
 
-// DELETE ?
-#if 0
-   if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= EnterTransferTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n", entry->on_enter_transfer_trampoline);
-        sprintf(buffer + strlen(buffer), "\ttrampoline_length: %ld\n", codeslice->size);
-        sprintf(buffer + strlen(buffer), "\thook_entry: %p\n", (void *)entry);
-        if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            sprintf(buffer + strlen(buffer), "\tjump_target: replace_call(%p)\n", (void *)entry->replace_call);
-        } else if (entry->hook_type == HOOK_TYPE_DBI) {
-            sprintf(buffer + strlen(buffer), "\tjump_target: on_dynamic_binary_instrumentation_trampoline(%p)\n",
-                    (void *)entry->on_dynamic_binary_instrumentation_trampoline);
-        } else {
-            sprintf(buffer + strlen(buffer), "\tjump_target: on_enter_trampoline(%p)\n",
-                    (void *)entry->on_enter_trampoline);
-        }
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
-#endif
-
     free(codeslice);
     return;
 }
@@ -184,50 +164,6 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
         }
     }
 
-// DELETE ?
-#if 0
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= EnterTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", bridgeData->redirect_trampoline);
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
-#endif
-
-    return;
-}
-
-void TrampolineBuildForEnterOnly(InterceptorBackend *self, HookEntry *entry) {
-    ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
-    ClosureBridgeData *bridgeData;
-
-    bridgeData = ClosureBridgeAllocate(entry, context_begin_only_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
-    }
-
-    entry->on_enter_trampoline = bridgeData->redirect_trampoline;
-
-    // build the double trampline aka enter_transfer_trampoline
-    if (entry_backend && entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
-        if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
-            TrampolineBuildForEnterTransfer(self, entry);
-        }
-    }
-
-// DELETE ?
-#if 0
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= DynamicBinaryInstrumentationTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_trampoline: %p\n",
-                entry->on_dynamic_binary_instrumentation_trampoline);
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
-#endif
-
     return;
 }
 
@@ -248,19 +184,19 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
             TrampolineBuildForEnterTransfer(self, entry);
         }
     }
+    return;
+}
 
-// DELETE ?
-#if 0
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= DynamicBinaryInstrumentationTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_trampoline: %p\n",
-                entry->on_dynamic_binary_instrumentation_trampoline);
-        DEBUGLOG_COMMON_LOG("%s", buffer);
+void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
+    ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
+    ClosureBridgeData *bridgeData;
+
+    bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
+    if (bridgeData == NULL) {
+        ERROR_LOG_STR("build closure bridge failed!!!");
     }
-#endif
 
+    entry->on_leave_trampoline = bridgeData->redirect_trampoline;
     return;
 }
 
@@ -330,31 +266,6 @@ void TrampolineBuildForInvoke(InterceptorBackend *self, HookEntry *entry) {
     }
 
     free(codeslice);
-    return;
-}
-
-void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
-    ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
-    ClosureBridgeData *bridgeData;
-
-    bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
-    }
-
-    entry->on_leave_trampoline = bridgeData->redirect_trampoline;
-
-// DELETE ?
-#if 0
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= LeaveTrampoline ======= \n");
-        sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
-#endif
-
     return;
 }
 
