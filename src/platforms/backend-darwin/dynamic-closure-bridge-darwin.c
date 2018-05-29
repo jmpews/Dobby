@@ -1,4 +1,5 @@
 #include "dynamic-closure-bridge-darwin.h"
+
 #include "closurebridge.h"
 
 #include <CommonKit/log/log_kit.h>
@@ -12,7 +13,8 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-#define dynamic_closure_trampoline_template_length (7 * 4)
+#define dynamic_closure_trampoline_length (2 * 4)
+#define dynamic_closure_trampoline_forward_length (4 * 4)
 
 extern void dynamic_common_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd);
 
@@ -36,7 +38,7 @@ static DynamicClosureTrampolineTable *DynamicClosureTrampolineTableAllocate(void
         return NULL;
     }
 
-    int t = page_size / dynamic_closure_trampoline_template_length;
+    int t = (page_size - dynamic_closure_trampoline_forward_length) / dynamic_closure_trampoline_length;
 
     // Remap the trampoline table on top of the placeholder page
     trampoline_page          = data_page + PAGE_MAX_SIZE;
@@ -62,9 +64,9 @@ static DynamicClosureTrampolineTable *DynamicClosureTrampolineTableAllocate(void
     return table;
 }
 
-static void DynamicClosureBridgeTrampolineTableFree(DynamicClosureTrampolineTable *table) { return; }
+static void DynamicClosureTrampolineTableFree(DynamicClosureTrampolineTable *table) { return; }
 
-DynamicClosureTrampoline *DynamicClosureBridgeTrampolineAllocate(void *user_data, void *user_code) {
+DynamicClosureTrampoline *DynamicClosureTrampolineAllocate(void *user_data, void *user_code) {
     long page_size                       = sysconf(_SC_PAGESIZE);
     DynamicClosureTrampolineTable *table = gDynamicClosureTrampolineTable;
     if (table == NULL || table->free_count == 0) {
@@ -80,13 +82,13 @@ DynamicClosureTrampoline *DynamicClosureBridgeTrampolineAllocate(void *user_data
     }
 
     DynamicClosureTrampoline *bridgeData = (DynamicClosureTrampoline *)malloc(sizeof(DynamicClosureTrampoline));
-    bridgeData->common_bridge_handler    = (void *)dynamic_common_bridge_handler;
+    bridgeData->trampolineTo             = (void *)dynamic_closure_bridge_template;
 
     bridgeData->user_code           = user_code;
     bridgeData->user_data           = user_data;
     uint16_t trampoline_used_count  = gDynamicClosureTrampolineTable->used_count;
     bridgeData->redirect_trampoline = (void *)((intptr_t)gDynamicClosureTrampolineTable->trampoline_page +
-                                               dynamic_closure_trampoline_template_length * trampoline_used_count);
+                                               dynamic_closure_trampoline_length * trampoline_used_count);
 
     // bind the closure data
     uintptr_t closure_trampoine_data_address = (uintptr_t)bridgeData->redirect_trampoline - PAGE_MAX_SIZE;
@@ -98,4 +100,4 @@ DynamicClosureTrampoline *DynamicClosureBridgeTrampolineAllocate(void *user_data
     return bridgeData;
 }
 
-static void ClosureBridgeFree(DynamicClosureTrampoline *bridgeData) { return; }
+static void DynamicClosureTrampolineFree(DynamicClosureTrampoline *bridgeData) { return; }

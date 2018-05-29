@@ -31,7 +31,7 @@ project(HookZz)
 set(CMAKE_CXX_STANDARD 11)
 enable_language(ASM)
 
-set(CMAKE_C_FLAGS "-g -std=gnu11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=gnu11")
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(ZPLATFORM STREQUAL "iOS")

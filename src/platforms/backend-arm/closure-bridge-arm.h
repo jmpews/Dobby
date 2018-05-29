@@ -86,8 +86,6 @@ typedef struct _ClosureBridgeData {
     void *user_code;
     void *user_data;
     void *redirect_trampoline;
-
-    PRIAVE void *common_bridge_handler;
 } ClosureBridgeData;
 
 typedef struct _ClosureBridgeTrampolineTable {

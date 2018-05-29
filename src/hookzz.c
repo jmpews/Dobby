@@ -6,45 +6,6 @@
 #include "interceptor.h"
 #include "trampoline.h"
 
-// RetStatus ZzBuildHookGOT(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
-//                          POSTCALL post_call_ptr) {
-// #if defined(__i386__) || defined(__x86_64__)
-//     DEBUGLOG_COMMON_LOG("%s", "x86 & x86_64 arch not support");
-//     return RS_FAILED;
-// #endif
-
-//     RetStatus status                      = RS_DONE_HOOK;
-//     ZzInterceptor *interceptor            = NULL;
-//     HookEntrySet *hook_function_entry_set = NULL;
-//     HookEntry *entry                      = NULL;
-//     HookType hook_type;
-
-//     interceptor = InterceptorSharedInstance();
-//     if (!interceptor) {
-//         return RS_FAILED;
-//     }
-//     hook_function_entry_set = &(interceptor->hook_function_entry_set);
-
-//     do {
-//         // check is already hooked ?
-//         if (InterceptorFindHookEntry(target_ptr)) {
-//             status = RS_ALREADY_HOOK;
-//             break;
-//         }
-//         entry = (HookEntry *)malloc0(sizeof(HookEntry));
-
-//         // TODO: check return status
-//         HookEntryInitialize(entry, HOOK_TYPE_FUNCTION_via_GOT, target_ptr, replace_call_ptr, pre_call_ptr,
-//                             post_call_ptr, false);
-//         TrampolineBuildAll(interceptor->backend, entry);
-//         InterceptorAddHookEntry(entry);
-
-//         if (origin_ptr)
-//             *origin_ptr = entry->on_invoke_trampoline;
-//     } while (0);
-//     return status;
-// }
-
 RetStatus ZzBuildHook(zz_ptr_t target_ptr, zz_ptr_t replace_call_ptr, zz_ptr_t *origin_ptr, PRECALL pre_call_ptr,
                       POSTCALL post_call_ptr, bool try_near_jump, HookType hook_type) {
 // HookZz do not support x86 now.

@@ -76,8 +76,7 @@ ClosureBridgeData *ClosureBridgeAllocate(void *user_data, void *user_code) {
         gClosureBridageTrampolineTable = table;
     }
 
-    ClosureBridgeData *bridgeData     = (ClosureBridgeData *)malloc(sizeof(ClosureBridgeData));
-    bridgeData->common_bridge_handler = (void *)common_bridge_handler;
+    ClosureBridgeData *bridgeData = (ClosureBridgeData *)malloc(sizeof(ClosureBridgeData));
 
     bridgeData->user_code           = user_code;
     bridgeData->user_data           = user_data;

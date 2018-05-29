@@ -11,9 +11,13 @@
 
 #include "closurebridge.h"
 
-void dynamic_common_bridge_handler(RegState *rs, ClosureBridgeData *cbd);
+void dynamic_common_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd);
 
 void common_bridge_handler(RegState *rs, ClosureBridgeData *cbd);
+
+void dynamic_context_begin_invocation_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd);
+
+void dynamic_context_end_invocation_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd);
 
 void context_end_invocation_bridge_handler(RegState *rs, ClosureBridgeData *cbd);
 

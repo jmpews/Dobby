@@ -21,7 +21,7 @@ RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr
 
     target_ptr = dlsym((void *)dlopen(0, RTLD_LAZY), name);
 
-    if (!header) {
+    if (!macho_header) {
         macho_header = _dyld_get_image_header(0);
     }
 
@@ -33,12 +33,12 @@ RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
         rebind_symbols_image((void *)header, slide, (struct rebinding[1]){{name, replace_ptr, (void **)origin_ptr}}, 1);
     } else if (!strcmp(name, "objc_msgSend")) {
-        // specaical case objc_msgSend
+        // special case objc_msgSend
         ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
                     HOOK_TYPE_FUNCTION_via_GOT);
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
-        rebind_symbols_image((void *)header, slide,
-                             (struct rebinding[1]){{name, closure_bridge_objc_msgSend, (void **)origin_ptr}}, 1);
+        rebind_symbols_image((void *)macho_header, slide,
+                             (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
         if (DebugLogControlerIsEnableLog()) {
             DEBUGLOG_COMMON_LOG("ZzHookGOT: \n\ton_enter_trampoline: %p\n\ton_leave_trampoline: %p",
                                 entry->on_enter_trampoline, entry->on_leave_trampoline);
@@ -47,7 +47,7 @@ RetStatus ZzHookGOT(void *header, const char *name, zz_ptr_t replace_ptr, zz_ptr
         ZzBuildHook((zz_ptr_t)name, target_ptr, origin_ptr, pre_call_ptr, post_call_ptr, false,
                     HOOK_TYPE_FUNCTION_via_GOT);
         HookEntry *entry = InterceptorFindHookEntry((zz_ptr_t)name);
-        rebind_symbols_image((void *)header, slide,
+        rebind_symbols_image((void *)macho_header, slide,
                              (struct rebinding[1]){{name, entry->on_enter_trampoline, (void **)origin_ptr}}, 1);
         if (DebugLogControlerIsEnableLog()) {
             DEBUGLOG_COMMON_LOG("ZzHookGOT: \n\ton_enter_trampoline: %p\n\ton_leave_trampoline: %p",

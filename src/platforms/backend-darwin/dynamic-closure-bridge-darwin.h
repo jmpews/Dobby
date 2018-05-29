@@ -81,25 +81,4 @@ typedef struct _RegState {
 #endif
 #endif
 
-typedef struct _DynamicClosureTrampoline {
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
-
-    PRIAVE void *common_bridge_handler;
-} DynamicClosureTrampoline;
-
-typedef struct _DynamicClosureTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    void *data_page;
-    uint16_t used_count;
-    uint16_t free_count;
-
-    struct _DynamicClosureTrampolineTable *prev;
-    struct _DynamicClosureTrampolineTable *next;
-} DynamicClosureTrampolineTable;
-
-DynamicClosureTrampoline *DynamicClosureTrampolineAllocate(void *user_data, void *user_code);
-
 #endif
