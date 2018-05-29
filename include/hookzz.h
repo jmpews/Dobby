@@ -119,13 +119,13 @@ typedef enum _RetStatus {
     RS_NO_BUILD_HOOK
 } RetStatus;
 
-typedef enum _ZZHOOKTYPE {
+typedef enum _HookType {
 //  HOOK_TYPE_SINGLE_INSTRUCTION_DELETED = 0,
     HOOK_TYPE_FUNCTION_via_PRE_POST = 0,
     HOOK_TYPE_FUNCTION_via_REPLACE,
     HOOK_TYPE_FUNCTION_via_GOT,
     HOOK_TYPE_DBI
-}ZZHOOKTYPE;
+}HookType;
 
 typedef struct _CallStackPublic {
     unsigned long call_id;
@@ -158,7 +158,7 @@ RetStatus ZzHookPrePost(void *target_ptr, PRECALL pre_call_ptr, POSTCALL post_ca
 RetStatus ZzHookReplace(void *target_ptr, void *replace_call, void **origin_call_ptr);
 
 // got hook (only support darwin)
-RetStatus ZzHookGOT(const char *name, void *replace_call, void **origin_call_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
+RetStatus ZzHookGOT(void *header, const char *name, void *replace_call, void **origin_call_ptr, PRECALL pre_call_ptr, POSTCALL post_call_ptr);
 
 // dynamic binary instrumentation
 RetStatus ZzDynamicBinaryInstrumentation(void *address, STUBCALL stub_call_ptr);

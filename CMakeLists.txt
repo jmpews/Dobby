@@ -31,7 +31,7 @@ project(HookZz)
 set(CMAKE_CXX_STANDARD 11)
 enable_language(ASM)
 
-set(CMAKE_C_FLAGS "-g")
+set(CMAKE_C_FLAGS "-g -std=gnu11")
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(ZPLATFORM STREQUAL "iOS")
@@ -159,4 +159,6 @@ add_library(hookzz SHARED ${GLOBAL_Source_C} ${HookZz.Source_Assembly})
 
 if(ZPLATFORM STREQUAL "Android")
     target_link_libraries(hookzz log)
+elseif(ZPLATFORM STREQUAL "iOS")
+    target_link_libraries(hookzz "-framework Foundation")
 endif()
