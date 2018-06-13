@@ -155,7 +155,13 @@ set(GLOBAL_Source_INCLUDE ${GLOBAL_Source_INCLUDE} ${HookZz.Source_C_DIR})
 # set_property(SOURCE ${HookZz.Source_Assembly} PROPERTY COMPILE_FLAGS "-arch arm64 -fembed-bitcode")
 
 include_directories(include ${GLOBAL_Source_INCLUDE})
-add_library(hookzz SHARED ${GLOBAL_Source_C} ${HookZz.Source_Assembly})
+if(BUILD_SHARED)
+    add_library(hookzz SHARED ${GLOBAL_Source_C} ${HookZz.Source_Assembly})
+else()
+    add_library(hookzz STATIC ${GLOBAL_Source_C} ${HookZz.Source_Assembly})
+endif()
+
+target_include_directories(hookzz PUBLIC ./include)
 
 if(ZPLATFORM STREQUAL "Android")
     target_link_libraries(hookzz log)
