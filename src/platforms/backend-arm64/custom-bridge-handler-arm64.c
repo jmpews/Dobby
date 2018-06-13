@@ -32,9 +32,24 @@ void dynamic_binary_instrumentationn_bridge_handler(RegState *rs, ClosureBridgeD
     return;
 }
 
-void dynamic_common_bridge_handler(RegState *rs, ClosureBridgeData *cbd) {
+void dynamic_context_begin_invocation_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd) {
+    HookEntry *entry = cbd->user_data;
+    void *nextHopPTR = (void *)&rs->general.regs.x15;
+    void *regLRPTR   = (void *)&rs->lr;
+    context_begin_invocation(rs, entry, nextHopPTR, regLRPTR);
+    return;
+}
 
-    USER_CODE_CALL userCodeCall = cbd->user_code;
+void dynamic_context_end_invocation_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd) {
+    HookEntry *entry = cbd->user_data;
+    void *nextHopPTR = (void *)&rs->general.regs.x15;
+    context_end_invocation(rs, entry, nextHopPTR);
+    return;
+}
+
+void dynamic_common_bridge_handler(RegState *rs, DynamicClosureTrampoline *cbd) {
+
+    DYNAMIC_USER_CODE_CALL userCodeCall = cbd->user_code;
     // printf("CommonBridgeHandler:");
     // printf("\tTrampoline Address: %p", cbd->redirect_trampoline);
     userCodeCall(rs, cbd);

@@ -5,25 +5,6 @@
 
 #include "MachoKit/macho_kit.h"
 
-#if 0
-#ifdef __LP64__
-#define mach_hdr struct mach_header_64
-#define sgmt_cmd struct segment_command_64
-#define sect_cmd struct section_64
-#define nlist_ struct nlist_64
-#define LC_SGMT LC_SEGMENT_64
-#define MH_MAGIC_ MH_MAGIC_64
-#else
-#define mach_hdr struct mach_header
-#define sgmt_cmd struct segment_command
-#define sect_cmd struct section
-#define nlist_ struct nlist
-#define LC_SGMT LC_SEGMENT
-#define MH_MAGIC_ MH_MAGIC
-#endif
-#define load_cmd struct load_command
-#endif
-
 // get dyld load address by task_info, TASK_DYLD_INFO
 zz_ptr_t zz_macho_get_dyld_load_address_via_task(task_t task) {
     // http://stackoverflow.com/questions/4309117/determining-programmatically-what-modules-are-loaded-in-another-process-os-x
@@ -56,39 +37,39 @@ task_t zz_darwin_get_task_via_pid(int pid) {
     return t;
 }
 
-struct segment_command_64 *zz_macho_get_segment_64_via_name(struct mach_header_64 *header, char *segment_name) {
-    struct load_command *load_cmd;
-    struct segment_command_64 *seg_cmd_64;
-    struct section_64 *sect_64;
+sgmt_cmd *zz_macho_get_segment_via_name(mach_hdr *header, char *segment_name) {
+    load_cmd *loadCmd;
+    sgmt_cmd *sgmtCmd;
+    sect_cmd *sectCmd;
 
-    load_cmd = (zz_ptr_t)header + sizeof(struct mach_header_64);
+    loadCmd = (zz_ptr_t)header + sizeof(mach_hdr);
     zz_size_t i;
-    for (i = 0; i < header->ncmds; i++, load_cmd = (zz_ptr_t)load_cmd + load_cmd->cmdsize) {
-        if (load_cmd->cmd == LC_SEGMENT_64) {
-            seg_cmd_64 = (struct segment_command_64 *)load_cmd;
-            if (!strcmp(seg_cmd_64->segname, segment_name)) {
-                return seg_cmd_64;
+    for (i = 0; i < header->ncmds; i++, loadCmd = (zz_ptr_t)loadCmd + loadCmd->cmdsize) {
+        if (loadCmd->cmd == LC_SGMT) {
+            sgmtCmd = (sgmt_cmd *)loadCmd;
+            if (!strcmp(sgmtCmd->segname, segment_name)) {
+                return sgmtCmd;
             }
         }
     }
     return NULL;
 }
 
-struct section_64 *zz_macho_get_section_64_via_name(struct mach_header_64 *header, char *sect_name) {
-    struct load_command *load_cmd;
-    struct segment_command_64 *seg_cmd_64;
-    struct section_64 *sect_64;
+sect_cmd *zz_macho_get_section_via_name(mach_hdr *header, char *sect_name) {
+    load_cmd *loadCmd;
+    sgmt_cmd *sgmtCmd;
+    sect_cmd *sectCmd;
 
-    load_cmd = (zz_ptr_t)header + sizeof(struct mach_header_64);
+    loadCmd = (zz_ptr_t)header + sizeof(mach_hdr);
     zz_size_t i;
     zz_size_t j;
-    for (i = 0; i < header->ncmds; i++, load_cmd = (zz_ptr_t)load_cmd + load_cmd->cmdsize) {
-        if (load_cmd->cmd == LC_SEGMENT_64) {
-            seg_cmd_64 = (struct segment_command_64 *)load_cmd;
-            sect_64    = (struct section_64 *)((zz_ptr_t)seg_cmd_64 + sizeof(struct segment_command_64));
-            for (j = 0; j < seg_cmd_64->nsects; j++, sect_64 = (zz_ptr_t)sect_64 + sizeof(struct section_64)) {
-                if (!strcmp(sect_64->sectname, sect_name)) {
-                    return sect_64;
+    for (i = 0; i < header->ncmds; i++, loadCmd = (zz_ptr_t)loadCmd + loadCmd->cmdsize) {
+        if (loadCmd->cmd == LC_SGMT) {
+            sgmtCmd = (sgmt_cmd *)loadCmd;
+            sectCmd = (sect_cmd *)((zz_ptr_t)sgmtCmd + sizeof(sgmt_cmd));
+            for (j = 0; j < sgmtCmd->nsects; j++, sectCmd = (zz_ptr_t)sectCmd + sizeof(sect_cmd)) {
+                if (!strcmp(sectCmd->sectname, sect_name)) {
+                    return sectCmd;
                 }
             }
         }
@@ -96,36 +77,31 @@ struct section_64 *zz_macho_get_section_64_via_name(struct mach_header_64 *heade
     return NULL;
 }
 
-struct load_command *zz_macho_get_load_command_via_cmd(struct mach_header_64 *header, uint32_t cmd) {
-    struct load_command *load_cmd;
-    struct segment_command_64 *seg_cmd_64;
-    struct section_64 *sect_64;
-    zz_size_t i;
+load_cmd *zz_macho_get_load_command_via_cmd(mach_hdr *header, uint32_t cmd) {
+    load_cmd *loadCmd;
+    sgmt_cmd *sgmtCmd;
+    sect_cmd *sectCmd;
 
-    load_cmd = (zz_ptr_t)header + sizeof(struct mach_header_64);
-    for (i = 0; i < header->ncmds; i++, load_cmd = (zz_ptr_t)load_cmd + load_cmd->cmdsize) {
-        if (load_cmd->cmd == cmd) {
-            return load_cmd;
+    loadCmd = (zz_ptr_t)header + sizeof(mach_hdr);
+    for (int i = 0; i < header->ncmds; i++, loadCmd = (zz_ptr_t)loadCmd + loadCmd->cmdsize) {
+        if (loadCmd->cmd == cmd) {
+            return loadCmd;
         }
     }
     return NULL;
 }
 
-zz_ptr_t zz_macho_get_symbol_via_name(struct mach_header_64 *header, const char *name) {
-
-    struct segment_command_64 *seg_cmd_64 =
-        zz_macho_get_segment_64_via_name((struct mach_header_64 *)header, (char *)"__TEXT");
-    struct segment_command_64 *seg_cmd_64_linkedit =
-        zz_macho_get_segment_64_via_name((struct mach_header_64 *)header, (char *)"__LINKEDIT");
-    zz_size_t slide               = (zz_addr_t)header - (zz_addr_t)seg_cmd_64->vmaddr;
-    zz_size_t linkEditBase        = seg_cmd_64_linkedit->vmaddr - seg_cmd_64_linkedit->fileoff + slide;
+zz_ptr_t zz_macho_get_symbol_via_name(mach_hdr *header, const char *name) {
+    sgmt_cmd *sgmtCmd             = zz_macho_get_segment_via_name((mach_hdr *)header, (char *)"__TEXT");
+    sgmt_cmd *sgmtCmdLinkedit     = zz_macho_get_segment_via_name((mach_hdr *)header, (char *)"__LINKEDIT");
+    zz_size_t slide               = (zz_addr_t)header - (zz_addr_t)sgmtCmd->vmaddr;
+    zz_size_t linkEditBase        = sgmtCmdLinkedit->vmaddr - sgmtCmdLinkedit->fileoff + slide;
     struct symtab_command *symtab = (struct symtab_command *)zz_macho_get_load_command_via_cmd(header, LC_SYMTAB);
 
-    char *sym_str_table        = (char *)linkEditBase + symtab->stroff;
-    struct nlist_64 *sym_table = (struct nlist_64 *)(linkEditBase + symtab->symoff);
+    char *sym_str_table = (char *)linkEditBase + symtab->stroff;
+    nlist_ *sym_table   = (nlist_ *)(linkEditBase + symtab->symoff);
 
-    int i;
-    for (i = 0; i < symtab->nsyms; i++) {
+    for (int i = 0; i < symtab->nsyms; i++) {
         if (sym_table[i].n_value && !strcmp(name, &sym_str_table[sym_table[i].n_un.n_strx])) {
             return (void *)(uint64_t)(sym_table[i].n_value + slide);
         }
@@ -133,27 +109,26 @@ zz_ptr_t zz_macho_get_symbol_via_name(struct mach_header_64 *header, const char 
     return 0;
 }
 
-zz_ptr_t zz_macho_get_section_64_address_via_name(struct mach_header_64 *header, char *sect_name) {
-    struct load_command *load_cmd;
-    struct segment_command_64 *seg_cmd_64;
-    struct section_64 *sect_64;
+zz_ptr_t zz_macho_get_section_address_via_name(mach_hdr *header, char *sect_name) {
+    load_cmd *loadCmd;
+    sgmt_cmd *sgmtCmd;
+    sect_cmd *sectCmd;
     zz_size_t slide, linkEditBase;
-    zz_size_t i, j;
 
-    load_cmd = (zz_ptr_t)header + sizeof(struct mach_header_64);
-    for (i = 0; i < header->ncmds; i++, load_cmd = (zz_ptr_t)load_cmd + load_cmd->cmdsize) {
-        if (load_cmd->cmd == LC_SEGMENT_64) {
-            seg_cmd_64 = (struct segment_command_64 *)load_cmd;
-            if ((seg_cmd_64->fileoff == 0) && (seg_cmd_64->filesize != 0)) {
-                slide = (uintptr_t)header - seg_cmd_64->vmaddr;
+    loadCmd = (zz_ptr_t)header + sizeof(mach_hdr);
+    for (int i = 0; i < header->ncmds; i++, loadCmd = (zz_ptr_t)loadCmd + loadCmd->cmdsize) {
+        if (loadCmd->cmd == LC_SGMT) {
+            sgmtCmd = (sgmt_cmd *)loadCmd;
+            if ((sgmtCmd->fileoff == 0) && (sgmtCmd->filesize != 0)) {
+                slide = (uintptr_t)header - sgmtCmd->vmaddr;
             }
-            if (strcmp(seg_cmd_64->segname, "__LINKEDIT") == 0) {
-                linkEditBase = seg_cmd_64->vmaddr - seg_cmd_64->fileoff + slide;
+            if (strcmp(sgmtCmd->segname, "__LINKEDIT") == 0) {
+                linkEditBase = sgmtCmd->vmaddr - sgmtCmd->fileoff + slide;
             }
-            sect_64 = (struct section_64 *)((zz_ptr_t)seg_cmd_64 + sizeof(struct segment_command_64));
-            for (j = 0; j < seg_cmd_64->nsects; j++, sect_64 = (zz_ptr_t)sect_64 + sizeof(struct section_64)) {
-                if (!strcmp(sect_64->sectname, sect_name)) {
-                    return (zz_ptr_t)(sect_64->addr + slide);
+            sectCmd = (sect_cmd *)((zz_ptr_t)sgmtCmd + sizeof(sgmt_cmd));
+            for (int j = 0; j < sgmtCmd->nsects; j++, sectCmd = (zz_ptr_t)sectCmd + sizeof(sect_cmd)) {
+                if (!strcmp(sectCmd->sectname, sect_name)) {
+                    return (zz_ptr_t)(sectCmd->addr + slide);
                 }
             }
         }

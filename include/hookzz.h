@@ -176,13 +176,11 @@ void DebugLogControlerEnableLog();
 RetStatus ZzDisableHook(void *target_ptr);
 
 #if defined(__arm64__) || defined(__aarch64__)
-#if defined(__APPLE__) && defined(__MACH__)
-#include <TargetConditionals.h>
-#if TARGET_OS_IPHONE
-#define TARGET_IS_IOS 1
+    #if defined(__APPLE__) && defined(__MACH__)
+        #define iOS 1
+    #endif
 #endif
-#endif
-#endif
+
 #ifdef TARGET_IS_IOS
 RetStatus StaticBinaryInstrumentation(void *target_fileoff, void *replace_call_ptr, void **origin_call_ptr, PRECALL pre_call_ptr,
                         POSTCALL post_call_ptr);

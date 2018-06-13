@@ -148,14 +148,22 @@ void TrampolineBuildForEnterTransfer(InterceptorBackend *self, HookEntry *entry)
 void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
     ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
     RetStatus status                     = RS_SUCCESS;
-    ClosureBridgeData *bridgeData;
 
-    bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
+        DynamicClosureTrampoline *bridgeData;
+        bridgeData = DynamicClosureTrampolineAllocate(entry, dynamic_context_begin_invocation_bridge_handler);
+        if (bridgeData == NULL) {
+            ERROR_LOG_STR("build closure bridge failed!!!");
+        }
+        entry->on_enter_trampoline = bridgeData->redirect_trampoline;
+    } else {
+        ClosureBridgeData *bridgeData;
+        bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
+        if (bridgeData == NULL) {
+            ERROR_LOG_STR("build closure bridge failed!!!");
+        }
+        entry->on_enter_trampoline = bridgeData->redirect_trampoline;
     }
-
-    entry->on_enter_trampoline = bridgeData->redirect_trampoline;
 
     // build the double trampline aka enter_transfer_trampoline
     if (entry_backend && entry_backend->redirect_code_size == ARM64_TINY_REDIRECT_SIZE) {
@@ -163,7 +171,6 @@ void TrampolineBuildForEnter(InterceptorBackend *self, HookEntry *entry) {
             TrampolineBuildForEnterTransfer(self, entry);
         }
     }
-
     return;
 }
 
@@ -189,14 +196,22 @@ void TrampolineBuildForDynamicBinaryInstrumentation(InterceptorBackend *self, Ho
 
 void TrampolineBuildForLeave(InterceptorBackend *self, HookEntry *entry) {
     ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
-    ClosureBridgeData *bridgeData;
 
-    bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
+    if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
+        DynamicClosureTrampoline *bridgeData;
+        bridgeData = DynamicClosureTrampolineAllocate(entry, dynamic_context_end_invocation_bridge_handler);
+        if (bridgeData == NULL) {
+            ERROR_LOG_STR("build closure bridge failed!!!");
+        }
+        entry->on_leave_trampoline = bridgeData->redirect_trampoline;
+    } else {
+        ClosureBridgeData *bridgeData;
+        bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
+        if (bridgeData == NULL) {
+            ERROR_LOG_STR("build closure bridge failed!!!");
+        }
+        entry->on_leave_trampoline = bridgeData->redirect_trampoline;
     }
-
-    entry->on_leave_trampoline = bridgeData->redirect_trampoline;
     return;
 }
 
