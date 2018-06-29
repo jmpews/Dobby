@@ -218,10 +218,10 @@ static bool arm64_relocator_rewrite_BL(ARM64Relocator *self, const ARM64Instruct
     arm64_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count]);
     arm64_writer_put_bytes(writer, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
 
-    arm64_writer_put_ldr_reg_imm(writer, ARM64_REG_X17, 0x8);
-    arm64_writer_put_br_reg(writer, ARM64_REG_X17);
-    arm64_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count]);
-    arm64_writer_put_bytes(writer, (zz_ptr_t)&next_pc_address, sizeof(zz_ptr_t));
+    // arm64_writer_put_ldr_reg_imm(writer, ARM64_REG_X17, 0x8);
+    // arm64_writer_put_br_reg(writer, ARM64_REG_X17);
+    // arm64_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count]);
+    // arm64_writer_put_bytes(writer, (zz_ptr_t)&next_pc_address, sizeof(zz_ptr_t));
 
     return TRUE;
 }

@@ -188,6 +188,7 @@ zz_ptr_t zz_posix_vm_search_text_code_cave(zz_addr_t address, zz_size_t range_si
 
   http://shakthimaan.com/downloads/hurd/A.Programmers.Guide.to.the.Mach.System.Calls.pdf
 */
+extern void __clear_cache (void *beg, void *end);
 
 bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zz_size_t codedata_size) {
     zz_size_t page_size;
@@ -225,6 +226,9 @@ bool zz_posix_vm_patch_code(const zz_addr_t address, const zz_ptr_t codedata, zz
     zz_posxi_vm_protect_as_writable(start_page_addr, range_size);
     memcpy((zz_ptr_t)start_page_addr, (zz_ptr_t)code_mmap, range_size);
     zz_posix_vm_protect_as_executable(start_page_addr, range_size);
+
+    __clear_cache((char *)start_page_addr, (char *)start_page_addr + range_size);
+
     munmap(code_mmap, range_size);
     return TRUE;
 }
