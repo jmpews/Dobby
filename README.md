@@ -8,98 +8,52 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 **special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat, but still with some tricks**
 
-**thanks for @lauos with contributing android code**
-
 ## Features
 
-- **solidify inlinehook without Jailbreak(Static Binary Instrumentation) [new-90%]**
+- Static Binary Instrumentation for Mach-O [doing]
 
-- **GOT hook with HookZz(i.e. change fishhook to inlinehook), better for APM**
+- GOT hook with `pre_call` & `post_call`
 
-- the power to access registers directly
+- **replace function** with `replace_call`
 
-- hook function with `replace_call`
+- **wrap function** with `pre_call` and `post_call`
 
-- hook function with `pre_call` and `post_call`
+- **dynamic binary instrumentation** with `dbi_call`
 
-- hook **address(a piece of instructions)** with `pre_call` and `half_call`
+- the power to hook short function 
 
-- (almost)only **one instruction** to hook(i.e. hook **short funciton, even only one instruction**) [arm/thumb/arm64]
+- the power to access registers directly(ex: `rs->general.regs.x15`)
 
-- runtime code patch, without codesign limit [Jailbreak]
+- runtime code patch
 
 - it's cute, **100kb**
 
 ## Compile
 
-#### Cmake
+**`git clone --depth 1 git@github.com:jmpews/HookZz.git --branch master-c `**
 
-**`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
-
-#### CMake is bettter(hmmm, maybe some option you need modify by yourself)
+#### build for iOS/ARM64
 
 ```
-# linux/macOS build Android
-#>>> export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-## arm64
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DZARCH=arm64
-#>>> make
-## armv7
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=armeabi-v7a -DZPLATFORM=Android -DZARCH=armv7
-#>>> make
-
-# windows build Android
-#>>> set path=%path%;xxx\cmake\3.6.4111459\bin
-#>>> set ANDROID_NDK=D:\TechnicalProgramFiles\Android-SDK\ndk-bundle
-## arm64
-#>>> cmake .. -G "Android Gradle - Ninja" -DCMAKE_TOOLCHAIN_FILE=%ANDROID_NDK%\build\cmake\android.toolchain.cmake -DAN DROID_NDK=%ANDROID_NDK% -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DZPLATFORM=Android -DZARCH=arm64
-#>>> ninja
-## armv7
-#>>> cmake .. -G "Android Gradle - Ninja" -DCMAKE_TOOLCHAIN_FILE=%ANDROID_NDK%\build\cmake\android.toolchain.cmake -DAN DROID_NDK=%ANDROID_NDK% -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=armeabi-v7a -DZPLATFORM=Android -DZARCH=armv7
-#>>> ninja
-
-# macOS build iOS
-## arm64
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=arm64
-#>>> make
-## armv7
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=armv7 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=armv7
-#>>> make
+mkdir build
+cd build
+cmake 
+make
 ```
 
-#### iOS
+if you want generate Xcode Project, just replace with `cmake `
 
-just `make clean; make BACKEND=ios ARCH=arm64`
+## Usage
 
-#### Android
-
-`ndkbuild` or use `Android Studio`
-
-## How it works ?
-
-[Move to HookFrameworkDesign.md](https://github.com/jmpews/HookZz/blob/master/docs/HookFrameworkDesign.md)
-
-## Demo
-
-#### iOS
-
-[DemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/iOS/DemoTemplate.zip)
-
-#### Android
-
-[HookZzAndroidDemoTemplate.zip](https://github.com/jmpews/HookZz/blob/master/demo/HookZzAndroidDemoTemplate.zip)
-
-## Thanks List
-
-@sxf144 - RMB1000
-
-@ckis - RMB88
+#### 1. replace hook function
+```
+RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
+```
 
 ## Contact Me
 
 ```
 recommend_email: jmpews@gmail.com
-wechat: winter1ife
 QQ: 858982985
 ```
 
