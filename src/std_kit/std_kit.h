@@ -1,8 +1,8 @@
 #ifndef std_kit_std_kit_h
 #define std_kit_std_kit_h
 
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,10 +24,6 @@ void *safe_malloc(size_t size);
         free(obj);                                                                                                     \
         obj = NULL;                                                                                                    \
     } while (0);
-
-#endif
-
-#define XCHECK(repr)
 
 #include <errno.h>
 #if ENABLE_COLOR_LOG
@@ -51,18 +47,31 @@ void *safe_malloc(size_t size);
 #endif
 
 #define ENABLE_PRINT_ERROR_STRING 0
+
+#define ERROR_LOG_ERRNO()                                                                                              \
+    do {                                                                                                               \
+        fprintf(stderr, "======= ERRNO [%d] STRING ======= \n", errno);                                                \
+        perror((const char *)strerror(errno));                                                                         \
+    } while (0);
+
 #define ERROR_LOG(fmt, ...)                                                                                            \
     do {                                                                                                               \
-        fprintf(stderr, "======= ERROR LOG ======= \n");                                                               \
         fprintf(stderr,                                                                                                \
                 RED "[!] "                                                                                             \
                     "%s:%d:%s(): " fmt RESET "\n",                                                                     \
                 __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
-        if (ENABLE_PRINT_ERROR_STRING) {                                                                               \
-            fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                            \
-            perror((const char *)strerror(errno));                                                                     \
-        }                                                                                                              \
-        fprintf(stderr, "======= Error Log End ======= \n");                                                           \
     } while (0)
 
 #define ERROR_LOG_STR(MSG) ERROR_LOG("%s", MSG)
+
+#define ERROR_LOG_LINE() ERROR_LOG_STR(">>> ERROR <<<")
+
+#define XCHECK(repr)                                                                                                   \
+    do {                                                                                                               \
+        if (repr) { /*pass*/                                                                                           \
+        } else {                                                                                                       \
+            ERROR_LOG_LINE();                                                                                          \
+        }                                                                                                              \
+    } while (0);
+
+#endif

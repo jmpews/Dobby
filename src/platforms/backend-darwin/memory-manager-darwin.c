@@ -4,10 +4,12 @@
 #include <mach/vm_map.h>
 #include <sys/mman.h>
 
+#include "core.h"
 #include "mach_vm.h"
 #include "memory-helper-darwin.h"
 #include "memory_manager.h"
-#include "core.h"
+
+extern void __clear_cache(void *beg, void *end);
 
 PLATFORM_API bool memory_manager_cclass(is_support_allocate_rx_memory)(memory_manager_t *self) { return true; }
 
@@ -139,6 +141,7 @@ PLATFORM_API void memory_manager_cclass(patch_code)(memory_manager_t *self, void
                        (mach_vm_address_t)copy_page,
                        /*copy*/ TRUE, &cur_protection, &max_protection, inherit);
 
+    __clear_cache((void *)dest, (void *)((uintptr_t)dest + count));
     if (kr != KERN_SUCCESS) {
         ERROR_LOG_STR("[[memory_manager_cclass(patch_code)]]");
         // LOG-NEED

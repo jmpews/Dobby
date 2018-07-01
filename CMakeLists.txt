@@ -21,13 +21,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_ASM_FLAGS "-arch arm64 -fembed-bitcode")
 
-option(CXX ON "use cxx source")
-option(SHAREDLIB ON "build shared library")
+option(CXX OFF "use cxx source")
 option(USE_POSIX_IN_DARWIN OFF "use posix function in darwin")
+option(X_LOG ON "enable debug log")
+option(X_SHARED ON "build shared library")
 
 if(X_BACKEND STREQUAL "Darwin")
     set(SYSTEM.Darwin 1)
-elseif(BACKEND STREQUAL "Linux")
+elseif(X_BACKEND STREQUAL "Linux")
     set(SYSTEM.Linux 1)
 endif()
 
@@ -64,6 +65,7 @@ else()
             ${HookZz.Path}/src
             ${HookZz.Path}/src/std_kit
             ${HookZz.Path}/src/thread_support
+            ${HookZz.Path}/src/compiler-rt/lib/builtins
             )
 
     set(GLOBAL.HEADER_DIR
@@ -109,7 +111,7 @@ endif()
 
 include_directories(${GLOBAL.HEADER_DIR} ${GLOBAL.SOURCE_DIR})
 
-if(SHAREDLIB)
+if(X_SHARED)
     # build shared library
     add_library(hookzz SHARED ${GLOBAL.SOURCE_FILE} ${GLOBAL.HEADER_FILE})
 else()

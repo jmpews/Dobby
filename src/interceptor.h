@@ -18,7 +18,7 @@ typedef struct _hook_entry_t {
 
     HookType type;
 
-    unsigned int id;
+    uintptr_t id;
 
     bool is_enable;
 
@@ -45,9 +45,13 @@ typedef struct _hook_entry_t {
 struct _interceptor_backend_t;
 
 typedef struct _interceptor_t {
+
     bool is_support_rx_memory;
+
     list_t *hook_entries;
+
     struct _interceptor_backend_t *interceptor_backend;
+
     memory_manager_t *memory_manager;
 } interceptor_t;
 

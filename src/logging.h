@@ -1,13 +1,14 @@
 #ifndef logging_h
 #define logging_h
 
-#define INFO_LOG(fmt, ...)                                                                                             \
+#define COMMON_LOG(fmt, ...)                                                                                           \
     do {                                                                                                               \
         fprintf(stdout, fmt "\n", __VA_ARGS__);                                                                        \
     } while (0)
 
-#define INFO_LOG_STR(MSG) INFO_LOG("%s", MSG)
+#define COMMON_LOG_STR(MSG) COMMON_LOG("%s", MSG)
 
+#if defined(X_LOG) && X_LOG
 #if defined(__ANDROID__)
 #include <android/log.h>
 #define Logging(fmt, ...)                                                                                              \
@@ -17,8 +18,11 @@
 #else
 #define Logging(fmt, ...)                                                                                              \
     do {                                                                                                               \
-        INFO_LOG(fmt, __VA_ARGS__);                                                                                    \
+        COMMON_LOG(fmt, __VA_ARGS__);                                                                                  \
     } while (0);
+#endif
+#else
+#define Logging(fmt, ...)
 #endif
 
 #endif

@@ -7,6 +7,7 @@
 #elif defined __GNUC__ || defined __SUNPRO_C || defined __xlC__
 #define thread_local __thread
 #else
+#undef thread_local
 // #error "Cannot define thread_local"
 #endif
 #endif

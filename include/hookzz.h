@@ -108,16 +108,16 @@ typedef enum _HookType {
 }HookType;
 
 typedef struct _CallStackPublic {
-    unsigned long call_id;
+    uintptr_t call_id;
 } CallStackPublic;
 
 typedef struct _ThreadStackPublic {
-    unsigned long thread_id;
+    uintptr_t thread_id;
     unsigned long call_stack_count;
 } ThreadStackPublic;
 
 typedef struct _HookEntryInfo {
-    unsigned long hook_id;
+    uintptr_t hook_id;
     void *target_address;
 } HookEntryInfo;
 
@@ -125,13 +125,23 @@ typedef void (*PRECALL)(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *c
 typedef void (*POSTCALL)(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info);
 typedef void (*DBICALL)(RegState *rs, const HookEntryInfo *info);
 
+void call_stack_kv_set(CallStackPublic *csp, char *key, void *value);
+
+void *call_stack_kv_get(CallStackPublic *csp, char *key);
+
+// open near jump, use code cave & b xxx
+void zz_enable_near_jump();
+
+// close near jump, use `ldr x17, #0x8; br x17; .long 0x0; .long 0x0`
+void zz_disable_near_jump();
+
 // use pre_call and post_call wrap a function
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 
 // use inline hook to replace function
 RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
-// wuse pre_call and post_call wrap a GOT(imported) function
+// use pre_call and post_call wrap a GOT(imported) function
 RetStatus ZzWrapGOT(void *image_header, char *image_name, char *function_name, PRECALL pre_call, POSTCALL post_call);
 
 // replace got

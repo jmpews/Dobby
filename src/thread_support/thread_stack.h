@@ -7,12 +7,12 @@
 #include "std_kit/std_map.h"
 
 typedef struct _thread_stack_manager_t {
-    int thread_id;
+    uintptr_t thread_id;
     list_t *call_stacks;
 } thread_stack_manager_t;
 
 typedef struct _call_stack_t {
-    int call_id;
+    uintptr_t call_id;
     thread_stack_manager_t *thread_stack_manager;
     void *reg_sp;
     void *ret_addr;

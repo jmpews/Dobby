@@ -3,6 +3,8 @@
 #include "hookzz.h"
 #include "memory_manager.h"
 
+extern void __clear_cache(void *beg, void *end);
+
 void posix_memory_helper_cclass(set_page_permission)(void *page_address, int prot, int n) {
     int page_size = posix_memory_helper_cclass(get_page_size)();
     int r;
@@ -67,6 +69,8 @@ void posix_memory_helper_cclass(patch_code)(void *dest, void *src, int count) {
     posix_memory_helper_cclass(set_page_permission)(copy_page, PROT_WRITE | PROT_READ, 1);
     memcpy(dest_page, copy_page, page_size);
     posix_memory_helper_cclass(set_page_permission)(copy_page, PROT_EXEC | PROT_READ, 1);
+    __clear_cache((void *)dest, (void *)((uintptr_t)dest + count));
+
     // TODO
     munmap(copy_page, page_size);
     return;
