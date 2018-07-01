@@ -1,3 +1,6 @@
+
+**It's not stable now. | 目前是不稳定的**
+
 [转到中文README](README_zh-cn.md)
 
 ## What is HookZz ?
@@ -103,4 +106,6 @@ wechat: winter1ife
 QQ: 858982985
 ```
 
-<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fs87lnda3ej20iq0ow0ue.jpg" alt="qrcode">
+<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fshpbha919j20ge0lu77c.jpg" alt="qrcode">
+
+<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fshpbvtdusj206a0823yq.jpg" alt="qrcode">
