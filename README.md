@@ -1,4 +1,4 @@
-[转到中文README](README_zh-cn.md)
+此分支为重构分支仅支持 iOS/ARM64 | [转到分支MASTER(need update)](https://github.com/jmpews/HookZz/tree/master)
 
 ## What is HookZz ?
 
@@ -122,4 +122,4 @@ recommend_email: jmpews@gmail.com
 QQ: 858982985
 ```
 
-<img with="320px" height="320px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fsum2d3fl2j20gq0gm41i.jpg" alt="qrcode">
+<img with="220px" height="220px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fsum2d3fl2j20gq0gm41i.jpg" alt="qrcode">
