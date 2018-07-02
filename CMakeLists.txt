@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 enable_language(ASM)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=gnu11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_ASM_FLAGS "-arch arm64 -fembed-bitcode")
@@ -25,6 +25,12 @@ option(CXX OFF "use cxx source")
 option(USE_POSIX_IN_DARWIN OFF "use posix function in darwin")
 option(X_LOG ON "enable debug log")
 option(X_SHARED ON "build shared library")
+
+if(X_LOG)
+    ADD_DEFINITIONS(-DX_LOG=1)
+else()
+    ADD_DEFINITIONS(-DX_LOG=0)
+endif()
 
 if(X_BACKEND STREQUAL "Darwin")
     set(SYSTEM.Darwin 1)

@@ -63,7 +63,7 @@ RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call) {
     entry->type           = HOOK_TYPE_INSTRUCTION_via_DBI;
     entry->dbi_call       = dbi_call;
 
-    Logging("[*] prepare ZzDynamicBinaryInstrumentation hook %p", function_address);
+    Logging("[*] prepare ZzDynamicBinaryInstrumentation hook %p", inst_address);
 
     initialize_hook_entry(entry);
 
