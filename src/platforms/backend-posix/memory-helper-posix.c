@@ -3,6 +3,8 @@
 #include "hookzz.h"
 #include "memory_manager.h"
 
+#include <sys/mman.h>
+
 extern void __clear_cache(void *beg, void *end);
 
 void posix_memory_helper_cclass(set_page_permission)(void *page_address, int prot, int n) {
@@ -25,7 +27,7 @@ void *posix_memory_helper_cclass(allocate_page)(int prot, int n) {
     int page_size = posix_memory_helper_cclass(get_page_size)();
 
     void *mmap_page = mmap(0, 1, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    mprotect(mmap_page, (size_t)page_size, (PROT_READ | PROT_WRITE));
+    mprotect(mmap_page, (size_t)page_size, prot);
     return mmap_page;
 }
 
@@ -60,15 +62,26 @@ void posix_memory_helper_cclass(patch_code)(void *dest, void *src, int count) {
     //   return;
     // }
 
-    void *copy_page = posix_memory_helper_cclass(allocate_page)(PROT_R_X, 1);
+    void *copy_page = posix_memory_helper_cclass(allocate_page)(PROT_RW_, 1);
 
     memcpy(copy_page, (void *)dest_page, page_size);
     memcpy((void *)((zz_addr_t)copy_page + offset), src, count);
 
     /* SAME: mprotect(code_mmap, range_size, prot); */
-    posix_memory_helper_cclass(set_page_permission)(copy_page, PROT_WRITE | PROT_READ, 1);
+    posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_WRITE | PROT_READ | PROT_EXEC, 1);
     memcpy(dest_page, copy_page, page_size);
-    posix_memory_helper_cclass(set_page_permission)(copy_page, PROT_EXEC | PROT_READ, 1);
+    posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_EXEC | PROT_READ, 1);
+
+#if 0
+    // why not working ???
+    // posix_memory_helper_cclass(set_page_permission)(copy_page, PROT_EXEC | PROT_READ, 1);
+    // void *remap_page = mremap(copy_page, page_size, page_size, MREMAP_MAYMOVE|MREMAP_FIXED, dest_page);
+    // if(remap_page == MAP_FAILED) {
+    //     ERROR_LOG("r = %d, at (%p) error!", 0, (zz_ptr_t)remap_page);
+    //     return;
+    // }
+#endif
+
     __clear_cache((void *)dest, (void *)((uintptr_t)dest + count));
 
     // TODO

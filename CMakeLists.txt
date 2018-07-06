@@ -103,7 +103,7 @@ else()
     search_suffix_files("h" GLOBAL.SOURCE_DIR HookZz.HEADER_H)
 
     set(GLOBAL.SOURCE_FILE ${GLOBAL.SOURCE_FILE} ${HookZz.SOURCE_C} ${HookZz.SOURCE_ASSEMBLY})
-    set(GLOBAL.HEADER_FILE ${GLOBAL.HEADER_FILE} ${HookZz.HEADER_H})
+    set(GLOBAL.HEADER_FILE ${GLOBAL.HEADER_FILE} ${HookZz.HEADER_H} include/hookzz.h)
 endif()
 
 include_directories(${GLOBAL.HEADER_DIR} ${GLOBAL.SOURCE_DIR})

@@ -80,10 +80,7 @@ RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_ca
 
 size_t (*origin_fread)(void * ptr, size_t size, size_t nitems, FILE * stream);
 size_t (fake_fread)(void * ptr, size_t size, size_t nitems, FILE * stream) {
-    std::vector<FILE *>::iterator it = std::find(modelFileDescriptors.begin(), modelFileDescriptors.end(), stream);
-    if(it != modelFileDescriptors.end()) {
-        printf("[FileMonitor|fread|model|%p] >>> %ld, %ld\n", ptr, size, nitems);
-    }
+    printf("[FileMonitor|fread|model|%p] >>> %ld, %ld\n", ptr, size, nitems);
     return origin_fread(ptr, size, nitems, stream);
 }
 
