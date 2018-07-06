@@ -1,4 +1,4 @@
-此分支为重构分支仅支持 iOS/ARM64 | [转到分支MASTER(need update)](https://github.com/jmpews/HookZz/tree/master)
+此分支为重构分支仅支持 [Android|iOS]|[ARM64] | [转到分支MASTER(need update)](https://github.com/jmpews/HookZz/tree/master)
 
 ## What is HookZz ?
 
@@ -37,11 +37,22 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 ```
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DENABLE_BITCODE=OFF -DX_ARCH=arm64 -DX_PLATFORM=iOS -DCXX=OFF -DX_SHARED=ON -DX_LOG=ON -DCMAKE_VERBOSE_MAKEFILE=OFF
+cmake .. \
+-DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
+-DIOS_PLATFORM=OS \
+-DIOS_ARCH=arm64 \
+-DENABLE_ARC=FALSE \
+-DENABLE_BITCODE=OFF \
+-DCXX=OFF \
+-DX_ARCH=arm64 \
+-DX_PLATFORM=iOS \
+-DX_SHARED=ON \
+-DX_LOG=ON \
+-DCMAKE_VERBOSE_MAKEFILE=OFF
 make
 ```
 
-if you want generate Xcode Project, just replace with `cmake -G Xcode .. -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DENABLE_BITCODE=OFF -DX_ARCH=arm64 -DX_PLATFORM=iOS -DCXX=OFF -DX_SHARED=ON -DX_LOG=ON -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`.
+if you want generate Xcode Project, just replace with `cmake -G Xcode `.
 
 #### build for Android/ARM64
 
@@ -49,11 +60,20 @@ if you want generate Xcode Project, just replace with `cmake -G Xcode .. -DCMAKE
 mkdir build
 cd build
 export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DX_ARCH=arm64 -DX_PLATFORM=iOS -DCXX=OFF -DX_SHARED=ON -DX_LOG=ON -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake .. \
+-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-DANDROID_NDK=$ANDROID_NDK \
+-DCMAKE_BUILD_TYPE=Release \
+-DANDROID_ABI=arm64-v8a \
+-DCXX=OFF \
+-DX_ARCH=arm64 \
+-DX_PLATFORM=Android \
+-DX_SHARED=ON \
+-DX_LOG=ON \
+-DCMAKE_VERBOSE_MAKEFILE=OFF
 ```
 
 ## Usage
-
 #### 1. replace hook function
 ```
 RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
@@ -121,14 +141,13 @@ __attribute__((constructor)) void initlializeTemplate() {
     printf(">>> decrypt address: %p\n", (void *)finalAddr);
     ZzDynamicBinaryInstrumentation((void *)finalAddr, catchDecrypt);
 }
-
 ```
 
-## Contact Me
+## Contact me
 
 ```
 recommend_email: jmpews@gmail.com
 QQ: 858982985
 ```
 
-<img with="220px" height="220px" src="http://ww1.sinaimg.cn/large/a4decaedgy1fsum2d3fl2j20gq0gm41i.jpg" alt="qrcode">
+<img with="220px" height="220px" src="http://ww1.sinaimg.cn/large/a4decaedgy1ft0c1qh4s2j209a099wfi.jpg" alt="qrcode">
