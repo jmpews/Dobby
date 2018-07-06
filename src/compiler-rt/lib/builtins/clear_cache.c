@@ -11,6 +11,7 @@
 // #include "int_lib.h"
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #if __APPLE__
 #include <libkern/OSCacheControl.h>

@@ -43,6 +43,15 @@ make
 
 if you want generate Xcode Project, just replace with `cmake -G Xcode .. -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DENABLE_BITCODE=OFF -DX_ARCH=arm64 -DX_PLATFORM=iOS -DCXX=OFF -DX_SHARED=ON -DX_LOG=ON -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`.
 
+#### build for Android/ARM64
+
+```
+mkdir build
+cd build
+export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NDK=$ANDROID_NDK -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI=arm64-v8a -DX_ARCH=arm64 -DX_PLATFORM=iOS -DCXX=OFF -DX_SHARED=ON -DX_LOG=ON -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+```
+
 ## Usage
 
 #### 1. replace hook function

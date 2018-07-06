@@ -1,15 +1,6 @@
-# macOS build iOS
-## arm64
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=arm64 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=arm64
-#>>> make
-## armv7
-#>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.toolchain.cmake -DIOS_PLATFORM=OS -DIOS_ARCH=armv7 -DENABLE_ARC=FALSE -DZPLATFORM=iOS -DZARCH=armv7
-#>>> make
-
 cmake_minimum_required(VERSION 3.5)
 project(HookZz)
 
-include(cmake/ios.toolchain.cmake)
 include(cmake/Util.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -40,10 +31,10 @@ endif()
 
 if(X_PLATFORM STREQUAL "iOS")
     set(SYSTEM.iOS 1)
-elseif(PLATFORM STREQUAL "Android")
+elseif(X_PLATFORM STREQUAL "Android")
     set(SYSTEM.Android 1)
 else()
-    message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] PLATFORM")
+    message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] X_PLATFORM")
 endif()
 
 if(X_ARCH STREQUAL "arm" OR X_ARCH STREQUAL "armv7")
@@ -53,7 +44,7 @@ elseif(X_ARCH STREQUAL "aarch64" OR X_ARCH STREQUAL "arm64" OR X_ARCH STREQUAL "
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(PROCESSOR.aarch64 1)
 else()
-    message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] ARCH")
+    message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] X_ARCH")
 endif()
 
 include(cmake/Macros.cmake)
@@ -126,3 +117,7 @@ else()
 endif()
 
 target_include_directories(hookzz PUBLIC ./include)
+
+if(CMAKE_SYSTEM_NAME MATCHES "^Android")
+    target_link_libraries(hookzz log)
+endif()

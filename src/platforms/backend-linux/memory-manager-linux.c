@@ -1,8 +1,8 @@
+#include "core.h"
 #include "memory-helper-posix.h"
 #include "memory_manager.h"
-#include "core.h"
 
-PLATFORM_API static bool memory_manager_cclass(is_support_allocate_rx_memory)(memory_manager_t *self) { return true; }
+PLATFORM_API bool memory_manager_cclass(is_support_allocate_rx_memory)(memory_manager_t *self) { return true; }
 
 PLATFORM_API void memory_manager_cclass(get_process_memory_layout)(memory_manager_t *self) {
     char filename[64];
@@ -53,7 +53,8 @@ PLATFORM_API void memory_manager_cclass(get_process_memory_layout)(memory_manage
         183			seq_printf(m, "[stack]");
         184		}
          */
-        if (sscanf(buf, "%lx-%lx %s %llx %x:%x %lu %s", &start_addr, &end_addr, prot, &offset, &dev, &sdev, &inode, path) != 8)
+        if (sscanf(buf, "%lx-%lx %s %llx %x:%x %lu %s", &start_addr, &end_addr, prot, &offset, &dev, &sdev, &inode,
+                   path) != 8)
             continue;
 
         MemoryBlock *mb = SAFE_MALLOC_TYPE(MemoryBlock);
