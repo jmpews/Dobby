@@ -73,6 +73,11 @@ cmake .. \
 -DCMAKE_VERBOSE_MAKEFILE=OFF
 ```
 
+## Demo
+#### Android/ARMv8
+
+https://github.com/jmpews/HookZzAndroidDemo
+
 ## Usage
 #### 1. replace hook function
 ```
