@@ -63,7 +63,7 @@ void *search_dummy_code_cave(zz_addr_t search_start, zz_addr_t search_end, int s
     unsigned char dummy_0[1024] = {0};
 
     while (cur_addr < search_end) {
-        if (!memcpy((void *)cur_addr, dummy_0, size)) {
+        if (!memcmp((void *)cur_addr, dummy_0, size)) {
             return (void *)cur_addr;
         }
 
@@ -78,12 +78,25 @@ CodeCave *memory_manager_cclass(search_code_cave)(memory_manager_t *self, void *
     zz_addr_t search_start, search_end;
 
     limit_start         = (zz_addr_t)address - range;
-    limit_start         = (zz_addr_t)address + range - size;
+    limit_end           = (zz_addr_t)address + range - size;
     list_iterator_t *it = list_iterator_new(self->free_memory_blocks, LIST_HEAD);
+
+    if (!self->process_memory_layout->len) {
+        memory_manager_cclass(get_process_memory_layout)(self);
+    }
+
     for (int i = 0; i < self->process_memory_layout->len; i++) {
         MemoryBlock *mb = (MemoryBlock *)(list_at(self->process_memory_layout, i)->val);
+        
+        // fix top/bottom limit
         search_start    = (zz_addr_t)mb->address > limit_start ? (zz_addr_t)mb->address : limit_start;
         search_end = ((zz_addr_t)mb->address + mb->size) < limit_end ? ((zz_addr_t)mb->address + mb->size) : limit_end;
+        
+        // check `fixed`
+        if(search_start > search_end) {
+            continue;
+        }
+        
         void *p    = search_dummy_code_cave(search_start, search_end, size);
         if (p) {
             cc          = SAFE_MALLOC_TYPE(CodeCave);

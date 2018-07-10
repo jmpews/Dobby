@@ -43,6 +43,9 @@ void arm64_assembly_writer_cclass(destory)(ARM64AssemblyWriter *self);
 void arm64_assembly_writer_cclass(reset)(ARM64AssemblyWriter *self, void *pc);
 void arm64_assembly_writer_cclass(patch_to)(ARM64AssemblyWriter *self, void *target_address);
 
+/* b xxx range for near jump */
+size_t arm64_assembly_writer_cclass(bxxx_range)();
+
 void arm64_assembly_writer_cclass(put_bytes)(ARM64AssemblyWriter *self, void *data, int length);
 
 void arm64_assembly_writer_cclass(put_ldr_reg_imm)(ARM64AssemblyWriter *self, ARM64Reg reg, uint32_t offset);

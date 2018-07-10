@@ -79,6 +79,19 @@ cmake .. \
 https://github.com/jmpews/HookZzAndroidDemo
 
 ## Usage
+#### 0. near jump
+
+this trick is used to hook short function. it will use `b xxx` replace
+
+```
+ldr x17, #8
+br x17
+.long 0x1111
+.long 0x1111
+````
+
+if you want enable near jump, just add `zz_enable_near_jump();` before hook funciton, and stop with `zz_disable_near_jump();`
+
 #### 1. replace hook function
 ```
 RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);

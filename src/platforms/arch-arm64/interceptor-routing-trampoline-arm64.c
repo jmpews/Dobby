@@ -141,7 +141,8 @@ ARCH_API void interceptor_trampoline_cclass(build_for_enter_transfer)(hook_entry
     memory_manager_t *memory_manager = memory_manager_cclass(shared_instance)();
     if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
         CodeCave *cc = NULL;
-        cc = memory_manager_cclass(search_code_cave)(memory_manager, entry->target_address, ARM64_TINY_REDIRECT_SIZE,
+        cc           = memory_manager_cclass(search_code_cave)(memory_manager, entry->target_address,
+                                                     arm64_assembly_writer_cclass(bxxx_range)(),
                                                      writer_arm64->inst_bytes->size);
         XCHECK(cc);
         arm64_assembly_writer_cclass(patch_to)(writer_arm64, cc->address);
