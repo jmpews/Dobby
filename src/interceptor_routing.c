@@ -97,7 +97,18 @@ void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegState 
 
 void interceptor_routing_common_bridge_handler(RegState *rs, ClosureBridgeInfo *cb_info) {
     USER_CODE_CALL userCodeCall = cb_info->user_code;
+
+    // TODO: package as a function `beautiful_stack()`
+    uintptr_t fp_reg;
+    fp_reg                     = get_current_fp_reg();
+    uintptr_t *none_symbol_PTR = (uintptr_t *)fp_reg + 1;
+    uintptr_t none_symbol      = *none_symbol_PTR;
+    uintptr_t *ret_addr_PTR    = get_ret_addr_PTR(rs);
+    uintptr_t ret_addr         = *ret_addr_PTR;
+    *none_symbol_PTR           = ret_addr;
+
     userCodeCall(rs, cb_info);
+    *none_symbol_PTR = none_symbol;
     return;
 }
 

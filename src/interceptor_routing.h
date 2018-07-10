@@ -7,7 +7,10 @@
 #include "interceptor.h"
 
 ARCH_API void *get_ret_addr_PTR(RegState *rs);
+
 ARCH_API void *get_next_hop_addr_PTR(RegState *rs);
+
+ARCH_API void *get_current_fp_reg();
 
 void interceptor_routing_begin(RegState *rs, hook_entry_t *entry, void *next_hop_addr_PTR, void *ret_addr_PTR);
 
