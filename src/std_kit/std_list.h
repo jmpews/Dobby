@@ -12,22 +12,22 @@ extern "C" {
 typedef enum { LIST_HEAD, LIST_TAIL } list_direction_t;
 
 typedef struct list_node {
-    struct list_node *prev;
-    struct list_node *next;
-    void *val;
+  struct list_node *prev;
+  struct list_node *next;
+  void *val;
 } list_node_t;
 
 typedef struct {
-    list_node_t *head;
-    list_node_t *tail;
-    unsigned int len;
-    void (*free)(void *val);
-    int (*match)(void *a, void *b);
+  list_node_t *head;
+  list_node_t *tail;
+  unsigned int len;
+  void (*free)(void *val);
+  int (*match)(void *a, void *b);
 } list_t;
 
 typedef struct {
-    list_node_t *next;
-    list_direction_t direction;
+  list_node_t *next;
+  list_direction_t direction;
 } list_iterator_t;
 
 // list_node_t

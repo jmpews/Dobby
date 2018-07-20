@@ -7,21 +7,21 @@
 typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN, UNKOWN_INSN } InsnType;
 
 typedef struct _ARMInstruction {
-    InsnType type;
-    zz_addr_t pc;
-    zz_addr_t address;
-    uint8_t size;
-    union {
-        uint32_t trick_insn;
-        struct {
-            uint16_t trick_insn1;
-            uint16_t trick_insn2;
-        };
+  InsnType type;
+  zz_addr_t pc;
+  zz_addr_t address;
+  uint8_t size;
+  union {
+    uint32_t trick_insn;
+    struct {
+      uint16_t trick_insn1;
+      uint16_t trick_insn2;
     };
+  };
 
-    uint32_t insn;
-    uint16_t insn1;
-    uint16_t insn2;
+  uint32_t insn;
+  uint16_t insn1;
+  uint16_t insn2;
 } ARMInstruction;
 
 uint32_t get_insn_sub(uint32_t insn, int start, int length);

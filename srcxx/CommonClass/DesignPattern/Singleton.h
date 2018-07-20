@@ -8,20 +8,20 @@
 #include <pthread.h>
 
 template <typename T> class Singleton {
-  private:
-    static T *_instance;
+private:
+  static T *_instance;
 
-  public:
-    static T *GetInstance();
+public:
+  static T *GetInstance();
 };
 
 template <typename T> T *Singleton<T>::_instance = NULL;
 
 template <typename T> T *Singleton<T>::GetInstance() {
-    if (_instance == NULL) {
-        _instance = new T();
-    }
-    return _instance;
+  if (_instance == NULL) {
+    _instance = new T();
+  }
+  return _instance;
 }
 
 #endif //HOOKZZ_SINGLETON_H

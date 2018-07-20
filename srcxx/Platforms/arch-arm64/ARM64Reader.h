@@ -15,18 +15,18 @@
 
 class ARM64AssemblyReader {
 
-  public:
-    void *start_pc;
-    void *start_address;
-    std::vector<ARM64InstructionCTX *> instCTXs;
-    std::vector<char> instBytes;
+public:
+  void *start_pc;
+  void *start_address;
+  std::vector<ARM64InstructionCTX *> instCTXs;
+  std::vector<char> instBytes;
 
-  public:
-    ARM64AssemblyReader(void *address, void *pc);
+public:
+  ARM64AssemblyReader(void *address, void *pc);
 
-    void reset(void *address, void *pc);
+  void reset(void *address, void *pc);
 
-    ARM64InstructionCTX *readInstruction();
+  ARM64InstructionCTX *readInstruction();
 };
 
 #endif //HOOKZZ_READERARM64_H

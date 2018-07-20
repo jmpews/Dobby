@@ -38,64 +38,66 @@
 // STDERR before STDOUT, because sync
 
 #define INFO_LOG(fmt, ...)                                                                                             \
-    do {                                                                                                               \
-        fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                  \
-    } while (0)
+  do {                                                                                                                 \
+    fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                      \
+  } while (0)
 
 #define INFO_LOG_STR(MSG) INFO_LOG("%s", MSG)
 
 #define DEBUG_LOG(fmt, ...)                                                                                            \
-    do {                                                                                                               \
-        fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                  \
-    } while (0)
+  do {                                                                                                                 \
+    fprintf(stdout, RESET fmt "\n", __VA_ARGS__);                                                                      \
+  } while (0)
 #define DEBUG_LOG_STR(MSG) DEBUG_LOG("%s", MSG)
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
-    do {                                                                                                               \
-        fprintf(stderr, "======= ERROR LOG ======= \n");                                                               \
-        fprintf(stderr,                                                                                                \
-                RED "[!] "                                                                                             \
-                    "%s:%d:%s(): " fmt RESET "\n",                                                                     \
-                __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
-        if (ENABLE_PRINT_ERROR_STRING) {                                                                               \
-            fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                            \
-            perror(strerror(errno));                                                                                   \
-        }                                                                                                              \
-        fprintf(stderr, "======= Error Log End ======= \n");                                                           \
-    } while (0)
+  do {                                                                                                                 \
+    fprintf(stderr, "======= ERROR LOG ======= \n");                                                                   \
+    fprintf(stderr,                                                                                                    \
+            RED "[!] "                                                                                                 \
+                "%s:%d:%s(): " fmt RESET "\n",                                                                         \
+            __FILE__, __LINE__, __func__, __VA_ARGS__);                                                                \
+    if (ENABLE_PRINT_ERROR_STRING) {                                                                                   \
+      fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                                  \
+      perror(strerror(errno));                                                                                         \
+    }                                                                                                                  \
+    fprintf(stderr, "======= Error Log End ======= \n");                                                               \
+  } while (0)
 
 #define ERROR_LOG_STR(MSG) ERROR_LOG("%s", MSG)
 
 #define COMMON_ERROR_LOG()                                                                                             \
-    do {                                                                                                               \
-        fprintf(stderr, "======= ERROR LOG ======= \n");                                                               \
-        fprintf(stderr, RED "[!]error occur at %s:%d:%s()\n", __FILE__, __LINE__, __func__);                           \
-        if (ENABLE_PRINT_ERROR_STRING) {                                                                               \
-            fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                            \
-            perror(strerror(errno));                                                                                   \
-        }                                                                                                              \
-        fprintf(stderr, "======= Error Log End ======= \n");                                                           \
-    } while (0)
+  do {                                                                                                                 \
+    fprintf(stderr, "======= ERROR LOG ======= \n");                                                                   \
+    fprintf(stderr, RED "[!]error occur at %s:%d:%s()\n", __FILE__, __LINE__, __func__);                               \
+    if (ENABLE_PRINT_ERROR_STRING) {                                                                                   \
+      fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                                  \
+      perror(strerror(errno));                                                                                         \
+    }                                                                                                                  \
+    fprintf(stderr, "======= Error Log End ======= \n");                                                               \
+  } while (0)
 
 class LogControler : public Singleton<LogControler> {
-  public:
-    bool isEnableLog;
+public:
+  bool isEnableLog;
 
-  public:
-    void enableLog() { isEnableLog = true; };
+public:
+  void enableLog() {
+    isEnableLog = true;
+  };
 };
 
 #if defined(__ANDROID__)
 #include <android/log.h>
 #define DEBUGLOG_COMMON_LOG(fmt, ...)                                                                                  \
-    do {                                                                                                               \
-        __android_log_print(ANDROID_LOG_INFO, "HookDEBUG", fmt, __VA_ARGS__);                                          \
-    } while (0);
+  do {                                                                                                                 \
+    __android_log_print(ANDROID_LOG_INFO, "HookDEBUG", fmt, __VA_ARGS__);                                              \
+  } while (0);
 #else
 #define DEBUGLOG_COMMON_LOG(fmt, ...)                                                                                  \
-    do {                                                                                                               \
-        INFO_LOG(fmt, __VA_ARGS__);                                                                                    \
-    } while (0);
+  do {                                                                                                                 \
+    INFO_LOG(fmt, __VA_ARGS__);                                                                                        \
+  } while (0);
 #endif
 
 #endif //HOOKZZ_GLOGEMULATOR_H

@@ -9,18 +9,22 @@
 
 #include "ARM64Relocator.h"
 
-inline void ReadBytes(void *data, void *address, int length) { memcpy(data, address, length); }
+inline void ReadBytes(void *data, void *address, int length) {
+  memcpy(data, address, length);
+}
 
-ARM64AssemblerWriter::ARM64AssemblerWriter(void *pc) : start_pc(pc) { instBytes.reserve(1024); }
+ARM64AssemblerWriter::ARM64AssemblerWriter(void *pc) : start_pc(pc) {
+  instBytes.reserve(1024);
+}
 
 void ARM64AssemblerWriter::reset(void *pc) {
-    instBytes.clear();
-    start_pc = pc;
+  instBytes.clear();
+  start_pc = pc;
 }
 
 void ARM64AssemblerWriter::PatchTo(void *target_address) {
-    start_address = target_address;
-    MemoryManager::CodePatch(target_address, instBytes.data(), instBytes.size());
+  start_address = target_address;
+  MemoryManager::CodePatch(target_address, instBytes.data(), instBytes.size());
 }
 
 // void ARM64AssemblerWriter::NearPatchTo(void *target_address, int range) {
@@ -46,16 +50,16 @@ void ARM64AssemblerWriter::PatchTo(void *target_address) {
 // }
 
 void ARM64AssemblerWriter::putBytes(void *data, int dataSize) {
-    ARM64InstructionCTX *instCTX = new (ARM64InstructionCTX);
+  ARM64InstructionCTX *instCTX = new (ARM64InstructionCTX);
 
-    assert(&instBytes[0] == instBytes.data());
-    instCTX->pc      = (zz_addr_t)this->start_pc + this->instBytes.size();
-    instCTX->address = (zz_addr_t)this->instBytes.data() + this->instBytes.size();
-    instCTX->size    = 4;
-    ReadBytes(&instCTX->bytes, (void *)instCTX->address, 4);
+  assert(&instBytes[0] == instBytes.data());
+  instCTX->pc      = (zz_addr_t)this->start_pc + this->instBytes.size();
+  instCTX->address = (zz_addr_t)this->instBytes.data() + this->instBytes.size();
+  instCTX->size    = 4;
+  ReadBytes(&instCTX->bytes, (void *)instCTX->address, 4);
 
-    ReadBytes(&instBytes[instBytes.size()], (void *)instCTX->address, 4);
-    instBytes.resize(instBytes.size() + 4);
+  ReadBytes(&instBytes[instBytes.size()], (void *)instCTX->address, 4);
+  instBytes.resize(instBytes.size() + 4);
 
-    instCTXs.push_back(instCTX);
+  instCTXs.push_back(instCTX);
 }

@@ -26,11 +26,11 @@
 #include "std_kit/std_list.h"
 
 typedef struct _ARM64AssemblyWriter {
-    void *start_pc;
-    void *start_address;
+  void *start_pc;
+  void *start_address;
 
-    list_t *instCTXs;
-    buffer_array_t *inst_bytes;
+  list_t *instCTXs;
+  buffer_array_t *inst_bytes;
 } ARM64AssemblyWriter;
 
 #define arm64_assembly_writer_cclass(member) cclass(arm64_assembly_writer, member)

@@ -17,24 +17,24 @@
 #include "regs-arm.h"
 
 void arm_register_describe(ARMReg reg, ARMRegInfo *ri) {
-    if (reg >= ARM_REG_R0 && reg <= ARM_REG_R12) {
-        ri->width = 32;
-        ri->meta  = reg;
-    } else if (reg == ARM_REG_SP) {
-        ri->width = 32;
-        ri->meta  = reg;
-    } else if (reg == ARM_REG_LR) {
-        ri->width = 32;
-        ri->meta  = reg;
-    } else if (reg == ARM_REG_PC) {
-        ri->width = 32;
-        ri->meta  = reg;
-    } else {
-        ERROR_LOG_STR("arm64_register_describe error.");
+  if (reg >= ARM_REG_R0 && reg <= ARM_REG_R12) {
+    ri->width = 32;
+    ri->meta  = reg;
+  } else if (reg == ARM_REG_SP) {
+    ri->width = 32;
+    ri->meta  = reg;
+  } else if (reg == ARM_REG_LR) {
+    ri->width = 32;
+    ri->meta  = reg;
+  } else if (reg == ARM_REG_PC) {
+    ri->width = 32;
+    ri->meta  = reg;
+  } else {
+    ERROR_LOG_STR("arm64_register_describe error.");
 #if defined(DEBUG_MODE)
-        debug_break();
+    debug_break();
 #endif
-        ri->index = 0;
-    }
-    ri->index = reg - ARM_REG_R0;
+    ri->index = 0;
+  }
+  ri->index = reg - ARM_REG_R0;
 }

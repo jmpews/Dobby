@@ -5,7 +5,10 @@
 #include "DarwinDynamicClosureBridge.h"
 #include "ClosureBridge.h"
 
+DynamicClosureBridgeInfo *DynamicClosureBridge::allocateDynamicClosureBridge(void *user_data, void *user_code) {
+  return NULL;
+}
 
-DynamicClosureBridgeInfo *DynamicClosureBridge::allocateDynamicClosureBridge(void *user_data, void *user_code) {return NULL;}
-
-DynamicClosureBridgeTrampolineTable* DynamicClosureBridge::addDynamicClosurceBridgeTrampolineTable() {return NULL;}
+DynamicClosureBridgeTrampolineTable *DynamicClosureBridge::addDynamicClosurceBridgeTrampolineTable() {
+  return NULL;
+}

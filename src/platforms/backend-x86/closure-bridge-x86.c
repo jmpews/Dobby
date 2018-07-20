@@ -11,12 +11,21 @@
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable = NULL;
 
-void common_bridge_handler(RegState *rs, ClosureBridgeInfo *cb_info) {}
+void common_bridge_handler(RegState *rs, ClosureBridgeInfo *cb_info) {
+}
 
-static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) { return NULL; }
+static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) {
+  return NULL;
+}
 
-static void ClosureBridgeTrampolineTableFree(ClosureBridgeTrampolineTable *table) { return; }
+static void ClosureBridgeTrampolineTableFree(ClosureBridgeTrampolineTable *table) {
+  return;
+}
 
-ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) { return NULL; }
+ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
+  return NULL;
+}
 
-static void ClosureBridgeFree(ClosureBridgeInfo *bridgeData) { return; }
+static void ClosureBridgeFree(ClosureBridgeInfo *bridgeData) {
+  return;
+}

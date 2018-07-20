@@ -1,0 +1,15 @@
+BasedOnStyle: LLVM
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+
+DerivePointerAlignment: false
+PointerAlignment: Right
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 120
+
+ReflowComments: false
+AlignConsecutiveAssignments : true
+BreakBeforeBraces: Attach

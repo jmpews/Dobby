@@ -18,8 +18,7 @@
 
 typedef ARMAssemblerWriter ThumbAssemblerWriter;
 
-typedef enum _ThumbMemoryOperation { ZZ_THUMB_MEMORY_LOAD,
-                                     ZZ_THUMB_MEMORY_STORE } ThumbMemoryOperation;
+typedef enum _ThumbMemoryOperation { ZZ_THUMB_MEMORY_LOAD, ZZ_THUMB_MEMORY_STORE } ThumbMemoryOperation;
 
 // ------- user custom -------
 
@@ -84,17 +83,14 @@ void thumb_writer_put_add_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, in
 
 void thumb_writer_put_sub_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, int32_t imm);
 
-void thumb_writer_put_add_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
-                                      int32_t right_value);
+void thumb_writer_put_add_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg, int32_t right_value);
 
-void thumb_writer_put_sub_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
-                                      int32_t right_value);
+void thumb_writer_put_sub_reg_reg_imm(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg, int32_t right_value);
 
 void thumb_writer_put_push_reg(ThumbAssemblerWriter *self, ARMReg reg);
 
 void thumb_writer_put_pop_reg(ThumbAssemblerWriter *self, ARMReg reg);
 
-void thumb_writer_put_add_reg_reg_reg(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg,
-                                      ARMReg right_reg);
+void thumb_writer_put_add_reg_reg_reg(ThumbAssemblerWriter *self, ARMReg dst_reg, ARMReg left_reg, ARMReg right_reg);
 
 #endif

@@ -7,8 +7,10 @@
 #include <string.h>
 
 #include "logging.h"
+#include "std_kit/std_buffer_array.h"
 #include "std_kit/std_kit.h"
-#include "std_kit/std_macros.h"
+#include "std_kit/std_list.h"
+#include "std_kit/std_map.h"
 
 /* define a macro to make abbreviation */
 #define cclass(class, member) class##_##member

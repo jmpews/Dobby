@@ -8,28 +8,28 @@
 #define WORD_SIZE 8
 
 inline void BIT32SET(uint32_t *inst32, int start, int len, uint32_t v) {
-    if (!inst32)
-        return;
-    // *inst32 = *inst32 | (v << start);
-    *inst32 = (*inst32 & ~(((1 << len) - 1) << start)) | (v << start);
+  if (!inst32)
+    return;
+  // *inst32 = *inst32 | (v << start);
+  *inst32 = (*inst32 & ~(((1 << len) - 1) << start)) | (v << start);
 }
 
 inline void BIT32SETMASK(uint32_t *inst32, int start, int len) {
-    if (!inst32)
-        return;
-    *inst32 = *inst32 | (((1 << len) - 1) << start);
+  if (!inst32)
+    return;
+  *inst32 = *inst32 | (((1 << len) - 1) << start);
 }
 inline void BIT32MASKSET(uint32_t *inst32, uint32_t *mask32, int start, int len, uint32_t v) {
-    if (!inst32)
-        return;
-    *inst32 = *inst32 | (v << start);
-    *mask32 = *mask32 | (((1 << len) - 1) << start);
+  if (!inst32)
+    return;
+  *inst32 = *inst32 | (v << start);
+  *mask32 = *mask32 | (((1 << len) - 1) << start);
 }
 
 inline void BIT32GET(uint32_t inst32, int start, int len, uint32_t *v) {
-    if (!v)
-        return;
-    *v = (inst32 >> start) & ((1 << len) - 1);
+  if (!v)
+    return;
+  *v = (inst32 >> start) & ((1 << len) - 1);
 }
 
 #if 0
@@ -180,25 +180,24 @@ void ARM64CoreINIT(ARM64InstId id) {
 ARM64InstructionX ARM64InstArrary[1024] = {0};
 
 ARM64InstId getInstType(uint32_t inst32) {
-    for (int i = ARM64_INST_START; i < ARM64_INST_END; i++) {
-        ARM64InstructionX *instX =
-            (ARM64InstructionX *)((uintptr_t)ARM64InstArrary + (int)i * sizeof(ARM64InstructionX));
-        uint32_t bits[4 * WORD_SIZE] = {0}; // trick :) AKA LLVM bits<>
-        
-        if(!instX->inst32)
-            continue;
-        if ((instX->mask32 & inst32) == instX->inst32) {
-            return i;
-        }
+  for (int i = ARM64_INST_START; i < ARM64_INST_END; i++) {
+    ARM64InstructionX *instX = (ARM64InstructionX *)((uintptr_t)ARM64InstArrary + (int)i * sizeof(ARM64InstructionX));
+    uint32_t bits[4 * WORD_SIZE] = {0}; // trick :) AKA LLVM bits<>
+
+    if (!instX->inst32)
+      continue;
+    if ((instX->mask32 & inst32) == instX->inst32) {
+      return i;
     }
-    return ARM64_INST_END;
+  }
+  return ARM64_INST_END;
 }
 
 __attribute__((constructor)) void initializeARM64InstructionX() {
-    ARM64InstArrary[LoadLiteral]   = (ARM64InstructionX){0 | 0b011 << 27 | 0b00 << 24, 0 | 0b111 << 27 | 0b11 << 24};
-    ARM64InstArrary[BaseCmpBranch] = (ARM64InstructionX){0 | 0b011010 << 25, 0b111111 << 25};
-    ARM64InstArrary[BranchCond]    = (ARM64InstructionX){0 | 0b01010100 << 24 | 0 << 4, 0 | 0b11111111 << 24 | 1 << 4};
-    ARM64InstArrary[B]             = (ARM64InstructionX){0 | 0 << 31 | 0b00101 << 26, 0 | 1 << 31 | 0b11111 << 26};
-    ARM64InstArrary[BL]            = (ARM64InstructionX){0 | 1 << 31 | 0b00101 << 26, 0 | 1 << 31 | 0b11111 << 26};
-    return;
+  ARM64InstArrary[LoadLiteral]   = (ARM64InstructionX){0 | 0b011 << 27 | 0b00 << 24, 0 | 0b111 << 27 | 0b11 << 24};
+  ARM64InstArrary[BaseCmpBranch] = (ARM64InstructionX){0 | 0b011010 << 25, 0b111111 << 25};
+  ARM64InstArrary[BranchCond]    = (ARM64InstructionX){0 | 0b01010100 << 24 | 0 << 4, 0 | 0b11111111 << 24 | 1 << 4};
+  ARM64InstArrary[B]             = (ARM64InstructionX){0 | 0 << 31 | 0b00101 << 26, 0 | 1 << 31 | 0b11111 << 26};
+  ARM64InstArrary[BL]            = (ARM64InstructionX){0 | 1 << 31 | 0b00101 << 26, 0 | 1 << 31 | 0b11111 << 26};
+  return;
 }

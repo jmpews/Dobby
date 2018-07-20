@@ -2,38 +2,40 @@
 #include "memory-helper-posix.h"
 #include "memory_manager.h"
 
-PLATFORM_API bool memory_manager_cclass(is_support_allocate_rx_memory)(memory_manager_t *self) { return true; }
+PLATFORM_API bool memory_manager_cclass(is_support_allocate_rx_memory)(memory_manager_t *self) {
+  return true;
+}
 
 PLATFORM_API void memory_manager_cclass(get_process_memory_layout)(memory_manager_t *self) {
-    char filename[64];
-    char buf[256];
-    FILE *fp;
+  char filename[64];
+  char buf[256];
+  FILE *fp;
 
-    // self process
-    int pid = -1;
+  // self process
+  int pid = -1;
 
-    // given pid, open /proc/pid/maps; or not, open current maps.
-    if (pid > 0) {
-        sprintf(filename, "/proc/%d/maps", pid);
-    } else {
-        sprintf(filename, "/proc/self/maps");
-    }
+  // given pid, open /proc/pid/maps; or not, open current maps.
+  if (pid > 0) {
+    sprintf(filename, "/proc/%d/maps", pid);
+  } else {
+    sprintf(filename, "/proc/self/maps");
+  }
 
-    fp = fopen(filename, "r");
-    if (fp < 0) {
-        return;
-    }
+  fp = fopen(filename, "r");
+  if (fp < 0) {
+    return;
+  }
 
-    while (fgets(buf, sizeof(buf), fp) != NULL) {
-        zz_addr_t start_addr, end_addr;
-        unsigned dev, sdev;
-        unsigned long inode;
-        unsigned long long offset;
-        char prot[5];
-        char path[64];
-        int len;
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    zz_addr_t start_addr, end_addr;
+    unsigned dev, sdev;
+    unsigned long inode;
+    unsigned long long offset;
+    char prot[5];
+    char path[64];
+    int len;
 
-        /* format in /proc/pid/maps is constructed as below in fs/proc/task_mmu.c
+    /* format in /proc/pid/maps is constructed as below in fs/proc/task_mmu.c
         167	seq_printf(m,
         168			   "%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu ",
         169			   vma->vm_start,
@@ -53,14 +55,14 @@ PLATFORM_API void memory_manager_cclass(get_process_memory_layout)(memory_manage
         183			seq_printf(m, "[stack]");
         184		}
          */
-        if (sscanf(buf, "%lx-%lx %s %llx %x:%x %lu %s", &start_addr, &end_addr, prot, &offset, &dev, &sdev, &inode,
-                   path) != 8)
-            continue;
+    if (sscanf(buf, "%lx-%lx %s %llx %x:%x %lu %s", &start_addr, &end_addr, prot, &offset, &dev, &sdev, &inode, path) !=
+        8)
+      continue;
 
-        MemoryBlock *mb = SAFE_MALLOC_TYPE(MemoryBlock);
-        list_rpush(self->process_memory_layout, list_node_new(mb));
-        mb->address = (void *)start_addr;
-        mb->size    = end_addr - start_addr;
-        mb->prot = (prot[0] == 'r' ? (1 << 0) : 0) | (prot[1] == 'w' ? (1 << 1) : 0) | (prot[2] == 'x' ? (1 << 2) : 0);
-    }
+    MemoryBlock *mb = SAFE_MALLOC_TYPE(MemoryBlock);
+    list_rpush(self->process_memory_layout, list_node_new(mb));
+    mb->address = (void *)start_addr;
+    mb->size    = end_addr - start_addr;
+    mb->prot    = (prot[0] == 'r' ? (1 << 0) : 0) | (prot[1] == 'w' ? (1 << 1) : 0) | (prot[2] == 'x' ? (1 << 2) : 0);
+  }
 }

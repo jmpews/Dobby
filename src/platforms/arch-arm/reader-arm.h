@@ -8,23 +8,23 @@
 #include "platforms/backend-linux/memory-linux.h"
 
 typedef enum _ARMInsnType {
-    ARM_INS_ADD_register_A1,
-    ARM_INS_LDR_literal_A1,
-    ARM_INS_ADR_A1,
-    ARM_INS_ADR_A2,
-    ARM_INS_B_A1,
-    ARM_INS_BLBLX_immediate_A1,
-    ARM_INS_BLBLX_immediate_A2,
-    ARM_UNDEF
+  ARM_INS_ADD_register_A1,
+  ARM_INS_LDR_literal_A1,
+  ARM_INS_ADR_A1,
+  ARM_INS_ADR_A2,
+  ARM_INS_B_A1,
+  ARM_INS_BLBLX_immediate_A1,
+  ARM_INS_BLBLX_immediate_A2,
+  ARM_UNDEF
 } ARMInsnType;
 
 #define MAX_INSN_SIZE 256
 typedef struct _ARMReader {
-    ARMInstruction *insnCTXs[MAX_INSN_SIZE];
-    zz_size_t insnCTXs_count;
-    zz_addr_t start_pc;
-    zz_addr_t insns_buffer;
-    zz_size_t insns_size;
+  ARMInstruction *insnCTXs[MAX_INSN_SIZE];
+  zz_size_t insnCTXs_count;
+  zz_addr_t start_pc;
+  zz_addr_t insns_buffer;
+  zz_size_t insns_size;
 } ARMReader;
 
 ARMInsnType GetARMInsnType(uint32_t insn);

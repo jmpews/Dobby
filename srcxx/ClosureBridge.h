@@ -15,52 +15,52 @@
 #include "hookzz.h"
 
 typedef struct _ClosureBridgeInfo {
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
+  void *user_code;
+  void *user_data;
+  void *redirect_trampoline;
 } ClosureBridgeInfo;
 
 typedef struct _ClosureBridgeTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    uint16_t used_count;
-    uint16_t free_count;
+  void *entry;
+  void *trampoline_page;
+  uint16_t used_count;
+  uint16_t free_count;
 } ClosureBridgeTrampolineTable;
 
 class ClosureBridge {
-  public:
-    std::vector<ClosureBridgeInfo *> bridge_infos;
-    std::vector<ClosureBridgeTrampolineTable *> trampoline_tables;
+public:
+  std::vector<ClosureBridgeInfo *> bridge_infos;
+  std::vector<ClosureBridgeTrampolineTable *> trampoline_tables;
 
-  public:
-    ClosureBridgeInfo *allocateClosureBridge(void *user_data, void *user_code);
-    ClosureBridgeTrampolineTable *allocateClosureBridgeTrampolineTable();
+public:
+  ClosureBridgeInfo *allocateClosureBridge(void *user_data, void *user_code);
+  ClosureBridgeTrampolineTable *allocateClosureBridgeTrampolineTable();
 };
 
 typedef struct _DynamicClosureBridgeInfo {
-    void *trampolineTo PRIAVE;
+  void *trampolineTo PRIAVE;
 
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
+  void *user_code;
+  void *user_data;
+  void *redirect_trampoline;
 } DynamicClosureBridgeInfo;
 
 typedef struct _DynamicClosureTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    void *data_page;
-    uint16_t used_count;
-    uint16_t free_count;
+  void *entry;
+  void *trampoline_page;
+  void *data_page;
+  uint16_t used_count;
+  uint16_t free_count;
 } DynamicClosureBridgeTrampolineTable;
 
 class DynamicClosureBridge {
-  public:
-    std::vector<DynamicClosureBridgeInfo *> bridge_infos;
-    std::vector<DynamicClosureBridgeTrampolineTable *> trampoline_tables;
+public:
+  std::vector<DynamicClosureBridgeInfo *> bridge_infos;
+  std::vector<DynamicClosureBridgeTrampolineTable *> trampoline_tables;
 
-  public:
-    DynamicClosureBridgeInfo *allocateDynamicClosureBridge(void *user_data, void *user_code);
-    DynamicClosureBridgeTrampolineTable *addDynamicClosurceBridgeTrampolineTable();
+public:
+  DynamicClosureBridgeInfo *allocateDynamicClosureBridge(void *user_data, void *user_code);
+  DynamicClosureBridgeTrampolineTable *addDynamicClosurceBridgeTrampolineTable();
 };
 
 typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeInfo *cbInfo);

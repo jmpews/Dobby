@@ -13,28 +13,28 @@
 #include "writer-arm.h"
 
 typedef struct _ARMRelocatorInstruction {
-    ARMInstruction *origin_insn;
-    ARMInstruction **relocated_insnCTXs;
-    zz_size_t output_index_start;
-    zz_size_t ouput_index_end;
-    zz_size_t relocated_insnCTXs_count;
+  ARMInstruction *origin_insn;
+  ARMInstruction **relocated_insnCTXs;
+  zz_size_t output_index_start;
+  zz_size_t ouput_index_end;
+  zz_size_t relocated_insnCTXs_count;
 } ARMRelocatorInstruction;
 
 typedef struct _ARMRelocator {
-    bool try_relocated_again;
-    zz_size_t try_relocated_length;
-    ARMAssemblerWriter *output;
-    ARMReader *input;
-    int needRelocateInputCount;
-    int doneRelocateInputCount;
+  bool try_relocated_again;
+  zz_size_t try_relocated_length;
+  ARMAssemblerWriter *output;
+  ARMReader *input;
+  int needRelocateInputCount;
+  int doneRelocateInputCount;
 
-    // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    ARMInstruction *literal_instCTXs[MAX_INSN_SIZE];
-    zz_size_t literal_insnCTXs_count;
+  // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
+  ARMInstruction *literal_instCTXs[MAX_INSN_SIZE];
+  zz_size_t literal_insnCTXs_count;
 
-    // record for every instruction need to be relocated
-    ARMRelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
-    zz_size_t relocated_insnCTXs_count;
+  // record for every instruction need to be relocated
+  ARMRelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
+  zz_size_t relocated_insnCTXs_count;
 } ARMRelocator;
 
 void arm_relocator_init(ARMRelocator *relocator, ARMReader *input, ARMAssemblerWriter *output);

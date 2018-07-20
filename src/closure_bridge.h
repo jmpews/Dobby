@@ -11,21 +11,21 @@
 
 // closure bridge
 typedef struct _ClosureBridgeInfo {
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
+  void *user_code;
+  void *user_data;
+  void *redirect_trampoline;
 } ClosureBridgeInfo;
 
 typedef struct _ClosureBridgeTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    uint16_t used_count;
-    uint16_t free_count;
+  void *entry;
+  void *trampoline_page;
+  uint16_t used_count;
+  uint16_t free_count;
 } ClosureBridgeTrampolineTable;
 
 typedef struct _ClosureBridge {
-    list_t *bridge_infos;
-    list_t *trampoline_tables;
+  list_t *bridge_infos;
+  list_t *trampoline_tables;
 } ClosureBridge;
 
 #define ClosureBridgeCClass(member) cxxclass(ClosureBridge, member)
@@ -43,24 +43,24 @@ typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeInfo *cb_info);
 #if DYNAMIC_CLOSURE_BRIDGE
 // dynamic closure bridge
 typedef struct _DynamicClosureBridgeInfo {
-    void *trampolineTo PRIVATE;
+  void *trampolineTo PRIVATE;
 
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
+  void *user_code;
+  void *user_data;
+  void *redirect_trampoline;
 } DynamicClosureBridgeInfo;
 
 typedef struct _DynamicClosureTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    void *data_page;
-    uint16_t used_count;
-    uint16_t free_count;
+  void *entry;
+  void *trampoline_page;
+  void *data_page;
+  uint16_t used_count;
+  uint16_t free_count;
 } DynamicClosureBridgeTrampolineTable;
 
 typedef struct _DynamicClosureBridge {
-    list_t *dynamic_bridge_infos;
-    list_t *dynamic_trampoline_tables;
+  list_t *dynamic_bridge_infos;
+  list_t *dynamic_trampoline_tables;
 } DynamicClosureBridge;
 
 #define DynamicClosureBridgeCClass(member) cclass(DynamicClosureBridge, member)

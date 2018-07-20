@@ -24,26 +24,26 @@
 #include "platforms/arch-x86/relocator-x86.h"
 #include "platforms/arch-x86/writer-x86.h"
 
-#include "memory.h"
 #include "interceptor.h"
+#include "memory.h"
 
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
 typedef struct _InterceptorBackend {
-    ExecuteMemoryManager *emm;
-    X86Relocator x86_relocator;
-    X86AssemblerWriter x86_writer;
-    X86Reader x86_reader;
+  ExecuteMemoryManager *emm;
+  X86Relocator x86_relocator;
+  X86AssemblerWriter x86_writer;
+  X86Reader x86_reader;
 
-    zz_ptr_t enter_bridge;
-    zz_ptr_t insn_leave_bridge;
-    zz_ptr_t leave_bridge;
-    zz_ptr_t dynamic_binary_instrumentation_bridge;
+  zz_ptr_t enter_bridge;
+  zz_ptr_t insn_leave_bridge;
+  zz_ptr_t leave_bridge;
+  zz_ptr_t dynamic_binary_instrumentation_bridge;
 } InterceptorBackend;
 
 typedef struct _X86HookFuntionEntryBackend {
-    bool is_thumb;
-    zz_size_t redirect_code_size;
+  bool is_thumb;
+  zz_size_t redirect_code_size;
 } X86HookEntryBackend;
 
 #endif

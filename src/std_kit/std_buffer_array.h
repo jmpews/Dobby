@@ -9,9 +9,9 @@ extern "C" {
 #endif
 
 typedef struct _buffer_array_t {
-    void *data;
-    int size;
-    int capacity;
+  void *data;
+  int size;
+  int capacity;
 } buffer_array_t;
 
 buffer_array_t *buffer_array_create(int default_capacity);

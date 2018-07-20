@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "std_log.h"
+#include "std_macros.h"
+
 /* malloc with 0 and NULL check */
 #ifdef __cplusplus
 extern "C" {
@@ -20,10 +23,10 @@ void *safe_malloc(size_t size);
 
 /* safe free*/
 #define SAFE_FREE(obj)                                                                                                 \
-    do {                                                                                                               \
-        free(obj);                                                                                                     \
-        obj = NULL;                                                                                                    \
-    } while (0);
+  do {                                                                                                                 \
+    free(obj);                                                                                                         \
+    obj = NULL;                                                                                                        \
+  } while (0);
 
 #include <errno.h>
 #if ENABLE_COLOR_LOG
@@ -49,29 +52,29 @@ void *safe_malloc(size_t size);
 #define ENABLE_PRINT_ERROR_STRING 0
 
 #define ERROR_LOG_ERRNO()                                                                                              \
-    do {                                                                                                               \
-        fprintf(stderr, "======= ERRNO [%d] STRING ======= \n", errno);                                                \
-        perror((const char *)strerror(errno));                                                                         \
-    } while (0);
+  do {                                                                                                                 \
+    fprintf(stderr, "======= ERRNO [%d] STRING ======= \n", errno);                                                    \
+    perror((const char *)strerror(errno));                                                                             \
+  } while (0);
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
-    do {                                                                                                               \
-        fprintf(stderr,                                                                                                \
-                RED "[!] "                                                                                             \
-                    "%s:%d:%s(): " fmt RESET "\n",                                                                     \
-                __FILE__, __LINE__, __func__, __VA_ARGS__);                                                            \
-    } while (0)
+  do {                                                                                                                 \
+    fprintf(stderr,                                                                                                    \
+            RED "[!] "                                                                                                 \
+                "%s:%d:%s(): " fmt RESET "\n",                                                                         \
+            __FILE__, __LINE__, __func__, __VA_ARGS__);                                                                \
+  } while (0)
 
 #define ERROR_LOG_STR(MSG) ERROR_LOG("%s", MSG)
 
 #define ERROR_LOG_LINE() ERROR_LOG_STR(">>> ERROR <<<")
 
 #define XCHECK(repr)                                                                                                   \
-    do {                                                                                                               \
-        if (repr) { /*pass*/                                                                                           \
-        } else {                                                                                                       \
-            ERROR_LOG_LINE();                                                                                          \
-        }                                                                                                              \
-    } while (0);
+  do {                                                                                                                 \
+    if (repr) { /*pass*/                                                                                               \
+    } else {                                                                                                           \
+      ERROR_LOG_LINE();                                                                                                \
+    }                                                                                                                  \
+  } while (0);
 
 #endif

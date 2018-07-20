@@ -10,10 +10,10 @@
 #include "std_kit/std_list.h"
 
 typedef struct _ARM64AssemblyReader {
-    void *start_pc;
-    void *start_address;
-    list_t *instCTXs;
-    buffer_array_t *inst_bytes;
+  void *start_pc;
+  void *start_address;
+  list_t *instCTXs;
+  buffer_array_t *inst_bytes;
 } ARM64AssemblyReader;
 
 #define arm64_assembly_reader_cclass(member) cclass(arm64_assembly_reader, member)

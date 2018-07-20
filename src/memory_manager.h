@@ -11,34 +11,34 @@
 #define PROT_R_X (1 | 4)
 
 typedef struct _CodeSlice {
-    void *data;
-    int size;
+  void *data;
+  int size;
 } CodeSlice;
 
 typedef struct _CodeCave {
-    int size;
-    void *backup;
-    void *address;
+  int size;
+  void *backup;
+  void *address;
 } CodeCave;
 
 typedef struct _MemoryBlock {
-    int prot; // memory permission
-    int size;
-    void *address;
+  int prot; // memory permission
+  int size;
+  void *address;
 } MemoryBlock;
 
 typedef struct _FreeMemoryBlock {
-    int prot; // memory permission
-    int total_size;
-    int used_size;
-    void *address;
+  int prot; // memory permission
+  int total_size;
+  int used_size;
+  void *address;
 } FreeMemoryBlock;
 
 typedef struct _memory_manager_t {
-    bool is_support_rx_memory;
-    list_t *code_caves;
-    list_t *process_memory_layout;
-    list_t *free_memory_blocks;
+  bool is_support_rx_memory;
+  list_t *code_caves;
+  list_t *process_memory_layout;
+  list_t *free_memory_blocks;
 } memory_manager_t;
 
 #define memory_manager_cclass(member) cclass(memory_manager, member)

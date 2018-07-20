@@ -14,19 +14,19 @@
 #include "writer-thumb.h"
 
 typedef struct _ThumbRelocator {
-    bool try_relocated_again;
-    zz_size_t try_relocated_length;
-    ThumbAssemblerWriter *output;
-    ARMReader *input;
-    int needRelocateInputCount;
-    int doneRelocateInputCount;
-    // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    ARMInstruction *literal_instCTXs[MAX_INSN_SIZE];
-    zz_size_t literal_insnCTXs_count;
+  bool try_relocated_again;
+  zz_size_t try_relocated_length;
+  ThumbAssemblerWriter *output;
+  ARMReader *input;
+  int needRelocateInputCount;
+  int doneRelocateInputCount;
+  // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
+  ARMInstruction *literal_instCTXs[MAX_INSN_SIZE];
+  zz_size_t literal_insnCTXs_count;
 
-    // record for every instruction need to be relocated
-    ARMRelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
-    zz_size_t relocated_insnCTXs_count;
+  // record for every instruction need to be relocated
+  ARMRelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
+  zz_size_t relocated_insnCTXs_count;
 } ThumbRelocator;
 
 void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblerWriter *writer);

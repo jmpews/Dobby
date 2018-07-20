@@ -11,15 +11,15 @@
 #include "std_kit/std_list.h"
 
 typedef struct _io_index_t {
-    int input_index;
-    int output_index;
+  int input_index;
+  int output_index;
 } io_index_t;
 
 typedef struct _ARM64Relocator {
-    ARM64AssemblyReader *input;
-    ARM64AssemblyWriter *output;
-    list_t *literal_instCTXs;
-    list_t *io_indexs;
+  ARM64AssemblyReader *input;
+  ARM64AssemblyWriter *output;
+  list_t *literal_instCTXs;
+  list_t *io_indexs;
 } ARM64Relocator;
 
 #define arm64_assembly_relocator_cclass(member) cclass(arm64_relocator, member)
@@ -29,7 +29,8 @@ extern "C" {
 #endif //__cplusplus
 ARM64Relocator *arm64_assembly_relocator_cclass(new)(ARM64AssemblyReader *input, ARM64AssemblyWriter *output);
 
-void arm64_assembly_relocator_cclass(reset)(ARM64Relocator *self, ARM64AssemblyReader *input, ARM64AssemblyWriter *output);
+void arm64_assembly_relocator_cclass(reset)(ARM64Relocator *self, ARM64AssemblyReader *input,
+                                            ARM64AssemblyWriter *output);
 
 void arm64_assembly_relocator_cclass(try_relocate)(void *address, int bytes_min, int *bytes_max);
 

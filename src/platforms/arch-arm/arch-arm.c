@@ -1,8 +1,8 @@
-#include "arch-arm64.h"
+#include "arch-arm.h"
 #include "hookzz.h"
 
 void **get_next_hop_addr_PTR(RegState *rs) {
-  void *next_hop_addr_PTR = (void *)&rs->general.regs.x15;
+  void *next_hop_addr_PTR = (void *)&rs->general.regs.r12;
   return next_hop_addr_PTR;
 }
 

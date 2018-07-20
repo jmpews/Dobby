@@ -12,29 +12,29 @@
 #include "writer-x86.h"
 
 typedef struct _X86RelocatorInstruction {
-    X86Instruction *origin_insn;
-    X86Instruction **relocated_insnCTXs;
-    zz_size_t output_index_start;
-    zz_size_t ouput_index_end;
-    zz_size_t relocated_insnCTXs_count;
-    zz_size_t size;
+  X86Instruction *origin_insn;
+  X86Instruction **relocated_insnCTXs;
+  zz_size_t output_index_start;
+  zz_size_t ouput_index_end;
+  zz_size_t relocated_insnCTXs_count;
+  zz_size_t size;
 } X86RelocatorInstruction;
 
 typedef struct _X86Relocator {
-    bool try_relocated_again;
-    zz_size_t try_relocated_length;
-    X86AssemblerWriter *output;
-    X86Reader *input;
-    int needRelocateInputCount;
-    int doneRelocateInputCount;
+  bool try_relocated_again;
+  zz_size_t try_relocated_length;
+  X86AssemblerWriter *output;
+  X86Reader *input;
+  int needRelocateInputCount;
+  int doneRelocateInputCount;
 
-    // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
-    X86Instruction *literal_instCTXs[MAX_INSN_SIZE];
-    zz_size_t literal_insnCTXs_count;
+  // memory patch can't confirm the code slice length, so last setp of memory patch need repair the literal instruction.
+  X86Instruction *literal_instCTXs[MAX_INSN_SIZE];
+  zz_size_t literal_insnCTXs_count;
 
-    // record for every instruction need to be relocated
-    X86RelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
-    zz_size_t relocated_insnCTXs_count;
+  // record for every instruction need to be relocated
+  X86RelocatorInstruction relocator_insnCTXs[MAX_INSN_SIZE];
+  zz_size_t relocated_insnCTXs_count;
 } X86Relocator;
 
 void x86_relocator_init(X86Relocator *relocator, X86Reader *input, X86AssemblerWriter *output);

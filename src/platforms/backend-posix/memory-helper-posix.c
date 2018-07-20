@@ -8,27 +8,27 @@
 extern void __clear_cache(void *beg, void *end);
 
 void posix_memory_helper_cclass(set_page_permission)(void *page_address, int prot, int n) {
-    int page_size = posix_memory_helper_cclass(get_page_size)();
-    int r;
-    r = mprotect((zz_ptr_t)page_address, page_size * n, prot);
-    if (r == -1) {
-        ERROR_LOG("r = %d, at (%p) error!", r, (zz_ptr_t)page_address);
-        return;
-    }
+  int page_size = posix_memory_helper_cclass(get_page_size)();
+  int r;
+  r = mprotect((zz_ptr_t)page_address, page_size * n, prot);
+  if (r == -1) {
+    ERROR_LOG("r = %d, at (%p) error!", r, (zz_ptr_t)page_address);
     return;
+  }
+  return;
 }
 
 int posix_memory_helper_cclass(get_page_size)() {
-    int page_size = sysconf(_SC_PAGESIZE);
-    return page_size;
+  int page_size = sysconf(_SC_PAGESIZE);
+  return page_size;
 }
 
 void *posix_memory_helper_cclass(allocate_page)(int prot, int n) {
-    int page_size = posix_memory_helper_cclass(get_page_size)();
+  int page_size = posix_memory_helper_cclass(get_page_size)();
 
-    void *mmap_page = mmap(0, 1, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    mprotect(mmap_page, (size_t)page_size, prot);
-    return mmap_page;
+  void *mmap_page = mmap(0, 1, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  mprotect(mmap_page, (size_t)page_size, prot);
+  return mmap_page;
 }
 
 /*
@@ -46,31 +46,31 @@ void *posix_memory_helper_cclass(allocate_page)(int prot, int n) {
 */
 
 void posix_memory_helper_cclass(patch_code)(void *dest, void *src, int count) {
-    void *dest_page = NULL;
-    int offset      = 0;
+  void *dest_page = NULL;
+  int offset      = 0;
 
-    int page_size = posix_memory_helper_cclass(get_page_size)();
+  int page_size = posix_memory_helper_cclass(get_page_size)();
 
-    // https://www.gnu.org/software/hurd/gnumach-doc/Memory-Attributes.html
-    dest_page = (void *)((zz_addr_t)dest & ~(page_size - 1));
-    offset    = (zz_addr_t)dest - (zz_addr_t)dest_page;
+  // https://www.gnu.org/software/hurd/gnumach-doc/Memory-Attributes.html
+  dest_page = (void *)((zz_addr_t)dest & ~(page_size - 1));
+  offset    = (zz_addr_t)dest - (zz_addr_t)dest_page;
 
-    // another method, pelease read `REF`;
-    // zz_ptr_t code_mmap = mmap(NULL, range_size, PROT_READ | PROT_WRITE,
-    //                           MAP_ANON | MAP_SHARED, -1, 0);
-    // if (code_mmap == MAP_FAILED) {
-    //   return;
-    // }
+  // another method, pelease read `REF`;
+  // zz_ptr_t code_mmap = mmap(NULL, range_size, PROT_READ | PROT_WRITE,
+  //                           MAP_ANON | MAP_SHARED, -1, 0);
+  // if (code_mmap == MAP_FAILED) {
+  //   return;
+  // }
 
-    void *copy_page = posix_memory_helper_cclass(allocate_page)(PROT_RW_, 1);
+  void *copy_page = posix_memory_helper_cclass(allocate_page)(PROT_RW_, 1);
 
-    memcpy(copy_page, (void *)dest_page, page_size);
-    memcpy((void *)((zz_addr_t)copy_page + offset), src, count);
+  memcpy(copy_page, (void *)dest_page, page_size);
+  memcpy((void *)((zz_addr_t)copy_page + offset), src, count);
 
-    /* SAME: mprotect(code_mmap, range_size, prot); */
-    posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_WRITE | PROT_READ | PROT_EXEC, 1);
-    memcpy(dest_page, copy_page, page_size);
-    posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_EXEC | PROT_READ, 1);
+  /* SAME: mprotect(code_mmap, range_size, prot); */
+  posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_WRITE | PROT_READ | PROT_EXEC, 1);
+  memcpy(dest_page, copy_page, page_size);
+  posix_memory_helper_cclass(set_page_permission)(dest_page, PROT_EXEC | PROT_READ, 1);
 
 #if 0
     // why not working ???
@@ -82,9 +82,9 @@ void posix_memory_helper_cclass(patch_code)(void *dest, void *src, int count) {
     // }
 #endif
 
-    __clear_cache((void *)dest, (void *)((uintptr_t)dest + count));
+  __clear_cache((void *)dest, (void *)((uintptr_t)dest + count));
 
-    // TODO
-    munmap(copy_page, page_size);
-    return;
+  // TODO
+  munmap(copy_page, page_size);
+  return;
 }

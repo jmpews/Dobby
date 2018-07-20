@@ -10,193 +10,191 @@
 #define ARM_FULL_REDIRECT_SIZE 8
 
 InterceptorBackend *InteceptorBackendNew(ExecuteMemoryManager *emm) {
-    if (!MemoryHelperIsSupportAllocateRXMemory()) {
-        DEBUG_LOG_STR("memory is not support allocate r-x Page!");
-        return NULL;
-    }
+  if (!MemoryHelperIsSupportAllocateRXMemory()) {
+    DEBUG_LOG_STR("memory is not support allocate r-x Page!");
+    return NULL;
+  }
 
-    RetStatus status;
-    InterceptorBackend *backend = (InterceptorBackend *)malloc0(sizeof(InterceptorBackend));
+  RetStatus status;
+  InterceptorBackend *backend = (InterceptorBackend *)malloc0(sizeof(InterceptorBackend));
 
-    arm_writer_init(&backend->arm_writer, 0, 0);
-    arm_reader_init(&backend->arm_reader, 0);
-    arm_relocator_init(&backend->arm_relocator, &backend->arm_reader, &backend->arm_writer);
+  arm_writer_init(&backend->arm_writer, 0, 0);
+  arm_reader_init(&backend->arm_reader, 0);
+  arm_relocator_init(&backend->arm_relocator, &backend->arm_reader, &backend->arm_writer);
 
-    thumb_writer_init(&backend->thumb_writer, 0, 0);
-    thumb_reader_init(&backend->thumb_reader, 0);
-    thumb_relocator_init(&backend->thumb_relocator, &backend->thumb_reader, &backend->thumb_writer);
+  thumb_writer_init(&backend->thumb_writer, 0, 0);
+  thumb_reader_init(&backend->thumb_reader, 0);
+  thumb_relocator_init(&backend->thumb_relocator, &backend->thumb_reader, &backend->thumb_writer);
 
-    backend->emm                                   = emm;
-    backend->enter_bridge                          = NULL;
-    backend->leave_bridge                          = NULL;
-    backend->dynamic_binary_instrumentation_bridge = NULL;
+  backend->emm                                   = emm;
+  backend->enter_bridge                          = NULL;
+  backend->leave_bridge                          = NULL;
+  backend->dynamic_binary_instrumentation_bridge = NULL;
 
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "\n======= Global interceptor_t Info ======= \n");
-        sprintf(buffer + strlen(buffer), "\tenter_bridge: %p\n", backend->enter_bridge);
-        sprintf(buffer + strlen(buffer), "\tleave_bridge: %p\n", backend->leave_bridge);
-        sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_bridge: %p\n",
-                backend->dynamic_binary_instrumentation_bridge);
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
+  if (DebugLogControlerIsEnableLog()) {
+    char buffer[1024] = {};
+    sprintf(buffer + strlen(buffer), "\n======= Global interceptor_t Info ======= \n");
+    sprintf(buffer + strlen(buffer), "\tenter_bridge: %p\n", backend->enter_bridge);
+    sprintf(buffer + strlen(buffer), "\tleave_bridge: %p\n", backend->leave_bridge);
+    sprintf(buffer + strlen(buffer), "\tdynamic_binary_instrumentation_bridge: %p\n",
+            backend->dynamic_binary_instrumentation_bridge);
+    DEBUGLOG_COMMON_LOG("%s", buffer);
+  }
 
-    if (status == RS_FAILED) {
-        DEBUG_LOG("%s", "BridgeBuildAll return RS_FAILED\n");
-        return NULL;
-    }
+  if (status == RS_FAILED) {
+    DEBUG_LOG("%s", "BridgeBuildAll return RS_FAILED\n");
+    return NULL;
+  }
 
-    return backend;
+  return backend;
 }
 
 void trampoline_free(hook_entry_t *entry) {
-    if (entry->on_invoke_trampoline) {
-        //TODO
-    }
+  if (entry->on_invoke_trampoline) {
+    //TODO
+  }
 
-    if (entry->on_enter_trampoline) {
-        //TODO
-    }
+  if (entry->on_enter_trampoline) {
+    //TODO
+  }
 
-    if (entry->on_enter_transfer_trampoline) {
-        //TODO
-    }
+  if (entry->on_enter_transfer_trampoline) {
+    //TODO
+  }
 
-    if (entry->on_leave_trampoline) {
-        //TODO
-    }
+  if (entry->on_leave_trampoline) {
+    //TODO
+  }
 
-    if (entry->on_invoke_trampoline) {
-        //TODO
-    }
-    return;
+  if (entry->on_invoke_trampoline) {
+    //TODO
+  }
+  return;
 }
 
 void trampoline_prepare(InterceptorBackend *self, hook_entry_t *entry) {
-    bool is_thumb            = FALSE;
-    zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
-    zz_size_t redirect_limit = 0;
-    ARMHookEntryBackend *entry_backend;
+  bool is_thumb            = FALSE;
+  zz_addr_t target_addr    = (zz_addr_t)entry->target_ptr;
+  zz_size_t redirect_limit = 0;
+  ARMHookEntryBackend *entry_backend;
 
-    entry_backend  = (ARMHookEntryBackend *)malloc0(sizeof(ARMHookEntryBackend));
-    entry->backend = (struct _HookEntryBackend *)entry_backend;
+  entry_backend  = (ARMHookEntryBackend *)malloc0(sizeof(ARMHookEntryBackend));
+  entry->backend = (struct _HookEntryBackend *)entry_backend;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
-    if (is_thumb)
-        target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  if (is_thumb)
+    target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb) {
-        if (entry->try_near_jump) {
-            entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
-        } else {
-            // check the first few instructions, preparatory work of instruction-fixing
-            thumb_relocator_try_relocate((zz_ptr_t)target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
-            if (redirect_limit != 0 && redirect_limit > ZZ_THUMB_TINY_REDIRECT_SIZE &&
-                redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE) {
-                entry->try_near_jump              = TRUE;
-                entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
-            } else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
-                return;
-            } else {
-                // put nop to align !!!!
-                entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
-                if (target_addr % 4) {
-                    entry_backend->redirect_code_size += 2;
-                }
-            }
-        }
-        self->thumb_relocator.try_relocated_length = entry_backend->redirect_code_size;
+  if (is_thumb) {
+    if (entry->try_near_jump) {
+      entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
     } else {
-        if (entry->try_near_jump) {
-            entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
-        } else {
-            // check the first few instructions, preparatory work of instruction-fixing
-            arm_relocator_try_relocate((zz_ptr_t)target_addr, ARM_FULL_REDIRECT_SIZE, &redirect_limit);
-            if (redirect_limit != 0 && redirect_limit > ARM_TINY_REDIRECT_SIZE &&
-                redirect_limit < ARM_FULL_REDIRECT_SIZE) {
-                entry->try_near_jump              = TRUE;
-                entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
-            } else if (redirect_limit != 0 && redirect_limit < ARM_TINY_REDIRECT_SIZE) {
-                return;
-            } else {
-                entry_backend->redirect_code_size = ARM_FULL_REDIRECT_SIZE;
-            }
+      // check the first few instructions, preparatory work of instruction-fixing
+      thumb_relocator_try_relocate((zz_ptr_t)target_addr, ZZ_THUMB_FULL_REDIRECT_SIZE, &redirect_limit);
+      if (redirect_limit != 0 && redirect_limit > ZZ_THUMB_TINY_REDIRECT_SIZE &&
+          redirect_limit < ZZ_THUMB_FULL_REDIRECT_SIZE) {
+        entry->try_near_jump              = TRUE;
+        entry_backend->redirect_code_size = ZZ_THUMB_TINY_REDIRECT_SIZE;
+      } else if (redirect_limit != 0 && redirect_limit < ZZ_THUMB_TINY_REDIRECT_SIZE) {
+        return;
+      } else {
+        // put nop to align !!!!
+        entry_backend->redirect_code_size = ZZ_THUMB_FULL_REDIRECT_SIZE;
+        if (target_addr % 4) {
+          entry_backend->redirect_code_size += 2;
         }
-        self->arm_relocator.try_relocated_length = entry_backend->redirect_code_size;
+      }
     }
+    self->thumb_relocator.try_relocated_length = entry_backend->redirect_code_size;
+  } else {
+    if (entry->try_near_jump) {
+      entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
+    } else {
+      // check the first few instructions, preparatory work of instruction-fixing
+      arm_relocator_try_relocate((zz_ptr_t)target_addr, ARM_FULL_REDIRECT_SIZE, &redirect_limit);
+      if (redirect_limit != 0 && redirect_limit > ARM_TINY_REDIRECT_SIZE && redirect_limit < ARM_FULL_REDIRECT_SIZE) {
+        entry->try_near_jump              = TRUE;
+        entry_backend->redirect_code_size = ARM_TINY_REDIRECT_SIZE;
+      } else if (redirect_limit != 0 && redirect_limit < ARM_TINY_REDIRECT_SIZE) {
+        return;
+      } else {
+        entry_backend->redirect_code_size = ARM_FULL_REDIRECT_SIZE;
+      }
+    }
+    self->arm_relocator.try_relocated_length = entry_backend->redirect_code_size;
+  }
 
-    // save original prologue
-    memcpy(entry->origin_prologue.data, (zz_ptr_t)target_addr, entry_backend->redirect_code_size);
-    entry->origin_prologue->size   = entry_backend->redirect_code_size;
-    entry->origin_prologue.address = (zz_ptr_t)target_addr;
+  // save original prologue
+  memcpy(entry->origin_prologue.data, (zz_ptr_t)target_addr, entry_backend->redirect_code_size);
+  entry->origin_prologue->size   = entry_backend->redirect_code_size;
+  entry->origin_prologue.address = (zz_ptr_t)target_addr;
 
-    // relocator initialize
-    arm_relocator_init(&self->arm_relocator, &self->arm_reader, &self->arm_writer);
-    thumb_relocator_init(&self->thumb_relocator, &self->thumb_reader, &self->thumb_writer);
-    return;
+  // relocator initialize
+  arm_relocator_init(&self->arm_relocator, &self->arm_reader, &self->arm_writer);
+  thumb_relocator_init(&self->thumb_relocator, &self->thumb_reader, &self->thumb_writer);
+  return;
 }
 
 void trampoline_build_for_enter_transfer(InterceptorBackend *self, hook_entry_t *entry) {
-    char temp_codeslice[256]           = {0};
-    ARMAssemblerWriter *arm_writer     = NULL;
-    ARMAssemblerWriter *thumb_writer   = NULL;
-    CodeSlice *codeslice               = NULL;
-    ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status                   = RS_SUCCESS;
-    bool is_thumb                      = TRUE;
-    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
+  char temp_codeslice[256]           = {0};
+  ARMAssemblerWriter *arm_writer     = NULL;
+  ARMAssemblerWriter *thumb_writer   = NULL;
+  CodeSlice *codeslice               = NULL;
+  ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
+  RetStatus status                   = RS_SUCCESS;
+  bool is_thumb                      = TRUE;
+  zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
-    if (is_thumb)
-        target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  if (is_thumb)
+    target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb) {
-        thumb_writer = &self->thumb_writer;
-        thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
+  if (is_thumb) {
+    thumb_writer = &self->thumb_writer;
+    thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
 
-        if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+    if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
 
-            thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
-        } else if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
-            thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                             (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
-        } else {
-            thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
-        }
-        if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-            codeslice =
-                thumb_code_patch(thumb_writer, self->emm, target_addr, thumb_writer_near_jump_range_size() - 0x10);
-        } else {
-            codeslice = thumb_code_patch(thumb_writer, self->emm, 0, 0);
-        }
-
-        if (codeslice)
-            entry->on_enter_transfer_trampoline = codeslice->data + 1;
-        else
-            return;
+      thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
+    } else if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
+      thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
+                                       (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
     } else {
-        arm_writer = &self->arm_writer;
-        arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
-
-        if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
-        } else if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
-            arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
-                                           (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
-        } else {
-            arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
-        }
-
-        if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
-            codeslice = arm_code_patch(arm_writer, self->emm, target_addr, arm_writer_near_jump_range_size() - 0x10);
-        } else {
-            codeslice = arm_code_patch(arm_writer, self->emm, 0, 0);
-        }
-        if (codeslice)
-            entry->on_enter_transfer_trampoline = codeslice->data;
-        else
-            return;
+      thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
     }
+    if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
+      codeslice = thumb_code_patch(thumb_writer, self->emm, target_addr, thumb_writer_near_jump_range_size() - 0x10);
+    } else {
+      codeslice = thumb_code_patch(thumb_writer, self->emm, 0, 0);
+    }
+
+    if (codeslice)
+      entry->on_enter_transfer_trampoline = codeslice->data + 1;
+    else
+      return;
+  } else {
+    arm_writer = &self->arm_writer;
+    arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
+
+    if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+      arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->replace_call);
+    } else if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
+      arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC,
+                                     (zz_addr_t)entry->on_dynamic_binary_instrumentation_trampoline);
+    } else {
+      arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
+    }
+
+    if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
+      codeslice = arm_code_patch(arm_writer, self->emm, target_addr, arm_writer_near_jump_range_size() - 0x10);
+    } else {
+      codeslice = arm_code_patch(arm_writer, self->emm, 0, 0);
+    }
+    if (codeslice)
+      entry->on_enter_transfer_trampoline = codeslice->data;
+    else
+      return;
+  }
 
 // DELETE ?
 #if 0
@@ -219,34 +217,34 @@ void trampoline_build_for_enter_transfer(InterceptorBackend *self, hook_entry_t 
     }
 #endif
 
-    free(codeslice);
-    return;
+  free(codeslice);
+  return;
 }
 
 void trampoline_build_for_enter(InterceptorBackend *self, hook_entry_t *entry) {
-    ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status                   = RS_SUCCESS;
-    bool is_thumb;
+  ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
+  RetStatus status                   = RS_SUCCESS;
+  bool is_thumb;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
 
-    ClosureBridgeInfo *bridgeData;
+  ClosureBridgeInfo *bridgeData;
 
-    bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
+  bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
+  if (bridgeData == NULL) {
+    ERROR_LOG_STR("build closure bridge failed!!!");
+  }
+
+  entry->on_enter_trampoline = bridgeData->redirect_trampoline;
+
+  // build the double trampline aka enter_transfer_trampoline
+  if (entry_backend)
+    if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
+        (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+      if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
+        trampoline_build_for_enter_transfer(self, entry);
+      }
     }
-
-    entry->on_enter_trampoline = bridgeData->redirect_trampoline;
-
-    // build the double trampline aka enter_transfer_trampoline
-    if (entry_backend)
-        if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-            (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
-            if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
-                trampoline_build_for_enter_transfer(self, entry);
-            }
-        }
 
 // DELETE ?
 #if 0
@@ -259,32 +257,32 @@ void trampoline_build_for_enter(InterceptorBackend *self, hook_entry_t *entry) {
     }
 #endif
 
-    return;
+  return;
 }
 
 void trampoline_build_for_dynamic_binary_instrumentation(InterceptorBackend *self, hook_entry_t *entry) {
-    ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status                   = RS_SUCCESS;
-    bool is_thumb;
+  ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
+  RetStatus status                   = RS_SUCCESS;
+  bool is_thumb;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
 
-    ClosureBridgeInfo *bridgeData;
+  ClosureBridgeInfo *bridgeData;
 
-    bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
+  bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
+  if (bridgeData == NULL) {
+    ERROR_LOG_STR("build closure bridge failed!!!");
+  }
+
+  entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
+
+  // build the double trampline aka enter_transfer_trampoline
+  if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
+      (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
+    if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
+      trampoline_build_for_enter_transfer(self, entry);
     }
-
-    entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
-
-    // build the double trampline aka enter_transfer_trampoline
-    if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
-        (!is_thumb && entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE)) {
-        if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
-            trampoline_build_for_enter_transfer(self, entry);
-        }
-    }
+  }
 
 // DELETE ?
 #if 0
@@ -298,151 +296,147 @@ void trampoline_build_for_dynamic_binary_instrumentation(InterceptorBackend *sel
     }
 #endif
 
-    return;
+  return;
 }
 
 void trampoline_build_for_invoke(InterceptorBackend *self, hook_entry_t *entry) {
-    char temp_codeslice[256]           = {0};
-    CodeSlice *codeslice               = NULL;
-    ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status                   = RS_SUCCESS;
-    bool is_thumb                      = TRUE;
-    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
-    zz_ptr_t restore_next_insn_addr;
+  char temp_codeslice[256]           = {0};
+  CodeSlice *codeslice               = NULL;
+  ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
+  RetStatus status                   = RS_SUCCESS;
+  bool is_thumb                      = TRUE;
+  zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
+  zz_ptr_t restore_next_insn_addr;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
-    if (is_thumb)
-        target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  if (is_thumb)
+    target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
+  if (is_thumb) {
+    ThumbRelocator *thumb_relocator;
+    ThumbAssemblerWriter *thumb_writer;
+    ARMReader *thumb_reader;
+    thumb_relocator = &self->thumb_relocator;
+    thumb_writer    = &self->thumb_writer;
+    thumb_reader    = &self->thumb_reader;
+
+    thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
+    thumb_reader_reset(thumb_reader, (zz_ptr_t)target_addr);
+    thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
+
+    {
+      do {
+        thumb_relocator_read_one(thumb_relocator, NULL);
+      } while (thumb_relocator->input->insns_size < entry_backend->redirect_code_size);
+      thumb_relocator_write_all(thumb_relocator);
+    }
+
+    // jump to rest function instructions address
+    restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + thumb_relocator->input->insns_size);
+    thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)(restore_next_insn_addr + 1));
+
+    // code patch
+    codeslice = thumb_relocate_code_patch(thumb_relocator, thumb_writer, self->emm, 0, 0);
+    if (codeslice)
+      entry->on_invoke_trampoline = codeslice->data + 1;
+    else
+      return;
+  } else {
+    ARMRelocator *arm_relocator;
+    ARMAssemblerWriter *arm_writer;
+    ARMReader *arm_reader;
+    arm_relocator = &self->arm_relocator;
+    arm_writer    = &self->arm_writer;
+    arm_reader    = &self->arm_reader;
+
+    arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
+    arm_reader_reset(arm_reader, (zz_ptr_t)target_addr);
+    arm_relocator_reset(arm_relocator, arm_reader, arm_writer);
+
+    {
+      do {
+        arm_relocator_read_one(arm_relocator, NULL);
+      } while (arm_relocator->input->insns_size < entry_backend->redirect_code_size);
+      arm_relocator_write_all(arm_relocator);
+    }
+
+    // jump to rest target address
+    restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm_relocator->input->insns_size);
+    arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)restore_next_insn_addr);
+
+    codeslice = arm_relocate_code_patch(arm_relocator, arm_writer, self->emm, 0, 0);
+    if (codeslice)
+      entry->on_invoke_trampoline = codeslice->data;
+    else
+      return;
+  }
+
+  // debug log
+  if (DebugLogControlerIsEnableLog()) {
+    char buffer[1024]         = {};
+    char origin_prologue[256] = {0};
+    int t                     = 0;
+
+    sprintf(buffer + strlen(buffer), "======= Origin Code Relocator ======= \n");
     if (is_thumb) {
-        ThumbRelocator *thumb_relocator;
-        ThumbAssemblerWriter *thumb_writer;
-        ARMReader *thumb_reader;
-        thumb_relocator = &self->thumb_relocator;
-        thumb_writer    = &self->thumb_writer;
-        thumb_reader    = &self->thumb_reader;
-
-        thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
-        thumb_reader_reset(thumb_reader, (zz_ptr_t)target_addr);
-        thumb_relocator_reset(thumb_relocator, thumb_reader, thumb_writer);
-
-        {
-            do {
-                thumb_relocator_read_one(thumb_relocator, NULL);
-            } while (thumb_relocator->input->insns_size < entry_backend->redirect_code_size);
-            thumb_relocator_write_all(thumb_relocator);
-        }
-
-        // jump to rest function instructions address
-        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + thumb_relocator->input->insns_size);
-        thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)(restore_next_insn_addr + 1));
-
-        // code patch
-        codeslice = thumb_relocate_code_patch(thumb_relocator, thumb_writer, self->emm, 0, 0);
-        if (codeslice)
-            entry->on_invoke_trampoline = codeslice->data + 1;
-        else
-            return;
+      for (int i = 0; i < self->thumb_relocator.input->insnCTXs_count; i++) {
+        sprintf(origin_prologue + t, "0x%.2x ", self->thumb_relocator.input->insnCTXs[i]->insn);
+      }
+      sprintf(buffer + strlen(buffer), "\t\tThumb Origin Prologue:: %s\n", origin_prologue);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Start Address: %p\n",
+              (zz_ptr_t)self->thumb_relocator.input->insns_buffer);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Instruction Number: %ld\n",
+              self->thumb_relocator.input->insnCTXs_count);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Size: %p\n",
+              (zz_ptr_t)self->thumb_relocator.input->insns_size);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Start Address: %p\n", codeslice->data);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Instruction Number: %p\n",
+              (zz_ptr_t)self->thumb_relocator.input->insnCTXs_count);
+      sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n", self->thumb_relocator.input->insns_size);
+      for (int i = 0; i < self->thumb_relocator.relocated_insnCTXs_count; i++) {
+        sprintf(buffer + strlen(buffer), "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
+                (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].origin_insn->address,
+                (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
+                self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
+      }
     } else {
-        ARMRelocator *arm_relocator;
-        ARMAssemblerWriter *arm_writer;
-        ARMReader *arm_reader;
-        arm_relocator = &self->arm_relocator;
-        arm_writer    = &self->arm_writer;
-        arm_reader    = &self->arm_reader;
-
-        arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), 0);
-        arm_reader_reset(arm_reader, (zz_ptr_t)target_addr);
-        arm_relocator_reset(arm_relocator, arm_reader, arm_writer);
-
-        {
-            do {
-                arm_relocator_read_one(arm_relocator, NULL);
-            } while (arm_relocator->input->insns_size < entry_backend->redirect_code_size);
-            arm_relocator_write_all(arm_relocator);
-        }
-
-        // jump to rest target address
-        restore_next_insn_addr = (zz_ptr_t)((zz_addr_t)target_addr + arm_relocator->input->insns_size);
-        arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)restore_next_insn_addr);
-
-        codeslice = arm_relocate_code_patch(arm_relocator, arm_writer, self->emm, 0, 0);
-        if (codeslice)
-            entry->on_invoke_trampoline = codeslice->data;
-        else
-            return;
+      for (int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++) {
+        sprintf(origin_prologue + t, "0x%.2x ", self->arm_relocator.input->insnCTXs[i]->insn);
+      }
+      sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Input Start Address: %p\n",
+              (zz_ptr_t)self->arm_relocator.input->insns_buffer);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Input Instruction Number: %ld\n",
+              self->arm_relocator.input->insnCTXs_count);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Input Size: %p\n",
+              (zz_ptr_t)self->arm_relocator.input->insns_size);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Output Start Address: %p\n", codeslice->data);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Output Instruction Number: %p\n",
+              (zz_ptr_t)self->arm_relocator.input->insnCTXs_count);
+      sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n", self->arm_relocator.input->insns_size);
+      for (int i = 0; i < self->arm_relocator.relocated_insnCTXs_count; i++) {
+        sprintf(buffer + strlen(buffer), "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
+                (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].origin_insn->address,
+                (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
+                self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
+      }
     }
+    DEBUGLOG_COMMON_LOG("%s", buffer);
+  }
 
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024]         = {};
-        char origin_prologue[256] = {0};
-        int t                     = 0;
-
-        sprintf(buffer + strlen(buffer), "======= Origin Code Relocator ======= \n");
-        if (is_thumb) {
-            for (int i = 0; i < self->thumb_relocator.input->insnCTXs_count; i++) {
-                sprintf(origin_prologue + t, "0x%.2x ", self->thumb_relocator.input->insnCTXs[i]->insn);
-            }
-            sprintf(buffer + strlen(buffer), "\t\tThumb Origin Prologue:: %s\n", origin_prologue);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Start Address: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->insns_buffer);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Instruction Number: %ld\n",
-                    self->thumb_relocator.input->insnCTXs_count);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Input Size: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->insns_size);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Start Address: %p\n", codeslice->data);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Instruction Number: %p\n",
-                    (zz_ptr_t)self->thumb_relocator.input->insnCTXs_count);
-            sprintf(buffer + strlen(buffer), "\tThumb Relocator Output Size: %ld\n",
-                    self->thumb_relocator.input->insns_size);
-            for (int i = 0; i < self->thumb_relocator.relocated_insnCTXs_count; i++) {
-                sprintf(buffer + strlen(buffer),
-                        "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
-                        (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].origin_insn->address,
-                        (zz_ptr_t)self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
-                        self->thumb_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
-            }
-        } else {
-            for (int i = 0; i < self->arm_relocator.input->insnCTXs_count; i++) {
-                sprintf(origin_prologue + t, "0x%.2x ", self->arm_relocator.input->insnCTXs[i]->insn);
-            }
-            sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Input Start Address: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->insns_buffer);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Input Instruction Number: %ld\n",
-                    self->arm_relocator.input->insnCTXs_count);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Input Size: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->insns_size);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Output Start Address: %p\n", codeslice->data);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Output Instruction Number: %p\n",
-                    (zz_ptr_t)self->arm_relocator.input->insnCTXs_count);
-            sprintf(buffer + strlen(buffer), "\tARM Relocator Output Size: %ld\n",
-                    self->arm_relocator.input->insns_size);
-            for (int i = 0; i < self->arm_relocator.relocated_insnCTXs_count; i++) {
-                sprintf(buffer + strlen(buffer),
-                        "\t\torigin input(%p) -> relocated ouput(%p), relocate %ld instruction\n",
-                        (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].origin_insn->address,
-                        (zz_ptr_t)self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs[0]->address,
-                        self->arm_relocator.relocator_insnCTXs[i].relocated_insnCTXs_count);
-            }
-        }
-        DEBUGLOG_COMMON_LOG("%s", buffer);
-    }
-
-    free(codeslice);
-    return;
+  free(codeslice);
+  return;
 }
 
 void trampoline_build_for_leave(InterceptorBackend *self, hook_entry_t *entry) {
-    ClosureBridgeInfo *bridgeData;
+  ClosureBridgeInfo *bridgeData;
 
-    bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
-    if (bridgeData == NULL) {
-        ERROR_LOG_STR("build closure bridge failed!!!");
-    }
+  bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
+  if (bridgeData == NULL) {
+    ERROR_LOG_STR("build closure bridge failed!!!");
+  }
 
-    entry->on_leave_trampoline = bridgeData->redirect_trampoline;
+  entry->on_leave_trampoline = bridgeData->redirect_trampoline;
 
 // DELETE ?
 #if 0
@@ -455,126 +449,122 @@ void trampoline_build_for_leave(InterceptorBackend *self, hook_entry_t *entry) {
     }
 #endif
 
-    return;
+  return;
 }
 
 void trampoline_active(InterceptorBackend *self, hook_entry_t *entry) {
-    char temp_codeslice[256]           = {0};
-    CodeSlice *codeslice               = NULL;
-    ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
-    RetStatus status                   = RS_SUCCESS;
-    bool is_thumb                      = TRUE;
-    zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
+  char temp_codeslice[256]           = {0};
+  CodeSlice *codeslice               = NULL;
+  ARMHookEntryBackend *entry_backend = (ARMHookEntryBackend *)entry->backend;
+  RetStatus status                   = RS_SUCCESS;
+  bool is_thumb                      = TRUE;
+  zz_addr_t target_addr              = (zz_addr_t)entry->target_ptr;
 
-    is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
-    if (is_thumb)
-        target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
+  is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
+  if (is_thumb)
+    target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
-    if (is_thumb) {
-        ThumbAssemblerWriter *thumb_writer;
-        thumb_writer = &self->thumb_writer;
-        thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
+  if (is_thumb) {
+    ThumbAssemblerWriter *thumb_writer;
+    thumb_writer = &self->thumb_writer;
+    thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
 
-        if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-                thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
-                                                           (zz_addr_t)thumb_writer->start_pc);
-            } else {
-                // target address is not aligne 4, need align
-                if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
-                    thumb_writer_put_nop(thumb_writer);
-                thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC,
-                                                 (zz_addr_t)entry->on_enter_transfer_trampoline);
-            }
-        } else {
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-                thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
-                                                           (zz_addr_t)thumb_writer->start_pc);
-            } else {
-                // target address is not aligne 4, need align
-                if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
-                    thumb_writer_put_nop(thumb_writer);
-                thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
-            }
-        }
-        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)thumb_writer->insns_buffer,
-                                   thumb_writer->insns_size))
-            return;
-        //        thumb_writer_free(thumb_writer);
+    if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+      if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
+        thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
+                                                   (zz_addr_t)thumb_writer->start_pc);
+      } else {
+        // target address is not aligne 4, need align
+        if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
+          thumb_writer_put_nop(thumb_writer);
+        thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
+      }
     } else {
-        ARMAssemblerWriter *arm_writer;
-        arm_writer = &self->arm_writer;
-        arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
+      if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
+        thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
+                                                   (zz_addr_t)thumb_writer->start_pc);
+      } else {
+        // target address is not aligne 4, need align
+        if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
+          thumb_writer_put_nop(thumb_writer);
+        thumb_writer_put_ldr_reg_address(thumb_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
+      }
+    }
+    if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)thumb_writer->insns_buffer, thumb_writer->insns_size))
+      return;
+    //        thumb_writer_free(thumb_writer);
+  } else {
+    ARMAssemblerWriter *arm_writer;
+    arm_writer = &self->arm_writer;
+    arm_writer_reset(arm_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
 
-        if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
-                arm_writer_put_b_imm(arm_writer,
-                                     (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
-            } else {
-                arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
-            }
-        } else {
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
-                arm_writer_put_b_imm(arm_writer,
-                                     (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
-            } else {
-                arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
-            }
-        }
-        if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm_writer->insns_buffer, arm_writer->insns_size))
-            return;
-        //        arm_writer_free(arm_writer);
+    if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+      if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
+        arm_writer_put_b_imm(arm_writer,
+                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
+      } else {
+        arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
+      }
+    } else {
+      if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
+        arm_writer_put_b_imm(arm_writer,
+                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
+      } else {
+        arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
+      }
+    }
+    if (!MemoryHelperPatchCode((zz_addr_t)target_addr, (zz_ptr_t)arm_writer->insns_buffer, arm_writer->insns_size))
+      return;
+    //        arm_writer_free(arm_writer);
+  }
+
+  // debug log
+  if (DebugLogControlerIsEnableLog()) {
+    char buffer[1024] = {};
+    sprintf(buffer + strlen(buffer), "======= Trampoline Summary ======= \n");
+    sprintf(buffer + strlen(buffer), "\tHookZz Target Address: %p\n", entry->target_ptr);
+    if (is_thumb) {
+      sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: Thumb\n");
+      if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
+        sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Near Jump(B xxx)\n");
+      } else if (entry_backend->redirect_code_size == ZZ_THUMB_FULL_REDIRECT_SIZE) {
+        sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Abs Jump(ldr pc, [pc, #x])\n");
+      } else if ((((zz_addr_t)entry->target_ptr) % 4) &&
+                 entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2)) {
+        sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Align Abs Jump(nop; ldr pc, [pc, #x])\n");
+      }
+    } else {
+      sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: ARM\n");
+      if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
+        sprintf(buffer + strlen(buffer), "\tARM Jump Type: Near Jump(B xxx)\n");
+      } else if (entry_backend->redirect_code_size == ARM_FULL_REDIRECT_SIZE) {
+        sprintf(buffer + strlen(buffer), "\tARM Brach Jump Type: Abs Jump(ldr pc, [pc, #-4])\n");
+      }
     }
 
-    // debug log
-    if (DebugLogControlerIsEnableLog()) {
-        char buffer[1024] = {};
-        sprintf(buffer + strlen(buffer), "======= Trampoline Summary ======= \n");
-        sprintf(buffer + strlen(buffer), "\tHookZz Target Address: %p\n", entry->target_ptr);
-        if (is_thumb) {
-            sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: Thumb\n");
-            if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
-                sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Near Jump(B xxx)\n");
-            } else if (entry_backend->redirect_code_size == ZZ_THUMB_FULL_REDIRECT_SIZE) {
-                sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Abs Jump(ldr pc, [pc, #x])\n");
-            } else if ((((zz_addr_t)entry->target_ptr) % 4) &&
-                       entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2)) {
-                sprintf(buffer + strlen(buffer), "\tThumb Brach Jump Type: Align Abs Jump(nop; ldr pc, [pc, #x])\n");
-            }
-        } else {
-            sprintf(buffer + strlen(buffer), "\tHookZz Target Address Arch Mode: ARM\n");
-            if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
-                sprintf(buffer + strlen(buffer), "\tARM Jump Type: Near Jump(B xxx)\n");
-            } else if (entry_backend->redirect_code_size == ARM_FULL_REDIRECT_SIZE) {
-                sprintf(buffer + strlen(buffer), "\tARM Brach Jump Type: Abs Jump(ldr pc, [pc, #-4])\n");
-            }
-        }
+    if (entry->try_near_jump && entry->on_enter_transfer_trampoline)
+      sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n", entry->on_enter_transfer_trampoline);
 
-        if (entry->try_near_jump && entry->on_enter_transfer_trampoline)
-            sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
-                    entry->on_enter_transfer_trampoline);
-
-        if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
-            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_INSTRUCTION_via_DBI\n");
-            sprintf(buffer + strlen(buffer), "\ton_dynamic_binary_instrumentation_trampoline: %p\n",
-                    entry->on_dynamic_binary_instrumentation_trampoline);
-            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        } else if (entry->type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
-            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_PRE_POST\n");
-            sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
-            sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
-            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        } else if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
-            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_REPLACE\n");
-            sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n",
-                    entry->on_enter_transfer_trampoline);
-            sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
-        } else if (entry->type == HOOK_TYPE_FUNCTION_via_GOT) {
-            sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_GOT\n");
-            sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
-            sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
-        }
-        DEBUGLOG_COMMON_LOG("%s", buffer);
+    if (entry->type == HOOK_TYPE_INSTRUCTION_via_DBI) {
+      sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_INSTRUCTION_via_DBI\n");
+      sprintf(buffer + strlen(buffer), "\ton_dynamic_binary_instrumentation_trampoline: %p\n",
+              entry->on_dynamic_binary_instrumentation_trampoline);
+      sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+    } else if (entry->type == HOOK_TYPE_FUNCTION_via_PRE_POST) {
+      sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_PRE_POST\n");
+      sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
+      sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
+      sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+    } else if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
+      sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_REPLACE\n");
+      sprintf(buffer + strlen(buffer), "\ton_enter_transfer_trampoline: %p\n", entry->on_enter_transfer_trampoline);
+      sprintf(buffer + strlen(buffer), "\ton_invoke_trampoline: %p\n", entry->on_invoke_trampoline);
+    } else if (entry->type == HOOK_TYPE_FUNCTION_via_GOT) {
+      sprintf(buffer + strlen(buffer), "\tHook Type: HOOK_TYPE_FUNCTION_via_GOT\n");
+      sprintf(buffer + strlen(buffer), "\ton_enter_trampoline: %p\n", entry->on_enter_trampoline);
+      sprintf(buffer + strlen(buffer), "\ton_leave_trampoline: %p\n", entry->on_leave_trampoline);
     }
-    return;
+    DEBUGLOG_COMMON_LOG("%s", buffer);
+  }
+  return;
 }

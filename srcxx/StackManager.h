@@ -12,39 +12,39 @@
 #include "ThreadManager.h"
 
 typedef struct _CallStackEntry {
-    char *key;
-    void *value;
+  char *key;
+  void *value;
 } CallStackEntry;
 
 class ThreadStackManager;
 
 class CallStackManager {
-  public:
-    int id;
-    class ThreadStackManager *thread_stack;
-    zz_ptr_t retAddr;
-    std::map<char *, void *> kv_map;
+public:
+  int id;
+  class ThreadStackManager *thread_stack;
+  zz_ptr_t retAddr;
+  std::map<char *, void *> kv_map;
 
-  public:
-    void setCallStackValue(char *key, void *value);
+public:
+  void setCallStackValue(char *key, void *value);
 
-    void *getCallStackValue(char *key);
+  void *getCallStackValue(char *key);
 };
 
 class ThreadStackManager {
-  public:
-    int id;
-    ThreadLocalKey *thread_local_key;
-    std::vector<CallStackManager *> call_stacks;
+public:
+  int id;
+  ThreadLocalKey *thread_local_key;
+  std::vector<CallStackManager *> call_stacks;
 
-  public:
-    ThreadStackManager(ThreadLocalKey *key);
+public:
+  ThreadStackManager(ThreadLocalKey *key);
 
-    static ThreadStackManager *initializeFromThreadLocalKey(ThreadLocalKey *key);
+  static ThreadStackManager *initializeFromThreadLocalKey(ThreadLocalKey *key);
 
-    void pushCallStack(CallStackManager *call_stack);
+  void pushCallStack(CallStackManager *call_stack);
 
-    CallStackManager *popCallStack();
+  CallStackManager *popCallStack();
 };
 
 #endif //HOOKZZ_STACKMANAGER_H

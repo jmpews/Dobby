@@ -27,31 +27,31 @@
 // A2.4 Registers
 
 typedef enum _ZzReg {
-    ARM_REG_R0 = 0,
-    ARM_REG_R1,
-    ARM_REG_R2,
-    ARM_REG_R3,
-    ARM_REG_R4,
-    ARM_REG_R5,
-    ARM_REG_R6,
-    ARM_REG_R7,
-    ARM_REG_R8,
-    ARM_REG_R9,
-    ARM_REG_R10,
-    ARM_REG_R11,
-    ARM_REG_R12,
-    ARM_REG_R13,
-    ARM_REG_R14,
-    ARM_REG_R15,
-    ARM_REG_SP = ARM_REG_R13,
-    ARM_REG_LR = ARM_REG_R14,
-    ARM_REG_PC = ARM_REG_R15
+  ARM_REG_R0 = 0,
+  ARM_REG_R1,
+  ARM_REG_R2,
+  ARM_REG_R3,
+  ARM_REG_R4,
+  ARM_REG_R5,
+  ARM_REG_R6,
+  ARM_REG_R7,
+  ARM_REG_R8,
+  ARM_REG_R9,
+  ARM_REG_R10,
+  ARM_REG_R11,
+  ARM_REG_R12,
+  ARM_REG_R13,
+  ARM_REG_R14,
+  ARM_REG_R15,
+  ARM_REG_SP = ARM_REG_R13,
+  ARM_REG_LR = ARM_REG_R14,
+  ARM_REG_PC = ARM_REG_R15
 } ARMReg;
 
 typedef struct _ARMRegInfo {
-    int index;
-    int meta;
-    int width;
+  int index;
+  int meta;
+  int width;
 } ARMRegInfo;
 
 void arm_register_describe(ARMReg reg, ARMRegInfo *ri);

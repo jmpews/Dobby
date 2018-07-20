@@ -27,14 +27,14 @@
 #define CTX_SAVE_STACK_OFFSET (8 + 30 * 8 + 8 * 16)
 
 typedef struct _interceptor_backend_arm64_t {
-    memory_manager_t *memory_manager;
-    ARM64Relocator *relocator_arm64;
-    ARM64AssemblyWriter *writer_arm64;
-    ARM64AssemblyReader *reader_arm64;
+  memory_manager_t *memory_manager;
+  ARM64Relocator *relocator_arm64;
+  ARM64AssemblyWriter *writer_arm64;
+  ARM64AssemblyReader *reader_arm64;
 } interceptor_backend_arm64_t;
 
 typedef struct _hook_entry_backend_arm64_t {
-    int limit_relocate_inst_size;
+  int limit_relocate_inst_size;
 } hook_entry_backend_arm64_t;
 
 #endif

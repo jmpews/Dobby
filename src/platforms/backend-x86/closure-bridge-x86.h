@@ -25,52 +25,52 @@
 #define REGISTER_STATE_STRUCT
 #if defined(__x86__) || defined(__aarch64__)
 typedef union _FPReg {
-    __int128_t q;
-    struct {
-        double d1;
-        double d2;
-    } d;
-    struct {
-        float f1;
-        float f2;
-        float f3;
-        float f4;
-    } f;
+  __int128_t q;
+  struct {
+    double d1;
+    double d2;
+  } d;
+  struct {
+    float f1;
+    float f2;
+    float f3;
+    float f4;
+  } f;
 } FPReg;
 
 typedef struct _RegState {
-    uint64_t sp;
+  uint64_t sp;
 
-    union {
-        uint64_t x[29];
-        struct {
-            uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21,
-                x22, x23, x24, x25, x26, x27, x28;
-        } regs;
-    } general;
+  union {
+    uint64_t x[29];
+    struct {
+      uint64_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22,
+          x23, x24, x25, x26, x27, x28;
+    } regs;
+  } general;
 
-    uint64_t fp;
-    uint64_t lr;
+  uint64_t fp;
+  uint64_t lr;
 
-    union {
-        FPReg q[8];
-        struct {
-            FPReg q0, q1, q2, q3, q4, q5, q6, q7;
-        } regs;
-    } floating;
+  union {
+    FPReg q[8];
+    struct {
+      FPReg q0, q1, q2, q3, q4, q5, q6, q7;
+    } regs;
+  } floating;
 } RegState;
 #elif defined(__arm__)
 typedef struct _RegState {
-    uint32_t sp;
+  uint32_t sp;
 
-    union {
-        uint32_t r[13];
-        struct {
-            uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
-        } regs;
-    } general;
+  union {
+    uint32_t r[13];
+    struct {
+      uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
+    } regs;
+  } general;
 
-    uint32_t lr;
+  uint32_t lr;
 } RegState;
 #elif defined(__i386__)
 typedef struct _RegState {
@@ -82,19 +82,19 @@ typedef struct _RegState {
 #endif
 
 typedef struct _ClosureBridgeData {
-    void *user_code;
-    void *user_data;
-    void *redirect_trampoline;
+  void *user_code;
+  void *user_data;
+  void *redirect_trampoline;
 } ClosureBridgeInfo;
 
 typedef struct _ClosureBridgeTrampolineTable {
-    void *entry;
-    void *trampoline_page;
-    uint16_t used_count;
-    uint16_t free_count;
+  void *entry;
+  void *trampoline_page;
+  uint16_t used_count;
+  uint16_t free_count;
 
-    struct _ClosureBridgeTrampolineTable *prev;
-    struct _ClosureBridgeTrampolineTable *next;
+  struct _ClosureBridgeTrampolineTable *prev;
+  struct _ClosureBridgeTrampolineTable *next;
 } ClosureBridgeTrampolineTable;
 
 typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeInfo *cb_info);

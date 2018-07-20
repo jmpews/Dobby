@@ -16,13 +16,12 @@
 #include "writer-arm.h"
 
 #define MAX_INSN_SIZE 256
-typedef struct _ARMAssemblerWriter
-{
-    ARMInstruction *insnCTXs[MAX_INSN_SIZE];
-    zz_size_t insnCTXs_count;
-    zz_addr_t start_pc;
-    zz_addr_t insns_buffer;
-    zz_size_t insns_size;
+typedef struct _ARMAssemblerWriter {
+  ARMInstruction *insnCTXs[MAX_INSN_SIZE];
+  zz_size_t insnCTXs_count;
+  zz_addr_t start_pc;
+  zz_addr_t insns_buffer;
+  zz_size_t insns_size;
 } ARMAssemblerWriter;
 
 ARMAssemblerWriter *arm_writer_new();
@@ -54,11 +53,11 @@ void arm_writer_put_str_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
 
 void arm_writer_put_ldr_reg_imm_literal(ARMAssemblerWriter *self, ARMReg dst_reg, int32_t imm);
 
-void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg,
-                                          int32_t imm, bool index);
+void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, int32_t imm,
+                                          bool index);
 
-void arm_writer_put_ldr_reg_reg_imm_A1(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm,
-                                       bool P, bool U, bool W);
+void arm_writer_put_ldr_reg_reg_imm_A1(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm, bool P,
+                                       bool U, bool W);
 
 void arm_writer_put_ldr_reg_address(ARMAssemblerWriter *self, ARMReg reg, zz_addr_t address);
 
