@@ -31,9 +31,9 @@ inline void BIT32GET(uint32_t inst32, int start, int len, uint32_t *v) {
   *v = (inst32 >> start) & ((1 << len) - 1);
 }
 
-ARMInstructionX ARMInstArrary[32]      = {0};
-ThumbInstructionX Thumb2InstArrary[32] = {0};
-Thumb2InstructionX ThumbInstArrary[32] = {0};
+ARMInstructionX ARMInstArrary[32]       = {0};
+Thumb2InstructionX Thumb2InstArrary[32] = {0};
+ThumbInstructionX ThumbInstArrary[32]   = {0};
 
 __attribute__((constructor)) void initializeARMInstructionX() {
   // initialize ARM
@@ -44,5 +44,13 @@ __attribute__((constructor)) void initializeARMInstructionX() {
   ARMInstArrary[BL]            = (ARM64InstructionX){0 | 1 << 31 | 0b00101 << 26, 0 | 1 << 31 | 0b11111 << 26};
 
   // initialize Thumb2
-  Thumb2InstArrary[t2ADR] = (Thumb2InstructionX){};
+  // ARMInstrThumb2.td : def t2ADR
+  Thumb2InstArrary[MULTICLASS_3(XI, T2PCOneRegImm, t2ADR)] =
+      (Thumb2InstructionX){0 | 0b11110 << 27 | 0b10 << 24 | 0b0 << 22 | 0b0 << 20 | 0b1111 << 16 | 0b0 << 15,
+                           0 | 0b11111 << 27 | 0b11 << 24 | 0b1 << 22 | 0b1 << 20 | 0b1111 << 16 | 0b1 << 15};
+
+  // initialize Thumb2
+  // ARMInstrThumb.td : def tADR
+  ThumbInstArrary[MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I, InstThumb)] =
+      (ThumbInstructionX){0 | 0b10100 << (10 + 1), 0 | 0b11111 << (10 + 1)};
 }

@@ -172,6 +172,27 @@ static bool thumb_relocator_rewrite_CBNZ_CBZ(ThumbRelocator *self, const ARMInst
   return TRUE;
 }
 
+void thumb_assembly_relocator_cclass(MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I,
+                                                  InstThumb))(ARMRelocator *self, ARMInstructionCTX *instCTX) {
+  uint16_t label, target_address;
+  uint8_t Rd;
+
+  Rd             = get_insn_sub_16(instCTX->bytes, 8, 3);
+  label          = get_insn_sub_16(instCTX->bytes, 0, 8);
+  target_address = label + instCTX->pc;
+
+  if (self->output->pc % 4) {
+    thumb_assembly_writer_cclass(put_nop);
+  }
+
+  ARMReg regRd = arm_register_disdescribe(Rd, 0);
+  thumb_assembly_writer_cclass(put_ldr_reg_imm)(self->output, regRd, 0x0);
+  thumb_assembly_writer_cclass(put_b_imm)(self->output, 0x2);
+  thumb_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
+  thumb_assembly_relocator_cclass(register_literal_instCTX)(
+      self, (ARMInstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
+}
+
 // PAGE: A8-310
 static bool thumb_relocator_rewrite_ADD_register_T2(ThumbRelocator *self, const ARMInstruction *insn_ctx) {
   uint32_t insn1 = insn_ctx->insn1;

@@ -39,7 +39,9 @@ typedef enum {
   REG_SP
 } ARM64RegID;
 
-#define MULTICLASS_3(a, b, c) a_##b_##b
+#define MULTICLASS_3(a, b, c) a##_##b_##b
+#define MULTICLASS_4(a, b, c, d) a##_##b_##b_##d
+#define MULTICLASS_5(a, b, c, d, e) a##_##b_##b_##d_##e
 
 typedef enum {
   MULTICLASS_3(XI, AXI, BLXi),
@@ -47,8 +49,19 @@ typedef enum {
 } ARMInstId;
 
 typedef enum {
-  MULTICLASS_3(XI, T2PCOneRegImm, t2ADR),
+  MULTICLASS_4(t2B, T2I, Thumb2I, InstARM),
+  MULTICLASS_4(t2Bcc, T2I, Thumb2I, InstARM),
+  MULTICLASS_5(t2ADR, T2PCOneRegImm, T2XI, Thumb2XI, InstARM)
 } Thumb2InstId;
+
+typedef enum {
+  MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I, InstThumb),
+  MULTICLASS_4(tBX, TI, ThumbI, InstThumb),
+  MULTICLASS_4(tBcc, T1I, Thumb1I, InstThumb),
+  MULTICLASS_4(tLDRpci, T1pIs, Thumb1pI, InstThumb),
+  MULTICLASS_4(tBL, TIx2, ThumbI, InstThumb),
+  MULTICLASS_4(tBLXi, TIx2, ThumbI, InstThumb)
+} ThumbInstId;
 
 typedef struct {
   uint32_t inst32;
