@@ -35,6 +35,7 @@ ARMInstructionX ARMInstArrary[32]       = {0};
 Thumb2InstructionX Thumb2InstArrary[32] = {0};
 ThumbInstructionX ThumbInstArrary[32]   = {0};
 
+// clang-format off
 __attribute__((constructor)) void initializeARMInstructionX() {
   // initialize ARM
   ARMInstArrary[LoadLiteral]   = (ARM64InstructionX){0 | 0b011 << 27 | 0b00 << 24, 0 | 0b111 << 27 | 0b11 << 24};
@@ -49,8 +50,20 @@ __attribute__((constructor)) void initializeARMInstructionX() {
       (Thumb2InstructionX){0 | 0b11110 << 27 | 0b10 << 24 | 0b0 << 22 | 0b0 << 20 | 0b1111 << 16 | 0b0 << 15,
                            0 | 0b11111 << 27 | 0b11 << 24 | 0b1 << 22 | 0b1 << 20 | 0b1111 << 16 | 0b1 << 15};
 
-  // initialize Thumb2
-  // ARMInstrThumb.td : def tADR
-  ThumbInstArrary[MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I, InstThumb)] =
-      (ThumbInstructionX){0 | 0b10100 << (10 + 1), 0 | 0b11111 << (10 + 1)};
+  // initialize Thumb
+  // ARMInstrThumb.td
+  ThumbInstArrary[cclass_3_parent(tADR, T1I, T1Encoding, Sched)] = (ThumbInstructionX) {
+      0 | 0b10100 << (10+1),
+      0 | 0b11111 << (10+1)
+    };
+
+  ARMInstArrary[cclass_3_parent(tBcc, T1I, T1BranchCond, Sched)] = (ARMInstructionX) {
+      0 | 0b1101 << 12,
+      0 | 0b1111 << 12
+    };
+
+  ARMInstArrary[cclass_3_parent(tBL, TIx2, Requires, Sched)] = (ARMInstructionX) {
+      0 | 0b11110 << 27 | 0b11 << 14 | 0b1 << 12,
+      0 | 0b11111 << 27 | 0b11 << 14 | 0b1 << 12
+    };
 }

@@ -39,9 +39,28 @@ typedef enum {
   REG_SP
 } ARM64RegID;
 
-#define MULTICLASS_3(a, b, c) a##_##b_##b
-#define MULTICLASS_4(a, b, c, d) a##_##b_##b_##d
-#define MULTICLASS_5(a, b, c, d, e) a##_##b_##b_##d_##e
+#define class_0_parent(a) a
+#define class_1_parent(a, b) a##__##b
+#define class_2_parent(a, b, c) a##__##b_##c
+#define class_3_parent(a, b, c, d) a##__##b_##c_##d
+
+// struct _class_t {
+//   char *class_name;
+//   // max number parent classes == 4
+//   struct _class_t *parent_classes[4];
+// } class_t;
+
+// struct _class_t **g_class_ptr_s[256];
+
+// #include <stdarg.h>
+// void register_class(char *class_name, ...) {
+//   va_list args;
+//   va_start(args, class_name);
+//   while (1) {
+//     int var_int = va_arg(args, int);
+//   }
+//   va_end(args);
+// }
 
 typedef enum {
   MULTICLASS_3(XI, AXI, BLXi),
@@ -55,23 +74,15 @@ typedef enum {
 } Thumb2InstId;
 
 typedef enum {
-  MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I, InstThumb),
-  MULTICLASS_4(tBX, TI, ThumbI, InstThumb),
-  MULTICLASS_4(tBcc, T1I, Thumb1I, InstThumb),
-  MULTICLASS_4(tLDRpci, T1pIs, Thumb1pI, InstThumb),
-  MULTICLASS_4(tBL, TIx2, ThumbI, InstThumb),
-  MULTICLASS_4(tBLXi, TIx2, ThumbI, InstThumb)
+  class_3_parent(tADR, T1I, T1Encoding, Sched),
+  class_3_parent(tBcc, T1I, T1BranchCond, Sched),
+  class_3_parent(tBL, TIx2, Requires, Sched)
 } ThumbInstId;
 
 typedef struct {
   uint32_t inst32;
   uint32_t mask32;
-} ARMInstructionX, Thumb2InstructionX;
-
-typedef struct {
-  uint16_t inst32;
-  uint16_t mask32;
-} ThumbInstructionX;
+} ARMInstructionX, ThumbInstructionX, Thumb2InstructionX;
 
 void BIT32SET(uint32_t *inst32, int start, int len, uint32_t v);
 void BIT32SETMASK(uint32_t *inst32, int start, int len);

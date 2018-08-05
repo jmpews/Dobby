@@ -171,26 +171,93 @@ static bool thumb_relocator_rewrite_CBNZ_CBZ(ThumbRelocator *self, const ARMInst
   thumb_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count - 1]);
   return TRUE;
 }
-
-void thumb_assembly_relocator_cclass(MULTICLASS_4(tADR, T1I_T1Encoding, Thumb1I,
-                                                  InstThumb))(ARMRelocator *self, ARMInstructionCTX *instCTX) {
-  uint16_t label, target_address;
-  uint8_t Rd;
+void thumb_assembly_relocator_cclass(cclass_3_parent(tADR, T1I, T1Encoding, Sched))(ARMRelocator *self,
+                                                                                    ARMInstructionCTX *instCTX) {
+  uint16_t addr, target_address;
+  uint16_t Rd;
 
   Rd             = get_insn_sub_16(instCTX->bytes, 8, 3);
-  label          = get_insn_sub_16(instCTX->bytes, 0, 8);
-  target_address = label + instCTX->pc;
+  addr           = get_insn_sub_16(instCTX->bytes, 0, 8);
+  target_address = addr + instCTX->pc;
 
   if (self->output->pc % 4) {
     thumb_assembly_writer_cclass(put_nop);
   }
 
-  ARMReg regRd = arm_register_disdescribe(Rd, 0);
-  thumb_assembly_writer_cclass(put_ldr_reg_imm)(self->output, regRd, 0x0);
+  ARMReg Rd_desp = arm_register_revert_describe(Rd, 0);
+
+  // ldr Rd, 0x0
+  // b 0x2
+  // .long 0
+  // .long 0
+  thumb_assembly_writer_cclass(put_ldr_reg_imm)(self->output, Rd_desp, 0x0);
   thumb_assembly_writer_cclass(put_b_imm)(self->output, 0x2);
   thumb_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
+
   thumb_assembly_relocator_cclass(register_literal_instCTX)(
-      self, (ARMInstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
+      self, (ARMInstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 2))->val);
+}
+
+void thumb_assembly_relocator_cclass(cclass_3_parent(tBcc, T1I, T1BranchCond, Sched))(ARMRelocator *self,
+                                                                                      ARMInstructionCTX *instCTX) {
+  uint16_t target, target_address;
+  uint16_t p;
+
+  p              = get_insn_sub_16(instCTX->bytes, 8, 4);
+  target         = get_insn_sub_16(instCTX->bytes, 0, 8);
+  target_address = target + instCTX->pc;
+
+  if (self->output->pc % 4) {
+    thumb_assembly_writer_cclass(put_nop);
+  }
+
+  // 0x4: bcc 0x0
+  // 0x6: b 0xc
+  // 0x8: ldr pc, [pc, -2]
+  // 0xc: .long 0
+  // 0xe: .long 0
+  // 0x10: xxx
+  uint16_t origin_bcc_thumb_inst = get_insn_sub_16(instCTX->bytes, 0, 16);
+  uint16_t fixed_bcc_thumb_inst  = ((origin_bcc_thumb_inst & 0b1111111100000000) | 0);
+
+  thumb_assembly_writer_cclass(put_bytes)(self->output, (uint16_t *)&fixed_bcc_thumb_inst, sizeof(uint16_t));
+  thumb_assembly_writer_cclass(put_b_imm)(self->output, 0xc);
+  thumb_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM_REG_PC, -2);
+  thumb_assembly_writer_cclass(put_bytes)(self->output, (uint32_t *)&target_address, sizeof(uint32_t));
+
+  thumb_assembly_relocator_cclass(register_literal_instCTX)(
+      self, (ARMInstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 2))->val);
+}
+
+void thumb_assembly_relocator_cclass(cclass_3_parent(tBL, TIx2, Requires, Sched))(ARMRelocator *self,
+                                                                                  ARMInstructionCTX *instCTX) {
+  uint16_t target, target_address;
+  uint16_t p;
+
+  p              = get_insn_sub_16(instCTX->bytes, 8, 4);
+  target         = get_insn_sub_16(instCTX->bytes, 0, 8);
+  target_address = target + instCTX->pc;
+
+  if (self->output->pc % 4) {
+    thumb_assembly_writer_cclass(put_nop);
+  }
+
+  // 0x4: bcc 0x0
+  // 0x6: b 0xc
+  // 0x8: ldr pc, [pc, -2]
+  // 0xc: .long 0
+  // 0xe: .long 0
+  // 0x10: xxx
+  uint16_t origin_bcc_thumb_inst = get_insn_sub_16(instCTX->bytes, 0, 16);
+  uint16_t fixed_bcc_thumb_inst  = ((origin_bcc_thumb_inst & 0b1111111100000000) | 0);
+
+  thumb_assembly_writer_cclass(put_bytes)(self->output, (uint16_t *)&fixed_bcc_thumb_inst, sizeof(uint16_t));
+  thumb_assembly_writer_cclass(put_b_imm)(self->output, 0xc);
+  thumb_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM_REG_PC, -2);
+  thumb_assembly_writer_cclass(put_bytes)(self->output, (uint32_t *)&target_address, sizeof(uint32_t));
+
+  thumb_assembly_relocator_cclass(register_literal_instCTX)(
+      self, (ARMInstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 2))->val);
 }
 
 // PAGE: A8-310
