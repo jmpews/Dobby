@@ -9,8 +9,7 @@
 #include "std_kit/std_list.h"
 
 typedef struct _address_stub_t {
-  ARMInstructionX *ldr_inst;
-  uintptr_t address;
+  int ldr_inst_index uintptr_t address;
 } ldr_address_stub_t;
 
 typedef struct _ARMAssemblerWriter {

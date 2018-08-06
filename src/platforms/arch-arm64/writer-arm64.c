@@ -5,9 +5,7 @@
 #include "memory_manager.h"
 #include "writer-arm64.h"
 
-inline void ReadBytes(void *data, void *address, int length) {
-  memcpy(data, address, length);
-}
+inline void ReadBytes(void *data, void *address, int length) { memcpy(data, address, length); }
 
 ARM64AssemblyWriter *arm64_assembly_writer_cclass(new)(void *pc) {
   ARM64AssemblyWriter *writer = SAFE_MALLOC_TYPE(ARM64AssemblyWriter);
@@ -17,8 +15,7 @@ ARM64AssemblyWriter *arm64_assembly_writer_cclass(new)(void *pc) {
   return writer;
 }
 
-void arm64_assembly_writer_cclass(destory)(ARM64AssemblyWriter *self) {
-}
+void arm64_assembly_writer_cclass(destory)(ARM64AssemblyWriter *self) {}
 
 void arm64_assembly_writer_cclass(reset)(ARM64AssemblyWriter *self, void *pc) {
   self->start_pc = pc;
@@ -38,9 +35,7 @@ void arm64_assembly_writer_cclass(patch_to)(ARM64AssemblyWriter *self, void *tar
   return;
 }
 
-size_t arm64_assembly_writer_cclass(bxxx_range)() {
-  return ((1 << 23) << 2);
-}
+size_t arm64_assembly_writer_cclass(bxxx_range)() { return ((1 << 23) << 2); }
 
 #define ARM64_INST_SIZE 4
 
@@ -48,11 +43,10 @@ void arm64_assembly_writer_cclass(put_bytes)(ARM64AssemblyWriter *self, void *da
   assert(length % 4 == 0);
   for (int i = 0; i < (length / ARM64_INST_SIZE); i++) {
     ARM64InstructionCTX *instCTX = SAFE_MALLOC_TYPE(ARM64InstructionCTX);
-    instCTX->pc                  = (zz_addr_t)self->start_pc + self->inst_bytes->size;
-    instCTX->address             = (zz_addr_t)self->inst_bytes->data + self->inst_bytes->size;
+    instCTX->pc                  = (zz_addr_t)self->start_pc + self->instCTXs->len * ARM64_INST_SIZE;
     instCTX->size                = ARM64_INST_SIZE;
-
     ReadBytes(&instCTX->bytes, (void *)((zz_addr_t)data + ARM64_INST_SIZE * i), ARM64_INST_SIZE);
+
     buffer_array_put(self->inst_bytes, (void *)((zz_addr_t)data + ARM64_INST_SIZE * i), ARM64_INST_SIZE);
 
     list_rpush(self->instCTXs, list_node_new(instCTX));
