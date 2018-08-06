@@ -76,7 +76,8 @@ typedef enum {
 typedef enum {
   class_3_parent(tADR, T1I, T1Encoding, Sched),
   class_3_parent(tBcc, T1I, T1BranchCond, Sched),
-  class_3_parent(tBL, TIx2, Requires, Sched)
+  class_3_parent(tBL, TIx2, Requires, Sched),
+  class_3_parent(tB, T1pI, T1Encoding, Sched)
 } ThumbInstId;
 
 typedef struct {

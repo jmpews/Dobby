@@ -66,4 +66,9 @@ __attribute__((constructor)) void initializeARMInstructionX() {
       0 | 0b11110 << 27 | 0b11 << 14 | 0b1 << 12,
       0 | 0b11111 << 27 | 0b11 << 14 | 0b1 << 12
     };
+
+  ARMInstArrary[cclass_3_parent(tBL, TIx2, Requires, Sched)] = (ARMInstructionX) {
+    0 | 0b11100 << (10+1),
+    0 | 0b11111 << (10+1),
+  };
 }
