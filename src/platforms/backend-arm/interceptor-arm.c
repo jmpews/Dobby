@@ -314,7 +314,7 @@ void trampoline_build_for_invoke(InterceptorBackend *self, hook_entry_t *entry) 
 
   if (is_thumb) {
     ThumbRelocator *thumb_relocator;
-    ThumbAssemblerWriter *thumb_writer;
+    ThumbAssemblyWriter *thumb_writer;
     ARMReader *thumb_reader;
     thumb_relocator = &self->thumb_relocator;
     thumb_writer    = &self->thumb_writer;
@@ -465,7 +465,7 @@ void trampoline_active(InterceptorBackend *self, hook_entry_t *entry) {
     target_addr = THUMB_FUNCTION_ADDRESS(entry->target_ptr);
 
   if (is_thumb) {
-    ThumbAssemblerWriter *thumb_writer;
+    ThumbAssemblyWriter *thumb_writer;
     thumb_writer = &self->thumb_writer;
     thumb_writer_reset(thumb_writer, ALIGN_CEIL(temp_codeslice, 4), target_addr);
 

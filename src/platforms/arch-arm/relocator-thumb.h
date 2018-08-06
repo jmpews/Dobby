@@ -16,7 +16,7 @@
 typedef struct _ThumbRelocator {
   bool try_relocated_again;
   zz_size_t try_relocated_length;
-  ThumbAssemblerWriter *output;
+  ThumbAssemblyWriter *output;
   ARMReader *input;
   int needRelocateInputCount;
   int doneRelocateInputCount;
@@ -29,9 +29,9 @@ typedef struct _ThumbRelocator {
   zz_size_t relocated_insnCTXs_count;
 } ThumbRelocator;
 
-void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblerWriter *writer);
+void thumb_relocator_init(ThumbRelocator *relocator, ARMReader *input, ThumbAssemblyWriter *writer);
 
-void thumb_relocator_reset(ThumbRelocator *self, ARMReader *input, ThumbAssemblerWriter *output);
+void thumb_relocator_reset(ThumbRelocator *self, ARMReader *input, ThumbAssemblyWriter *output);
 
 void thumb_relocator_read_one(ThumbRelocator *self, ARMInstruction *instruction);
 

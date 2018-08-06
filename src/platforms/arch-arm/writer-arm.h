@@ -1,29 +1,38 @@
 #ifndef platforms_arch_arm_writer_arm_h
 #define platforms_arch_arm_writer_arm_h
 
-#include <string.h>
+#include "instruction.h"
+#include "register-arm.h"
 
-#include "hookzz.h"
-#include "zkit.h"
+#include "std_kit/std_buffer_array.h"
+#include "std_kit/std_kit.h"
+#include "std_kit/std_list.h"
 
-#include "macros.h"
-#include "memhelper.h"
-#include "writer.h"
+typedef struct _address_stub_t {
+  ARMInstructionX *ldr_inst;
+  uintptr_t address;
+} ldr_address_stub_t;
 
-#include "instructions.h"
-#include "reader-arm.h"
-#include "regs-arm.h"
-#include "writer-arm.h"
-
-#define MAX_INSN_SIZE 256
 typedef struct _ARMAssemblerWriter {
-  ARMInstruction *insnCTXs[MAX_INSN_SIZE];
-  zz_size_t insnCTXs_count;
-  zz_addr_t start_pc;
-  zz_addr_t insns_buffer;
-  zz_size_t insns_size;
+  void *start_pc;
+  void *start_address;
+
+  list_t *instCTXs;
+  buffer_array_t *inst_bytes;
+  list_t *ldr_address_stubs;
 } ARMAssemblerWriter;
 
+#define arm_assembly_writer_cclass(member) cclass(arm_assembly_writer, member)
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+
+ARMAssemblyWriter *arm_assembly_writer_cclass(new)(void *pc);
+
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+== == == == == == == == == == == == == == == == == == == == == == == == ;
 ARMAssemblerWriter *arm_writer_new();
 void arm_writer_init(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);
 void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t target_ptr);

@@ -12,10 +12,10 @@
 #include "platforms/arch-arm/writer-arm.h"
 #include "platforms/arch-arm/writer-thumb.h"
 
-CodeSlice *thumb_code_patch(ThumbAssemblerWriter *writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
+CodeSlice *thumb_code_patch(ThumbAssemblyWriter *writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,
                             zz_size_t range_size);
 
-CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblerWriter *writer, ExecuteMemoryManager *emm,
+CodeSlice *thumb_relocate_code_patch(ThumbRelocator *relocator, ThumbAssemblyWriter *writer, ExecuteMemoryManager *emm,
                                      zz_addr_t target_addr, zz_size_t range_size);
 
 CodeSlice *arm_code_patch(ARMAssemblerWriter *writer, ExecuteMemoryManager *emm, zz_addr_t target_addr,

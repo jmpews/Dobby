@@ -20,7 +20,7 @@ typedef struct _InterceptorBackend {
   ARMRelocator arm_relocator;
   ThumbRelocator thumb_relocator;
   ARMAssemblerWriter arm_writer;
-  ThumbAssemblerWriter thumb_writer;
+  ThumbAssemblyWriter thumb_writer;
   ARMReader arm_reader;
   ARMReader thumb_reader;
 
