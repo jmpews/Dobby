@@ -12,6 +12,4 @@
 
 typedef ARMAssemblerWriter ThumbAssemblyWriter;
 
-== == == == == == == == == == == == == == == == == == == == == == = ;
-
 #endif

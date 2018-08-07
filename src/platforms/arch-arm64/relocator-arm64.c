@@ -149,65 +149,127 @@ void arm64_assembly_relocator_cclass(relocate_write)(ARM64Relocator *self) {
   }
 }
 
-void arm64_assembly_relocator_cclass(rewrite_LoadLiteral)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
-  uint32_t Rt, label;
-  int index;
-  zz_addr_t target_address;
-  Rt             = get_insn_sub(instCTX->bytes, 0, 5);
-  label          = get_insn_sub(instCTX->bytes, 5, 19);
-  target_address = (label << 2) + instCTX->pc;
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  ARM64Reg regRt = arm64_register_disdescribe(Rt, 0);
-  arm64_assembly_writer_cclass(put_ldr_reg_imm)(self->output, regRt, 0x8);
-  arm64_assembly_writer_cclass(put_b_imm)(self->output, 0xc);
-  arm64_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(target_address));
-  arm64_assembly_relocator_cclass(register_literal_instCTX)(
-      self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
-  arm64_assembly_writer_cclass(put_ldr_reg_reg_offset)(self->output, regRt, regRt, 0);
+// PC relative addressing.
+enum PCRelAddressingOp {
+  PCRelAddressingFixed = 0x10000000,
+  PCRelAddressingFMask = 0x1F000000,
+  PCRelAddressingMask  = 0x9F000000,
+  ADR                  = PCRelAddressingFixed | 0x00000000,
+  ADRP                 = PCRelAddressingFixed | 0x80000000
+};
+
+void arm64_assembly_relocator_cclass(rewritePCRelAddressing)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
+  uint32_t immlo, immhi;
+  uint32_t Rd_ndx;
+  uint32_t target_address;
+
+  Rd_ndx = get_insn_sub(instCTX->bytes, 0, 5);
+  immlo  = get_insn_sub(instCTX->bytes, 29, 2);
+  immhi  = get_insn_sub(instCTX->bytes, 5, 19);
+
+  switch (instCTX->bytes & PCRelAddressingMask) {
+  case ADR:
+    target_address = (immhi << 2) | immlo;
+  case ADRP:
+    target_address = (immhi << 2 << 12) | immlo << 12;
+  }
+
+  ARM64Reg Rd = arm64_register_revert_describe(Rd_ndx, 0);
+
+  // [adr|adrp] instruction fix scheme
+  // 0x4: load_reg_address(Rd, target_address)
+  arm64_assembly_writer_cclass(load_reg_address)(self->output, Rd, target_address);
+}
+
+// Load literal.
+enum LoadLiteralOp {
+  LoadLiteralFixed = 0x18000000,
+  LoadLiteralFMask = 0x3B000000,
+  LoadLiteralMask  = 0xFF000000,
+  LDR_w_lit        = LoadLiteralFixed | 0x00000000,
+  LDR_x_lit        = LoadLiteralFixed | 0x40000000,
+  LDRSW_x_lit      = LoadLiteralFixed | 0x80000000,
+  PRFM_lit         = LoadLiteralFixed | 0xC0000000,
+  LDR_s_lit        = LoadLiteralFixed | 0x04000000,
+  LDR_d_lit        = LoadLiteralFixed | 0x44000000
+};
+void arm64_assembly_relocator_cclass(rewriteLoadLiteral)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
+  uint32_t Rt_ndx;
+  uint32_t imm19;
+  uint64_t target_address;
+
+  Rt_ndx         = get_insn_sub(instCTX->bytes, 0, 5);
+  imm19          = get_insn_sub(instCTX->bytes, 5, 19);
+  target_address = (imm19 << 2) + instCTX->pc;
+
+  switch (instCTX->bytes & LoadLiteralMask) {
+  case LDR_x_lit:
+    break;
+  default:
+    COMMON_ERROR_LOG();
+  }
+
+  ARM64Reg Rt = arm64_register_disdescribe(Rt_ndx, 0);
+
+  // [ldr(literal)] instruct fix scheme
+  // 0x4: load_reg_address(Rt, target_address)
+  // 0x8: ldr reg, [reg, #0x0]
+  arm64_assembly_writer_cclass(load_reg_address)(self->output, Rt, target_address);
+  arm64_assembly_writer_cclass(put_ldr_reg_reg_offset)(self->output, Rt, Rt, 0);
 }
 
 void arm64_assembly_relocator_cclass(rewrite_BaseCmpBranch)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
   uint32_t target;
-  uint32_t inst32;
-  zz_addr_t target_address;
+  uint64_t target_address;
 
-  inst32 = instCTX->bytes;
-
-  target         = get_insn_sub(inst32, 5, 19);
+  target         = get_insn_sub(instCTX->bytes, 5, 19);
   target_address = (target << 2) + instCTX->pc;
 
+  // 0x4: cbz -1
+  // 0x8: b 0xc
+  // 0xc: load_reg_address(x17, address)
+  // 0x10: br x17
+  // 0x14: xxx
+
+  // origin fix, keep the CmpBranch condition
+  uint32_t inst32;
+  inst32 = instCTX->bytes;
   target = 0x8 >> 2;
   BIT32SET(&inst32, 5, 19, target);
   arm64_assembly_writer_cclass(put_bytes)(self->output, &inst32, instCTX->size);
 
-  arm64_assembly_writer_cclass(put_b_imm)(self->output, 0x14);
-  arm64_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM64_REG_X17, 0x8);
+  arm64_assembly_writer_cclass(put_b_imm)(self->output, 0xc);
+  arm64_assembly_writer_cclass(put_load_reg_address)(self->output, ARM64_REG_X17, target_address);
   arm64_assembly_writer_cclass(put_br_reg)(self->output, ARM64_REG_X17);
-  arm64_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
-  arm64_assembly_relocator_cclass(register_literal_instCTX)(
-      self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
+  // arm64_assembly_relocator_cclass(register_literal_instCTX)(self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
 }
 
 void arm64_assembly_relocator_cclass(rewrite_BranchCond)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
   uint32_t target;
-  uint32_t inst32;
-  zz_addr_t target_address;
+  uint64_t target_address;
 
-  inst32 = instCTX->bytes;
-
-  target         = get_insn_sub(inst32, 5, 19);
+  target         = get_insn_sub(instCTX->bytes, 5, 19);
   target_address = (target << 2) + instCTX->pc;
 
+  // 0x4: cbz -1
+  // 0x8: b 0xc
+  // 0xc: load_reg_address(x17, address)
+  // 0x10: br x17
+  // 0x14: xxx
+
+  // origin fix, keep the CmpBranch condition
+  uint32_t inst32;
+  inst32 = instCTX->bytes;
   target = 0x8 >> 2;
   BIT32SET(&inst32, 5, 19, target);
   arm64_assembly_writer_cclass(put_bytes)(self->output, &inst32, instCTX->size);
 
-  arm64_assembly_writer_cclass(put_b_imm)(self->output, 0x14);
-  arm64_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM64_REG_X17, 0x8);
+  arm64_assembly_writer_cclass(put_b_imm)(self->output, 0xc);
+  arm64_assembly_writer_cclass(put_load_reg_address)(self->output, ARM64_REG_X17, target_address);
   arm64_assembly_writer_cclass(put_br_reg)(self->output, ARM64_REG_X17);
-  arm64_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
-  arm64_assembly_relocator_cclass(register_literal_instCTX)(
-      self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
+  // arm64_assembly_relocator_cclass(register_literal_instCTX)(self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
 }
 
 void arm64_assembly_relocator_cclass(rewrite_B)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
@@ -218,11 +280,11 @@ void arm64_assembly_relocator_cclass(rewrite_B)(ARM64Relocator *self, ARM64Instr
 
   target_address = (addr << 2) + instCTX->pc;
 
-  arm64_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM64_REG_X17, 0x8);
+  // 0x4: load_reg_address(x17, address)
+  // 0x8: br x17
+  // 0xc: xxx
+  arm64_assembly_writer_cclass(put_load_reg_address)(self->output, ARM64_REG_X17, target_address);
   arm64_assembly_writer_cclass(put_br_reg)(self->output, ARM64_REG_X17);
-  arm64_assembly_writer_cclass(put_bytes)(self->output, (zz_ptr_t)&target_address, sizeof(zz_ptr_t));
-  arm64_assembly_relocator_cclass(register_literal_instCTX)(
-      self, (ARM64InstructionCTX *)(list_at(self->output->instCTXs, self->output->instCTXs->len - 1))->val);
 }
 
 void arm64_assembly_relocator_cclass(rewrite_BL)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
@@ -234,6 +296,9 @@ void arm64_assembly_relocator_cclass(rewrite_BL)(ARM64Relocator *self, ARM64Inst
   target_address  = (addr << 2) + instCTX->pc;
   next_pc_address = instCTX->pc + 4;
 
+  // 0x4: load_reg_address(x17, address)
+  // 0x8: blr x17
+  // 0xc: xxx
   arm64_assembly_writer_cclass(put_ldr_reg_imm)(self->output, ARM64_REG_X17, 0xc);
   arm64_assembly_writer_cclass(put_blr_reg)(self->output, ARM64_REG_X17);
   arm64_assembly_writer_cclass(put_b_imm)(self->output, 0xc);

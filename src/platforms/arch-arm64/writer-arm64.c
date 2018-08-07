@@ -5,23 +5,30 @@
 #include "memory_manager.h"
 #include "writer-arm64.h"
 
-inline void ReadBytes(void *data, void *address, int length) { memcpy(data, address, length); }
+inline void ReadBytes(void *data, void *address, int length) {
+  memcpy(data, address, length);
+}
 
 ARM64AssemblyWriter *arm64_assembly_writer_cclass(new)(void *pc) {
   ARM64AssemblyWriter *writer = SAFE_MALLOC_TYPE(ARM64AssemblyWriter);
   writer->start_pc            = pc;
   writer->instCTXs            = list_new();
   writer->inst_bytes          = buffer_array_create(64);
+  writer->ldr_address_stubs   = list_new();
   return writer;
 }
 
-void arm64_assembly_writer_cclass(destory)(ARM64AssemblyWriter *self) {}
+void arm64_assembly_writer_cclass(destory)(ARM64AssemblyWriter *self) {
+}
 
 void arm64_assembly_writer_cclass(reset)(ARM64AssemblyWriter *self, void *pc) {
   self->start_pc = pc;
 
   list_destroy(self->instCTXs);
   self->instCTXs = list_new();
+
+  list_destroy(self->ldr_address_stubs);
+  self->ldr_address_stubs = list_new();
 
   buffer_array_clear(self->inst_bytes);
   return;
@@ -35,7 +42,9 @@ void arm64_assembly_writer_cclass(patch_to)(ARM64AssemblyWriter *self, void *tar
   return;
 }
 
-size_t arm64_assembly_writer_cclass(bxxx_range)() { return ((1 << 23) << 2); }
+size_t arm64_assembly_writer_cclass(bxxx_range)() {
+  return ((1 << 23) << 2);
+}
 
 #define ARM64_INST_SIZE 4
 
@@ -53,7 +62,8 @@ void arm64_assembly_writer_cclass(put_bytes)(ARM64AssemblyWriter *self, void *da
   }
 }
 
-void arm64_assembly_writer_cclass(put_ldr_reg_imm)(ARM64AssemblyWriter *self, ARM64Reg reg, uint32_t offset) {
+void arm64_assembly_writer_cclass(put_ldr_literal_reg_offset)(ARM64AssemblyWriter *self, ARM64Reg reg,
+                                                              uint32_t offset) {
   ARM64RegInfo ri;
   arm64_register_describe(reg, &ri);
 
@@ -82,6 +92,7 @@ void arm64_assembly_writer_cclass(put_str_reg_reg_offset)(ARM64AssemblyWriter *s
   uint32_t inst  = 0x39000000 | size << 30 | opc << 22 | imm12 << 10 | Rn_ndx << 5 | Rt_ndx;
   arm64_assembly_writer_cclass(put_bytes)(self, (void *)&inst, 4);
 }
+
 void arm64_assembly_writer_cclass(put_ldr_reg_reg_offset)(ARM64AssemblyWriter *self, ARM64Reg dest_reg,
                                                           ARM64Reg src_reg, uint64_t offset) {
   ARM64RegInfo rs, rd;
@@ -100,6 +111,7 @@ void arm64_assembly_writer_cclass(put_ldr_reg_reg_offset)(ARM64AssemblyWriter *s
   uint32_t inst  = 0x39000000 | size << 30 | opc << 22 | imm12 << 10 | Rn_ndx << 5 | Rt_ndx;
   arm64_assembly_writer_cclass(put_bytes)(self, (void *)&inst, 4);
 }
+
 void arm64_assembly_writer_cclass(put_br_reg)(ARM64AssemblyWriter *self, ARM64Reg reg) {
   ARM64RegInfo ri;
   arm64_register_describe(reg, &ri);
@@ -109,6 +121,7 @@ void arm64_assembly_writer_cclass(put_br_reg)(ARM64AssemblyWriter *self, ARM64Re
   uint32_t inst = 0xd61f0000 | op << 21 | Rn_ndx << 5;
   arm64_assembly_writer_cclass(put_bytes)(self, (void *)&inst, 4);
 }
+
 void arm64_assembly_writer_cclass(put_blr_reg)(ARM64AssemblyWriter *self, ARM64Reg reg) {
   ARM64RegInfo ri;
   arm64_register_describe(reg, &ri);
@@ -119,9 +132,26 @@ void arm64_assembly_writer_cclass(put_blr_reg)(ARM64AssemblyWriter *self, ARM64R
   uint32_t inst = 0xd63f0000 | op << 21 | Rn_ndx << 5;
   arm64_assembly_writer_cclass(put_bytes)(self, (void *)&inst, 4);
 }
-void arm64_assembly_writer_cclass(put_b_imm)(ARM64AssemblyWriter *self, uint64_t offset) {
+
+void arm64_assembly_writer_cclass(put_b_imm)(ARM64AssemblyWriter *self, uint64_t imm) {
   uint32_t op   = 0b0, imm26;
-  imm26         = (offset >> 2) & 0x03ffffff;
+  imm26         = (imm >> 2) & 0x03ffffff;
   uint32_t inst = 0x14000000 | op << 31 | imm26;
   arm64_assembly_writer_cclass(put_bytes)(self, (void *)&inst, 4);
+}
+
+static void arm64_assembly_writer_register_ldr_address_stub(ARM64AssemblyWriter *writer, int ldr_inst_index,
+                                                            zz_addr_t address) {
+  ldr_address_stub_t *ldr_stub = SAFE_MALLOC_TYPE(ldr_address_stub_t);
+  ldr_stub->address            = address;
+  ldr_stub->ldr_inst_index     = ldr_inst_index;
+  list_lpush(writer->ldr_address_stubs, list_node_new(ldr_stub));
+  return;
+}
+
+// combine instructions set.
+// 0x4: ldr reg, #label
+void arm64_assembly_writer_cclass(put_load_reg_address)(ARM64AssemblyWriter *self, ARM64Reg reg, zz_addr_t address) {
+  arm64_assembly_writer_register_ldr_address_stub(self, self->instCTXs->len, address);
+  arm64_assembly_writer_cclass(put_ldr_literal_reg_offset)(self, reg, -1);
 }

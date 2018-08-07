@@ -74,7 +74,7 @@
       fprintf(stderr, "======= Errno [%d] String ======= \n", errno);                                                  \
       perror(strerror(errno));                                                                                         \
     }                                                                                                                  \
-    fprintf(stderr, "======= Error Log End ======= \n");                                                               \
+    fprintf(stderr, "======= ERROR LOG End ======= \n");                                                               \
   } while (0)
 
 class LogControler : public Singleton<LogControler> {

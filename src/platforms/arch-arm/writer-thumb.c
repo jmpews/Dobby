@@ -3,7 +3,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
-inline void ReadBytes(void *data, void *address, int length) { memcpy(data, address, length); }
+inline void ReadBytes(void *data, void *address, int length) {
+  memcpy(data, address, length);
+}
 
 ThumbAssemblyWriter *thumb_assembly_writer_cclass(new)(void *pc) {
   ThumbAssemblyWriter *writer = SAFE_MALLOC_TYPE(ThumbAssemblyWriter);
@@ -14,7 +16,9 @@ ThumbAssemblyWriter *thumb_assembly_writer_cclass(new)(void *pc) {
   return writer;
 }
 
-void thumb_assembly_writer_cclass(destory)(ThumbAssemblyWriter *self) { list_destroy(self->instCTXs); }
+void thumb_assembly_writer_cclass(destory)(ThumbAssemblyWriter *self) {
+  list_destroy(self->instCTXs);
+}
 
 void thumb_assembly_writer_cclass(reset)(ThumbAssemblyWriter *self, void *pc) {
   self->start_pc = pc;
@@ -30,7 +34,9 @@ void thumb_assembly_writer_cclass(reset)(ThumbAssemblyWriter *self, void *pc) {
   return;
 }
 
-size_t thumb_assembly_writer_cclass(t2_bxxx_range)() { return ((1 << 23) << 2); }
+size_t thumb_assembly_writer_cclass(t2_bxxx_range)() {
+  return ((1 << 23) << 2);
+}
 
 void thumb_assembly_writer_cclass(patch_to)(ThumbAssemblyWriter *self, void *target_address) {
   self->start_address = target_address;
@@ -63,7 +69,7 @@ void thumb_assembly_writer_cclass(put_t1_nop)(ThumbAssemblyWriter *self) {
 
 // LDR (literal)
 // ldr.w reg, [pc, #imm]
-void thumb_assembly_writer_cclass(put_t2_ldr_literal)(ThumbAssemblyWriter *self, ARMReg reg, int32_t imm) {
+void thumb_assembly_writer_cclass(put_t2_ldr_literal_imm)(ThumbAssemblyWriter *self, ARMReg reg, int32_t imm) {
   ARMRegInfo ri;
   arm_register_describe(reg, &ri);
 
@@ -83,7 +89,7 @@ void thumb_assembly_writer_cclass(put_t2_ldr_literal)(ThumbAssemblyWriter *self,
 
 // B
 // b.w with encodingT4
-void thumb_assembly_writer_cclass(put_t2_b)(ThumbAssemblyWriter *self, uint32_t imm) {
+void thumb_assembly_writer_cclass(put_t2_b_imm)(ThumbAssemblyWriter *self, uint32_t imm) {
 
   uint32_t S = 0, J1 = 1, J2 = 1;
   uint32_t imm10 = 0, imm11 = 0;
@@ -109,27 +115,25 @@ void thumb_assembly_writer_cclass(load_reg_address_and_b)(ThumbAssemblyWriter *s
   ARMRegInfo ri;
   arm_register_describe(reg, &ri);
 
-  thumb_writer_put_t2_ldr_literal(self, reg, 0x0);
-  thumb_writer_put_t2_b(self, 0x0);
-  thumb_writer_put_bytes(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
+  thumb_assembly_writer_cclass(put_t2_ldr_literal_imm)(self, reg, 0x0);
+  thumb_assembly_writer_cclass(put_t2_b_imm)(self, 0x0);
+  thumb_assembly_writer_cclass(put_bytes)(self, (zz_ptr_t)&address, sizeof(zz_ptr_t));
   return;
 }
 
-static void thumb_assembly_writer_register_ldr_address_stub(int ldr_inst_index, zz_addr_t address) {
+static void thumb_assembly_writer_register_ldr_address_stub(ThumbAssemblyWriter *writer, int ldr_inst_index,
+                                                            zz_addr_t address) {
   ldr_address_stub_t *ldr_stub = SAFE_MALLOC_TYPE(ldr_address_stub_t);
   ldr_stub->address            = address;
   ldr_stub->ldr_inst_index     = ldr_inst_index;
+  list_lpush(writer->ldr_address_stubs, list_node_new(ldr_stub));
   return;
 }
 
 // combine instructions set
-// 0x4: ldr.w reg, [pc, #0]
-// 0x8: .long 0x1234
+// 0x4: ldr.w reg, [pc, #label]
 void thumb_assembly_writer_cclass(load_reg_address)(ThumbAssemblyWriter *self, ARMReg reg, zz_addr_t address) {
-  ARMRegInfo ri;
-  arm_register_describe(reg, &ri);
-
-  thumb_assembly_writer_register_ldr_address_stub(self->instCTXs.len, address);
-  thumb_writer_put_ldr_literal(self, reg, -1);
+  thumb_assembly_writer_register_ldr_address_stub(self, self->instCTXs->len, address);
+  thumb_assembly_writer_cclass(put_t2_ldr_literal_imm)(self, reg, -1);
   return;
 }
