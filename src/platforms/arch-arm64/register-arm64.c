@@ -26,7 +26,7 @@ void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri) {
   ri->index = ri->meta - ARM64_REG_X0;
 }
 
-ARM64Reg arm64_register_disdescribe(int index, int width) {
+ARM64Reg arm64_register_revert_describe(int index, int width) {
   if (width == 0)
     width = 64;
 

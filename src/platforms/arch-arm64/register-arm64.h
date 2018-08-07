@@ -50,6 +50,6 @@ typedef struct _ARM64RegInfo {
 
 void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri);
 
-ARM64Reg arm64_register_disdescribe(int index, int width);
+ARM64Reg arm64_register_revert_describe(int index, int width);
 
 #endif
