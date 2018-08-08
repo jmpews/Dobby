@@ -46,34 +46,3 @@ ARMInstruction *arm_reader_read_one_instruction(ARMReader *self) {
   return insn_ctx;
 }
 
-// ARM Manual
-// A5 ARM Instruction Set Encoding
-// A5.3 Load/store word and unsigned byte
-ARMInsnType GetARMInsnType(uint32_t insn) {
-
-  if (insn_equal(insn, "xxxx0000100xxxxxxxxxxxxxxxx0xxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_ADD_register_A1;
-  }
-
-  if (insn_equal(insn, "xxxx0101x0011111xxxxxxxxxxxxxxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_LDR_literal_A1;
-  }
-
-  if (insn_equal(insn, "xxxx 0010 1000 1111xxxxxxxxxxxxxxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_ADR_A1;
-  }
-  if (insn_equal(insn, "xxxx 0010 0100 1111xxxxxxxxxxxxxxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_ADR_A2;
-  }
-  if (insn_equal(insn, "xxxx1010xxxxxxxxxxxxxxxxxxxxxxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_B_A1;
-  }
-  if (insn_equal(insn, "xxxx1011xxxxxxxxxxxxxxxxxxxxxxxx") && (get_insn_sub(insn, 28, 4) != 0xF)) {
-    return ARM_INS_BLBLX_immediate_A1;
-  }
-  if (insn_equal(insn, "1111101xxxxxxxxxxxxxxxxxxxxxxxxx")) {
-    return ARM_INS_BLBLX_immediate_A2;
-  }
-
-  return ARM_UNDEF;
-}

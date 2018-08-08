@@ -7,27 +7,30 @@
 #include "instructions.h"
 #include "reader-arm.h"
 
-typedef enum _THUMBInsnType {
-  THUMB_INS_CBNZ_CBZ,
-  THUMB_INS_ADD_register_T2,
-  THUMB_INS_LDR_literal_T1,
-  THUMB_INS_LDR_literal_T2,
-  THUMB_INS_ADR_T1,
-  THUMB_INS_ADR_T2,
-  THUMB_INS_ADR_T3,
-  THUMB_INS_B_T1,
-  THUMB_INS_B_T2,
-  THUMB_INS_B_T3,
-  THUMB_INS_B_T4,
-  THUMB_INS_BLBLX_immediate_T1,
-  THUMB_INS_BLBLX_immediate_T2,
-  THUMB_UNDEF
-} THUMBInsnType;
+typedef enum _ThumbInsnType {
+    thumb_1_cbnz_cbz = 0,
+    thumb_1_comparebranch = 0,
+    thumb_1_b_T1 = 1,
+    thumb_1_conditionalbranch = 1,
+    thumb_
+    Thumb_INS_LDR_literal_T1,
+    Thumb_INS_LDR_literal_T2,
+    Thumb_INS_ADR_T1,
+    Thumb_INS_ADR_T2,
+    Thumb_INS_ADR_T3,
+    Thumb_INS_B_T1,
+    Thumb_INS_B_T2,
+    Thumb_INS_B_T3,
+    Thumb_INS_B_T4,
+    Thumb_INS_BLBLX_immediate_T1,
+    Thumb_INS_BLBLX_immediate_T2,
+    Thumb_UNDEF
+} ThumbInsnType;
 
-THUMBInsnType GetTHUMBInsnType(uint16_t insn1, uint16_t insn2);
-ARMReader *thumb_reader_new(zz_ptr_t insn_address);
-void thumb_reader_init(ARMReader *self, zz_ptr_t insn_address);
-void thumb_reader_reset(ARMReader *self, zz_ptr_t insn_address);
-void thumb_reader_free(ARMReader *self);
-ARMInstruction *thumb_reader_read_one_instruction(ARMReader *self);
+struct
+
+ThumbInstType decodeInstructionType(uint32_t inst_32) {
+
+}
+
 #endif

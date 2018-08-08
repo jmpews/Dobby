@@ -160,7 +160,7 @@ enum PCRelAddressingOp {
   ADRP                 = PCRelAddressingFixed | 0x80000000
 };
 
-void arm64_assembly_relocator_cclass(rewritePCRelAddressing)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
+void arm64_assembly_relocator_cclass(RewritePCRelAddressing)(ARM64Relocator *self, ARM64InstructionCTX *instCTX) {
   uint32_t immlo, immhi;
   uint32_t Rd_ndx;
   uint32_t target_address;

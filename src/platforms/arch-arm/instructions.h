@@ -4,10 +4,21 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-typedef enum _INSN_TYPE { ARM_INSN, THUMB_INSN, THUMB2_INSN, UNKOWN_INSN } InsnType;
+  typedef enum {
+    eEncodingA1,
+    eEncodingA2,
+    eEncodingA3,
+    eEncodingA4,
+    eEncodingA5,
+    eEncodingT1,
+    eEncodingT2,
+    eEncodingT3,
+    eEncodingT4,
+    eEncodingT5
+  } ARMEncoding;
 
 typedef struct _ARMInstruction {
-  InsnType type;
+  EncodingType type;
   zz_addr_t pc;
   zz_addr_t address;
   uint8_t size;
@@ -24,7 +35,5 @@ typedef struct _ARMInstruction {
   uint16_t insn2;
 } ARMInstruction;
 
-uint32_t get_insn_sub(uint32_t insn, int start, int length);
-bool insn_equal(uint32_t insn, char *opstr);
-
+static uint32_t get_insn_sub(uint32_t insn, int start, int length);
 #endif
