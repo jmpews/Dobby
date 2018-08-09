@@ -151,8 +151,10 @@ void arm64_assembly_relocator_cclass(relocate_write)(ARM64Relocator *self) {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-void thumb_assembly_relocator_cclass(reWrite_thumb_adr_pcrel_10)(ARMRelocator *self,
-                                                                                    ARMInstructionCTX *instCTX) {
+void thumb_assembly_relocator_cclass(rewrite_ldr_literal)(ARMRelocator *self, ARMInstructionX *instCTX) {
+}
+
+void thumb_assembly_relocator_cclass(rewrite_thumb_adr)(ARMRelocator *self, ARMInstructionCTX *instCTX) {
   uint32_t addr, target_address;
   uint32_t Rd_ndx;
 
