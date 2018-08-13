@@ -48,3 +48,18 @@ These instructions are:
 • ADR, ADRP.
 • PRFM (literal).
 ```
+
+
+#### finaly
+
+instruction fix will follow rules
+
+```
+// adr
+// load literal
+// conditional branch
+// unconditional branch
+// compare branch (cbz, cbnz)
+// branch with link
+// tbz, tbnz
+```
