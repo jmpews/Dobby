@@ -8,31 +8,6 @@
 #include "instructions.h"
 #include "reader-arm.h"
 
-typedef enum _ThumbInsnType {
-  thumb_1_cbnz_cbz          = 0,
-  thumb_1_comparebranch     = 0,
-  thumb_1_b_T1              = 1,
-  thumb_1_conditionalbranch = 1,
-  thumb_ Thumb_INS_LDR_literal_T1,
-  Thumb_INS_LDR_literal_T2,
-  Thumb_INS_ADR_T1,
-  Thumb_INS_ADR_T2,
-  Thumb_INS_ADR_T3,
-  Thumb_INS_B_T1,
-  Thumb_INS_B_T2,
-  Thumb_INS_B_T3,
-  Thumb_INS_B_T4,
-  Thumb_INS_BLBLX_immediate_T1,
-  Thumb_INS_BLBLX_immediate_T2,
-  Thumb_UNDEF
-} ThumbInsnType;
-
-// adr
-// load literal
-// conditional branch
-// unconditional branch
-// compare branch (cbz, cbnz)
-// tbz, tbnz
 void get_thumb_instruction_type(uint16_t inst) {
 
   uint32_t val, op, rm, rn, rd, shift, cond;
@@ -119,21 +94,6 @@ void get_thumb_instruction_type(uint16_t inst) {
 
     thumb_assembly_writer_cclass(put_load_reg_address)(self->output, arm_reg_index_pc, val);
   }
-
-  /* <<SAD: it's too hard to identify all instruction that use pc register>>
-  // pc process with other register
-  if ((inst & 0xfc00) == 0x4400) {
-    uint16_t op = get_insn_sub(inst, 8, 2);
-    // cond != 111x
-    if (op == 0b11) {
-      goto NOT_REWRITE_ROUTINE;
-    }
-    rd = get_insn_sub(inst, 7, 1) << 3 | get_insn_sub(inst, 0, 3);
-    if (rd == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
-  */
 }
 
 void get_thumb2_instruction_type(uint16_t inst1, uint16_t inst2) {
@@ -219,75 +179,42 @@ void get_thumb2_instruction_type(uint16_t inst1, uint16_t inst2) {
     int o2 = bit(inst1, 5);
     int rn = bits(inst1, 0, 3);
     if (rn == 15 && o1 == 0 && o2 == 0) {
-      // adr with
+      // adr with add
+      uint32_t i     = bit(inst1, 10);
+      uint32_t imm3  = bits(inst2, 12, 14);
+      uint32_t imm8  = bits(inst2, 0, 7);
+      uint32_t label = imm8 | (imm3 << 8) | (i << 11);
+      val            = instCTX->pc + label;
     } else if (rn == 15 && o1 == 1 && o2 == 1) {
-      // adr with
+      // adr with sub
+      uint32_t i     = bit(inst1, 10);
+      uint32_t imm3  = bits(inst2, 12, 14);
+      uint32_t imm8  = bits(inst2, 0, 7);
+      uint32_t label = imm8 | (imm3 << 8) | (i << 11);
+      val            = instCTX->pc - label;
     }
+
+    uint16_t rd = bits(inst2, 8, 11);
+    thumb_assembly_writer_cclass(put_load_reg_address)(self->output, rd, val);
   }
 
-  /* <<SAD: it's too hard to identify all instruction that use pc register>>
-  // data-processing (shifted register)
-  if ((inst1 & 0xfe00) == 0xea00 && (inst2 & 0x8000) == 0) {
-    uint16_t rn = get_insn_sub(inst1, 0, 4);
-    uint16_t rd = get_insn_sub(inst2, 8, 4);
-    uint16_t rm = get_insn_sub(inst2, 0, 4);
-    if (rn == 15 || rd == 15 || rm == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
+  // load literal
+  if ((inst1 & 0xff0f) == 0xf85f) {
+    uint32_t U     = bit(inst1, 7);
+    uint32_t imm12 = bits(inst2, 0, 11);
+    uint16_t rt    = bits(inst2, 12, 15);
 
-  // data-processing (modified immediate)
-  if ((inst1 & 0xfa00) == 0xf000 && (inst2 & 0x8000) == 0) {
-    uint16_t rn = get_insn_sub(inst1, 0, 4);
-    uint16_t rd = get_insn_sub(inst2, 8, 4);
-    if (rn == 15 || rd == 15) {
-      ERROR_NOT_IMPLICATION();
+    uint32_t label = imm12;
+    if (U == 1) {
+      val = val + label;
+    } else {
+      val = val - label;
     }
+    thumb_assembly_writer_cclass(put_load_reg_address)(self->output, rt, val);
+    thumb_assembly_writer_cclass(put_t2_reg_reg_offset)(self->output, rt, rt, 0);
   }
-
-  // load/store exclusive
-  if ((inst1 & 0xffe0) == 0xe840) {
-    uint16_t rn = get_insn_sub(inst1, 0, 4);
-    uint16_t rd = get_insn_sub(inst2, 8, 4);
-    uint16_t rt = get_insn_sub(inst2, 12, 4);
-    if (rn == 15 || rd == 15 || rt == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
-  // Load/store exclusive byte/half/dual
-  if ((inst1 & 0xffe0) == 0xe8c0 && (inst2 & 0x00c0) == 0x0040) {
-    uint16_t rn  = get_insn_sub(inst1, 0, 4);
-    uint16_t rd  = get_insn_sub(inst2, 0, 4);
-    uint16_t rt  = get_insn_sub(inst2, 12, 4);
-    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
-    if (rn == 15 || rd == 15 || rt == 15 || rt2 == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
-
-  // Load-acquire / Store-release
-  if ((inst1 & 0xffe0) == 0xe8c0 && (inst2 & 0x0080) == 0x0080) {
-    uint16_t rn  = get_insn_sub(inst1, 0, 4);
-    uint16_t rd  = get_insn_sub(inst2, 0, 4);
-    uint16_t rt  = get_insn_sub(inst2, 12, 4);
-    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
-    if (rn == 15 || rd == 15 || rt == 15 || rt2 == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
-
-  // Load/store dual (immediate, post-indexed)
-  if ((inst1 & 0xff60) == 0xe860) {
-    uint16_t rn  = get_insn_sub(inst1, 0, 4);
-    uint16_t rt  = get_insn_sub(inst2, 12, 4);
-    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
-    if (rn == 15 || rt == 15 || rt2 == 15) {
-      ERROR_NOT_IMPLICATION();
-    }
-  }
-
-  ...
-  */
 }
 
+void fix_arm_instruction(uint32_t inst) {
+}
 #endif

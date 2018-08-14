@@ -63,3 +63,96 @@ instruction fix will follow rules
 // branch with link
 // tbz, tbnz
 ```
+
+
+#### 对于 ARM 指令集可以直接访问 pc
+
+所以对于如下的指令的修复是有困难的
+
+thumb
+
+```
+  /* <<SAD: it's too hard to identify all instruction that use pc register>>
+  // pc process with other register
+  if ((inst & 0xfc00) == 0x4400) {
+    uint16_t op = get_insn_sub(inst, 8, 2);
+    // cond != 111x
+    if (op == 0b11) {
+      goto NOT_REWRITE_ROUTINE;
+    }
+    rd = get_insn_sub(inst, 7, 1) << 3 | get_insn_sub(inst, 0, 3);
+    if (rd == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+  */
+```
+
+thumb2
+
+```
+  /* <<SAD: it's too hard to identify all instruction that use pc register>>
+  // data-processing (shifted register)
+  if ((inst1 & 0xfe00) == 0xea00 && (inst2 & 0x8000) == 0) {
+    uint16_t rn = get_insn_sub(inst1, 0, 4);
+    uint16_t rd = get_insn_sub(inst2, 8, 4);
+    uint16_t rm = get_insn_sub(inst2, 0, 4);
+    if (rn == 15 || rd == 15 || rm == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+
+  // data-processing (modified immediate)
+  if ((inst1 & 0xfa00) == 0xf000 && (inst2 & 0x8000) == 0) {
+    uint16_t rn = get_insn_sub(inst1, 0, 4);
+    uint16_t rd = get_insn_sub(inst2, 8, 4);
+    if (rn == 15 || rd == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+
+  // load/store exclusive
+  if ((inst1 & 0xffe0) == 0xe840) {
+    uint16_t rn = get_insn_sub(inst1, 0, 4);
+    uint16_t rd = get_insn_sub(inst2, 8, 4);
+    uint16_t rt = get_insn_sub(inst2, 12, 4);
+    if (rn == 15 || rd == 15 || rt == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+  // Load/store exclusive byte/half/dual
+  if ((inst1 & 0xffe0) == 0xe8c0 && (inst2 & 0x00c0) == 0x0040) {
+    uint16_t rn  = get_insn_sub(inst1, 0, 4);
+    uint16_t rd  = get_insn_sub(inst2, 0, 4);
+    uint16_t rt  = get_insn_sub(inst2, 12, 4);
+    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
+    if (rn == 15 || rd == 15 || rt == 15 || rt2 == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+
+  // Load-acquire / Store-release
+  if ((inst1 & 0xffe0) == 0xe8c0 && (inst2 & 0x0080) == 0x0080) {
+    uint16_t rn  = get_insn_sub(inst1, 0, 4);
+    uint16_t rd  = get_insn_sub(inst2, 0, 4);
+    uint16_t rt  = get_insn_sub(inst2, 12, 4);
+    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
+    if (rn == 15 || rd == 15 || rt == 15 || rt2 == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+
+  // Load/store dual (immediate, post-indexed)
+  if ((inst1 & 0xff60) == 0xe860) {
+    uint16_t rn  = get_insn_sub(inst1, 0, 4);
+    uint16_t rt  = get_insn_sub(inst2, 12, 4);
+    uint16_t rt2 = get_insn_sub(inst2, 8, 4);
+    if (rn == 15 || rt == 15 || rt2 == 15) {
+      ERROR_NOT_IMPLICATION();
+    }
+  }
+
+  ...
+  */
+}
+```
