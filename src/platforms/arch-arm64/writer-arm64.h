@@ -14,8 +14,8 @@ typedef struct _address_stub_t {
 } ldr_address_stub_t;
 
 typedef struct _ARM64AssemblyWriter {
-  void *start_pc;
-  void *start_address;
+  void *pc;
+  void *buffer;
 
   list_t *instCTXs;
   buffer_array_t *inst_bytes;

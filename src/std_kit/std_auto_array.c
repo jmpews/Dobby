@@ -1,24 +1,25 @@
-#include "std_buffer_array.h"
+#include "std_auto_array.h"
 
-buffer_array_t *buffer_array_create(int default_capacity) {
+auto_array_t *auto_array_create(int default_capacity, int granularity) {
   if (default_capacity == 0) {
     default_capacity = 64;
   }
 
   unsigned char *data = (unsigned char *)malloc(default_capacity);
 
-  buffer_array_t *buffer_array = (buffer_array_t *)malloc(sizeof(buffer_array_t));
-  if (!buffer_array) {
+  auto_array_t *auto_array = (auto_array_t *)malloc(sizeof(auto_array_t));
+  if (!auto_array) {
     return NULL;
   }
 
-  buffer_array->data     = data;
-  buffer_array->size     = 0;
-  buffer_array->capacity = default_capacity;
-  return buffer_array;
+  auto_array->data         = data;
+  auto_array->size         = 0;
+  auto_array->capacity     = default_capacity;
+  auto_array->granule_size = granularity;
+  return auto_array;
 }
 
-void buffer_array_put(buffer_array_t *self, void *data, int length) {
+void auto_array_put(auto_array_t *self, void *data, int length) {
   if (self->size + length > self->capacity) {
     unsigned char *data = (unsigned char *)realloc(self->data, self->capacity * 2);
     if (!data) {
@@ -31,13 +32,13 @@ void buffer_array_put(buffer_array_t *self, void *data, int length) {
   self->size += length;
 }
 
-void buffer_array_clear(buffer_array_t *self) {
+void auto_array_clear(auto_array_t *self) {
   self->size = 0;
   memset(self->data, 0, self->capacity);
   return;
 }
 
-void buffer_array_destory(buffer_array_t *self) {
+void auto_array_destory(auto_array_t *self) {
   free(self->data);
   self->data = NULL;
   free(self);

@@ -47,13 +47,13 @@ void ARM64Relocator::relocateTo(void *target_address) {
   for (auto instCTX : literalInstCTXs) {
     zz_addr_t literal_target_address;
     literal_target_address = *(zz_addr_t *)instCTX->address;
-    if (literal_target_address > (zz_addr_t)input->start_pc &&
-        literal_target_address < ((zz_addr_t)input->start_pc + input->instBytes.size())) {
+    if (literal_target_address > (zz_addr_t)input->pc &&
+        literal_target_address < ((zz_addr_t)input->pc + input->instBytes.size())) {
       for (auto it : indexRelocatedInputOutput) {
         ARM64InstructionCTX *inputInstCTX = input->instCTXs[it.first];
         if (inputInstCTX->address == literal_target_address) {
           *(zz_addr_t *)instCTX->address =
-              output->instCTXs[it.second]->pc - (zz_addr_t)output->start_pc + (zz_addr_t)target_address;
+              output->instCTXs[it.second]->pc - (zz_addr_t)output->pc + (zz_addr_t)target_address;
           break;
         }
       }

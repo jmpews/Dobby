@@ -1,8 +1,31 @@
 #ifndef platforms_arch_arm_reader_arm_h
 #define platforms_arch_arm_reader_arm_h
 
-#include "hookzz.h"
-#include "zkit.h"
+#include "core.h"
+#include "instruction.h"
+
+#include "std_kit/std_kit.h"
+
+typedef struct _ARMAssemblyReader {
+  void *pc;
+  void *buffer;
+  list_t *instCTXs;
+  buffer_array_t *inst_bytes;
+} ARMAssemblyReader;
+
+#define arm_assembly_reader_cclass(member) cclass(arm_assembly_reader, member)
+
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+ARMAssemblyReader *arm_assembly_reader_cclass(new)(void *address, void *pc);
+
+void arm_assembly_reader_cclass(reset)(ARMAssemblyReader *self, void *address, void *pc);
+
+ARMInstructionCTX *arm_assembly_reader_cclass(read_inst)(ARMAssemblyReader *self);
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 void fix_arm_instruction(uint32_t inst) {
   // top level encoding

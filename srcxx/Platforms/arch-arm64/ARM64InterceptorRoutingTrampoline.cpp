@@ -202,7 +202,7 @@ void ARM64InterceptorBackend::BuildForInvoke(HookEntry *entry) {
       sprintf(origin_prologue + t, "0x%.2x ", relocatorARM64->input->instCTXs[i]->bytes);
     }
     sprintf(buffer + strlen(buffer), "\tARM Origin Prologue: %s\n", origin_prologue);
-    sprintf(buffer + strlen(buffer), "\tInput Address: %p\n", relocatorARM64->input->start_address);
+    sprintf(buffer + strlen(buffer), "\tInput Address: %p\n", relocatorARM64->input->buffer);
     sprintf(buffer + strlen(buffer), "\tInput Instruction Count: %lu\n", relocatorARM64->input->instCTXs.size());
     sprintf(buffer + strlen(buffer), "\tInput Instruction ByteSize: %lu\n", relocatorARM64->input->instBytes.size());
     sprintf(buffer + strlen(buffer), "\tOutput Address: %p\n", entry->on_invoke_trampoline);
@@ -225,7 +225,7 @@ void ARM64InterceptorBackend::ActiveTrampoline(HookEntry *entry) {
   if (entry->hook_type == HOOK_TYPE_FUNCTION_via_REPLACE) {
     if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
       relocatorARM64->output->put_b_imm((zz_addr_t)entry->on_enter_transfer_trampoline -
-                                        (zz_addr_t)relocatorARM64->output->start_pc);
+                                        (zz_addr_t)relocatorARM64->output->pc);
     } else {
       relocatorARM64->output->put_ldr_reg_imm(ARM64_REG_X17, 0x8);
       relocatorARM64->output->put_br_reg(ARM64_REG_X17);
@@ -234,7 +234,7 @@ void ARM64InterceptorBackend::ActiveTrampoline(HookEntry *entry) {
   } else {
     if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
       relocatorARM64->output->put_b_imm((zz_addr_t)entry->on_enter_transfer_trampoline -
-                                        (zz_addr_t)relocatorARM64->output->start_pc);
+                                        (zz_addr_t)relocatorARM64->output->pc);
     } else {
       relocatorARM64->output->put_ldr_reg_imm(ARM64_REG_X17, 0x8);
       relocatorARM64->output->put_br_reg(ARM64_REG_X17);

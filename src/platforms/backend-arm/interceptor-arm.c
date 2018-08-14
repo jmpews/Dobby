@@ -472,7 +472,7 @@ void trampoline_active(InterceptorBackend *self, hook_entry_t *entry) {
     if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
       if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
         thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
-                                                   (zz_addr_t)thumb_writer->start_pc);
+                                                   (zz_addr_t)thumb_writer->pc);
       } else {
         // target address is not aligne 4, need align
         if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
@@ -482,7 +482,7 @@ void trampoline_active(InterceptorBackend *self, hook_entry_t *entry) {
     } else {
       if (entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) {
         thumb_writer_put_b_imm32(thumb_writer, THUMB_FUNCTION_ADDRESS(entry->on_enter_transfer_trampoline) -
-                                                   (zz_addr_t)thumb_writer->start_pc);
+                                                   (zz_addr_t)thumb_writer->pc);
       } else {
         // target address is not aligne 4, need align
         if ((target_addr % 4) && entry_backend->redirect_code_size == (ZZ_THUMB_FULL_REDIRECT_SIZE + 2))
@@ -501,14 +501,14 @@ void trampoline_active(InterceptorBackend *self, hook_entry_t *entry) {
     if (entry->type == HOOK_TYPE_FUNCTION_via_REPLACE) {
       if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
         arm_writer_put_b_imm(arm_writer,
-                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
+                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->pc);
       } else {
         arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_transfer_trampoline);
       }
     } else {
       if (entry_backend->redirect_code_size == ARM_TINY_REDIRECT_SIZE) {
         arm_writer_put_b_imm(arm_writer,
-                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->start_pc);
+                             (zz_addr_t)entry->on_enter_transfer_trampoline - (zz_addr_t)arm_writer->pc);
       } else {
         arm_writer_put_ldr_reg_address(arm_writer, ARM_REG_PC, (zz_addr_t)entry->on_enter_trampoline);
       }

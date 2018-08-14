@@ -57,8 +57,8 @@ void arm64_assembly_relocator_cclass(relocate_to)(ARM64Relocator *self, void *ta
     ARM64InstructionCTX *instCTX = (ARM64InstructionCTX *)(list_at(self->literal_instCTXs, i)->val);
     zz_addr_t literal_target_address;
     literal_target_address = *(zz_addr_t *)instCTX->address;
-    if (literal_target_address > (zz_addr_t)self->input->start_pc &&
-        literal_target_address < ((zz_addr_t)self->input->start_pc + self->input->inst_bytes->size)) {
+    if (literal_target_address > (zz_addr_t)self->input->pc &&
+        literal_target_address < ((zz_addr_t)self->input->pc + self->input->inst_bytes->size)) {
       list_iterator_t *it_a = list_iterator_new(self->io_indexs, LIST_HEAD);
       for (int j; j < self->io_indexs->len; j++) {
         io_index_t *io_index               = (io_index_t *)(list_at(self->io_indexs, j)->val);
@@ -69,7 +69,7 @@ void arm64_assembly_relocator_cclass(relocate_to)(ARM64Relocator *self, void *ta
         if (inputInstCTX->address == literal_target_address) {
           *(zz_addr_t *)instCTX->address =
               ((ARM64InstructionCTX *)(list_at(self->output->instCTXs, o_index)->val))->pc -
-              (zz_addr_t)self->output->start_pc + (zz_addr_t)target_address;
+              (zz_addr_t)self->output->pc + (zz_addr_t)target_address;
           break;
         }
       }

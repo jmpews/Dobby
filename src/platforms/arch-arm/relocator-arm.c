@@ -106,12 +106,12 @@ void arm_relocator_relocate_writer(ARMRelocator *relocator, zz_addr_t final_relo
     for (int i = 0; i < relocator->literal_insnCTXs_count; i++) {
       literal_target_address_ptr = (zz_addr_t *)relocator->literal_instCTXs[i]->address;
       // literal instruction in the range of instructions-need-fix
-      if (*literal_target_address_ptr > (relocator->input->start_pc - 8) &&
-          *literal_target_address_ptr < (relocator->input->start_pc - 8 + relocator->input->insns_size)) {
+      if (*literal_target_address_ptr > (relocator->input->pc - 8) &&
+          *literal_target_address_ptr < (relocator->input->pc - 8 + relocator->input->insns_size)) {
         relocated_insn = arm_relocator_get_relocator_insn_with_address(relocator, *literal_target_address_ptr);
         assert(relocated_insn);
         *literal_target_address_ptr =
-            (*relocated_insn->relocated_insnCTXs)->pc - relocator->output->start_pc + final_relocate_address;
+            (*relocated_insn->relocated_insnCTXs)->pc - relocator->output->pc + final_relocate_address;
       }
     }
   }
@@ -130,7 +130,7 @@ void arm_relocator_register_literal_insn(ARMRelocator *self, ARMInstruction *ins
   self->literal_instCTXs[self->literal_insnCTXs_count++] = insn_ctx;
   // convert the temportary absolute address with offset.
   //    zz_addr_t *temp_address = (zz_addr_t  *)insn_ctx->address;
-  //    *temp_address = insn_ctx->pc - self->output->start_pc;
+  //    *temp_address = insn_ctx->pc - self->output->pc;
 }
 
 // PAGE: A8-312
@@ -267,7 +267,7 @@ static bool arm_relocator_rewrite_BLBLX_immediate_A2(ARMRelocator *self, const A
   target_address = insn_ctx->pc + imm32;
 
   arm_writer_put_ldr_b_reg_address(self->output, ARM_REG_LR, insn_ctx->pc - 4);
-  // if(target_address > self->input->start_pc && target_address < (self->input->start_pc+ self->input->insns_size))
+  // if(target_address > self->input->pc && target_address < (self->input->pc+ self->input->insns_size))
   arm_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count - 1]);
   arm_writer_put_ldr_reg_address(self->output, ARM_REG_PC, target_address);
   arm_relocator_register_literal_insn(self, self->output->insnCTXs[self->output->insnCTXs_count - 1]);

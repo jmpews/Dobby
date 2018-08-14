@@ -13,8 +13,8 @@
 class ARM64Relocator;
 class ARM64AssemblerWriter {
 public:
-  void *start_pc;
-  void *start_address;
+  void *pc;
+  void *buffer;
   std::vector<ARM64InstructionCTX *> instCTXs;
   std::vector<char> instBytes;
 

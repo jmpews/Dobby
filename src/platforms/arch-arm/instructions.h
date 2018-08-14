@@ -2,25 +2,13 @@
 #define platforms_arch_arm_instructions_h
 
 #include "hookzz.h"
-#include "zkit.h"
 
-  typedef enum {
-    eEncodingA1,
-    eEncodingA2,
-    eEncodingA3,
-    eEncodingA4,
-    eEncodingA5,
-    eEncodingT1,
-    eEncodingT2,
-    eEncodingT3,
-    eEncodingT4,
-    eEncodingT5
-  } ARMEncoding;
+typedef enum { ThumbEncoding, Thumb2Encoding, ARMEncoding } InstEncodingType;
 
-typedef struct _ARMInstruction {
-  EncodingType type;
+typedef struct _ARMInstructionCTX {
+  InstEncodingType type;
   zz_addr_t pc;
-  zz_addr_t address;
+  void *buffer;
   uint8_t size;
   union {
     uint32_t trick_insn;
@@ -35,5 +23,4 @@ typedef struct _ARMInstruction {
   uint16_t insn2;
 } ARMInstruction;
 
-static uint32_t get_insn_sub(uint32_t insn, int start, int length);
 #endif

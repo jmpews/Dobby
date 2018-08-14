@@ -5,7 +5,7 @@
 
 ARMAssemblerWriter *arm_writer_new() {
   ARMAssemblerWriter *writer = (ARMAssemblerWriter *)malloc0(sizeof(ARMAssemblerWriter));
-  writer->start_pc           = 0 + 8;
+  writer->pc           = 0 + 8;
   writer->insns_buffer       = 0;
   writer->insns_size         = 0;
   writer->insnCTXs_count     = 0;
@@ -19,7 +19,7 @@ void arm_writer_init(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t
 void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
   assert(insns_buffer % 4 == 0);
   assert(targetPC % 4 == 0);
-  self->start_pc     = targetPC + 8;
+  self->pc     = targetPC + 8;
   self->insns_buffer = insns_buffer;
   self->insns_size   = 0;
 
@@ -32,7 +32,7 @@ void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_
 }
 
 void arm_writer_reset_without_align(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
-  self->start_pc     = targetPC + 8;
+  self->pc     = targetPC + 8;
   self->insns_buffer = insns_buffer;
   self->insns_size   = 0;
 
@@ -75,7 +75,7 @@ void arm_writer_put_bx_to_thumb(ARMAssemblerWriter *self) {
 // ------- architecture default -------
 void arm_writer_put_bytes(ARMAssemblerWriter *self, char *data, zz_size_t data_size) {
   zz_addr_t next_address = self->insns_buffer + self->insns_size;
-  zz_addr_t next_pc      = self->start_pc + self->insns_size;
+  zz_addr_t next_pc      = self->pc + self->insns_size;
   memcpy((void *)next_address, data, data_size);
   self->insns_size += data_size;
 
@@ -92,7 +92,7 @@ void arm_writer_put_bytes(ARMAssemblerWriter *self, char *data, zz_size_t data_s
 
 void arm_writer_put_instruction(ARMAssemblerWriter *self, uint32_t insn) {
   zz_addr_t next_address = self->insns_buffer + self->insns_size;
-  zz_addr_t next_pc      = self->start_pc + self->insns_size;
+  zz_addr_t next_pc      = self->pc + self->insns_size;
   memcpy((void *)next_address, &insn, sizeof(insn));
 
   self->insns_size += 4;

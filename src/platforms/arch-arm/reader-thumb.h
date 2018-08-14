@@ -1,12 +1,22 @@
-#ifndef platforms_arch_thumb_reader_thumb_h
-#define platforms_arch_thumb_reader_thumb_h
+#ifndef platforms_arch_arm_reader_thumb_h
+#define platforms_arch_arm_reader_thumb_h
 
-#include "hookzz.h"
-#include "zkit.h"
-
-#include "arch-arm.h"
-#include "instructions.h"
 #include "reader-arm.h"
+
+typedef ARMAssemblyReader ThumbAssemblyReader;
+typedef ARMInstructionCTX ThumbInstructionCTX;
+
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+ThumbAssemblyReader *thumb_assembly_reader_cclass(new)(void *address, void *pc);
+
+void thumb_assembly_reader_cclass(reset)(ThumbAssemblyReader *self, void *address, void *pc);
+
+ThumbInstructionCTX *thumb_assembly_reader_cclass(read_inst)(ThumbAssemblyReader *self);
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 void get_thumb_instruction_type(uint16_t inst) {
 

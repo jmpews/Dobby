@@ -9,7 +9,7 @@ inline void ReadBytes(void *data, void *address, int length) {
 
 ThumbAssemblyWriter *thumb_assembly_writer_cclass(new)(void *pc) {
   ThumbAssemblyWriter *writer = SAFE_MALLOC_TYPE(ThumbAssemblyWriter);
-  writer->start_pc            = pc;
+  writer->pc            = pc;
   writer->instCTXs            = list_new();
   writer->inst_bytes          = buffer_array_create(64);
   writer->ldr_address_stubs   = list_new();
@@ -21,7 +21,7 @@ void thumb_assembly_writer_cclass(destory)(ThumbAssemblyWriter *self) {
 }
 
 void thumb_assembly_writer_cclass(reset)(ThumbAssemblyWriter *self, void *pc) {
-  self->start_pc = pc;
+  self->pc = pc;
 
   list_destroy(self->instCTXs);
   self->instCTXs = list_new();
@@ -39,7 +39,7 @@ size_t thumb_assembly_writer_cclass(t2_bxxx_range)() {
 }
 
 void thumb_assembly_writer_cclass(patch_to)(ThumbAssemblyWriter *self, void *target_address) {
-  self->start_address = target_address;
+  self->buffer = target_address;
   memory_manager_t *memory_manager;
   memory_manager = memory_manager_cclass(shared_instance)();
   memory_manager_cclass(patch_code)(memory_manager, target_address, self->inst_bytes->data, self->inst_bytes->size);
@@ -51,7 +51,7 @@ void thumb_assembly_writer_cclass(patch_to)(ThumbAssemblyWriter *self, void *tar
 void thumb_assembly_writer_cclass(put_bytes)(ThumbAssemblyWriter *self, void *data, int length) {
   for (int i = 0; i < (length / Thumb_INST_SIZE); i++) {
     ThumbInstructionCTX *instCTX = SAFE_MALLOC_TYPE(ThumbInstructionCTX);
-    instCTX->pc                  = (zz_addr_t)self->start_pc + self->instCTXs.len * Thumb_INST_SIZE;
+    instCTX->pc                  = (zz_addr_t)self->pc + self->instCTXs.len * Thumb_INST_SIZE;
     instCTX->size                = Thumb_INST_SIZE;
 
     ReadBytes(&instCTX->bytes, (void *)((zz_addr_t)data + Thumb_INST_SIZE * i), Thumb_INST_SIZE);

@@ -64,7 +64,7 @@ ARCH_API void interceptor_trampoline_cclass(active)(hook_entry_t *entry) {
   // if use near jump, all is same
   if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
     arm64_assembly_writer_cclass(put_b_imm)(writer_arm64, (zz_addr_t)entry->on_enter_transfer_trampoline -
-                                                              (zz_addr_t)writer_arm64->start_pc);
+                                                              (zz_addr_t)writer_arm64->pc);
   } else {
     arm64_assembly_writer_cclass(put_ldr_reg_imm)(writer_arm64, ARM64_REG_X17, 0x8);
     arm64_assembly_writer_cclass(put_br_reg)(writer_arm64, ARM64_REG_X17);

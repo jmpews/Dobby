@@ -16,8 +16,8 @@
 class ARM64AssemblyReader {
 
 public:
-  void *start_pc;
-  void *start_address;
+  void *pc;
+  void *buffer;
   std::vector<ARM64InstructionCTX *> instCTXs;
   std::vector<char> instBytes;
 

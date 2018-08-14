@@ -5,13 +5,11 @@
 #include "core.h"
 #include "instruction.h"
 
-#include "std_kit/std_buffer_array.h"
 #include "std_kit/std_kit.h"
-#include "std_kit/std_list.h"
 
 typedef struct _ARM64AssemblyReader {
-  void *start_pc;
-  void *start_address;
+  void *pc;
+  void *buffer;
   list_t *instCTXs;
   buffer_array_t *inst_bytes;
 } ARM64AssemblyReader;

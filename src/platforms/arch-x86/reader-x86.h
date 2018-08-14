@@ -15,7 +15,7 @@ X86InsnType GetX86InsnType(uint32_t insn);
 typedef struct _X86Reader {
   X86Instruction *insnCTXs[MAX_INSN_SIZE];
   zz_size_t insnCTXs_count;
-  zz_addr_t start_pc;
+  zz_addr_t pc;
   zz_addr_t insns_buffer;
   zz_size_t insns_size;
 } X86Reader;

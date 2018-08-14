@@ -1,48 +1,44 @@
 #include "reader-arm.h"
-#include <stdlib.h>
+#include "core.h"
 
-ARMReader *arm_reader_new(zz_ptr_t insn_address) {
-  ARMReader *reader = (ARMReader *)malloc0(sizeof(ARMReader));
+inline void ReadBytes(void *data, void *address, int length);
 
-  reader->start_pc       = (zz_addr_t)insn_address + 8;
-  reader->insns_buffer   = (zz_addr_t)insn_address;
-  reader->insns_size     = 0;
-  reader->insnCTXs_count = 0;
+void ReadBytes(void *data, void *address, int length) {
+  memcpy(data, address, length);
+}
+
+ARMAssemblyReader *arm_assembly_reader_cclass(new)(void *buffer, void *pc) {
+  assert((pc % 4) == 0);
+  ARMAssemblyReader *reader = SAFE_MALLOC_TYPE(ARMAssemblyReader);
+  reader->buffer            = buffer;
+  reader->pc                = pc;
+  reader->instCTXs          = list_new();
+  reader->inst_bytes        = buffer_array_create(64);
   return reader;
 }
 
-void arm_reader_init(ARMReader *self, zz_ptr_t insn_address) {
-  arm_reader_reset(self, insn_address);
+void arm_assembly_reader_cclass(reset)(ARMAssemblyReader *self, void *buffer, void *pc) {
+  self->buffer = buffer;
+  self->pc     = pc;
+
+  list_destroy(self->instCTXs);
+  self->instCTXs = list_new();
+
+  buffer_array_clear(self->inst_bytes);
+  return;
 }
 
-void arm_reader_reset(ARMReader *self, zz_ptr_t insn_address) {
-  self->start_pc       = (zz_addr_t)insn_address + 8;
-  self->insns_buffer   = (zz_addr_t)insn_address;
-  self->insns_size     = 0;
-  self->insnCTXs_count = 0;
+ARMInstructionCTX *arm_assembly_reader_cclass(read_inst)(ARMAssemblyReader *self) {
+  ARMInstructionCTX *instCTX = SAFE_MALLOC_TYPE(ARMInstructionCTX);
+
+  instCTX->pc      = (zz_addr_t)self->pc + self->inst_bytes->size;
+  instCTX->address = (zz_addr_t)self->buffer + self->inst_bytes->size;
+  instCTX->size    = 4;
+
+  ReadBytes((void *)&instCTX->bytes, (void *)instCTX->address, 4);
+
+  buffer_array_put(self->inst_bytes, (void *)instCTX->address, 4);
+
+  list_rpush(self->instCTXs, list_node_new(instCTX));
+  return instCTX;
 }
-
-void arm_reader_free(ARMReader *self) {
-  if (self->insnCTXs_count) {
-    for (int i = 0; i < self->insnCTXs_count; i++) {
-      free(self->insnCTXs[i]);
-    }
-  }
-  free(self);
-}
-
-ARMInstruction *arm_reader_read_one_instruction(ARMReader *self) {
-  ARMInstruction *insn_ctx    = (ARMInstruction *)malloc0(sizeof(ARMInstruction));
-  zz_addr_t next_insn_address = (zz_addr_t)self->insns_buffer + self->insns_size;
-  zz_addr_t next_pc           = (zz_addr_t)self->start_pc + self->insns_size;
-
-  insn_ctx->type    = ARM_INSN;
-  insn_ctx->pc      = next_pc;
-  insn_ctx->address = next_insn_address;
-  insn_ctx->insn    = *(uint32_t *)next_insn_address;
-
-  self->insnCTXs[self->insnCTXs_count++] = insn_ctx;
-  self->insns_size += insn_ctx->size;
-  return insn_ctx;
-}
-

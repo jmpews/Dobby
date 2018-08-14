@@ -5,12 +5,9 @@
 
 typedef struct _ARM64InstructionCTX {
   zz_addr_t pc;
-  zz_addr_t address;
+  void *buffer;
   uint8_t size;
   uint32_t bytes;
 } ARM64InstructionCTX;
-
-// get hex insn sub
-uint32_t get_insn_sub(uint32_t insn, int start, int length);
 
 #endif
