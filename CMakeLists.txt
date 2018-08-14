@@ -68,7 +68,7 @@ else()
     set(GLOBAL.HEADER_DIR
             ${HookZz.Path}/include
             )
-    
+
     if(SYSTEM.Android)
         set(GLOBAL.SOURCE_DIR ${GLOBAL.SOURCE_DIR}
             ${HookZz.Path}/src/platforms/backend-posix
@@ -87,6 +87,7 @@ else()
             add_definitions(-DUSE_POSIX_IN_DARWIN=0)
         endif()
     endif()
+    
     if(PROCESSOR.aarch64)
         set(GLOBAL.SOURCE_DIR ${GLOBAL.SOURCE_DIR}
             ${HookZz.Path}/src/platforms/arch-arm64

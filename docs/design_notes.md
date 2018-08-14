@@ -64,7 +64,6 @@ instruction fix will follow rules
 // tbz, tbnz
 ```
 
-
 #### 对于 ARM 指令集可以直接访问 pc
 
 所以对于如下的指令的修复是有困难的

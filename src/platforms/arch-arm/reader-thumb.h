@@ -215,6 +215,4 @@ void get_thumb2_instruction_type(uint16_t inst1, uint16_t inst2) {
   }
 }
 
-void fix_arm_instruction(uint32_t inst) {
-}
 #endif

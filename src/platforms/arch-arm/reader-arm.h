@@ -4,35 +4,110 @@
 #include "hookzz.h"
 #include "zkit.h"
 
-#include "instructions.h"
-#include "platforms/backend-linux/memory-linux.h"
+void fix_arm_instruction(uint32_t inst) {
+  // top level encoding
+  uint32_t cond, op0, op1;
+  cond = bits(inst, 28, 31);
+  op0  = bits(inst, 25, 27);
+  op1  = bit(inst, 4);
+  // Load/Store Word, Unsigned byte (immediate, literal)
+  if (cond != 0b1111 && op0 == 0b010) {
+    uint32_t P, U, o2, W, o1, Rn, Rt, imm12;
+    uint32_t P_W = (P << 1) | W;
+    do {
+      // LDR (literal)
+      if (o1 == 1 && o2 == 0 && P_W != 0b01 && Rn == 0b1111) {
+        goto load_literal_fix_scheme;
+      }
+      if (o1 == 1 && o2 == 1 && P_W != 0b01 && Rn == 0b1111) {
+        goto load_literal_fix_scheme;
+      }
 
-typedef enum _ARMInsnType {
-  ARM_INS_ADD_register_A1,
-  ARM_INS_LDR_literal_A1,
-  ARM_INS_ADR_A1,
-  ARM_INS_ADR_A2,
-  ARM_INS_B_A1,
-  ARM_INS_BLBLX_immediate_A1,
-  ARM_INS_BLBLX_immediate_A2,
-  ARM_UNDEF
-} ARMInsnType;
+      break;
+    load_literal_fix_scheme:
+      uint32_t Rt = bits(inst, 12, 15);
+      thumb_assembly_writer_cclass(put_load_reg_address)(self->output, rt, val);
+      thumb_assembly_writer_cclass(put_reg_reg_offset)(self->output, rt, rt, 0);
+    } while (0);
+  }
 
-#define MAX_INSN_SIZE 256
-typedef struct _ARMReader {
-  ARMInstruction *insnCTXs[MAX_INSN_SIZE];
-  zz_size_t insnCTXs_count;
-  zz_addr_t start_pc;
-  zz_addr_t insns_buffer;
-  zz_size_t insns_size;
-} ARMReader;
+  // Data-processing and miscellaneous instructions
+  if (cond != 0b1111 && (op0 & 0b110) == 0b000) {
+    uint32_t op0, op1, op2, op3, op4;
+    op0 = bit(inst, 25);
+    // Data-processing immediate
+    if (op0 == 1) {
+      uint32_t op0, op1;
+      op0 == bits(inst, 23, 24);
+      op1 == bits(inst, 20, 21);
+      // Integer Data Processing (two register and immediate)
+      if ((op0 & 0b10) == 0b00) {
+        uint32_t opc, S, Rn;
+        opc = bits(inst, 21, 23);
+        S   = bit(inst, 20);
+        Rn  = bits(inst, 16, 19);
+        do {
+          int Rd    = bits(inst, 12, 15);
+          int imm12 = bits(inst, 0, 11);
+          int label = imm12;
+          if (opc == 0b010 && S == 0b0 && Rn == 0b1111) {
+            // ADR - A2 variant
+            // add = FALSE
+            val = instCTX->pc - imm12;
+          } else if (opc == 0b100 && S == 0b0 && Rn == 0b1111) {
+            // ADR - A1 variant
+            // add = TRUE
+            val = instCTX->pc + imm12;
+          } else
+            break;
 
-ARMInsnType GetARMInsnType(uint32_t insn);
+          arm_assembly_writer_cclass(put_load_reg_address)(self->output, Rd, val);
+        } while (0);
+        // EXample
+        if (opc == 0b111 && S == 0b1 && Rn == 0b1111) {
+          // do something
+        }
+      }
+    }
+  }
 
-ARMReader *arm_reader_new(zz_ptr_t insn_address);
-void arm_reader_init(ARMReader *self, zz_ptr_t insn_address);
-void arm_reader_reset(ARMReader *self, zz_ptr_t insn_address);
-void arm_reader_free(ARMReader *self);
-ARMInstruction *arm_reader_read_one_instruction(ARMReader *self);
+  // Branch, branch with link, and block data transfer
+  if (cond && (op0 & 0b110) == 0b100) {
+    uint32_t cond, op0;
+    cond = bits(inst, 28, 31);
+    op0  = bit(inst, 25);
+    // Branch (immediate)
+    if (op0 == 1) {
+      uint32_t cond, H, imm24;
+      bool flag_link;
+      do {
+        int imm24 = bits(inst, 0, 23);
+        int label = imm24 << 2;
+        val       = instCTX->pc + label;
+        if (cond != 0b1111 && H == 0) {
+          // B
+          flag_link = false;
+        } else if (cond != 0b1111 && H == 1) {
+          // BL, BLX (immediate) - A1 variant
+          flag_link = true;
+        } else if (cond == 0b1111) {
+          // BL, BLX (immediate) - A2 variant
+          flag_link = true;
+        } else
+          break;
+
+        label = 0x4;
+        imm24 = label >> 2;
+        // just modify oriign instruction label bits, and keep the link and cond bits, the next instruction `b_imm` will do the rest work.
+        arm_assembly_writer_cclass(put_instruction)(self->output, (inst & 0xff000000) | imm24);
+        arm_assembly_writer_cclass(put_b_imm)(self->output, 0);
+        arm_assembly_writer_cclass(put_load_reg_address)(self->output, arm_reg_index_pc, val);
+      } while (0);
+    }
+  }
+
+  if (cond == 0b1111 && (op0 & 0b100) == 0b000) {
+  }
+}
 
 #endif
