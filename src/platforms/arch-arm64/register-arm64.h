@@ -3,6 +3,9 @@
 
 #include "instruction.h"
 
+namespace zz {
+namespace arm64 {
+
 typedef enum _ARM64Reg {
   ARM64_REG_X0 = 0,
   ARM64_REG_X1,
@@ -51,5 +54,8 @@ typedef struct _ARM64RegInfo {
 void arm64_register_describe(ARM64Reg reg, ARM64RegInfo *ri);
 
 ARM64Reg arm64_register_revert_describe(int index, int width);
+
+} // namespace arm64
+} // namespace zz
 
 #endif

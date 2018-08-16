@@ -1,5 +1,11 @@
-#### thumb instruct fixed scheme
+#### temporary place
+```
+op NOT vixl NOT Android NOT V8 NOT mozilla NOT Dolphin filename:arm64 extension:cpp
+imm NOT uiCacheOp NOT CSSELR NOT Capstone NOT apple NOT Valgrind filename:arm64 extension:c
+aarch64 NOT Gabe aarch64 in:file,path filename:decoder
+```
 
+#### thumb instruct fixed scheme
 ```
 # origin
 adr r0, #0x2
