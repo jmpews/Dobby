@@ -1,7 +1,10 @@
 #ifndef ARCH_ARM64
 #define ARCH_ARM64
 
+#include "scrxx/globals.h"
 #include "srcxx/platforms/code-buffer.h"
+
+#include "srcxx/platforms/arch/registers-arm64.h"
 
 namespace zz {
 namespace arm64 {
@@ -19,8 +22,9 @@ private:
   CodeBuffer *buffer_;
 
 public:
-  void b(int64_t imm26);
-  void ldr();
+  void b(int64_t imm);
+
+  void ldr_reg_imm(Register rt, int64 imm);
 
   void Assembler::BranchLink(const StubEntry &stub_entry, Patchability patchable) {
     const Code &target   = Code::ZoneHandle(stub_entry.code());
@@ -35,8 +39,6 @@ public:
     const int32_t encoding = op | ((size & 0x3) << kSzShift) | Arm64Encode::Rt(rt) | a.encoding();
     Emit(encoding);
   }
-
-  void EmitInst(uint32 inst);
 };
 
 } // namespace arm64
