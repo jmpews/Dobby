@@ -24,7 +24,9 @@ private:
 public:
   void b(int64_t imm);
 
-  void ldr_reg_imm(Register rt, int64 imm);
+  void ldr_literal(Register rt, int64 imm);
+
+  void ldr_reg_imm(Register rt, Register rn, int64 imm);
 
   void Assembler::BranchLink(const StubEntry &stub_entry, Patchability patchable) {
     const Code &target   = Code::ZoneHandle(stub_entry.code());
