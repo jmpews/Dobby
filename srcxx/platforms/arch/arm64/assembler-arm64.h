@@ -12,7 +12,7 @@ namespace arm64 {
 
 class Label {
 public:
-  Label() : location_(kLocationUnbound) {
+  Label() : location_() {
   }
   ~Label() {
   }
@@ -23,7 +23,14 @@ private:
   CodeBuffer *buffer_;
 
 public:
-  void b(int64_t imm);
+  void b(int64_t imm) {
+    // TODO: need `mask` check
+    int32_t imm26 = imm >> 2;
+    Emit(B | ImmUncondBranch(imm26));
+  }
+
+  void b(Label *label) {
+  }
 
   void ldr_literal(Register rt, int64 imm) {
     LoadLiteralOp op;
@@ -55,20 +62,15 @@ public:
   }
 
   void ldr_reg_imm(Register rt, Register rn, int64 imm) {
+    LoadStoreUnsignedOffset op = OPT_X(LDR, unsigned);
+    EmitLoadStoreReg(op, rt, rn, imm);
   }
 
-  void EmitLoadStoreReg(LoadStoreRegOp op, Register rt, Address a, OperandSize sz) {
-    const int32_t size     = Log2OperandSizeBytes(sz);
-    const int32_t encoding = op | ((size & 0x3) << kSzShift) | Arm64Encode::Rt(rt) | a.encoding();
+  void EmitLoadStoreReg(LoadStoreRegOp op, Register rt, Register rn, int64 imm) {
+    assert(imm > 0);
+    int64_t imm12          = imm;
+    const int32_t encoding = op | LFT(imm12, 10) | LFT(rn.index, 5) | LFT(rt.index, 0);
     Emit(encoding);
-  }
-
-  void Assembler::BranchLink(const StubEntry &stub_entry, Patchability patchable) {
-    const Code &target   = Code::ZoneHandle(stub_entry.code());
-    const int32_t offset = ObjectPool::element_offset(object_pool_wrapper_.FindObject(target, patchable));
-    LoadWordFromPoolOffset(CODE_REG, offset);
-    ldr(TMP, FieldAddress(CODE_REG, Code::entry_point_offset()));
-    blr(TMP);
   }
 };
 
