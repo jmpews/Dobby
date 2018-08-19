@@ -1,6 +1,44 @@
 #ifndef ARCH_ARM64_REGISTERS
 #define ARCH_ARM64_REGISTERS
 
+enum RegisterIndex {
+  RegNdx_0  = 0,
+  RegNdx_1  = 1,
+  RegNdx_2  = 2,
+  RegNdx_3  = 3,
+  RegNdx_4  = 4,
+  RegNdx_5  = 5,
+  RegNdx_6  = 6,
+  RegNdx_7  = 7,
+  RegNdx_8  = 8,
+  RegNdx_9  = 9,
+  RegNdx_10 = 10,
+  RegNdx_11 = 11,
+  RegNdx_12 = 12,
+  RegNdx_13 = 13,
+  RegNdx_14 = 14,
+  RegNdx_15 = 15,
+  RegNdx_16 = 16,
+  RegNdx_17 = 17,
+  RegNdx_18 = 18,
+  RegNdx_19 = 19,
+  RegNdx_20 = 20,
+  RegNdx_21 = 21,
+  RegNdx_22 = 22,
+  RegNdx_23 = 23,
+  RegNdx_24 = 24,
+  RegNdx_25 = 25,
+  RegNdx_26 = 26,
+  RegNdx_27 = 27,
+  RegNdx_28 = 28,
+  RegNdx_29 = 29,
+  RegNdx_30 = 30,
+  RegNdx_SP = 31, // SP and XZR are encoded in instructions using the register
+  RegNdx_ZR = 32, // code `31`, the context deciding which is used. We use a
+                  // different enum value to distinguish between the two.
+  kNumberOfRegisterIndex = 33,
+};
+
 enum XRegister {
   X0  = 0,
   X1  = 1,
@@ -162,9 +200,26 @@ enum SRegister {
   kNoSRegister        = -1,
 };
 
-class Register {
+class CPURegister {
 public:
-  Register(int register_index);
+  enum RegisterType {
+    Register_32,
+    Register_W = Register_32,
+    Register_64,
+    Register_X = Register_64,
+
+    SIMD_FP_Register_8,
+    SIMD_FP_Register_B = SIMD_FP_Register_8,
+    SIMD_FP_Register_16,
+    SIMD_FP_Register_H = SIMD_FP_Register_16,
+    SIMD_FP_Register_32,
+    SIMD_FP_Register_S = SIMD_FP_Register_32,
+    SIMD_FP_Register_64,
+    SIMD_FP_Register_D = SIMD_FP_Register_64,
+    SIMD_FP_Register_128,
+    SIMD_FP_Register_Q = SIMD_FP_Register_128
+  };
+  Register();
   int get_index();
 
 private:
