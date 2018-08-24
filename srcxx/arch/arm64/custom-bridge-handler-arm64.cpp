@@ -1,7 +1,3 @@
-//
-// Created by z on 2018/4/7.
-//
-
 #include "custom-bridge-handler-arm64.h"
 #include "Invocation.h"
 #include "hookzz.h"

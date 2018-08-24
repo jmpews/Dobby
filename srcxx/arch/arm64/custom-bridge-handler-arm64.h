@@ -1,7 +1,3 @@
-//
-// Created by z on 2018/4/7.
-//
-
 #ifndef CUSTOM_BRIDGE_HANDLER_H
 #define CUSTOM_BRIDGE_HANDLER_H
 

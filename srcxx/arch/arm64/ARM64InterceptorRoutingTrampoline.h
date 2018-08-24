@@ -1,9 +1,5 @@
-//
-// Created by jmpews on 2018/6/14.
-//
-
-#ifndef HOOKZZ_ARM64INTERCEPTOR_H
-#define HOOKZZ_ARM64INTERCEPTOR_H
+#ifndef ZZZ_CXX_ARCH_ARM64_INTERCEPTOR_ROUTING_TRAMPOLINE
+#define ZZZ_CXX_ARCH_ARM64_INTERCEPTOR_ROUTING_TRAMPOLINE
 
 #include "ARM64Reader.h"
 #include "ARM64Relocator.h"
@@ -39,4 +35,4 @@ typedef struct _ARM64HookFuntionEntryBackend {
   int limit_relocate_inst_size;
 } ARM64HookEntryBackend;
 
-#endif //HOOKZZ_INTERCEPTORARM64_H
+#endif
