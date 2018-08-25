@@ -1,14 +1,5 @@
-//
-// Created by jmpews on 2018/6/14.
-//
 
-#include "ARM64InterceptorBackend.h"
-#include "ClosureBridge.h"
-#include "CommonClass/DesignPattern/Singleton.h"
-#include "Logging.h"
-#include "Macros.h"
-#include "custom-bridge-handler-arm64.h"
-#include <string.h>
+
 
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_FULL_REDIRECT_SIZE 16
