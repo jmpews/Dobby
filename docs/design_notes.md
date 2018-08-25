@@ -1,3 +1,13 @@
+#### part of HookZz
+
+#### HookZz inlinehook process
+
+1. initialize a HookEntry{address}
+2. determined `b xxx` or `ldr & br` branch strategy
+3. find the memory to place the relocated instructions
+4. relocate the origin instructions, generate RelocateCodeBuffer.
+
+
 #### temporary place
 ```
 op NOT vixl NOT Android NOT V8 NOT mozilla NOT Dolphin filename:arm64 extension:cpp
@@ -161,9 +171,3 @@ thumb2
   */
 }
 ```
-
-#### TOOD_x
-
-`instCTXs` -> `inst_ctx_lst`.
-
-`inst_bytes` -> `inst_byte_ary`

@@ -10,12 +10,10 @@ enable_language(ASM)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(CMAKE_ASM_FLAGS "-arch arm64 -fembed-bitcode")
-
-option(CXX OFF "use cxx source")
-option(USE_POSIX_IN_DARWIN OFF "use posix function in darwin")
-option(X_LOG ON "enable debug log")
-option(X_SHARED ON "build shared library")
+option(CXX "use cxx source" ON)
+option(USE_POSIX_IN_DARWIN "use posix function in darwin" OFF)
+option(X_LOG "enable debug log" ON)
+option(X_SHARED "build shared library" ON)
 
 if(X_LOG)
     ADD_DEFINITIONS(-DX_LOG=1)
@@ -53,6 +51,20 @@ set(GLOBAL.SOURCE_FILE)
 set(GLOBAL.SOURCE_DIR)
 set(GLOBAL.HEADER_FILE)
 set(GLOBAL.HEADER_DIR)
+
+
+set(Target.path .)
+set(Target.arch arm64)
+set(Target.cpp_prefix ARM64)
+set(Target.cc_suffix arm64)
+set(Target.SOURCE_FILE
+  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}Helper.cpp
+  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}InterceptorRoutingTrampoline.cpp
+  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
+  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
+
+)
+
 
 if(CXX)
 else()
