@@ -1,25 +1,59 @@
 #ifndef ZZ_BASE_PLATFORM_PLATFORM_H_
 #define ZZ_BASE_PLATFORM_PLATFORM_H_
 
+#include "globals.h"
+
 class OS {
 public:
-    static int GetCurrentProcessId();
+  // Print output to console. This is mostly used for debugging output.
+  // On platforms that has standard terminal output, the output
+  // should go to stdout.
+  static void Print(const char *format, ...);
+  static void VPrint(const char *format, va_list args);
 
-    static int GetCurrentThreadId();
-     static void* Allocate(void* address, size_t size,
-                                                size_t alignment,
-                                                MemoryPermission access);
+  // Print output to a file. This is mostly used for debugging output.
+  static void FPrint(FILE *out, const char *format, ...);
+  static void VFPrint(FILE *out, const char *format, va_list args);
 
-     static bool Free(void* address, const size_t size);
+  // Print error output to console. This is mostly used for error message
+  // output. On platforms that has standard terminal output, the output
+  // should go to stderr.
+  static void PrintError(const char *format, ...);
+  static void VPrintError(const char *format, va_list args);
 
-     static bool Release(void* address, size_t size);
+  static int GetCurrentProcessId();
 
-     static bool SetPermissions(void* address, size_t size,
-                                                     MemoryPermission access);
+  static int GetCurrentThreadId();
+
+  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+
+private:
+  friend class zz::base::PageAllocator;
+
+  static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
+
+  static bool Free(void *address, const size_t size);
+
+  static bool Release(void *address, size_t size);
+
+  static bool SetPermissions(void *address, size_t size, MemoryPermission access);
 };
 
-clas Thread {
-        
+class Thread {
+public:
+  typedef int32_t LocalStorageKey;
+
+  // Thread-local storage.
+  static LocalStorageKey CreateThreadLocalKey();
+  static void DeleteThreadLocalKey(LocalStorageKey key);
+  static void *GetThreadLocal(LocalStorageKey key);
+  static int GetThreadLocalInt(LocalStorageKey key) {
+    return static_cast<int>(reinterpret_cast<intptr_t>(GetThreadLocal(key)));
+  }
+  static void SetThreadLocal(LocalStorageKey key, void *value);
+  static void SetThreadLocalInt(LocalStorageKey key, int value) {
+    SetThreadLocal(key, reinterpret_cast<void *>(static_cast<intptr_t>(value)));
+  }
 };
 
 #endif

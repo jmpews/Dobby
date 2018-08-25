@@ -1,8 +1,0 @@
-//
-// Created by jmpews on 2018/6/14.
-//
-
-#ifndef HOOKZZ_POSIXTHREADMANAGER_H
-#define HOOKZZ_POSIXTHREADMANAGER_H
-
-#endif //HOOKZZ_POSIXTHREADMANAGER_H
