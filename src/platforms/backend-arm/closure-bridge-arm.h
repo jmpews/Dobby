@@ -38,7 +38,7 @@ typedef union _FPReg {
   } f;
 } FPReg;
 
-typedef struct _RegState {
+typedef struct _RegisterContext {
   uint64_t dmmpy_0;
 
   union {
@@ -58,9 +58,9 @@ typedef struct _RegState {
       FPReg q0, q1, q2, q3, q4, q5, q6, q7;
     } regs;
   } floating;
-} RegState;
+} RegisterContext;
 #elif defined(__arm__)
-typedef struct _RegState {
+typedef struct _RegisterContext {
   uint32_t dummy_0;
   uint32_t dummy_1;
 
@@ -72,13 +72,13 @@ typedef struct _RegState {
   } general;
 
   uint32_t lr;
-} RegState;
+} RegisterContext;
 #elif defined(__i386__)
-typedef struct _RegState {
-} RegState;
+typedef struct _RegisterContext {
+} RegisterContext;
 #elif defined(__x86_64__)
-typedef struct _RegState {
-} RegState;
+typedef struct _RegisterContext {
+} RegisterContext;
 #endif
 #endif
 
@@ -98,7 +98,7 @@ typedef struct _ClosureBridgeTrampolineTable {
   struct _ClosureBridgeTrampolineTable *next;
 } ClosureBridgeTrampolineTable;
 
-typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeInfo *cb_info);
+typedef void (*USER_CODE_CALL)(RegisterContext *rs, ClosureBridgeInfo *cb_info);
 
 ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code);
 

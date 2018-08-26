@@ -7,4 +7,4 @@
 
 bool zz_is_near_jump();
 
-#endif
+#endiff

@@ -1,7 +1,9 @@
 #ifndef V8_BASE_MACROS_H_
 #define V8_BASE_MACROS_H_
 
-#include "srcxx/base/logging.h"
+#include <stdint.h>
+
+#include "base_core/logging.h"
 
 inline void *AlignedAddress(void *address, size_t alignment) {
   // The alignment must be a power of two.

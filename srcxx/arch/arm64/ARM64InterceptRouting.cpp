@@ -1,22 +1,19 @@
 
 
-
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_FULL_REDIRECT_SIZE 16
 #define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
-void Interceptor::initializeBackend(MemoryManager *) {
-  if (!memory_manager->is_support_rx_memory) {
-    // LOG-NEED
-  }
+#include "srcxx/InterceptRouting.h"
+#include "srcxx/Interceptor.h"
 
-  ARM64InterceptorBackend *backend = new (ARM64InterceptorBackend);
-  backend->readerARM64             = new ARM64AssemblyReader(0, 0);
-  backend->writerARM64             = new ARM64AssemblerWriter(0);
-  backend->relocatorARM64          = new ARM64Relocator(backend->readerARM64, backend->writerARM64);
-  backend->memory_manager          = memory_manager;
+void InterceptRouting::Prepare() {
+  uint64_t src_pc = static_cast<uint64_t >(entry_->target_address);
 
-  this->backend = backend;
+}
+
+void InterceptRouting::BuildPreCallRouting() {
+
 }
 
 void ARM64InterceptorBackend::Prepare(HookEntry *entry) {

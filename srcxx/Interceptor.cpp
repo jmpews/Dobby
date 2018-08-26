@@ -1,20 +1,15 @@
-//
-// Created by z on 2018/6/14.
-//
+#include "srcxx/Interceptor.h"
 
-#include "Interceptor.h"
-
-Interceptor *Interceptor::GETInstance() {
-  if (priv_interceptor == NULL) {
-    priv_interceptor     = new Interceptor();
-    priv_interceptor->mm = MemoryManager::GetInstance();
+Interceptor *Interceptor::SharedInstance() {
+  if (priv_interceptor_ == NULL) {
+    priv_interceptor_     = new Interceptor();
   }
-  return priv_interceptor;
+  return priv_interceptor_;
 }
 
-HookEntry *Interceptor::findHookEntry(void *target_address) {
-  for (auto entry : hook_entries) {
-    if (entry->target_address == target_address) {
+HookEntry *Interceptor::findHookEntry(void *address) {
+  for (auto entry : entries) {
+    if (entry->target_address == address) {
       return entry;
     }
   }
@@ -22,5 +17,5 @@ HookEntry *Interceptor::findHookEntry(void *target_address) {
 }
 
 void Interceptor::addHookEntry(HookEntry *entry) {
-  hook_entries.push_back(entry);
+  entries.push_back(entry);
 }

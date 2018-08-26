@@ -15,118 +15,96 @@ option(USE_POSIX_IN_DARWIN "use posix function in darwin" OFF)
 option(X_LOG "enable debug log" ON)
 option(X_SHARED "build shared library" ON)
 
-if(X_LOG)
-    ADD_DEFINITIONS(-DX_LOG=1)
-else()
-    ADD_DEFINITIONS(-DX_LOG=0)
-endif()
-# 
-if(X_BACKEND STREQUAL "Darwin")
-    set(SYSTEM.Darwin 1)
-elseif(X_BACKEND STREQUAL "Linux")
-    set(SYSTEM.Linux 1)
-endif()
 
-if(X_PLATFORM STREQUAL "iOS")
+if(PLATFORM STREQUAL "iOS")
     set(SYSTEM.iOS 1)
-elseif(X_PLATFORM STREQUAL "Android")
+elseif(PLATFORM STREQUAL "Android")
     set(SYSTEM.Android 1)
 else()
     message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] X_PLATFORM")
 endif()
 
-if(X_ARCH STREQUAL "arm" OR X_ARCH STREQUAL "armv7")
+if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(PROCESSOR.arm 1)
-elseif(X_ARCH STREQUAL "aarch64" OR X_ARCH STREQUAL "arm64" OR X_ARCH STREQUAL "armv8")
+elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(PROCESSOR.aarch64 1)
 else()
-    message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] X_ARCH")
+    message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] ARCH")
 endif()
 
 include(cmake/Macros.cmake)
-
-set(GLOBAL.SOURCE_FILE)
-set(GLOBAL.SOURCE_DIR)
-set(GLOBAL.HEADER_FILE)
-set(GLOBAL.HEADER_DIR)
-
 
 set(Target.path .)
 set(Target.arch arm64)
 set(Target.cpp_prefix ARM64)
 set(Target.cc_suffix arm64)
 set(Target.SOURCE_FILE
-  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}Helper.cpp
-  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}InterceptorRoutingTrampoline.cpp
-  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
-  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
-
+#  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}InstructionRelocation.cpp
+#  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
+#  ${Target.path}/srcxx/arch/${Target.arch}/closure-trampoline-template-${Target.cc_suffix}.S
+#  ${Target.path}/srcxx/arch/${Target.arch}/dynamic-closure-trampoline-template-${Target.cc_suffix}.S
 )
 
 
 if(CXX)
+
+set(Target.SOURCE_DIR
+        ${Target.path}
+        ${Target.path}/srcxx
+        )
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/base_core
+        ${Target.path}/srcxx/base_core/objects
+        ${Target.path}/srcxx/base_core/platform
+        ${Target.path}/srcxx/base_core/platform/platform-posix
+        )
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/assembly_core
+        )
+if(PROCESSOR.aarch64)
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/assembly_core/arch/arm64
+        ${Target.path}/srcxx/assembly_core/modules/assembler
+        )
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/arch/arm64
+        )
+endif()
+# *.cc
+search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)
+
+# *.cpp
+search_suffix_files("cpp" Target.SOURCE_DIR Target.SOURCE_CPP)
+
+# *.c
+search_suffix_files("c" Target.SOURCE_DIR Target.SOURCE_C)
+
+# *.S
+search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
+
+# *.h
+search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
+
+set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE_CPP} ${Target.SOURCE_C} ${Target.SOURCE_ASSEMBLY})
+set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
+
+message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}")
+
 else()
-    # build c source
-    set(HookZz.Path .)
-    set(GLOBAL.SOURCE_DIR
-            ${HookZz.Path}/src
-            ${HookZz.Path}/src/std_kit
-            ${HookZz.Path}/src/thread_support
-            ${HookZz.Path}/src/compiler-rt/lib/builtins
-            )
-
-    set(GLOBAL.HEADER_DIR
-            ${HookZz.Path}/include
-            )
-
-    if(SYSTEM.Android)
-        set(GLOBAL.SOURCE_DIR ${GLOBAL.SOURCE_DIR}
-            ${HookZz.Path}/src/platforms/backend-posix
-            ${HookZz.Path}/src/platforms/backend-linux
-            )
-        add_definitions(-DDYNAMIC_CLOSURE_BRIDGE=0)
-    elseif(SYSTEM.Darwin)
-        set(GLOBAL.SOURCE_DIR ${GLOBAL.SOURCE_DIR}
-            ${HookZz.Path}/src/platforms/backend-posix
-            ${HookZz.Path}/src/platforms/backend-darwin
-            )
-        add_definitions(-DDYNAMIC_CLOSURE_BRIDGE=1)
-        if(USE_POSIX_IN_DARWIN)
-            add_definitions(-DUSE_POSIX_IN_DARWIN=1)
-        else()
-            add_definitions(-DUSE_POSIX_IN_DARWIN=0)
-        endif()
-    endif()
-    
-    if(PROCESSOR.aarch64)
-        set(GLOBAL.SOURCE_DIR ${GLOBAL.SOURCE_DIR}
-            ${HookZz.Path}/src/platforms/arch-arm64
-            )
-    endif()
-
-    # *.c
-    search_suffix_files("c" GLOBAL.SOURCE_DIR HookZz.SOURCE_C)
-
-    # *.S
-    search_suffix_files("S" GLOBAL.SOURCE_DIR HookZz.SOURCE_ASSEMBLY)
-
-    # *.h
-    search_suffix_files("h" GLOBAL.SOURCE_DIR HookZz.HEADER_H)
-
-    set(GLOBAL.SOURCE_FILE ${GLOBAL.SOURCE_FILE} ${HookZz.SOURCE_C} ${HookZz.SOURCE_ASSEMBLY})
-    set(GLOBAL.HEADER_FILE ${GLOBAL.HEADER_FILE} ${HookZz.HEADER_H} include/hookzz.h)
 endif()
 
-include_directories(${GLOBAL.HEADER_DIR} ${GLOBAL.SOURCE_DIR})
+include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 
-if(X_SHARED)
+message(STATUS "Target.SOURCE_FILE ${Target.SOURCE_DIR}")
+
+if(SHARED)
     # build shared library
-    add_library(hookzz SHARED ${GLOBAL.SOURCE_FILE} ${GLOBAL.HEADER_FILE})
+    add_library(hookzz SHARED ${Target.SOURCE_FILE} ${Target.HEADER_FILE})
 else()
     # build static library
-    add_library(hookzz STATIC ${GLOBAL.SOURCE_FILE} ${GLOBAL.HEADER_FILE})
+    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE})
 endif()
 
 target_include_directories(hookzz PUBLIC ./include)

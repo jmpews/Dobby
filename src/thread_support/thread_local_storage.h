@@ -7,4 +7,4 @@
 void *get_thread_variable_value();
 
 void set_thread_variable_value(void *value);
-#endif
+#endiff

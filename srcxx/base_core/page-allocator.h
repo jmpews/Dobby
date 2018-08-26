@@ -6,7 +6,7 @@
 namespace zz {
 namespace base {
 
-class PageAllocator {}
+class PageAllocator {};
 
 } // namespace base
 } // namespace zz

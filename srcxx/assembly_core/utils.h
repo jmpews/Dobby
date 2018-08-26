@@ -1,7 +1,7 @@
 #ifndef ZZ_UTILS_H
 #define ZZ_UTILS_H
 
-#include "globals.h"
+#include "assembly_core/globals.h"
 
 namespace zz {
 

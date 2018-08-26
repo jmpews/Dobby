@@ -1,5 +1,5 @@
-#ifndef ZZ_GLOBALS_H
-#define ZZ_GLOBALS_H
+#ifndef ZZ_BASE_CORE_GLOBALS_H
+#define ZZ_BASE_CORE_GLOBALS_H
 
 #include <assert.h>
 #include <stdint.h>

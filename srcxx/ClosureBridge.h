@@ -63,8 +63,8 @@ public:
   DynamicClosureBridgeTrampolineTable *addDynamicClosurceBridgeTrampolineTable();
 };
 
-typedef void (*USER_CODE_CALL)(RegState *rs, ClosureBridgeInfo *cbInfo);
-typedef void (*DYNAMIC_USER_CODE_CALL)(RegState *rs, DynamicClosureBridgeInfo *dcbInfo);
+typedef void (*USER_CODE_CALL)(RegisterContext *rs, ClosureBridgeInfo *cbInfo);
+typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo);
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,4 +1,6 @@
-#include "srcxx/base/logging.h"
+#include "base_core/logging.h"
+
+#include "base_core/platform/platform.h"
 
 #include <cctype>
 #include <cstdarg>

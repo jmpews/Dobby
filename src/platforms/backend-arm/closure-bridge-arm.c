@@ -11,7 +11,7 @@
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
 
-void common_bridge_handler(RegState *rs, ClosureBridgeInfo *cb_info) {
+void common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
 
   USER_CODE_CALL userCodeCall = cb_info->user_code;
   // printf("CommonBridgeHandler:");

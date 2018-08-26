@@ -1,7 +1,8 @@
 #ifndef ZZZ_CXX_ARCH_ARM64_INSTRUCTION_RELOCATION
 #define ZZZ_CXX_ARCH_ARM64_INSTRUCTION_RELOCATION
 
-#include "saitama_assembly_core/arch/arm64/constants-arm64.h"
+#include "srcxx/assembly_core/arch/arm64/constants-arm64.h"
+#include "srcxx/globals.h"
 
 // PC relative addressing.
 enum PCRelAddressingOp {

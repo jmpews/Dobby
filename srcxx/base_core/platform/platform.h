@@ -3,57 +3,73 @@
 
 #include "globals.h"
 
-class OS {
-public:
-  // Print output to console. This is mostly used for debugging output.
-  // On platforms that has standard terminal output, the output
-  // should go to stdout.
-  static void Print(const char *format, ...);
-  static void VPrint(const char *format, va_list args);
+namespace zz {
+  namespace base {
 
-  // Print output to a file. This is mostly used for debugging output.
-  static void FPrint(FILE *out, const char *format, ...);
-  static void VFPrint(FILE *out, const char *format, va_list args);
+    class OS {
+    public:
+      // Print output to console. This is mostly used for debugging output.
+      // On platforms that has standard terminal output, the output
+      // should go to stdout.
+      static void Print(const char *format, ...);
 
-  // Print error output to console. This is mostly used for error message
-  // output. On platforms that has standard terminal output, the output
-  // should go to stderr.
-  static void PrintError(const char *format, ...);
-  static void VPrintError(const char *format, va_list args);
+      static void VPrint(const char *format, va_list args);
 
-  static int GetCurrentProcessId();
+      // Print output to a file. This is mostly used for debugging output.
+      static void FPrint(FILE *out, const char *format, ...);
 
-  static int GetCurrentThreadId();
+      static void VFPrint(FILE *out, const char *format, va_list args);
 
-  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+      // Print error output to console. This is mostly used for error message
+      // output. On platforms that has standard terminal output, the output
+      // should go to stderr.
+      static void PrintError(const char *format, ...);
 
-private:
-  friend class zz::base::PageAllocator;
+      static void VPrintError(const char *format, va_list args);
 
-  static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
+      static int GetCurrentProcessId();
 
-  static bool Free(void *address, const size_t size);
+      static int GetCurrentThreadId();
 
-  static bool Release(void *address, size_t size);
+      enum class MemoryPermission {
+        kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute
+      };
 
-  static bool SetPermissions(void *address, size_t size, MemoryPermission access);
-};
+    private:
+      friend class zz::base::PageAllocator;
 
-class Thread {
-public:
-  typedef int32_t LocalStorageKey;
+      static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
 
-  // Thread-local storage.
-  static LocalStorageKey CreateThreadLocalKey();
-  static void DeleteThreadLocalKey(LocalStorageKey key);
-  static void *GetThreadLocal(LocalStorageKey key);
-  static int GetThreadLocalInt(LocalStorageKey key) {
-    return static_cast<int>(reinterpret_cast<intptr_t>(GetThreadLocal(key)));
+      static bool Free(void *address, const size_t size);
+
+      static bool Release(void *address, size_t size);
+
+      static bool SetPermissions(void *address, size_t size, MemoryPermission access);
+    };
+
+    class Thread {
+    public:
+      typedef int32_t LocalStorageKey;
+
+      // Thread-local storage.
+      static LocalStorageKey CreateThreadLocalKey();
+
+      static void DeleteThreadLocalKey(LocalStorageKey key);
+
+      static void *GetThreadLocal(LocalStorageKey key);
+
+      static int GetThreadLocalInt(LocalStorageKey key) {
+        return static_cast<int>(reinterpret_cast<intptr_t>(GetThreadLocal(key)));
+      }
+
+      static void SetThreadLocal(LocalStorageKey key, void *value);
+
+      static void SetThreadLocalInt(LocalStorageKey key, int value) {
+        SetThreadLocal(key, reinterpret_cast<void *>(static_cast<intptr_t>(value)));
+      }
+    };
+
   }
-  static void SetThreadLocal(LocalStorageKey key, void *value);
-  static void SetThreadLocalInt(LocalStorageKey key, int value) {
-    SetThreadLocal(key, reinterpret_cast<void *>(static_cast<intptr_t>(value)));
-  }
-};
+}
 
 #endif

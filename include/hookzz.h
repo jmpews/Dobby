@@ -33,7 +33,7 @@ typedef union _FPReg {
     } f;
 } FPReg;
 
-typedef struct _RegState {
+typedef struct _RegisterContext {
     uint64_t dmmpy_0;
 
     union {
@@ -53,13 +53,13 @@ typedef struct _RegState {
             FPReg q0, q1, q2, q3, q4, q5, q6, q7;
         } regs;
     } floating;
-} RegState;
+} RegisterContext;
 #elif defined(__arm__)
 #define Tx(type) type##arm
 #define TX() type##ARM
 #define xT() arm##type
 #define XT() ARM##type
-typedef struct _RegState {
+typedef struct _RegisterContext {
     uint32_t dummy_0;
     uint32_t dummy_1;
 
@@ -71,24 +71,24 @@ typedef struct _RegState {
     } general;
 
     uint32_t lr;
-} RegState;
+} RegisterContext;
 #elif defined(__i386__)
 #define Tx(type) type##arm
 #define TX() type##ARM
 #define xT() arm##type
 #define XT() ARM##type
-typedef struct _RegState {
-} RegState;
+typedef struct _RegisterContext {
+} RegisterContext;
 #elif defined(__x86_64__)
 #define Tx(type) type##x64
 #define TX() type##X64
 #define xT() x64##type
 #define XT() X64##type
-typedef struct _RegState {
-} RegState;
+typedef struct _RegisterContext {
+} RegisterContext;
 #endif
 
-#define REG_SP(rs) (void *)((uintptr_t)rs + sizeof(RegState))
+#define REG_SP(rs) (void *)((uintptr_t)rs + sizeof(RegisterContext))
 
 #endif
 
@@ -99,13 +99,11 @@ typedef enum _RetStatus {
     RS_FAILED
 } RetStatus;
 
-typedef enum _HookType {
-//  HOOK_TYPE_SINGLE_INSTRUCTION_DELETED = 0,
-    HOOK_TYPE_FUNCTION_via_PRE_POST = 0,
-    HOOK_TYPE_FUNCTION_via_REPLACE,
-    HOOK_TYPE_FUNCTION_via_GOT,
-    HOOK_TYPE_INSTRUCTION_via_DBI
-}HookType;
+typedef enum _PackageType {
+  kFunctionWrapper,
+  kFunctionInlineHook,
+  kDynamicBinaryInstrumentation
+} PackageType, HookEntryType;
 
 typedef struct _CallStackPublic {
     uintptr_t call_id;
@@ -121,9 +119,9 @@ typedef struct _HookEntryInfo {
     void *target_address;
 } HookEntryInfo;
 
-typedef void (*PRECALL)(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info);
-typedef void (*POSTCALL)(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info);
-typedef void (*DBICALL)(RegState *rs, const HookEntryInfo *info);
+typedef void (*PRECALL)(RegisterContext *rs, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegisterContext *rs, const HookEntryInfo *info);
+typedef void (*DBICALL)(RegisterContext *rs, const HookEntryInfo *info);
 
 void call_stack_kv_set(CallStackPublic *csp, char *key, void *value);
 

@@ -1,9 +1,5 @@
-//
-// Created by z on 2018/6/14.
-//
-
-#ifndef HOOKZZ_INTERCEPTOR_H
-#define HOOKZZ_INTERCEPTOR_H
+#ifndef ZZ_INTERCEPTER_H_
+#define ZZ_INTERCEPTER_H_
 
 #include "MemoryManager.h"
 #include "ThreadManager.h"
@@ -12,65 +8,27 @@
 #include <iostream>
 #include <vector>
 
-typedef struct _FunctionBackup {
-  void *address;
-  int size;
-  char data[32];
-} FunctionBackup;
 
-class Interceptor;
-class InterceptorBackend;
-struct HookEntryBackend;
 
-typedef struct _HookEntry {
-  void *target_address;
-
-  HookType type;
-
-  unsigned int id;
-
-  bool isEnabled;
-
-  bool isTryNearJump;
-
-  bool isNearJump;
-
-  PRECALL pre_call;
-  POSTCALL post_call;
-  STUBCALL stub_call;
-  void *replace_call;
-
-  void *on_enter_transfer_trampoline;
-  void *on_enter_trampoline;
-  void *on_invoke_trampoline;
-  void *on_leave_trampoline;
-  void *on_dynamic_binary_instrumentation_trampoline;
-
-  FunctionBackup origin_prologue;
-
-  struct HookEntryBackend *backend;
-
-  Interceptor *interceptor;
-} HookEntry;
+typedef struct _InterceptorOptions {
+  bool enable_b_branch;
+  bool enable_dynamic_closure_bridge;
+} InterceptorOptions;
 
 class Interceptor {
 private:
-  static int t;
-  static Interceptor *priv_interceptor;
-  MemoryManager *mm;
+  static Interceptor *priv_interceptor_;
+  static InterceptorOptions options_;
 
 public:
-  bool isSupportRXMemory;
-  std::vector<HookEntry *> hook_entries;
+  std::vector<HookEntry *> entries;
 
 public:
-  static Interceptor *GETInstance();
+  static Interceptor *SharedInstance();
 
-  HookEntry *findHookEntry(void *target_address);
+  HookEntry *findHookEntry(void *address);
 
   void addHookEntry(HookEntry *hook_entry);
-
-  void initializeBackend(MemoryManager *mm);
 
 private:
   Interceptor() {

@@ -1,33 +1,25 @@
-#include "interceptor_routing.h"
+#include "srcxx/intercept_routing_handler.h"
 
-void interceptor_routing_begin(RegState *rs, hook_entry_t *entry, void *next_hop_addr_PTR, void *ret_addr_PTR) {
-  // DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
+void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 
-  // call pre_call
+  // run the `pre_call` before execute origin function which has been relocated(fixed)
   if (entry->pre_call) {
     PRECALL pre_call;
-    HookEntryInfo entryInfo;
-    entryInfo.hook_id        = entry->id;
-    entryInfo.target_address = entry->target_address;
+    HookEntryInfo entry_info;
+    entry_info.hook_id        = entry->id;
+    entry_info.target_address = entry->target_address;
     pre_call                 = entry->pre_call;
-    (*pre_call)(rs, (ThreadStackPublic *)NULL, (CallStackPublic *)NULL, &entryInfo);
+    (*pre_call)(reg_ctx, &entry_info);
   }
 
-  // set next hop
-  if (entry->replace_call) {
-    *(zz_ptr_t *)next_hop_addr_PTR = entry->replace_call;
-  } else {
-    *(zz_ptr_t *)next_hop_addr_PTR = entry->on_invoke_trampoline;
-  }
+  // run the origin function that the patched instructions has been relocated
+  set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_function);
 
-  if (entry->type == HOOK_TYPE_FUNCTION_via_PRE_POST || entry->type == HOOK_TYPE_FUNCTION_via_GOT) {
-    // TODO
-    // callStack->ret_addr_PTR   = *(zz_ptr_t *)ret_addr_PTR;
-    *(zz_ptr_t *)ret_addr_PTR = entry->on_leave_trampoline;
-  }
+  // replace the function ret address with our epilogue_routing_dispatch
+  set_func_ret_address(reg_ctx, entry->epilogue_dispatch_bridge);
 }
 
-void interceptor_routing_end(RegState *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
+void post_call_forward_handler(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
   // DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
   // call post_call
@@ -45,7 +37,7 @@ void interceptor_routing_end(RegState *rs, hook_entry_t *entry, void *next_hop_a
   // *(zz_ptr_t *)next_hop_addr_PTR = callStack->ret_addr_PTR;
 }
 
-void interceptor_routing_dynamic_binary_instrumentation(RegState *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
+void interceptor_routing_dynamic_binary_instrumentation(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
   // DEBUG_LOG("target %p call dynamic-binary-instrumentation-invocation", entry->target_ptr);
 
   if (entry->stub_call) {
@@ -60,7 +52,7 @@ void interceptor_routing_dynamic_binary_instrumentation(RegState *rs, hook_entry
   *(zz_ptr_t *)next_hop_addr_PTR = entry->on_invoke_trampoline;
 }
 
-void interceptor_routing_begin_bridge_handler(RegState *rs, ClosureBridgeInfo *cbInfo) {
+void (RegisterContext *rs, ClosureBridgeInfo *cbInfo) {
   hook_entry_t *entry     = cbInfo->user_data;
   void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
   void *ret_addr_PTR      = get_ret_addr_PTR(rs);
@@ -68,27 +60,27 @@ void interceptor_routing_begin_bridge_handler(RegState *rs, ClosureBridgeInfo *c
   return;
 }
 
-void interceptor_routing_end_bridge_handler(RegState *rs, ClosureBridgeInfo *cbInfo) {
+void interceptor_routing_end_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo) {
   hook_entry_t *entry     = cbInfo->user_data;
   void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
   interceptor_routing_end(rs, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegState *rs, ClosureBridgeInfo *cbInfo) {
+void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo) {
   hook_entry_t *entry     = cbInfo->user_data;
   void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
   interceptor_routing_dynamic_binary_instrumentation(rs, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_common_bridge_handler(RegState *rs, ClosureBridgeInfo *cbInfo) {
+void interceptor_routing_common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo) {
   USER_CODE_CALL userCodeCall = cbInfo->user_code;
   userCodeCall(rs, cbInfo);
   return;
 }
 
-void interceptor_routing_begin_dynamic_bridge_handler(RegState *rs, DynamicClosureBridgeInfo *dcbInfo) {
+void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo) {
   hook_entry_t *entry     = dcbInfo->user_data;
   void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
   void *ret_addr_PTR      = get_ret_addr_PTR(rs);
@@ -96,14 +88,14 @@ void interceptor_routing_begin_dynamic_bridge_handler(RegState *rs, DynamicClosu
   return;
 }
 
-void interceptor_routing_end_dynamic_bridge_handler(RegState *rs, DynamicClosureBridgeInfo *dcbInfo) {
+void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo) {
   hook_entry_t *entry     = dcbInfo->user_data;
   void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
   interceptor_routing_end(rs, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_dynamic_common_bridge_handler(RegState *rs, DynamicClosureBridgeInfo *dcbInfo) {
+void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo) {
   DYNAMIC_USER_CODE_CALL userCodeCall = dcbInfo->user_code;
   userCodeCall(rs, dcbInfo);
   return;

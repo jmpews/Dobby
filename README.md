@@ -109,7 +109,7 @@ void hook_fread() { ZzReplace((void *)fread, (void *)fake_fread, (void **)&origi
 ```
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 
-void open_pre_call(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
+void open_pre_call(RegisterContext *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
     char *path = (char *)rs->ZREG(0);
     int oflag  = (int)rs->ZREG(1);
 
@@ -132,7 +132,7 @@ void open_pre_call(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, c
     }
 }
 
-void open_post_call(RegState *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
+void open_post_call(RegisterContext *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
 }
 
 void hook_open() { ZzWrap((void *)open, open_pre_call, open_post_call); }
@@ -142,7 +142,7 @@ void hook_open() { ZzWrap((void *)open, open_pre_call, open_post_call); }
 ```
 RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call);
 
-void catchDecrypt(RegState *rs, const HookEntryInfo *info) {
+void catchDecrypt(RegisterContext *rs, const HookEntryInfo *info) {
   printf("descrypt catch by HookZz\n");
 }
 

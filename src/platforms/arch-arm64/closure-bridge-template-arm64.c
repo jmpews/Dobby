@@ -59,12 +59,12 @@ __attribute__((naked)) void closure_bridge_template() {
 
     // prepare args
     // @x0: data_address
-    // @x1: RegState stack address
+    // @x1: RegisterContext stack address
     xASM("mov x0, sp");
     xASM("mov x1, x14");
     xASM("bl " xcdecl("interceptor_routing_common_bridge_handler"));
 
-    // ======= RegState Restore =======
+    // ======= RegisterContext Restore =======
     // restore x0
     xASM("ldr x0, [sp, #8]");
     xASM("add sp, sp, #(2*8)");
@@ -152,12 +152,12 @@ __attribute__((naked)) void dynamic_closure_bridge_template() {
 
     // prepare args
     // @x0: data_address
-    // @x1: RegState stack address
+    // @x1: RegisterContext stack address
     xASM("mov x0, sp");
     xASM("mov x1, x14");
     xASM("bl " xcdecl("interceptor_routing_dynamic_common_bridge_handler"));
 
-    // ======= RegState Restore =======
+    // ======= RegisterContext Restore =======
     // restore x0
     xASM("ldr x0, [sp, #8]");
     xASM("add sp, sp, #(2*8)");
