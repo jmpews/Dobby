@@ -22,7 +22,7 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - the power to hook short function 
 
-- the power to access registers directly(ex: `rs->general.regs.x15`)
+- the power to access registers directly(ex: `reg_ctx->general.regs.x15`)
 
 - runtime code patch
 
@@ -109,9 +109,9 @@ void hook_fread() { ZzReplace((void *)fread, (void *)fake_fread, (void **)&origi
 ```
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 
-void open_pre_call(RegisterContext *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
-    char *path = (char *)rs->ZREG(0);
-    int oflag  = (int)rs->ZREG(1);
+void open_pre_call(RegisterContext *reg_ctx, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
+    char *path = (char *)reg_ctx->ZREG(0);
+    int oflag  = (int)reg_ctx->ZREG(1);
 
     if (pathFilter(path))
         return;
@@ -132,7 +132,7 @@ void open_pre_call(RegisterContext *rs, ThreadStackPublic *tsp, CallStackPublic 
     }
 }
 
-void open_post_call(RegisterContext *rs, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
+void open_post_call(RegisterContext *reg_ctx, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
 }
 
 void hook_open() { ZzWrap((void *)open, open_pre_call, open_post_call); }
@@ -142,7 +142,7 @@ void hook_open() { ZzWrap((void *)open, open_pre_call, open_post_call); }
 ```
 RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call);
 
-void catchDecrypt(RegisterContext *rs, const HookEntryInfo *info) {
+void catchDecrypt(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   printf("descrypt catch by HookZz\n");
 }
 

@@ -88,7 +88,7 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #endif
 
-#define REG_SP(rs) (void *)((uintptr_t)rs + sizeof(RegisterContext))
+#define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
 
 #endif
 
@@ -119,9 +119,9 @@ typedef struct _HookEntryInfo {
     void *target_address;
 } HookEntryInfo;
 
-typedef void (*PRECALL)(RegisterContext *rs, const HookEntryInfo *info);
-typedef void (*POSTCALL)(RegisterContext *rs, const HookEntryInfo *info);
-typedef void (*DBICALL)(RegisterContext *rs, const HookEntryInfo *info);
+typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
+typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
+typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 
 void call_stack_kv_set(CallStackPublic *csp, char *key, void *value);
 

@@ -11,7 +11,7 @@ inline void ReadBytes(void *data, void *address, int length) {
 
 ARM64AssemblyWriter *arm64_assembly_writer_cclass(new)(void *pc) {
   ARM64AssemblyWriter *writer = SAFE_MALLOC_TYPE(ARM64AssemblyWriter);
-  writer->pc            = pc;
+  writer->pc                  = pc;
   writer->instCTXs            = list_new();
   writer->inst_bytes          = buffer_array_create(64);
   writer->ldr_address_stubs   = list_new();
@@ -76,16 +76,16 @@ void arm64_assembly_writer_cclass(put_ldr_literal_reg_offset)(ARM64AssemblyWrite
 }
 void arm64_assembly_writer_cclass(put_str_reg_reg_offset)(ARM64AssemblyWriter *self, ARM64Reg src_reg,
                                                           ARM64Reg dest_reg, uint64_t offset) {
-  ARM64RegInfo rs, rd;
-  arm64_register_describe(src_reg, &rs);
+  ARM64RegInfo reg_ctx, rd;
+  arm64_register_describe(src_reg, &reg_ctx);
   arm64_register_describe(dest_reg, &rd);
 
   uint32_t size, v = 0, opc = 0, Rn_ndx, Rt_ndx;
   Rn_ndx = rd.index;
-  Rt_ndx = rs.index;
+  Rt_ndx = reg_ctx.index;
 
-  if (rs.is_integer) {
-    size = (rs.width == 64) ? 0b11 : 0b10;
+  if (reg_ctx.is_integer) {
+    size = (reg_ctx.width == 64) ? 0b11 : 0b10;
   }
 
   uint32_t imm12 = offset >> size;
@@ -95,16 +95,16 @@ void arm64_assembly_writer_cclass(put_str_reg_reg_offset)(ARM64AssemblyWriter *s
 
 void arm64_assembly_writer_cclass(put_ldr_reg_reg_offset)(ARM64AssemblyWriter *self, ARM64Reg dest_reg,
                                                           ARM64Reg src_reg, uint64_t offset) {
-  ARM64RegInfo rs, rd;
-  arm64_register_describe(src_reg, &rs);
+  ARM64RegInfo reg_ctx, rd;
+  arm64_register_describe(src_reg, &reg_ctx);
   arm64_register_describe(dest_reg, &rd);
 
   uint32_t size, v = 0, opc = 0b01, Rn_ndx, Rt_ndx;
-  Rn_ndx = rs.index;
+  Rn_ndx = reg_ctx.index;
   Rt_ndx = rd.index;
 
-  if (rs.is_integer) {
-    size = (rs.width == 64) ? 0b11 : 0b10;
+  if (reg_ctx.is_integer) {
+    size = (reg_ctx.width == 64) ? 0b11 : 0b10;
   }
 
   uint32_t imm12 = offset >> size;

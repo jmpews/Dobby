@@ -1,18 +1,11 @@
-//
-// Created by jmpews on 2018/6/14.
-//
-
-#ifndef HOOKZZ_CLOSUREBRIDGE_H
-#define HOOKZZ_CLOSUREBRIDGE_H
+#ifndef ZZ_CLOSURE_BRIDGE_H_
+#define ZZ_CLOSURE_BRIDGE_H_
 
 #include <stdint.h>
 #include <vector>
 
-#define PRIAVE
-
-#include "CommonClass/DesignPattern/Singleton.h"
 #include "Core.h"
-#include "hookzz.h"
+#include "hookzz_interal.h"
 
 typedef struct _ClosureBridgeInfo {
   void *user_code;
@@ -38,7 +31,7 @@ public:
 };
 
 typedef struct _DynamicClosureBridgeInfo {
-  void *trampolineTo PRIAVE;
+  void *trampolineTo;
 
   void *user_code;
   void *user_data;
@@ -63,8 +56,8 @@ public:
   DynamicClosureBridgeTrampolineTable *addDynamicClosurceBridgeTrampolineTable();
 };
 
-typedef void (*USER_CODE_CALL)(RegisterContext *rs, ClosureBridgeInfo *cbInfo);
-typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo);
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo);
 
 #ifdef __cplusplus
 extern "C" {

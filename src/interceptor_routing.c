@@ -1,7 +1,8 @@
 #include "interceptor_routing.h"
 #include "thread_support/thread_stack.h"
 
-void interceptor_routing_begin(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR, void *ret_addr_PTR) {
+void interceptor_routing_begin(RegisterContext *reg_ctx, hook_entry_t *entry, void *next_hop_addr_PTR,
+                               void *ret_addr_PTR) {
   // DEBUG_LOG("target %p call begin-invocation", entry->target_ptr);
 
   thread_stack_manager_t *thread_stack_manager = thread_stack_cclass(shared_instance)();
@@ -17,7 +18,7 @@ void interceptor_routing_begin(RegisterContext *rs, hook_entry_t *entry, void *n
     pre_call                 = entry->pre_call;
     ThreadStackPublic tsp    = {thread_stack_manager->thread_id, thread_stack_manager->call_stacks->len};
     CallStackPublic csp      = {call_stack->call_id};
-    (*pre_call)(rs, &tsp, &csp, &entryInfo);
+    (*pre_call)(reg_ctx, &tsp, &csp, &entryInfo);
   }
 
   // set next hop
@@ -33,7 +34,7 @@ void interceptor_routing_begin(RegisterContext *rs, hook_entry_t *entry, void *n
   }
 }
 
-void interceptor_routing_end(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
+void interceptor_routing_end(RegisterContext *reg_ctx, hook_entry_t *entry, void *next_hop_addr_PTR) {
   // DEBUG_LOG("%p call end-invocation", entry->target_ptr);
 
   thread_stack_manager_t *thread_stack_manager = thread_stack_cclass(shared_instance)();
@@ -49,7 +50,7 @@ void interceptor_routing_end(RegisterContext *rs, hook_entry_t *entry, void *nex
     post_call                = entry->post_call;
     ThreadStackPublic tsp    = {thread_stack_manager->thread_id, thread_stack_manager->call_stacks->len};
     CallStackPublic csp      = {call_stack->call_id};
-    (*post_call)(rs, &tsp, &csp, (const HookEntryInfo *)&entryInfo);
+    (*post_call)(reg_ctx, &tsp, &csp, (const HookEntryInfo *)&entryInfo);
   }
 
   // set next hop
@@ -58,7 +59,8 @@ void interceptor_routing_end(RegisterContext *rs, hook_entry_t *entry, void *nex
   call_stack_cclass(destory)(call_stack);
 }
 
-void interceptor_routing_dynamic_binary_instrumentation(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR) {
+void interceptor_routing_dynamic_binary_instrumentation(RegisterContext *reg_ctx, hook_entry_t *entry,
+                                                        void *next_hop_addr_PTR) {
   // DEBUG_LOG("target %p call dynamic-binary-instrumentation-invocation", entry->target_ptr);
 
   if (entry->dbi_call) {
@@ -67,35 +69,36 @@ void interceptor_routing_dynamic_binary_instrumentation(RegisterContext *rs, hoo
     entryInfo.hook_id        = entry->id;
     entryInfo.target_address = entry->target_address;
     dbi_call                 = entry->dbi_call;
-    (*dbi_call)(rs, (const HookEntryInfo *)&entryInfo);
+    (*dbi_call)(reg_ctx, (const HookEntryInfo *)&entryInfo);
   }
 
   *(zz_ptr_t *)next_hop_addr_PTR = entry->on_invoke_trampoline;
 }
 
-void interceptor_routing_begin_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void interceptor_routing_begin_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
   hook_entry_t *entry     = cb_info->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
-  void *ret_addr_PTR      = get_ret_addr_PTR(rs);
-  interceptor_routing_begin(rs, entry, next_hop_addr_PTR, ret_addr_PTR);
+  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
+  void *ret_addr_PTR      = get_ret_addr_PTR(reg_ctx);
+  interceptor_routing_begin(reg_ctx, entry, next_hop_addr_PTR, ret_addr_PTR);
   return;
 }
 
-void interceptor_routing_end_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void interceptor_routing_end_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
   hook_entry_t *entry     = cb_info->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
-  interceptor_routing_end(rs, entry, next_hop_addr_PTR);
+  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
+  interceptor_routing_end(reg_ctx, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegisterContext *reg_ctx,
+                                                                       ClosureBridgeInfo *cb_info) {
   hook_entry_t *entry     = cb_info->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
-  interceptor_routing_dynamic_binary_instrumentation(rs, entry, next_hop_addr_PTR);
+  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
+  interceptor_routing_dynamic_binary_instrumentation(reg_ctx, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void interceptor_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
   USER_CODE_CALL userCodeCall = cb_info->user_code;
 
   // TODO: package as a function `beautiful_stack()`
@@ -103,34 +106,34 @@ void interceptor_routing_common_bridge_handler(RegisterContext *rs, ClosureBridg
   fp_reg                     = (uintptr_t)get_current_fp_reg();
   uintptr_t *none_symbol_PTR = (uintptr_t *)fp_reg + 1;
   uintptr_t none_symbol      = *none_symbol_PTR;
-  uintptr_t *ret_addr_PTR    = get_ret_addr_PTR(rs);
+  uintptr_t *ret_addr_PTR    = get_ret_addr_PTR(reg_ctx);
   uintptr_t ret_addr         = *ret_addr_PTR;
   *none_symbol_PTR           = ret_addr;
 
-  userCodeCall(rs, cb_info);
+  userCodeCall(reg_ctx, cb_info);
   *none_symbol_PTR = none_symbol;
   return;
 }
 
 #if DYNAMIC_CLOSURE_BRIDGE
-void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcb_info) {
+void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info) {
   hook_entry_t *entry     = dcb_info->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
-  void *ret_addr_PTR      = get_ret_addr_PTR(rs);
-  interceptor_routing_begin(rs, entry, next_hop_addr_PTR, ret_addr_PTR);
+  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
+  void *ret_addr_PTR      = get_ret_addr_PTR(reg_ctx);
+  interceptor_routing_begin(reg_ctx, entry, next_hop_addr_PTR, ret_addr_PTR);
   return;
 }
 
-void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcb_info) {
+void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info) {
   hook_entry_t *entry     = dcb_info->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(rs);
-  interceptor_routing_end(rs, entry, next_hop_addr_PTR);
+  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
+  interceptor_routing_end(reg_ctx, entry, next_hop_addr_PTR);
   return;
 }
 
-void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcb_info) {
+void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info) {
   DYNAMIC_USER_CODE_CALL userCodeCall = dcb_info->user_code;
-  userCodeCall(rs, dcb_info);
+  userCodeCall(reg_ctx, dcb_info);
   return;
 }
 #endif

@@ -13,32 +13,27 @@ void *get_func_ret_address(RegisterContext *reg_ctx);
 void set_func_ret_address(RegisterContext *reg_ctx, void *address);
 
 // set the next hop at the begin of function running
-void set_prologue_routing_next_hop(RegisterContext *reg_ctx, void *address)
+void set_prologue_routing_next_hop(RegisterContext *reg_ctx, void *address);
 
-void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cbInfo);
+// set the next hop of the epilogue that before function return;
+void set_epilogue_routing_next_hop(RegisterContext *reg_ctx, void *address);
 
-void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cbInfo);
+void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+
+void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry);
 
 void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry);
 
-void replace_call_handler(RegisterContext *reg_ctx, HookEntry *entry)
+void interceptor_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
 
-void intercept_routing_post_call(RegisterContext *reg_ctx, HookEntry *entry, void *next_hop_addr_PTR);
+#if 0
+void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo);
 
-void intercept_routing_dynamic_binary_instrumentation(RegisterContext *rs, hook_entry_t *entry, void *next_hop_addr_PTR);
+void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo);
 
+void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo);
+#endif
 
-void interceptor_routing_end_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo);
-
-void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo);
-
-void interceptor_routing_common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cbInfo);
-
-void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo);
-
-void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo);
-
-void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *rs, DynamicClosureBridgeInfo *dcbInfo);
 #endif

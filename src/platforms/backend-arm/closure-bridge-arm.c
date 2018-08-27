@@ -11,14 +11,14 @@
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
 
-void common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
 
   USER_CODE_CALL userCodeCall = cb_info->user_code;
   // printf("CommonBridgeHandler:");
   // printf("\tTrampoline Address: %p", cb_info->redirect_trampoline);
-  userCodeCall(rs, cb_info);
+  userCodeCall(reg_ctx, cb_info);
   // set return address
-  rs->general.r[12] = rs->general.r[12];
+  reg_ctx->general.r[12] = reg_ctx->general.r[12];
   return;
 }
 

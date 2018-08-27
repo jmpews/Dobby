@@ -1,7 +1,7 @@
 #ifndef ARCH_ARM64
 #define ARCH_ARM64
 
-#include "src/globals.h"
+#include "assembly_core/globals.h"
 
 namespace zz {
 namespace arm64 {

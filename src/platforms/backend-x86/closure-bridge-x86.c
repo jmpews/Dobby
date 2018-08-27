@@ -11,7 +11,7 @@
 
 static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable = NULL;
 
-void common_bridge_handler(RegisterContext *rs, ClosureBridgeInfo *cb_info) {
+void common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
 }
 
 static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) {

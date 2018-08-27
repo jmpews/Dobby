@@ -171,24 +171,24 @@ ARCH_API void interceptor_trampoline_cclass(build_for_enter)(hook_entry_t *entry
   }
 #else
   if (entry->type == HOOK_TYPE_FUNCTION_via_GOT) {
-    ClosureBridgeInfo *cbInfo = NULL;
-    ClosureBridge *cb         = ClosureBridgeCClass(SharedInstance)();
-    cbInfo = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_begin_bridge_handler);
-    if (cbInfo == NULL) {
+    ClosureBridgeInfo *cb_info = NULL;
+    ClosureBridge *cb          = ClosureBridgeCClass(SharedInstance)();
+    cb_info = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_begin_bridge_handler);
+    if (cb_info == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_enter_trampoline = cbInfo->redirect_trampoline;
+    entry->on_enter_trampoline = cb_info->redirect_trampoline;
   }
 #endif
   if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
-    ClosureBridgeInfo *cbInfo = NULL;
-    ClosureBridge *cb         = ClosureBridgeCClass(SharedInstance)();
-    cbInfo = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_begin_bridge_handler);
+    ClosureBridgeInfo *cb_info = NULL;
+    ClosureBridge *cb          = ClosureBridgeCClass(SharedInstance)();
+    cb_info = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_begin_bridge_handler);
 
-    if (cbInfo == NULL) {
+    if (cb_info == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_enter_trampoline = cbInfo->redirect_trampoline;
+    entry->on_enter_trampoline = cb_info->redirect_trampoline;
   }
 
   // build the double trampline aka enter_transfer_trampoline
@@ -246,39 +246,39 @@ ARCH_API void interceptor_trampoline_cclass(build_for_leave)(hook_entry_t *entry
   }
 #else
   if (entry->type == HOOK_TYPE_FUNCTION_via_GOT) {
-    ClosureBridgeInfo *cbInfo = NULL;
-    ClosureBridge *cb         = ClosureBridgeCClass(SharedInstance)();
-    cbInfo = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_end_bridge_handler);
-    if (cbInfo == NULL) {
+    ClosureBridgeInfo *cb_info = NULL;
+    ClosureBridge *cb          = ClosureBridgeCClass(SharedInstance)();
+    cb_info = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_end_bridge_handler);
+    if (cb_info == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_leave_trampoline = cbInfo->redirect_trampoline;
+    entry->on_leave_trampoline = cb_info->redirect_trampoline;
   }
 #endif
   if (entry->type != HOOK_TYPE_FUNCTION_via_GOT) {
-    ClosureBridgeInfo *cbInfo = NULL;
-    ClosureBridge *cb         = ClosureBridgeCClass(SharedInstance)();
-    cbInfo = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_end_bridge_handler);
+    ClosureBridgeInfo *cb_info = NULL;
+    ClosureBridge *cb          = ClosureBridgeCClass(SharedInstance)();
+    cb_info = ClosureBridgeCClass(AllocateClosureBridge)(cb, entry, (void *)interceptor_routing_end_bridge_handler);
 
-    if (cbInfo == NULL) {
+    if (cb_info == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_leave_trampoline = cbInfo->redirect_trampoline;
+    entry->on_leave_trampoline = cb_info->redirect_trampoline;
   }
 }
 
 ARCH_API void interceptor_trampoline_cclass(build_for_dynamic_binary_instrumentation)(hook_entry_t *entry) {
   hook_entry_backend_arm64_t *entry_backend = (hook_entry_backend_arm64_t *)entry->backend;
-  ClosureBridgeInfo *cbInfo                 = NULL;
+  ClosureBridgeInfo *cb_info                = NULL;
   ClosureBridge *cb                         = ClosureBridgeCClass(SharedInstance)();
-  cbInfo                                    = ClosureBridgeCClass(AllocateClosureBridge)(
+  cb_info                                   = ClosureBridgeCClass(AllocateClosureBridge)(
       cb, entry, (void *)interceptor_routing_dynamic_binary_instrumentation_bridge_handler);
 
-  if (cbInfo == NULL) {
+  if (cb_info == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
 
-  entry->on_dynamic_binary_instrumentation_trampoline = cbInfo->redirect_trampoline;
+  entry->on_dynamic_binary_instrumentation_trampoline = cb_info->redirect_trampoline;
 
   // build the double trampline aka enter_transfer_trampoline
   if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {

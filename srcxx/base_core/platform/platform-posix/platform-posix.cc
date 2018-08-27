@@ -13,9 +13,9 @@
 #include <android/log.h> // NOLINT
 #endif
 
-#include "srcxx/base/platform/platform.h"
+#include "base_core/platform/platform.h"
 
-#include "srcxx/base/macros.h"
+#include "base_core/macros.h"
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
@@ -71,7 +71,7 @@ size_t OS::PageSize() {
 
 // static
 void *OS::Allocate(void *address, size_t size, size_t alignment, MemoryPermission access) {
-  size_t page_size = PageSize();
+  size_t page_size = OS::PageSize();
   DCHECK_EQ(0, size % page_size);
   DCHECK_EQ(0, alignment % page_size);
   void *result = base::Allocate(address, request_size, access);

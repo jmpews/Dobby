@@ -38,7 +38,7 @@ ARCH_API void ClosureBridgeCClass(InitializeTablePage)(ClosureBridgeTrampolineTa
 ARCH_API void ClosureBridgeCClass(InitializeClosureBridgeInfo)(ClosureBridgeTrampolineTable *table,
                                                                ClosureBridgeInfo *cb_info, void *user_data,
                                                                void *user_code);
-typedef void (*USER_CODE_CALL)(RegisterContext *rs, ClosureBridgeInfo *cb_info);
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
 
 #if DYNAMIC_CLOSURE_BRIDGE
 // dynamic closure bridge
@@ -71,7 +71,7 @@ DynamicClosureBridgeInfo *DynamicClosureBridgeCClass(AllocateDynamicClosureBridg
 DynamicClosureBridgeTrampolineTable *
     DynamicClosureBridgeCClass(AllocateDynamicClosureBridgeTrampolineTable)(DynamicClosureBridge *self);
 
-typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *rs, DynamicClosureBridgeInfo *dcb_info);
+typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info);
 #endif
 
 #ifdef __cplusplus

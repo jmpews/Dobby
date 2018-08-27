@@ -98,7 +98,7 @@ typedef struct _ClosureBridgeTrampolineTable {
   struct _ClosureBridgeTrampolineTable *next;
 } ClosureBridgeTrampolineTable;
 
-typedef void (*USER_CODE_CALL)(RegisterContext *rs, ClosureBridgeInfo *cb_info);
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
 
 ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code);
 

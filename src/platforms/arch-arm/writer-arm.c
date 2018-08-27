@@ -5,7 +5,7 @@
 
 ARMAssemblerWriter *arm_writer_new() {
   ARMAssemblerWriter *writer = (ARMAssemblerWriter *)malloc0(sizeof(ARMAssemblerWriter));
-  writer->pc           = 0 + 8;
+  writer->pc                 = 0 + 8;
   writer->insns_buffer       = 0;
   writer->insns_size         = 0;
   writer->insnCTXs_count     = 0;
@@ -19,7 +19,7 @@ void arm_writer_init(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t
 void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
   assert(insns_buffer % 4 == 0);
   assert(targetPC % 4 == 0);
-  self->pc     = targetPC + 8;
+  self->pc           = targetPC + 8;
   self->insns_buffer = insns_buffer;
   self->insns_size   = 0;
 
@@ -32,7 +32,7 @@ void arm_writer_reset(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_
 }
 
 void arm_writer_reset_without_align(ARMAssemblerWriter *self, zz_addr_t insns_buffer, zz_addr_t targetPC) {
-  self->pc     = targetPC + 8;
+  self->pc           = targetPC + 8;
   self->insns_buffer = insns_buffer;
   self->insns_size   = 0;
 
@@ -113,12 +113,12 @@ void arm_writer_put_b_imm(ARMAssemblerWriter *self, uint32_t imm) {
 }
 
 void arm_writer_put_ldr_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, int32_t imm) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
-  if (rs.meta == ARM_REG_PC) {
+  if (reg_ctx.meta == ARM_REG_PC) {
     arm_writer_put_ldr_reg_imm_literal(self, dst_reg, imm);
   } else {
     bool P = 1;
@@ -133,10 +133,10 @@ void arm_writer_put_ldr_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, AR
 
 void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, int32_t imm,
                                           bool index) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
   bool P = index;
   bool U = 0;
@@ -150,12 +150,12 @@ void arm_writer_put_ldr_reg_reg_imm_index(ARMAssemblerWriter *self, ARMReg dst_r
 }
 void arm_writer_put_ldr_reg_reg_imm_A1(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm, bool P,
                                        bool U, bool W) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
-  arm_writer_put_instruction(self, 0xe4100000 | rd.index << 12 | rs.index << 16 | P << 24 | U << 23 | W << 21 |
+  arm_writer_put_instruction(self, 0xe4100000 | rd.index << 12 | reg_ctx.index << 16 | P << 24 | U << 23 | W << 21 |
                                        (imm & ZZ_INT12_MASK));
 }
 void arm_writer_put_ldr_reg_imm_literal(ARMAssemblerWriter *self, ARMReg dst_reg, int32_t imm) {
@@ -169,17 +169,17 @@ void arm_writer_put_ldr_reg_imm_literal(ARMAssemblerWriter *self, ARMReg dst_reg
 }
 
 void arm_writer_put_str_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, int32_t imm) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
   bool P = 1;
   bool U = 0;
   bool W = 0;
   if (imm >= 0)
     U = 1;
-  arm_writer_put_instruction(self, 0xe4000000 | rd.index << 12 | rs.index << 16 | P << 24 | U << 23 | W << 21 |
+  arm_writer_put_instruction(self, 0xe4000000 | rd.index << 12 | reg_ctx.index << 16 | P << 24 | U << 23 | W << 21 |
                                        (imm & ZZ_INT12_MASK));
 }
 
@@ -189,27 +189,27 @@ void arm_writer_put_ldr_reg_address(ARMAssemblerWriter *self, ARMReg reg, zz_add
 }
 
 void arm_writer_put_add_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
-  arm_writer_put_instruction(self, 0xe2800000 | rd.index << 12 | rs.index << 16 | (imm & ZZ_INT12_MASK));
+  arm_writer_put_instruction(self, 0xe2800000 | rd.index << 12 | reg_ctx.index << 16 | (imm & ZZ_INT12_MASK));
 }
 
 void arm_writer_put_sub_reg_reg_imm(ARMAssemblerWriter *self, ARMReg dst_reg, ARMReg src_reg, uint32_t imm) {
-  ARMRegInfo rd, rs;
+  ARMRegInfo rd, reg_ctx;
 
   arm_register_describe(dst_reg, &rd);
-  arm_register_describe(src_reg, &rs);
+  arm_register_describe(src_reg, &reg_ctx);
 
-  arm_writer_put_instruction(self, 0xe2400000 | rd.index << 12 | rs.index << 16 | (imm & ZZ_INT12_MASK));
+  arm_writer_put_instruction(self, 0xe2400000 | rd.index << 12 | reg_ctx.index << 16 | (imm & ZZ_INT12_MASK));
 }
 
 void arm_writer_put_bx_reg(ARMAssemblerWriter *self, ARMReg reg) {
-  ARMRegInfo rs;
-  arm_register_describe(reg, &rs);
-  arm_writer_put_instruction(self, 0xe12fff10 | rs.index);
+  ARMRegInfo reg_ctx;
+  arm_register_describe(reg, &reg_ctx);
+  arm_writer_put_instruction(self, 0xe12fff10 | reg_ctx.index);
 }
 
 void arm_writer_put_nop(ARMAssemblerWriter *self) {
