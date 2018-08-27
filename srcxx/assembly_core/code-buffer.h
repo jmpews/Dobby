@@ -6,7 +6,7 @@
 
 class CodeBuffer {
 public:
-  CodeBuffer(int capacity) : capacity_(capacity) {
+  CodeBuffer(int capacity = 64) : capacity_(capacity) {
     buffer_ = reinterpret_cast<byte *>(malloc(capacity));
   }
 

@@ -25,7 +25,7 @@ private:
 
 class Assembler {
 private:
-  CodeBuffer *buffer_;
+  CodeBuffer buffer_;
 
 public:
   Assembler();
