@@ -3,11 +3,11 @@
 DynamicClosureBridge *DynamicClosureBridgeCClass(SharedInstance)() {
   return NULL;
 }
-DynamicClosureBridgeInfo *DynamicClosureBridgeCClass(AllocateDynamicClosureBridge)(DynamicClosureBridge *self,
-                                                                                   void *user_data, void *user_code) {
+DynamicClosureTrampoline *DynamicClosureBridgeCClass(AllocateDynamicClosureBridge)(DynamicClosureBridge *self,
+                                                                                   void *carry_data, void *forward_code) {
   return NULL;
 }
-DynamicClosureBridgeTrampolineTable *
-DynamicClosureBridgeCClass(AllocateDynamicClosureBridgeTrampolineTable)(DynamicClosureBridge *self) {
+DynamicClosureTrampolineTable *
+DynamicClosureBridgeCClass(AllocateDynamicClosureTrampolineTable)(DynamicClosureBridge *self) {
   return NULL;
 }

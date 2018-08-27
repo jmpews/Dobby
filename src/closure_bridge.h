@@ -10,45 +10,46 @@
 #define PRIVATE
 
 // closure bridge
-typedef struct _ClosureBridgeInfo {
-  void *user_code;
-  void *user_data;
-  void *redirect_trampoline;
-} ClosureBridgeInfo;
+typedef struct _ClosureTrampoline {
+  void *forward_code;
+  void *carry_data;
+  void *address;
+} ClosureTrampolineEntry;
 
-typedef struct _ClosureBridgeTrampolineTable {
+typedef struct _ClosureTrampolineTable {
   void *entry;
   void *trampoline_page;
   uint16_t used_count;
   uint16_t free_count;
-} ClosureBridgeTrampolineTable;
+} ClosureTrampolineTable;
 
 typedef struct _ClosureBridge {
-  list_t *bridge_infos;
+  list_t *trampolines;
   list_t *trampoline_tables;
 } ClosureBridge;
 
 #define ClosureBridgeCClass(member) cxxclass(ClosureBridge, member)
 
 ClosureBridge *ClosureBridgeCClass(SharedInstance)();
-ClosureBridgeInfo *ClosureBridgeCClass(AllocateClosureBridge)(ClosureBridge *self, void *user_data, void *user_code);
+ClosureTrampolineEntry *ClosureBridgeCClass(CreateClosureTrampoline)(ClosureBridge *self, void *carry_data,
+                                                                     void *forward_code);
 
-ClosureBridgeTrampolineTable *ClosureBridgeCClass(AllocateClosureBridgeTrampolineTable)(ClosureBridge *self);
-ARCH_API void ClosureBridgeCClass(InitializeTablePage)(ClosureBridgeTrampolineTable *table, void *page_address);
-ARCH_API void ClosureBridgeCClass(InitializeClosureBridgeInfo)(ClosureBridgeTrampolineTable *table,
-                                                               ClosureBridgeInfo *cb_info, void *user_data,
-                                                               void *user_code);
-typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+ClosureTrampolineTable *ClosureBridgeCClass(AllocateClosureTrampolineTable)(ClosureBridge *self);
+ARCH_API void ClosureBridgeCClass(InitializeTablePage)(ClosureTrampolineTable *table, void *page_address);
+ARCH_API void ClosureBridgeCClass(InitializeClosureTrampoline)(ClosureTrampolineTable *table,
+                                                               ClosureTrampolineEntry *entry, void *carry_data,
+                                                               void *forward_code);
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
 #if DYNAMIC_CLOSURE_BRIDGE
 // dynamic closure bridge
-typedef struct _DynamicClosureBridgeInfo {
+typedef struct _DynamicClosureTrampoline {
   void *trampolineTo PRIVATE;
 
-  void *user_code;
-  void *user_data;
-  void *redirect_trampoline;
-} DynamicClosureBridgeInfo;
+  void *forward_code;
+  void *carry_data;
+  void *address;
+} DynamicClosureTrampoline;
 
 typedef struct _DynamicClosureTrampolineTable {
   void *entry;
@@ -56,22 +57,23 @@ typedef struct _DynamicClosureTrampolineTable {
   void *data_page;
   uint16_t used_count;
   uint16_t free_count;
-} DynamicClosureBridgeTrampolineTable;
+} DynamicClosureTrampolineTable;
 
 typedef struct _DynamicClosureBridge {
-  list_t *dynamic_bridge_infos;
+  list_t *dynamic_trampolines;
   list_t *dynamic_trampoline_tables;
 } DynamicClosureBridge;
 
 #define DynamicClosureBridgeCClass(member) cclass(DynamicClosureBridge, member)
 
 DynamicClosureBridge *DynamicClosureBridgeCClass(SharedInstance)();
-DynamicClosureBridgeInfo *DynamicClosureBridgeCClass(AllocateDynamicClosureBridge)(DynamicClosureBridge *self,
-                                                                                   void *user_data, void *user_code);
-DynamicClosureBridgeTrampolineTable *
-    DynamicClosureBridgeCClass(AllocateDynamicClosureBridgeTrampolineTable)(DynamicClosureBridge *self);
+DynamicClosureTrampoline *DynamicClosureBridgeCClass(AllocateDynamicClosureBridge)(DynamicClosureBridge *self,
+                                                                                   void *carry_data,
+                                                                                   void *forward_code);
+DynamicClosureTrampolineTable *
+    DynamicClosureBridgeCClass(AllocateDynamicClosureTrampolineTable)(DynamicClosureBridge *self);
 
-typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info);
+typedef void (*DYNAMIC_USER_CODE_CALL)(RegisterContext *reg_ctx, DynamicClosureTrampoline *dcb_info);
 #endif
 
 #ifdef __cplusplus

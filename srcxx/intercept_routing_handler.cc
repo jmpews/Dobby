@@ -63,8 +63,8 @@ void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ct
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_instructions);
 }
 
-void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  HookEntry *entry = cb_info->user_data;
+void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  HookEntry *entry = entry->carry_data;
   if (entry->type == kFunctionWrapper)
     pre_call_forward_handler(reg_ctx, entry);
   else if (entry->type == kDynamicBinaryInstrumentation)
@@ -72,37 +72,14 @@ void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_i
   return;
 }
 
-void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  HookEntry *entry = cb_info->user_data;
+void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  HookEntry *entry = entry->carry_data;
   interceptor_routing_end(reg_ctx, entry);
   return;
 }
 
-void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  USER_CODE_CALL userCodeCall = cb_info->user_code;
-  userCodeCall(reg_ctx, cb_info);
+void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  USER_CODE_CALL userCodeCall = entry->forward_code;
+  userCodeCall(reg_ctx, entry);
   return;
 }
-
-#if 0
-void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo) {
-  hook_entry_t *entry     = dcbInfo->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
-  void *ret_addr_PTR      = get_ret_addr_PTR(reg_ctx);
-  interceptor_routing_begin(reg_ctx, entry, next_hop_addr_PTR, ret_addr_PTR);
-  return;
-}
-
-void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo) {
-  hook_entry_t *entry     = dcbInfo->user_data;
-  void *next_hop_addr_PTR = get_next_hop_addr_PTR(reg_ctx);
-  interceptor_routing_end(reg_ctx, entry, next_hop_addr_PTR);
-  return;
-}
-
-void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcbInfo) {
-  DYNAMIC_USER_CODE_CALL userCodeCall = dcbInfo->user_code;
-  userCodeCall(reg_ctx, dcbInfo);
-  return;
-}
-#endif

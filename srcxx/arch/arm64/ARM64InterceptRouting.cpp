@@ -84,21 +84,21 @@ void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {
   RetStatus status                     = RS_SUCCESS;
 
   if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
-    DynamicClosureBridgeInfo *dcbInfo;
+    DynamicClosureTrampoline *dcbInfo;
     DynamicClosureBridge *dcb = Singleton<DynamicClosureBridge>::GetInstance();
     dcbInfo = dcb->allocateDynamicClosureBridge((void *)entry, (void *)dynamic_context_begin_invocation_bridge_handler);
     if (dcbInfo == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_enter_trampoline = dcbInfo->redirect_trampoline;
+    entry->on_enter_trampoline = dcbInfo->address;
   } else {
-    ClosureBridgeInfo *cb_info;
+    ClosureTrampolineEntry *entry;
     ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-    cb_info           = cb->allocateClosureBridge(entry, (void *)context_begin_invocation_bridge_handler);
-    if (cb_info == NULL) {
+    entry           = cb->CreateClosureTrampoline(entry, (void *)context_begin_invocation_bridge_handler);
+    if (entry == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_enter_trampoline = cb_info->redirect_trampoline;
+    entry->on_enter_trampoline = entry->address;
   }
 
   // build the double trampline aka enter_transfer_trampoline
@@ -111,14 +111,14 @@ void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {
 
 void ARM64InterceptorBackend::BuildForDynamicBinaryInstrumentation(HookEntry *entry) {
   ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
-  ClosureBridgeInfo *cb_info;
+  ClosureTrampolineEntry *entry;
   ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-  cb_info           = cb->allocateClosureBridge(entry, (void *)dynamic_binary_instrumentationn_bridge_handler);
-  if (cb_info == NULL) {
+  entry           = cb->CreateClosureTrampoline(entry, (void *)dynamic_binary_instrumentationn_bridge_handler);
+  if (entry == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
 
-  entry->on_dynamic_binary_instrumentation_trampoline = cb_info->redirect_trampoline;
+  entry->on_dynamic_binary_instrumentation_trampoline = entry->address;
 
   // build the double trampline aka enter_transfer_trampoline
   if (entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
@@ -132,21 +132,21 @@ void ARM64InterceptorBackend::BuildForLeave(HookEntry *entry) {
   ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
 
   if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
-    DynamicClosureBridgeInfo *dcbInfo;
+    DynamicClosureTrampoline *dcbInfo;
     DynamicClosureBridge *dcb = Singleton<DynamicClosureBridge>::GetInstance();
     dcbInfo = dcb->allocateDynamicClosureBridge(entry, (void *)dynamic_context_end_invocation_bridge_handler);
     if (dcbInfo == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_leave_trampoline = dcbInfo->redirect_trampoline;
+    entry->on_leave_trampoline = dcbInfo->address;
   } else {
-    ClosureBridgeInfo *cb_info;
+    ClosureTrampolineEntry *entry;
     ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-    cb_info           = cb->allocateClosureBridge(entry, (void *)context_end_invocation_bridge_handler);
-    if (cb_info == NULL) {
+    entry           = cb->CreateClosureTrampoline(entry, (void *)context_end_invocation_bridge_handler);
+    if (entry == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
-    entry->on_leave_trampoline = cb_info->redirect_trampoline;
+    entry->on_leave_trampoline = entry->address;
   }
 }
 

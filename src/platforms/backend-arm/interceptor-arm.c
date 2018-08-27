@@ -228,14 +228,14 @@ void trampoline_build_for_enter(InterceptorBackend *self, hook_entry_t *entry) {
 
   is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
 
-  ClosureBridgeInfo *bridgeData;
+  ClosureTrampolineEntry *bridgeData;
 
   bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
   if (bridgeData == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
 
-  entry->on_enter_trampoline = bridgeData->redirect_trampoline;
+  entry->on_enter_trampoline = bridgeData->address;
 
   // build the double trampline aka enter_transfer_trampoline
   if (entry_backend)
@@ -267,14 +267,14 @@ void trampoline_build_for_dynamic_binary_instrumentation(InterceptorBackend *sel
 
   is_thumb = INSTRUCTION_IS_THUMB((zz_addr_t)entry->target_ptr);
 
-  ClosureBridgeInfo *bridgeData;
+  ClosureTrampolineEntry *bridgeData;
 
   bridgeData = ClosureBridgeAllocate(entry, context_begin_invocation_bridge_handler);
   if (bridgeData == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
 
-  entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->redirect_trampoline;
+  entry->on_dynamic_binary_instrumentation_trampoline = bridgeData->address;
 
   // build the double trampline aka enter_transfer_trampoline
   if ((is_thumb && entry_backend->redirect_code_size == ZZ_THUMB_TINY_REDIRECT_SIZE) ||
@@ -429,14 +429,14 @@ void trampoline_build_for_invoke(InterceptorBackend *self, hook_entry_t *entry) 
 }
 
 void trampoline_build_for_leave(InterceptorBackend *self, hook_entry_t *entry) {
-  ClosureBridgeInfo *bridgeData;
+  ClosureTrampolineEntry *bridgeData;
 
   bridgeData = ClosureBridgeAllocate(entry, context_end_invocation_bridge_handler);
   if (bridgeData == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
 
-  entry->on_leave_trampoline = bridgeData->redirect_trampoline;
+  entry->on_leave_trampoline = bridgeData->address;
 
 // DELETE ?
 #if 0

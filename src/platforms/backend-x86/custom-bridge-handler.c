@@ -12,20 +12,20 @@ void context_begin_invocation(RegisterContext *reg_ctx, hook_entry_t *entry, voi
                               void *ret_addr_PTR) {
 }
 
-void context_begin_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
+void context_begin_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
   return;
 }
 
 void context_end_invocation(RegisterContext *reg_ctx, hook_entry_t *entry, void *next_hop_addr_PTR) {
 }
 
-void context_end_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
+void context_end_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
   return;
 }
 
 void dynamic_binary_instrumentation_invocation(RegisterContext *reg_ctx, hook_entry_t *entry, void *next_hop_addr_PTR) {
 }
 
-void dynamic_binary_instrumentationn_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
+void dynamic_binary_instrumentationn_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
   return;
 }

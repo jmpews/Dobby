@@ -82,24 +82,24 @@ typedef struct _RegisterContext {
 #endif
 
 typedef struct _ClosureBridgeData {
-  void *user_code;
-  void *user_data;
-  void *redirect_trampoline;
-} ClosureBridgeInfo;
+  void *forward_code;
+  void *carry_data;
+  void *address;
+} ClosureTrampolineEntry;
 
-typedef struct _ClosureBridgeTrampolineTable {
+typedef struct _ClosureTrampolineTable {
   void *entry;
   void *trampoline_page;
   uint16_t used_count;
   uint16_t free_count;
 
-  struct _ClosureBridgeTrampolineTable *prev;
-  struct _ClosureBridgeTrampolineTable *next;
-} ClosureBridgeTrampolineTable;
+  struct _ClosureTrampolineTable *prev;
+  struct _ClosureTrampolineTable *next;
+} ClosureTrampolineTable;
 
-typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
-ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code);
+ClosureTrampolineEntry *ClosureBridgeAllocate(void *carry_data, void *forward_code);
 
 void closure_bridge_trampoline_template();
 void closure_bridge_template();

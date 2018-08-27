@@ -44,12 +44,12 @@ __attribute__((naked)) void closure_bridge_template() {
   xASM("str x0, [sp, #8]");
 #else
   // save {x0, sp}
-    // save x0 and reserve sp, but this is trick
-    xASM("sub sp, sp, #(2*8)");
-    xASM("str x0, [sp, #8]");
-    // save origin sp
-    xASM("add x1, sp, #0x190");
-    xASM("str x1, [sp, #0]");
+  // save x0 and reserve sp, but this is trick
+  xASM("sub sp, sp, #(2*8)");
+  xASM("str x0, [sp, #8]");
+  // save origin sp
+  xASM("add x1, sp, #0x190");
+  xASM("str x1, [sp, #0]");
 #endif
 
   // ======= Jump to Common Bridge Handle =======
@@ -59,7 +59,7 @@ __attribute__((naked)) void closure_bridge_template() {
   // @x1: RegisterContext stack address
   xASM("mov x0, sp");
   xASM("mov x1, x14");
-  xASM("bl " xcdecl("interceptor_routing_common_bridge_handler"));
+  xASM("bl " xcdecl("intercept_routing_common_bridge_handler"));
 
   // ======= RegisterContext Restore =======
   // restore x0

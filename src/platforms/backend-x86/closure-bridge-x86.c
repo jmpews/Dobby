@@ -9,23 +9,23 @@
 
 #define closure_bridge_trampoline_template_length (7 * 4)
 
-static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable = NULL;
+static ClosureTrampolineTable *gClosureBridageTrampolineTable = NULL;
 
-void common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
+void common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
 }
 
-static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) {
+static ClosureTrampolineTable *ClosureTrampolineTableAllocate(void) {
   return NULL;
 }
 
-static void ClosureBridgeTrampolineTableFree(ClosureBridgeTrampolineTable *table) {
+static void ClosureTrampolineTableFree(ClosureTrampolineTable *table) {
   return;
 }
 
-ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
+ClosureTrampolineEntry *ClosureBridgeAllocate(void *carry_data, void *forward_code) {
   return NULL;
 }
 
-static void ClosureBridgeFree(ClosureBridgeInfo *bridgeData) {
+static void ClosureBridgeFree(ClosureTrampolineEntry *bridgeData) {
   return;
 }

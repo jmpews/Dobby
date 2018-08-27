@@ -9,20 +9,20 @@
 
 #define closure_bridge_trampoline_template_length (4 * 4)
 
-static ClosureBridgeTrampolineTable *gClosureBridageTrampolineTable;
+static ClosureTrampolineTable *gClosureBridageTrampolineTable;
 
-void common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
+void common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
 
-  USER_CODE_CALL userCodeCall = cb_info->user_code;
+  USER_CODE_CALL userCodeCall = entry->forward_code;
   // printf("CommonBridgeHandler:");
-  // printf("\tTrampoline Address: %p", cb_info->redirect_trampoline);
-  userCodeCall(reg_ctx, cb_info);
+  // printf("\tTrampoline Address: %p", entry->address);
+  userCodeCall(reg_ctx, entry);
   // set return address
   reg_ctx->general.r[12] = reg_ctx->general.r[12];
   return;
 }
 
-static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) {
+static ClosureTrampolineTable *ClosureTrampolineTableAllocate(void) {
   void *mmap_page;
   long page_size;
   page_size = sysconf(_SC_PAGESIZE);
@@ -51,7 +51,7 @@ static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) 
     return NULL;
   }
 
-  ClosureBridgeTrampolineTable *table = (ClosureBridgeTrampolineTable *)malloc(sizeof(ClosureBridgeTrampolineTable));
+  ClosureTrampolineTable *table = (ClosureTrampolineTable *)malloc(sizeof(ClosureTrampolineTable));
   table->entry                        = mmap_page;
   table->trampoline_page              = mmap_page;
   table->used_count                   = 0;
@@ -59,15 +59,15 @@ static ClosureBridgeTrampolineTable *ClosureBridgeTrampolineTableAllocate(void) 
   return table;
 }
 
-static void ClosureBridgeTrampolineTableFree(ClosureBridgeTrampolineTable *table) {
+static void ClosureTrampolineTableFree(ClosureTrampolineTable *table) {
   return;
 }
 
-ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
+ClosureTrampolineEntry *ClosureBridgeAllocate(void *carry_data, void *forward_code) {
   long page_size                      = sysconf(_SC_PAGESIZE);
-  ClosureBridgeTrampolineTable *table = gClosureBridageTrampolineTable;
+  ClosureTrampolineTable *table = gClosureBridageTrampolineTable;
   if (table == NULL || table->free_count == 0) {
-    table = ClosureBridgeTrampolineTableAllocate();
+    table = ClosureTrampolineTableAllocate();
     if (table == NULL)
       return NULL;
 
@@ -78,12 +78,12 @@ ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
     gClosureBridageTrampolineTable = table;
   }
 
-  ClosureBridgeInfo *bridgeData = (ClosureBridgeInfo *)malloc(sizeof(ClosureBridgeInfo));
+  ClosureTrampolineEntry *bridgeData = (ClosureTrampolineEntry *)malloc(sizeof(ClosureTrampolineEntry));
 
-  bridgeData->user_code           = user_code;
-  bridgeData->user_data           = user_data;
+  bridgeData->forward_code           = forward_code;
+  bridgeData->carry_data           = carry_data;
   uint16_t trampoline_used_count  = gClosureBridageTrampolineTable->used_count;
-  bridgeData->redirect_trampoline = (void *)((intptr_t)gClosureBridageTrampolineTable->trampoline_page +
+  bridgeData->address = (void *)((intptr_t)gClosureBridageTrampolineTable->trampoline_page +
                                              closure_bridge_trampoline_template_length * trampoline_used_count);
 
   if (mprotect(gClosureBridageTrampolineTable->trampoline_page, (size_t)page_size, (PROT_READ | PROT_WRITE))) {
@@ -92,12 +92,12 @@ ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
   }
 
   // bind data to trampline
-  void *tmp = (void *)((intptr_t)bridgeData->redirect_trampoline + 4 * 2);
-  memcpy(tmp, &bridgeData, sizeof(ClosureBridgeInfo *));
+  void *tmp = (void *)((intptr_t)bridgeData->address + 4 * 2);
+  memcpy(tmp, &bridgeData, sizeof(ClosureTrampolineEntry *));
 
   // set trampoline to bridge
   void *tmpX = (void *)closure_bridge_template;
-  tmp        = (void *)((intptr_t)bridgeData->redirect_trampoline + 4 * 3);
+  tmp        = (void *)((intptr_t)bridgeData->address + 4 * 3);
   memcpy(tmp, &tmpX, sizeof(void *));
 
   if (mprotect(gClosureBridageTrampolineTable->trampoline_page, (size_t)page_size, (PROT_READ | PROT_EXEC))) {
@@ -111,6 +111,6 @@ ClosureBridgeInfo *ClosureBridgeAllocate(void *user_data, void *user_code) {
   return bridgeData;
 }
 
-static void ClosureBridgeFree(ClosureBridgeInfo *bridgeData) {
+static void ClosureBridgeFree(ClosureTrampolineEntry *bridgeData) {
   return;
 }

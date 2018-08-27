@@ -11,7 +11,7 @@
 
 #define closure_bridge_trampoline_template_length (7 * 4)
 
-ClosureBridgeTrampolineTable *ClosureBridge::allocateClosureBridgeTrampolineTable() {
+ClosureTrampolineTable *ClosureBridge::allocateClosureTrampolineTable() {
   void *mmap_page;
   long page_size;
   page_size = sysconf(_SC_PAGESIZE);
@@ -40,19 +40,19 @@ ClosureBridgeTrampolineTable *ClosureBridge::allocateClosureBridgeTrampolineTabl
     return NULL;
   }
 
-  ClosureBridgeTrampolineTable *table = (ClosureBridgeTrampolineTable *)malloc(sizeof(ClosureBridgeTrampolineTable));
-  table->entry                        = mmap_page;
-  table->trampoline_page              = mmap_page;
-  table->used_count                   = 0;
-  table->free_count                   = (uint16_t)t;
+  ClosureTrampolineTable *table = (ClosureTrampolineTable *)malloc(sizeof(ClosureTrampolineTable));
+  table->entry                  = mmap_page;
+  table->trampoline_page        = mmap_page;
+  table->used_count             = 0;
+  table->free_count             = (uint16_t)t;
 
   trampoline_tables.push_back(table);
   return table;
 }
 
-ClosureBridgeInfo *ClosureBridge::allocateClosureBridge(void *user_data, void *user_code) {
-  ClosureBridgeInfo *cbi;
-  ClosureBridgeTrampolineTable *table;
+ClosureTrampolineEntry *ClosureBridge::CreateClosureTrampoline(void *carry_data, void *forward_code) {
+  ClosureTrampolineEntry *cbi;
+  ClosureTrampolineTable *table;
   long page_size = sysconf(_SC_PAGESIZE);
 
   for (auto tmpTable : trampoline_tables) {
@@ -63,24 +63,24 @@ ClosureBridgeInfo *ClosureBridge::allocateClosureBridge(void *user_data, void *u
   }
 
   if (!table)
-    table = allocateClosureBridgeTrampolineTable();
+    table = allocateClosureTrampolineTable();
 
   uint16_t trampoline_used_count = table->used_count;
-  void *redirect_trampoline =
+  void *address =
       (void *)((intptr_t)table->trampoline_page + closure_bridge_trampoline_template_length * trampoline_used_count);
 
-  cbi                      = new (ClosureBridgeInfo);
-  cbi->user_code           = user_code;
-  cbi->user_data           = user_data;
-  cbi->redirect_trampoline = redirect_trampoline;
+  cbi               = new (ClosureTrampolineEntry);
+  cbi->forward_code = forward_code;
+  cbi->carry_data   = carry_data;
+  cbi->address      = address;
 
   // bind data to trampline
-  void *tmp = (void *)((intptr_t)cbi->redirect_trampoline + 4 * 3);
-  memcpy(tmp, &cbi, sizeof(ClosureBridgeInfo *));
+  void *tmp = (void *)((intptr_t)cbi->address + 4 * 3);
+  memcpy(tmp, &cbi, sizeof(ClosureTrampolineEntry *));
 
   // set trampoline to bridge
   void *tmpX = (void *)closure_bridge_template;
-  tmp        = (void *)((intptr_t)cbi->redirect_trampoline + 4 * 5);
+  tmp        = (void *)((intptr_t)cbi->address + 4 * 5);
   memcpy(tmp, &tmpX, sizeof(void *));
 
   if (mprotect(table->trampoline_page, (size_t)page_size, (PROT_READ | PROT_EXEC))) {

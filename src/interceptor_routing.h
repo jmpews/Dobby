@@ -20,21 +20,21 @@ void interceptor_routing_end(RegisterContext *reg_ctx, hook_entry_t *entry, void
 void interceptor_routing_dynamic_binary_instrumentation(RegisterContext *reg_ctx, hook_entry_t *entry,
                                                         void *next_hop_addr_PTR);
 
-void interceptor_routing_begin_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+void interceptor_routing_begin_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
-void interceptor_routing_end_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+void interceptor_routing_end_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
 void interceptor_routing_dynamic_binary_instrumentation_bridge_handler(RegisterContext *reg_ctx,
-                                                                       ClosureBridgeInfo *cb_info);
+                                                                       ClosureTrampolineEntry *entry);
 
-void interceptor_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info);
+void interceptor_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
 #if DYNAMIC_CLOSURE_BRIDGE
-void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info);
+void interceptor_routing_begin_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureTrampoline *dcb_info);
 
-void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info);
+void interceptor_routing_end_dynamic_bridge_handler(RegisterContext *reg_ctx, DynamicClosureTrampoline *dcb_info);
 
-void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *reg_ctx, DynamicClosureBridgeInfo *dcb_info);
+void interceptor_routing_dynamic_common_bridge_handler(RegisterContext *reg_ctx, DynamicClosureTrampoline *dcb_info);
 #endif
 
 #endif

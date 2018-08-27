@@ -46,8 +46,8 @@ void context_begin_invocation(RegisterContext *reg_ctx, hook_entry_t *entry, voi
   }
 }
 
-void context_begin_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  hook_entry_t *entry = cb_info->user_data;
+void context_begin_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  hook_entry_t *entry = entry->carry_data;
   void *nextHopPTR    = (void *)&reg_ctx->general.regs.r12;
   void *regLRPTR      = (void *)&reg_ctx->lr;
   context_begin_invocation(reg_ctx, entry, nextHopPTR, regLRPTR);
@@ -78,8 +78,8 @@ void context_end_invocation(RegisterContext *reg_ctx, hook_entry_t *entry, void 
   CallStackFree(callstack);
 }
 
-void context_end_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  hook_entry_t *entry = cb_info->user_data;
+void context_end_invocation_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  hook_entry_t *entry = entry->carry_data;
   void *nextHopPTR    = (void *)&reg_ctx->general.regs.r12;
   context_end_invocation(reg_ctx, entry, nextHopPTR);
   return;
@@ -101,8 +101,8 @@ void dynamic_binary_instrumentation_invocation(RegisterContext *reg_ctx, hook_en
   *(zz_ptr_t *)next_hop_addr_PTR = entry->on_invoke_trampoline;
 }
 
-void dynamic_binary_instrumentationn_bridge_handler(RegisterContext *reg_ctx, ClosureBridgeInfo *cb_info) {
-  hook_entry_t *entry = cb_info->user_data;
+void dynamic_binary_instrumentationn_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  hook_entry_t *entry = entry->carry_data;
   void *nextHopPTR    = (void *)&reg_ctx->general.regs.r12;
   dynamic_binary_instrumentation_invocation(reg_ctx, entry, nextHopPTR);
   return;
