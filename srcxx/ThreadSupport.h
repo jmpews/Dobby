@@ -7,7 +7,7 @@
 
 #include "srcxx/globals.h"
 
-#include "srcxx/base_core/platform/platform.h"
+#include "vm_core/platform/platform.h"
 
 typedef struct _StackFrame {
   // context between `pre_call` and `post_call`
@@ -21,7 +21,7 @@ typedef struct _CallStack {
   std::vector<StackFrame *> stack_frames;
 } CallStack;
 
-// ThreadSupport base on base_core, support mutipl platforms.
+// ThreadSupport base on vm_core, support mutipl platforms.
 class ThreadSupport {
 public:
   static void PushStackFrame(StackFrame *stack_frame) {

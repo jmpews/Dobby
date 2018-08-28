@@ -4,6 +4,6 @@
 
 #include <stdint.h>
 
-#include "base_core/logging.h"
+#include "vm_core/logging.h"
 
 #endif

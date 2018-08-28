@@ -13,8 +13,8 @@
 // closure trampoline carray the object pointer, and fetch required members at the runtime assembly code.
 #include "srcxx/AssemblyClosureTrampoline.h"
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-.globl cdecl(closure_bridge_trampoline_template)
-cdecl(closure_bridge_trampoline_template):
+.globl cdecl(closure_trampoline_template)
+cdecl(closure_trampoline_template):
     ldr x17, =ClourseTrampolineEntryPtr
     ldr x16, OFFSETOF(ClourseTrampolineEntry, carray_data)
     ldr x17, OFFSETOF(ClourseTrampolineEntry, forward_code)
@@ -26,8 +26,8 @@ ClourseTrampolineEntryPtr:
 #else
 
 // closure trampoline just carray the required members from the object.
-.globl cdecl(closure_bridge_trampoline_template)
-cdecl(closure_bridge_trampoline_template):
+.globl cdecl(closure_trampoline_template)
+cdecl(closure_trampoline_template):
     ldr x16, =carray_data
     ldr x17, =forward_code
     br x17

@@ -1,8 +1,10 @@
 #ifndef ZZ_CLOSURE_BRIDGE_H_
 #define ZZ_CLOSURE_BRIDGE_H_
 
+#include <iostream>
 #include <stdint.h>
 #include <vector>
+
 
 #include "srcxx/hookzz_internal.h"
 
@@ -27,7 +29,7 @@ typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry 
 extern "C" {
 #endif //__cplusplus
 
-void closure_bridge_trampoline_template();
+void closure_trampoline_template();
 
 void closure_bridge_template();
 
