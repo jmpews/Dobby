@@ -1,23 +1,25 @@
 #ifndef ZZ_BASE_OBJECTS_CODE
 #define ZZ_BASE_OBJECTS_CODE
 
-#include "src/base/objects/objects.h"
-
-#include "src/platform/platform.h"
+#include "base_core/objects/objects.h"
+#include "base_core/platform/platform.h"
 
 using namespace zz;
 
-class RawCode : public Object {
-
-};
+class RawCode : public Object {};
 
 class Code : public Object {
-    RawCode* FinalizeCode() {
+  inline int raw_instruction_size() const;
+  inline void set_raw_instruction_size(int value);
 
-    }
-    void Commit() {
-        Platform::SetPermission(0, 0, 0);
-    }
+  inline int InstructionSize() const;
+
+  RawCode *FinalizeCode() {
+  }
+
+  void Commit() {
+    Platform::SetPermission(0, 0, 0);
+  }
 };
 
 #endif

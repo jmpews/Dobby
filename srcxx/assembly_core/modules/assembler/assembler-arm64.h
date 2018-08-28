@@ -30,6 +30,8 @@ private:
 public:
   Assembler();
 
+  void FlushICache();
+
   void Emit(int32_t value);
 
   void b(int64_t imm) {
