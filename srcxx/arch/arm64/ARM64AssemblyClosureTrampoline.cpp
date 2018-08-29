@@ -18,18 +18,17 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline() {
 
 #else
 // use assembler and codegen modules instead of template_code
-#define _ assembler_->
-#define __ turbo_assembler__->
-  Assembler *assembler_;
-  TurboAssembler *turbo_assembler__;
+#include "srcxx/AssemblyClosureTrampoline.h"
+#define _ turbo_assembler_->
+  TurboAssembler *turbo_assembler_;
 
-  Label ClosureTrampolineEntryPtr;
+  PseudoLabel ClosureTrampolineEntryPtr;
   _ ldr(Register::X(17), &ClosureTrampolineEntryPtr);
   _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carray_data));
   _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, forward_code));
   _ br(Register::X(17));
-  Bind(&ClosureTrampolineEntryPtr);
-  EmitInt64(0); // dummy address
+  _ pseudo_bind(&ClosureTrampolineEntryPtr);
+  _ EmitInt64(0); // dummy address
 
 #endif
 }

@@ -23,6 +23,33 @@ private:
   int location_;
 };
 
+class PseudoLabel : public Label {
+  enum PseudoLabelType { kLdrPseudoLabel };
+
+  typedef struct _PseudoLabelInstruction {
+    int position_;
+    PseudoLabelType type_;
+  } PseudoLabelInstruction;
+
+public:
+  void Fix() {
+    for (auto instruction : instructions_) {
+      switch (instruction.type_) {
+      case kLdrPseudoLabel:
+        FixLdr(&instruction);
+      default:
+        break;
+      }
+    }
+  };
+
+private:
+  void FixLdr(PseudoLabelInstruction *instruction) {
+    int32_t offset = instruction->position_ - this->position_;
+  };
+  std::vector<PseudoLabelInstruction> instructions_
+};
+
 class Assembler {
 private:
   CodeBuffer buffer_;
@@ -73,7 +100,7 @@ public:
     EmitLoadRegLiteral(op, rt, imm);
   }
 
-  void ldr_reg_imm(Register rt, Register rn, int64_t imm) {
+  void ldr(Register rt, Register rn, int64_t imm) {
     LoadStoreUnscaledOffsetOp op = OP_X(LDR);
     EmitLoadStoreReg(op, rt, rn, imm);
   }
@@ -132,11 +159,16 @@ private:
   }
 };
 
-#undef __
-#define __ assembler_.
-class TurboAssembler {
+class TurboAssembler : public Assembler {
+private:
+  std::vector<PseudoLabel *> pseudo_labels;
+
 public:
-  TurboAssembler(Assembler &assember);
+  TurboAssembler();
+
+  void ldr(Register rt, PseudoLabel *label);
+
+  void pseudo_bind(PseudoLabel *label);
 
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Utils::Low32Bits(imm);
@@ -145,14 +177,13 @@ public:
     const uint16_t h1 = Utils::High16Bits(w0);
     const uint16_t h2 = Utils::Low16Bits(w1);
     const uint16_t h3 = Utils::High16Bits(w1);
-    __ movz(rd, h0, 0);
-    __ movk(rd, h1, 16);
-    __ movk(rd, 32);
-    __ movk(rd, h3, 48);
+    movz(rd, h0, 0);
+    movk(rd, h1, 16);
+    movk(rd, 32);
+    movk(rd, h3, 48);
   }
 
 private:
-  Assembler assembler_;
 };
 
 } // namespace arm64
