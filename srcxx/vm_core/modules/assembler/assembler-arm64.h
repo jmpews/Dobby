@@ -34,13 +34,20 @@ public:
 
   void Emit(int32_t value);
 
+  void EmitInt64(int64_t value);
+
+  void Bind(Label *label);
+
   void b(int64_t imm) {
-    // TODO: need `mask` check
     int32_t imm26 = imm >> 2;
   }
 
   void b(Label *label) {
+    int offset = LinkAndGetByteOffsetTo(label);
+    b(offset);
   }
+
+  int LinkAndGetByteOffsetTo(Label *label);
 
   void ldr_literal(Register rt, int64_t imm) {
     LoadRegLiteralOp op;

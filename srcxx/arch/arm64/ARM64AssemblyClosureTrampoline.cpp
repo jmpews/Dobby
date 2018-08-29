@@ -12,28 +12,24 @@ using namespace zz::arm64;
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline() {
 
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
-  // use closure trampoline template code, find the executable memory and patch it.
-
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
+  // use closure trampoline template code, find the executable memory and patch it.
   zz::Code *code = zz::Code::FinalizeCode(closure_trampoline_template, CLOSURE_TRAMPOLINE_SIZE);
 
 #else
-  // use assembler and codegen modules instead of template_code
-
+// use assembler and codegen modules instead of template_code
+#define _ assembler_->
+#define __ turbo_assembler__->
   Assembler *assembler_;
   TurboAssembler *turbo_assembler__;
 
-#define _ assembler_->
-#define __ turbo_assembler__->
-
-  Label *ClourseTrampolineEntryPtr;
-  _ ldr(Register::X(17), ClourseTrampolineEntryPtr);
-  _ ldr(Register::X(16), OFFSETOF(ClourseTrampolineEntry, carray_data));
-  _ ldr(Register::X(17), OFFSETOF(ClourseTrampolineEntry, forward_code));
-  _ br(Register::X17);
-
-  uintptr_t dummy_addr = 0;
-  assembler_->EmitData(&dummy_addr, sizeof(void *));
+  Label ClosureTrampolineEntryPtr;
+  _ ldr(Register::X(17), &ClosureTrampolineEntryPtr);
+  _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carray_data));
+  _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, forward_code));
+  _ br(Register::X(17));
+  Bind(&ClosureTrampolineEntryPtr);
+  EmitInt64(0); // dummy address
 
 #endif
 }
