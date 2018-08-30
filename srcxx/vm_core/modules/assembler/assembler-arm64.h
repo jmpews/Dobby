@@ -5,9 +5,9 @@
 #include "vm_core/architecture/arch/arm64/instructions-arm64.h"
 #include "vm_core/architecture/arch/arm64/registers-arm64.h"
 
-#include "vm_core/architecture/macros-arch.h"
-#include "vm_core/architecture/modules/code-buffer.h"
-#include "vm_core/architecture/utils-arch.h"
+#include "vm_core/macros.h"
+#include "vm_core/base/code-buffer.h"
+#include "vm_core/utils.h"
 
 namespace zz {
 namespace arm64 {
@@ -166,9 +166,18 @@ private:
 public:
   TurboAssembler();
 
-  void ldr(Register rt, PseudoLabel *label);
+  void ldr(Register rt, PseudoLabel *label) {
+    ldr(rt, );
+    label->link_to(buffer_->Size());
+  };
 
-  void pseudo_bind(PseudoLabel *label);
+  void pseudo_bind(PseudoLabel *label){};
+
+  void pseudo_fix() {
+    for (auto pseudo_label : pseudo_labels) {
+      pseudo_label->Fix();
+    }
+  };
 
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Utils::Low32Bits(imm);
