@@ -1,4 +1,4 @@
-#include "vm_core/base/objects/code.h"
+#include "vm_core/objects/code.h"
 
 using namespace zz;
 

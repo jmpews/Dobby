@@ -1,7 +1,7 @@
 #ifndef ZZ_OBJECTS_HEAP_H
 #define ZZ_OBJECTS_HEAP_H
 
-#include "vm_core/base/objects/objects.h"
+#include "vm_core/objects/objects.h"
 
 namespace zz {
 

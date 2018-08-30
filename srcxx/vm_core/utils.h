@@ -1,7 +1,7 @@
 #ifndef ZZ_ARCHITECTURE_UTILS_ARCH_H_
 #define ZZ_ARCHITECTURE_UTILS_ARCH_H_
 
-#include "architecture/globals-arch.h"
+#include "globals-arch.h"
 
 namespace zz {
 

@@ -1,6 +1,6 @@
 #include "srcxx/AssemblyClosureTrampoline.h"
 
-#include "vm_core/base/objects/code.h"
+#include "vm_core/objects/code.h"
 
 #include "vm_core/arch/arm64/registers-arm64.h"
 #include "vm_core/modules/assembler/assembler-arm64.h"

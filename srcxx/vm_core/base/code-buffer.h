@@ -1,7 +1,7 @@
 #ifndef ZZ_BASE_CODE_BUFFER_H_
 #define ZZ_BASE_CODE_BUFFER_H_
 
-#include "vm_core/base/objects/objects.h"
+#include "vm_core/objects/objects.h"
 #include "vm_core/globals.h"
 
 

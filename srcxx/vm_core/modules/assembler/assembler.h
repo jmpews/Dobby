@@ -1,7 +1,11 @@
 #ifndef ZZ_MODULES_ASSEMBLER_ASSEMBLER_H_
 #define ZZ_MODULES_ASSEMBLER_ASSEMBLER_H_
 
+#include "vm_core/base/code-buffer.h"
+#include "vm_core/objects/objects.h"
+
 namespace zz {
+
 class Label {
 public:
   Label() : location_() {
@@ -14,49 +18,21 @@ private:
   int location_;
 };
 
-class PseudoLabel : public Label {
-  enum PseudoLabelType { kLdrPseudoLabel };
 
-  typedef struct _PseudoLabelInstruction {
-    int position_;
-    PseudoLabelType type_;
-  } PseudoLabelInstruction;
+class ObjectPool {
+  public:
 
-public:
-  bool has_confused_instructions() {
-    return instructions_.size() > 0;
-  }
-  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if (buffer)
-      buffer_ = buffer;
+  intptr_t AddObject(const Object& obj);
 
-    int32_t offset       = instruction->position_ - this->position_;
-    const int32_t inst32 = buffer_.Load32(instruction->position);
-    for (auto instruction : instructions_) {
-      switch (instruction.type_) {
-      case kLdrPseudoLabel: {
-        const int32_t encoded = (inst32 & 0xfff) | offset;
-      } break;
-      default:
-        break;
-      }
-      buffer_.Store32(instrcution->position, encoed);
-    }
-  };
+  intptr_t FindObject(const Object& obj);
+  private:
+  std::vector<Object *> object_pool_;
 
-private:
-  // From a design perspective, these fix-function write as callback, maybe beeter.
-  void FixLdr(PseudoLabelInstruction *instruction){
-      // dummy
-  };
-
-private:
-  CodeBuffer *buffer_;
-  std::vector<PseudoLabelInstruction> instructions_;
-};
+}
 
 class AssemblerBase {
 public:
+
   int pc_offset() const {
     return buffer_.Size();
   }

@@ -1,9 +1,11 @@
 #ifndef ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
 #define ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
 
-#include "vm_core/architecture/arch/arm64/constants-arm64.h"
-#include "vm_core/architecture/arch/arm64/instructions-arm64.h"
-#include "vm_core/architecture/arch/arm64/registers-arm64.h"
+#include "vm_core/arch/arm64/constants-arm64.h"
+#include "vm_core/arch/arm64/instructions-arm64.h"
+#include "vm_core/arch/arm64/registers-arm64.h"
+
+#include "vm_core/modules/assembler/assembler.h"
 
 #include "vm_core/macros.h"
 #include "vm_core/base/code-buffer.h"
@@ -12,9 +14,49 @@
 namespace zz {
 namespace arm64 {
 
-class Assembler {
+
+class PseudoLabel : public Label {
+  enum PseudoLabelType { kLdrPseudoLabel };
+
+  typedef struct _PseudoLabelInstruction {
+    int position_;
+    PseudoLabelType type_;
+  } PseudoLabelInstruction;
+
+public:
+  bool has_confused_instructions() {
+    return instructions_.size() > 0;
+  }
+  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
+    if (buffer)
+      buffer_ = buffer;
+
+    int32_t offset       = instruction->position_ - this->position_;
+    const int32_t inst32 = buffer_.Load32(instruction->position);
+    for (auto instruction : instructions_) {
+      switch (instruction.type_) {
+      case kLdrPseudoLabel: {
+        const int32_t encoded = (inst32 & 0xfff) | offset;
+      } break;
+      default:
+        break;
+      }
+      buffer_.Store32(instrcution->position, encoed);
+    }
+  };
+
 private:
-  CodeBuffer buffer_;
+  // From a design perspective, these fix-function write as callback, maybe beeter.
+  void FixLdr(PseudoLabelInstruction *instruction){
+      // dummy
+  };
+
+private:
+  CodeBuffer *buffer_;
+  std::vector<PseudoLabelInstruction> instructions_;
+};
+
+class Assembler : public AssemblerBase {
 
 public:
   Assembler();

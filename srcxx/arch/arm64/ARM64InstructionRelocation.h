@@ -1,7 +1,7 @@
 #ifndef ZZZ_CXX_ARCH_ARM64_INSTRUCTION_RELOCATION
 #define ZZZ_CXX_ARCH_ARM64_INSTRUCTION_RELOCATION
 
-#include "vm_core/architecture/arch/arm64/constants-arm64.h"
+#include "vm_core/arch/arm64/constants-arm64.h"
 #include "srcxx/globals.h"
 
 // PC relative addressing.

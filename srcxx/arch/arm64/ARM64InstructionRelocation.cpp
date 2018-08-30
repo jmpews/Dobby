@@ -1,7 +1,7 @@
 #include "srcxx/arch/arm64/ARM64InstructionRelocation.h"
 
-#include "vm_core/architecture/arm64/registers-arm64.h"
-#include "vm_core/architecture/modules/assembler/assembler-arm64.h"
+#include "vm_core/arm64/registers-arm64.h"
+#include "vm_core/modules/assembler/assembler-arm64.h"
 
 #include "srcxx/globals.h"
 
