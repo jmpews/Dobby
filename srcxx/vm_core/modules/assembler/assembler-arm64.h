@@ -12,44 +12,6 @@
 namespace zz {
 namespace arm64 {
 
-class Label {
-public:
-  Label() : location_() {
-  }
-  ~Label() {
-  }
-
-private:
-  int location_;
-};
-
-class PseudoLabel : public Label {
-  enum PseudoLabelType { kLdrPseudoLabel };
-
-  typedef struct _PseudoLabelInstruction {
-    int position_;
-    PseudoLabelType type_;
-  } PseudoLabelInstruction;
-
-public:
-  void Fix() {
-    for (auto instruction : instructions_) {
-      switch (instruction.type_) {
-      case kLdrPseudoLabel:
-        FixLdr(&instruction);
-      default:
-        break;
-      }
-    }
-  };
-
-private:
-  void FixLdr(PseudoLabelInstruction *instruction) {
-    int32_t offset = instruction->position_ - this->position_;
-  };
-  std::vector<PseudoLabelInstruction> instructions_
-};
-
 class Assembler {
 private:
   CodeBuffer buffer_;
@@ -161,23 +123,38 @@ private:
 
 class TurboAssembler : public Assembler {
 private:
-  std::vector<PseudoLabel *> pseudo_labels;
+  // std::vector<PseudoLabel *> pseudo_labels;
 
 public:
   TurboAssembler();
 
   void ldr(Register rt, PseudoLabel *label) {
-    ldr(rt, );
-    label->link_to(buffer_->Size());
-  };
+    const int64_t dest = label->Position() - buffer_.Size();
 
-  void pseudo_bind(PseudoLabel *label){};
+    if (label->IsBound()) {
+      ldr(rt, dest);
+    } else {
+      ldr(rt, label->Position());
+      label->link_to(buffer_->Size());
+    }
+  }
 
+  void pseudo_bind(PseudoLabel *label) {
+    const uintptr_t bound_pc = buffer_.Size();
+    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions();
+    }
+    label->bind_to(bound_pc);
+  }
+
+#if 0
   void pseudo_fix() {
     for (auto pseudo_label : pseudo_labels) {
       pseudo_label->Fix();
     }
   };
+#endif
 
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Utils::Low32Bits(imm);
