@@ -18,41 +18,24 @@ typedef struct _StackFrame {
 } StackFrame;
 
 typedef struct _CallStack {
-  std::vector<StackFrame *> stack_frames;
+  std::vector<StackFrame *> stackframes;
 } CallStack;
 
 // ThreadSupport base on vm_core, support mutipl platforms.
 class ThreadSupport {
 public:
-  static void PushStackFrame(StackFrame *stack_frame) {
-    CallStack *call_stack = static_cast<CallStack *>(zz::base::Thread::GetThreadLocal(thread_call_stack_key_));
-    call_stack->stack_frames.push_back(stack_frame);
-  };
+  static void PushStackFrame(StackFrame *stackframe);
 
-  static StackFrame *PushStackFrame() {
-    CallStack *call_stack = static_cast<CallStack *>(zz::base::Thread::GetThreadLocal(thread_call_stack_key_));
-    return static_cast<StackFrame *>(call_stack->stack_frames.pop_back());
-  };
+  static StackFrame *PopStackFrame();
 
-  static CallStack *CurrentThreadCallStack();
+  static void *GetStackFrameContextValue(StackFrame *stackframe, const char *key);
 
-  static void SetStackFrameContextValue(StackFrame *stack_frame, const char *key, void *value) {
-    std::map<char *, void *> kv_context = stack_frame->kv_context;
-    kv_context.insert(std::pair<char *, void *>(key, value));
-  };
+  static void SetStackFrameContextValue(StackFrame *stackframe, const char *key, const void *value);
 
-  static void *GetStackFrameContextValue(StackFrame *stack_frame, const char *key) {
-    std::map<char *, void *> kv_context = stack_frame->kv_context;
-    std::map<char *, void *>::iterator it;
-    it = kv_context.find(key);
-    if (it != kv_context.end()) {
-      return (void *)it->second;
-    }
-    return NULL;
-  };
+  CallStack *ThreadSupport::CurrentThreadCallStack();
 
 private:
-  static zz::base::Thread::LocalStorageKey thread_call_stack_key_;
+  static zz::base::Thread::LocalStorageKey thread_callstack_key_;
 };
 
 #endif

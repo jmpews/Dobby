@@ -11,9 +11,9 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     entry_info.target_address = entry->target_address;
     pre_call                  = entry->pre_call;
 
-    StackFrame *stack_frame = new StackFrame;
+    StackFrame *stackframe = new StackFrame;
     // create stack frame as common variable between pre_call and post_call
-    ThreadSupport::PushStackFrame(stack_frame);
+    ThreadSupport::PushStackFrame(stackframe);
 
     // run the pre_call with the power of accessing all registers
     (*pre_call)(reg_ctx, &entry_info);
@@ -37,14 +37,14 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     post_call                 = entry->post_call;
 
     // pop stack frame as common variable between pre_call and post_call
-    StackFrame *stack_frame = ThreadSupport::PopStackFrame();
+    StackFrame *stackframe = ThreadSupport::PopStackFrame();
 
     // run the post_call with the power of accessing all registers
     (*post_call)(reg_ctx, (const HookEntryInfo *)&entry_info);
   }
 
   // set epilogue bridge next hop address with origin ret address, restore the call.
-  set_epilogue_routing_next_hop(reg_ctx, stack_frame->ret_addr);
+  set_epilogue_routing_next_hop(reg_ctx, stackframe->ret_addr);
 }
 
 void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {

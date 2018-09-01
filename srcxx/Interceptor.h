@@ -1,9 +1,7 @@
 #ifndef ZZ_INTERCEPTER_H_
 #define ZZ_INTERCEPTER_H_
 
-#include "MemoryManager.h"
-#include "ThreadManager.h"
-#include "hookzz.h"
+#include "hookzz_internal.h"
 
 #include <iostream>
 #include <vector>

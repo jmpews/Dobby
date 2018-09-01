@@ -111,7 +111,7 @@ typedef struct _CallStackPublic {
 
 typedef struct _ThreadStackPublic {
     uintptr_t thread_id;
-    unsigned long call_stack_count;
+    unsigned long callstack_count;
 } ThreadStackPublic;
 
 typedef struct _HookEntryInfo {
@@ -123,9 +123,9 @@ typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 
-void call_stack_kv_set(CallStackPublic *csp, char *key, void *value);
+void callstack_kv_set(CallStackPublic *csp, char *key, void *value);
 
-void *call_stack_kv_get(CallStackPublic *csp, char *key);
+void *callstack_kv_get(CallStackPublic *csp, char *key);
 
 // open near jump, use code cave & b xxx
 void zz_enable_near_jump();

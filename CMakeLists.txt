@@ -55,18 +55,17 @@ set(Target.SOURCE_DIR
         ${Target.path}/srcxx
         )
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/base_core
-        ${Target.path}/srcxx/base_core/objects
-        ${Target.path}/srcxx/base_core/platform
-        ${Target.path}/srcxx/base_core/platform/platform-posix
+        ${Target.path}/srcxx/vm_core/base
+        ${Target.path}/srcxx/vm_core/objects
+        ${Target.path}/srcxx/vm_core/platform
+        ${Target.path}/srcxx/vm_core/platform/platform-posix
+        ${Target.path}/srcxx/vm_core/arch
         )
-set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/assembly_core
-        )
+
 if(PROCESSOR.aarch64)
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/assembly_core/arch/arm64
-        ${Target.path}/srcxx/assembly_core/modules/assembler
+        ${Target.path}/srcxx/vm_core/arch/arm64
+        ${Target.path}/srcxx/vm_core/modules/assembler
         )
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/arch/arm64
@@ -101,10 +100,10 @@ message(STATUS "Target.SOURCE_FILE ${Target.SOURCE_DIR}")
 
 if(SHARED)
     # build shared library
-    add_library(hookzz SHARED ${Target.SOURCE_FILE} ${Target.HEADER_FILE})
+    add_library(hookzz SHARED ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
 else()
     # build static library
-    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE})
+    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
 endif()
 
 target_include_directories(hookzz PUBLIC ./include)
