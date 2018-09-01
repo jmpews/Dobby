@@ -5,8 +5,9 @@
 #include <stdint.h>
 #include <vector>
 
-
 #include "srcxx/hookzz_internal.h"
+
+#include "vm_core/objects/code.h"
 
 typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
@@ -29,7 +30,7 @@ void closure_bridge_template();
 }
 #endif //__cplusplus
 
-class ClosureTrampoline {
+class ClosureTrampoline : Code {
 private:
   std::vector<ClosureTrampolineEntry *> trampolines_;
 

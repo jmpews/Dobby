@@ -10,15 +10,26 @@ void Assembler::Emit(int32_t value) {
   buffer_->Emit(value);
 }
 
+// Refer: V8 & Dart
 void Assembler::bind(Label *label) {
+  const intptr_t bound_pc = pc_offset();
   while (label->is_linked()) {
-    int linkoffset     = label->pos();
-    Instruction *link  = InstructionAt(linkoffset);
-    int prevlinkoffset = linkoffset + static_cast<int>(link->ImmPCOffset());
+    int linkpos    = label->pos();
+    int32_t inst32 = buffer_.Load32(linkpos);
+
+    int prevlinkpos = 0;
+    if ((inst32 & UnconditionalBranchMask) == UnconditionalBranchFixed) {
+      prevlinkpos = UnconditionalBranchOp_offset(inst32);
+    }
+
+    if (prevlinkpos == kStartOfLabelLinkChain) {
+      label->link_to(prevlinkpos);
+    }
   }
-  label->bind_to(pc_offset());
+  label->bind_to(bound_pc);
 }
 
+// Refer: V8 & Dart
 int Assembler::LinkAndGetByteOffsetTo(Label *label) {
   if (label->is_bound()) {
 

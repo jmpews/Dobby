@@ -14,25 +14,53 @@ public:
   ~Label() {
   }
 
+public:
+  bool is_bound() const {
+    return pos_ < 0;
+  }
+  bool is_unused() const {
+    return pos_ == 0 && near_link_pos_ == 0;
+  }
+  bool is_linked() const {
+    return pos_ > 0;
+  }
+  bool is_near_linked() const {
+    return near_link_pos_ > 0;
+  }
+
+  int pos() const {
+    if (pos_ < 0)
+      return -pos_ - 1;
+    if (pos_ > 0)
+      return pos_ - 1;
+    UNREACHABLE();
+  }
+
 private:
-  int location_;
+  void bind_to(int pos) {
+    pos_ = -pos - 1;
+  }
+
+  void link_to(int pos) {
+    pos_ = pos + 1;
+  }
+
+private:
+  int pos_;
 };
 
-
 class ObjectPool {
-  public:
+public:
+  intptr_t AddObject(const Object &obj);
 
-  intptr_t AddObject(const Object& obj);
+  intptr_t FindObject(const Object &obj);
 
-  intptr_t FindObject(const Object& obj);
-  private:
+private:
   std::vector<Object *> object_pool_;
-
 }
 
 class AssemblerBase {
 public:
-
   int pc_offset() const {
     return buffer_.Size();
   }
@@ -44,7 +72,7 @@ public:
 
 protected:
   CodeBuffer *buffer_;
-  std::vector<Object *> object_pool;
+  ObjectPool *object_pool_;
 };
 
 } // namespace zz

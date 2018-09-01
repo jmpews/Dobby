@@ -14,7 +14,6 @@
 namespace zz {
 namespace arm64 {
 
-
 class PseudoLabel : public Label {
   enum PseudoLabelType { kLdrPseudoLabel };
 
@@ -24,16 +23,29 @@ class PseudoLabel : public Label {
   } PseudoLabelInstruction;
 
 public:
+  bool IsBound() const {
+    return position_ < 0;
+  }
+
+  bool IsUnused() const {
+    return position_ == 0 && unresolved_ == 0;
+  }
+
+  bool IsLinked() const {
+    return position_ > 0;
+  }
+
   bool has_confused_instructions() {
     return instructions_.size() > 0;
   }
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
+    CodeBuffer _buffer;
     if (buffer)
-      buffer_ = buffer;
+      _buffer = buffer;
 
-    int32_t offset       = instruction->position_ - this->position_;
-    const int32_t inst32 = buffer_.Load32(instruction->position);
     for (auto instruction : instructions_) {
+      int32_t offset       = instruction->position_ - this->position_;
+      const int32_t inst32 = buffer_.Load32(instruction->position);
       switch (instruction.type_) {
       case kLdrPseudoLabel: {
         const int32_t encoded = (inst32 & 0xfff) | offset;
@@ -52,7 +64,6 @@ private:
   };
 
 private:
-  CodeBuffer *buffer_;
   std::vector<PseudoLabelInstruction> instructions_;
 };
 
@@ -66,8 +77,6 @@ public:
   void Emit(int32_t value);
 
   void EmitInt64(int64_t value);
-
-  void Bind(Label *label);
 
   void b(int64_t imm) {
     int32_t imm26 = imm >> 2;
@@ -170,7 +179,7 @@ private:
 public:
   TurboAssembler();
 
-  void ldr(Register rt, PseudoLabel *label) {
+  void Ldr(Register rt, PseudoLabel *label) {
     const int64_t dest = label->Position() - buffer_.Size();
 
     if (label->IsBound()) {
@@ -181,7 +190,7 @@ public:
     }
   }
 
-  void pseudo_bind(PseudoLabel *label) {
+  void PseudoBind(PseudoLabel *label) {
     const uintptr_t bound_pc = buffer_.Size();
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
@@ -189,14 +198,6 @@ public:
     }
     label->bind_to(bound_pc);
   }
-
-#if 0
-  void pseudo_fix() {
-    for (auto pseudo_label : pseudo_labels) {
-      pseudo_label->Fix();
-    }
-  };
-#endif
 
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Utils::Low32Bits(imm);

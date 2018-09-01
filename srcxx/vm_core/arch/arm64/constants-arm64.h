@@ -31,11 +31,12 @@ enum UnconditionalBranchOp {
   B                        = UnconditionalBranchFixed | 0x00000000,
   BL                       = UnconditionalBranchFixed | 0x80000000
 };
+#define UnconditionalBranchOp_imm26(op) (op & 0x3FFFFFFF)
+#define UnconditionalBranchOp_offset(op) ((UnconditionalBranchOp_imm26(op)) << 2)
 
 // Unconditional branch to register.
 enum UnconditionalBranchToRegisterOp {
   UnconditionalBranchToRegisterFixed = 0xD6000000,
-  UnconditionalBranchToRegisterFMask = 0xFE000000,
   UnconditionalBranchToRegisterMask  = 0xFFFFFC1F,
   BR                                 = UnconditionalBranchToRegisterFixed | 0x001F0000,
   BLR                                = UnconditionalBranchToRegisterFixed | 0x003F0000,
