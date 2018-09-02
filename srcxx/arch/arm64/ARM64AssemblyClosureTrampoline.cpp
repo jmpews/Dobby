@@ -22,14 +22,15 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   TurboAssembler *turbo_assembler_;
 
   PseudoLabel ClosureTrampolineEntryPtr;
-  _ ldr(Register::X(17), &ClosureTrampolineEntryPtr);
-  _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carray_data));
+  _ Ldr(Register::X(17), &ClosureTrampolineEntryPtr);
+  _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
   _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, forward_code));
   _ br(Register::X(17));
-  _ pseudo_bind(&ClosureTrampolineEntryPtr);
+  _ PseudoBind(&ClosureTrampolineEntryPtr);
   _ EmitInt64(0); // dummy address
 
-  zz::Code *code zz::Code::FinalizeCodeFromAssembler(turbo_assembler_);
+  zz::Code *code = zz::Code::FinalizeCodeFromAddress(0, 0);
 
+  return NULL;
 #endif
 }

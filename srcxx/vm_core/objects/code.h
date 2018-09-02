@@ -8,11 +8,12 @@ namespace zz {
 
 class Code : public Object {
 
+public:
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static Code *FinalizeCode(uintptr_t address, int size);
 
   // dummy method
-  static Code *FinalizeAssemblerCode() {
+  static Code *FinalizeCodeFromAddress(uintptr_t address, int size) {
     return NULL;
   };
 

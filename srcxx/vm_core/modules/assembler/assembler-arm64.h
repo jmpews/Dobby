@@ -69,6 +69,8 @@ public:
 
   void EmitInt64(int64_t value);
 
+  void bind(Label *label);
+
   void b(int64_t imm) {
     int32_t imm26 = imm >> 2;
   }
@@ -78,9 +80,10 @@ public:
     b(offset);
   }
 
-  void bind(Label *label);
+  void br(Register rn) {
+  }
 
-  void ldr_literal(Register rt, int64_t imm) {
+  void ldr(Register rt, int64_t imm) {
     LoadRegLiteralOp op;
     switch (rt.type()) {
     case CPURegister::Register_32:
@@ -180,13 +183,13 @@ public:
     assembler_ = assembler;
   }
 
-  void Ldr(Register rt, Register rn, PseudoLabel *label) {
+  void Ldr(Register rt, PseudoLabel *label) {
     const int64_t dest = label->pos() - buffer_.Size();
 
     if (label->is_bound()) {
-      ldr(rt, rn, dest);
+      ldr(rt, dest);
     } else {
-      ldr(rt, rn, label->pos());
+      ldr(rt, label->pos());
       label->link_to(buffer_.Size());
     }
   }

@@ -6,6 +6,8 @@
 
 #include "vm_core/logging.h"
 
+#define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
+
 typedef char byte;
 
 // globals macro

@@ -6,13 +6,12 @@
 #define ARM64_FULL_REDIRECT_SIZE 16
 #define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
-
 void InterceptRouting::Prepare() {
-  uint64_t src_pc = static_cast<uint64_t>(entry_->target_address);
+  uint64_t src_pc          = (uint64_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
 
   int need_relocated_size = ARM64_FULL_REDIRECT_SIZE;
-  if(interceptor->options().enable_b_branch) {
+  if (interceptor->options().enable_b_branch) {
     DLOG("Enable b branch maybe cause crash, if crashed, please disable it.\n");
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
   }
@@ -41,7 +40,7 @@ void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {
   } else {
     ClosureTrampolineEntry *entry;
     ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-    entry           = cb->CreateClosureTrampoline(entry, (void *)context_begin_invocation_bridge_handler);
+    entry             = cb->CreateClosureTrampoline(entry, (void *)context_begin_invocation_bridge_handler);
     if (entry == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
@@ -88,13 +87,11 @@ void ARM64InterceptorBackend::BuildForEnterTransfer(HookEntry *entry) {
   }
 }
 
-
-
 void ARM64InterceptorBackend::BuildForDynamicBinaryInstrumentation(HookEntry *entry) {
   ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
   ClosureTrampolineEntry *entry;
   ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-  entry           = cb->CreateClosureTrampoline(entry, (void *)dynamic_binary_instrumentationn_bridge_handler);
+  entry             = cb->CreateClosureTrampoline(entry, (void *)dynamic_binary_instrumentationn_bridge_handler);
   if (entry == NULL) {
     ERROR_LOG_STR("build closure bridge failed!!!");
   }
@@ -123,7 +120,7 @@ void ARM64InterceptorBackend::BuildForLeave(HookEntry *entry) {
   } else {
     ClosureTrampolineEntry *entry;
     ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-    entry           = cb->CreateClosureTrampoline(entry, (void *)context_end_invocation_bridge_handler);
+    entry             = cb->CreateClosureTrampoline(entry, (void *)context_end_invocation_bridge_handler);
     if (entry == NULL) {
       ERROR_LOG_STR("build closure bridge failed!!!");
     }
