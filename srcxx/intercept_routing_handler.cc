@@ -36,15 +36,15 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     entry_info.target_address = entry->target_address;
     post_call                 = entry->post_call;
 
-    // pop stack frame as common variable between pre_call and post_call
-    StackFrame *stackframe = ThreadSupport::PopStackFrame();
-
     // run the post_call with the power of accessing all registers
     (*post_call)(reg_ctx, (const HookEntryInfo *)&entry_info);
   }
 
+  // pop stack frame as common variable between pre_call and post_call
+  StackFrame *stackframe = ThreadSupport::PopStackFrame();
+
   // set epilogue bridge next hop address with origin ret address, restore the call.
-  set_epilogue_routing_next_hop(reg_ctx, stackframe->ret_addr);
+  set_epilogue_routing_next_hop(reg_ctx, stackframe->orig_ret);
 }
 
 void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
@@ -63,8 +63,8 @@ void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ct
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_instructions);
 }
 
-void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  HookEntry *entry = entry->carry_data;
+void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
+  HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   if (entry->type == kFunctionWrapper)
     pre_call_forward_handler(reg_ctx, entry);
   else if (entry->type == kDynamicBinaryInstrumentation)
@@ -72,14 +72,14 @@ void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
   return;
 }
 
-void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  HookEntry *entry = entry->carry_data;
-  interceptor_routing_end(reg_ctx, entry);
+void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
+  HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
+  post_call_forward_handler(reg_ctx, entry);
   return;
 }
 
 void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  USER_CODE_CALL userCodeCall = entry->forward_code;
-  userCodeCall(reg_ctx, entry);
+  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->forward_code;
+  UserCodeCall(reg_ctx, entry);
   return;
 }

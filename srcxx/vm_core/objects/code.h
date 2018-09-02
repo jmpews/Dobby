@@ -9,16 +9,22 @@ namespace zz {
 class Code : public Object {
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
-  static Code *FinalizeCode(uintptr address, int size);
+  static Code *FinalizeCode(uintptr_t address, int size);
 
   // dummy method
-  static Code *FinalizeAssemblerCode(){};
+  static Code *FinalizeAssemblerCode() {
+    return NULL;
+  };
 
   // dummy method
-  inline uintptr_t raw_instruction_start(){};
+  inline uintptr_t raw_instruction_start() {
+    return 0;
+  };
 
   // dummy method
-  inline int raw_instruction_size(){};
+  inline int raw_instruction_size() {
+    return 0;
+  };
 
   // dummy method
   void Commit(){};

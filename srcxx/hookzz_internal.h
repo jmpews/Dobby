@@ -38,8 +38,11 @@ typedef struct _HookEntry {
   // `replace_call` just normal as inlinehook
   void *replace_call;
 
-  // fix instructions which we patched.
-  void *relocated_origin_function;
+  // fixed-instructions which we relocated(patched).
+  union {
+    void *relocated_origin_instructions;
+    void *relocated_origin_function;
+  };
 
   // prologue_dispatch_bridge
   void *prologue_dispatch_bridge;

@@ -2,5 +2,6 @@
 
 using namespace zz;
 
-Code *Code::FinalizeCode(uintptr address, int size) {
+Code *Code::FinalizeCode(uintptr_t address, int size) {
+  return NULL;
 }

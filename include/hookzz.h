@@ -78,6 +78,7 @@ typedef struct _RegisterContext {
 #define xT() arm##type
 #define XT() ARM##type
 typedef struct _RegisterContext {
+    int dummy;
 } RegisterContext;
 #elif defined(__x86_64__)
 #define Tx(type) type##x64
@@ -85,6 +86,7 @@ typedef struct _RegisterContext {
 #define xT() x64##type
 #define XT() X64##type
 typedef struct _RegisterContext {
+    int dummy;
 } RegisterContext;
 #endif
 
@@ -105,27 +107,18 @@ typedef enum _PackageType {
   kDynamicBinaryInstrumentation
 } PackageType, HookEntryType;
 
-typedef struct _CallStackPublic {
-    uintptr_t call_id;
-} CallStackPublic;
-
-typedef struct _ThreadStackPublic {
-    uintptr_t thread_id;
-    unsigned long callstack_count;
-} ThreadStackPublic;
-
 typedef struct _HookEntryInfo {
-    uintptr_t hook_id;
+   uintptr_t hook_id;
+   union {
     void *target_address;
-} HookEntryInfo;
+    void *function_address;
+    void *instruction_address;
+  }; 
+}HookEntryInfo;
 
 typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-
-void callstack_kv_set(CallStackPublic *csp, char *key, void *value);
-
-void *callstack_kv_get(CallStackPublic *csp, char *key);
 
 // open near jump, use code cave & b xxx
 void zz_enable_near_jump();
@@ -151,4 +144,5 @@ RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call);
 #ifdef __cplusplus
 }
 #endif //__cplusplus
+
 #endif

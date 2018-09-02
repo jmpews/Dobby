@@ -1,5 +1,5 @@
-#ifndef ZZ_CLOSURE_BRIDGE_H_
-#define ZZ_CLOSURE_BRIDGE_H_
+#ifndef ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
+#define ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 
 #include <iostream>
 #include <stdint.h>
@@ -8,8 +8,6 @@
 #include "srcxx/hookzz_internal.h"
 
 #include "vm_core/objects/code.h"
-
-typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +20,8 @@ typedef struct _ClosureTrampolineEntry {
   uintptr_t size;
 } ClosureTrampolineEntry;
 
+typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
+
 void closure_trampoline_template();
 
 void closure_bridge_template();
@@ -30,7 +30,7 @@ void closure_bridge_template();
 }
 #endif //__cplusplus
 
-class ClosureTrampoline : Code {
+class ClosureTrampoline : public zz::Code {
 private:
   std::vector<ClosureTrampolineEntry *> trampolines_;
 

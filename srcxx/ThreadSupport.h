@@ -32,7 +32,7 @@ public:
 
   static void SetStackFrameContextValue(StackFrame *stackframe, const char *key, const void *value);
 
-  CallStack *ThreadSupport::CurrentThreadCallStack();
+  CallStack *CurrentThreadCallStack();
 
 private:
   static zz::base::Thread::LocalStorageKey thread_callstack_key_;

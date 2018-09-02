@@ -36,7 +36,7 @@ public:
   enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
 private:
-  friend class zz::base::PageAllocator;
+  friend class zz::PageAllocator;
 
   static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
 
