@@ -7,7 +7,7 @@ Interceptor *Interceptor::SharedInstance() {
   return priv_interceptor_;
 }
 
-HookEntry *Interceptor::findHookEntry(void *address) {
+HookEntry *Interceptor::FindHookEntry(void *address) {
   for (auto entry : entries) {
     if (entry->target_address == address) {
       return entry;
@@ -16,6 +16,6 @@ HookEntry *Interceptor::findHookEntry(void *address) {
   return NULL;
 }
 
-void Interceptor::addHookEntry(HookEntry *entry) {
+void Interceptor::AddHookEntry(HookEntry *entry) {
   entries.push_back(entry);
 }

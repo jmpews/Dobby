@@ -14,23 +14,26 @@ typedef struct _InterceptorOptions {
 } InterceptorOptions;
 
 class Interceptor {
-private:
-  static Interceptor *priv_interceptor_;
-  static InterceptorOptions options_;
-
 public:
   std::vector<HookEntry *> entries;
 
 public:
   static Interceptor *SharedInstance();
 
-  HookEntry *findHookEntry(void *address);
+  const InterceptorOptions& options() const { return options_; }
 
-  void addHookEntry(HookEntry *hook_entry);
+  HookEntry *FindHookEntry(void *address);
+
+  void AddHookEntry(HookEntry *hook_entry);
 
 private:
   Interceptor() {
   }
+
+private:
+  static Interceptor *priv_interceptor_;
+  static InterceptorOptions options_;
+
 };
 
 #endif //HOOKZZ_INTERCEPTOR_H

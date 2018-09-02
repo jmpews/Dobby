@@ -1,50 +1,59 @@
-
+#include "srcxx/InterceptRouting.h"
+#include "srcxx/Interceptor.h"
+#include "hookzz_internal.h"
 
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_FULL_REDIRECT_SIZE 16
 #define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
-#include "srcxx/InterceptRouting.h"
-#include "srcxx/Interceptor.h"
 
 void InterceptRouting::Prepare() {
   uint64_t src_pc = static_cast<uint64_t>(entry_->target_address);
+  Interceptor *interceptor = Interceptor::SharedInstance();
+
+  int need_relocated_size = ARM64_FULL_REDIRECT_SIZE;
+  if(interceptor->options().enable_b_branch) {
+    DLOG("Enable b branch maybe cause crash, if crashed, please disable it.\n");
+    need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
+  }
+
+  // save original prologue
+  memcpy(entry_->origin_instructions.data, entry_->target_address, need_relocated_size);
+  entry_->origin_instructions.size    = need_relocated_size;
+  entry_->origin_instructions.address = entry_->target_address;
 }
 
 void InterceptRouting::BuildPreCallRouting() {
 }
 
-void ARM64InterceptorBackend::Prepare(HookEntry *entry) {
-  int limit_relocate_inst_size         = 0;
-  ARM64HookEntryBackend *entry_backend = new (ARM64HookEntryBackend);
+void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {
+  ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
+  RetStatus status                     = RS_SUCCESS;
 
-  entry->backend = (struct HookEntryBackend *)entry_backend;
-
-  if (entry->isTryNearJump) {
-    entry_backend->limit_relocate_inst_size = ARM64_TINY_REDIRECT_SIZE;
-  } else {
-    // check the first few instructions, preparatory work of instruction-fix
-    relocatorARM64->tryRelocate(entry->target_address, ARM64_FULL_REDIRECT_SIZE, &limit_relocate_inst_size);
-    if (limit_relocate_inst_size != 0 && limit_relocate_inst_size > ARM64_TINY_REDIRECT_SIZE &&
-        limit_relocate_inst_size < ARM64_FULL_REDIRECT_SIZE) {
-      entry->isNearJump                       = true;
-      entry_backend->limit_relocate_inst_size = ARM64_TINY_REDIRECT_SIZE;
-    } else if (limit_relocate_inst_size != 0 && limit_relocate_inst_size < ARM64_TINY_REDIRECT_SIZE) {
-      return;
-    } else {
-      entry_backend->limit_relocate_inst_size = ARM64_FULL_REDIRECT_SIZE;
+  if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
+    DynamicClosureTrampoline *dcbInfo;
+    DynamicClosureBridge *dcb = Singleton<DynamicClosureBridge>::GetInstance();
+    dcbInfo = dcb->allocateDynamicClosureBridge((void *)entry, (void *)dynamic_context_begin_invocation_bridge_handler);
+    if (dcbInfo == NULL) {
+      ERROR_LOG_STR("build closure bridge failed!!!");
     }
+    entry->on_enter_trampoline = dcbInfo->address;
+  } else {
+    ClosureTrampolineEntry *entry;
+    ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
+    entry           = cb->CreateClosureTrampoline(entry, (void *)context_begin_invocation_bridge_handler);
+    if (entry == NULL) {
+      ERROR_LOG_STR("build closure bridge failed!!!");
+    }
+    entry->on_enter_trampoline = entry->address;
   }
 
-  relocatorARM64->limitRelocateInstSize = entry_backend->limit_relocate_inst_size;
-
-  // save original prologue
-  memcpy(entry->origin_prologue.data, entry->target_address, entry_backend->limit_relocate_inst_size);
-  entry->origin_prologue.size    = entry_backend->limit_relocate_inst_size;
-  entry->origin_prologue.address = entry->target_address;
-
-  // arm64_relocator initialize
-  relocatorARM64->input->reset(entry->target_address, entry->target_address);
+  // build the double trampline aka enter_transfer_trampoline
+  if (entry_backend && entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
+    if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
+      BuildForEnterTransfer(entry);
+    }
+  }
 }
 
 void ARM64InterceptorBackend::BuildForEnterTransfer(HookEntry *entry) {
@@ -79,35 +88,7 @@ void ARM64InterceptorBackend::BuildForEnterTransfer(HookEntry *entry) {
   }
 }
 
-void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {
-  ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
-  RetStatus status                     = RS_SUCCESS;
 
-  if (entry->hook_type == HOOK_TYPE_FUNCTION_via_GOT) {
-    DynamicClosureTrampoline *dcbInfo;
-    DynamicClosureBridge *dcb = Singleton<DynamicClosureBridge>::GetInstance();
-    dcbInfo = dcb->allocateDynamicClosureBridge((void *)entry, (void *)dynamic_context_begin_invocation_bridge_handler);
-    if (dcbInfo == NULL) {
-      ERROR_LOG_STR("build closure bridge failed!!!");
-    }
-    entry->on_enter_trampoline = dcbInfo->address;
-  } else {
-    ClosureTrampolineEntry *entry;
-    ClosureBridge *cb = Singleton<ClosureBridge>::GetInstance();
-    entry           = cb->CreateClosureTrampoline(entry, (void *)context_begin_invocation_bridge_handler);
-    if (entry == NULL) {
-      ERROR_LOG_STR("build closure bridge failed!!!");
-    }
-    entry->on_enter_trampoline = entry->address;
-  }
-
-  // build the double trampline aka enter_transfer_trampoline
-  if (entry_backend && entry_backend->limit_relocate_inst_size == ARM64_TINY_REDIRECT_SIZE) {
-    if (entry->hook_type != HOOK_TYPE_FUNCTION_via_GOT) {
-      BuildForEnterTransfer(entry);
-    }
-  }
-}
 
 void ARM64InterceptorBackend::BuildForDynamicBinaryInstrumentation(HookEntry *entry) {
   ARM64HookEntryBackend *entry_backend = (ARM64HookEntryBackend *)entry->backend;
