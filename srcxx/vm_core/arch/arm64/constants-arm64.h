@@ -1,5 +1,7 @@
-#ifndef ZZ_ARCHITECTURE_ARCH_ARM64_CONSTANTS
-#define ZZ_ARCHITECTURE_ARCH_ARM64_CONSTANTS
+#ifndef ZZ_ARCH_ARM64_CONSTANTS
+#define ZZ_ARCH_ARM64_CONSTANTS
+
+#include "vm_core/macros.h"
 
 #define Rd(rd) (rd.code())
 #define Rt(rt) (rt.code())

@@ -23,37 +23,28 @@ class PseudoLabel : public Label {
   } PseudoLabelInstruction;
 
 public:
-  bool IsBound() const {
-    return position_ < 0;
-  }
-
-  bool IsUnused() const {
-    return position_ == 0 && unresolved_ == 0;
-  }
-
-  bool IsLinked() const {
-    return position_ > 0;
-  }
-
   bool has_confused_instructions() {
     return instructions_.size() > 0;
   }
+
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    CodeBuffer _buffer;
+    CodeBuffer *_buffer;
     if (buffer)
       _buffer = buffer;
 
     for (auto instruction : instructions_) {
-      int32_t offset       = instruction->position_ - this->position_;
-      const int32_t inst32 = buffer_.Load32(instruction->position);
+      int32_t offset       = instruction.position_ - pos();
+      const int32_t inst32 = _buffer->Load32(instruction.position_);
+      int32_t encoded      = 0;
+
       switch (instruction.type_) {
       case kLdrPseudoLabel: {
-        const int32_t encoded = (inst32 & 0xfff) | offset;
+        encoded = (inst32 & 0xfff) | offset;
       } break;
       default:
         break;
       }
-      buffer_.Store32(instrcution->position, encoed);
+      _buffer->Store32(instruction.position_, encoded);
     }
   };
 
@@ -87,7 +78,7 @@ public:
     b(offset);
   }
 
-  int LinkAndGetByteOffsetTo(Label *label);
+  void bind(Label *label);
 
   void ldr_literal(Register rt, int64_t imm) {
     LoadRegLiteralOp op;
@@ -142,6 +133,14 @@ public:
   }
 
 private:
+  // label helpers.
+
+  static constexpr int kStartOfLabelLinkChain = 0;
+
+  int LinkAndGetByteOffsetTo(Label *label);
+
+  // load helpers.
+
   void EmitLoadRegLiteral(LoadRegLiteralOp op, CPURegister rt, int64_t imm) {
     const int32_t encoding = op | LFT(imm, 26, 5) | Rt(rt);
     Emit(encoding);
@@ -177,16 +176,18 @@ private:
   // std::vector<PseudoLabel *> pseudo_labels;
 
 public:
-  TurboAssembler();
+  TurboAssembler(Assembler &assembler) {
+    assembler_ = assembler;
+  }
 
-  void Ldr(Register rt, PseudoLabel *label) {
-    const int64_t dest = label->Position() - buffer_.Size();
+  void Ldr(Register rt, Register rn, PseudoLabel *label) {
+    const int64_t dest = label->pos() - buffer_.Size();
 
-    if (label->IsBound()) {
-      ldr(rt, dest);
+    if (label->is_bound()) {
+      ldr(rt, rn, dest);
     } else {
-      ldr(rt, label->Position());
-      label->link_to(buffer_->Size());
+      ldr(rt, rn, label->pos());
+      label->link_to(buffer_.Size());
     }
   }
 
@@ -200,12 +201,12 @@ public:
   }
 
   void Mov(Register rd, uint64_t imm) {
-    const uint32_t w0 = Utils::Low32Bits(imm);
-    const uint32_t w1 = Utils::High32Bits(imm);
-    const uint16_t h0 = Utils::Low16Bits(w0);
-    const uint16_t h1 = Utils::High16Bits(w0);
-    const uint16_t h2 = Utils::Low16Bits(w1);
-    const uint16_t h3 = Utils::High16Bits(w1);
+    const uint32_t w0 = Low32Bits(imm);
+    const uint32_t w1 = High32Bits(imm);
+    const uint16_t h0 = Low16Bits(w0);
+    const uint16_t h1 = High16Bits(w0);
+    const uint16_t h2 = Low16Bits(w1);
+    const uint16_t h3 = High16Bits(w1);
     movz(rd, h0, 0);
     movk(rd, h1, 16);
     movk(rd, 32);
@@ -213,6 +214,7 @@ public:
   }
 
 private:
+  Assembler assembler_;
 };
 
 } // namespace arm64

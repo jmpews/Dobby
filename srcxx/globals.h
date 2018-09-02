@@ -1,6 +1,6 @@
 
-#ifndef ZZ_SRCXX_GLOBALS_H
-#define ZZ_SRCXX_GLOBALS_H
+#ifndef ZZ_GLOBALS_H
+#define ZZ_GLOBALS_H
 
 #include <stdint.h>
 

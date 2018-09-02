@@ -4,11 +4,13 @@
 #include "vm_core/base/code-buffer.h"
 #include "vm_core/objects/objects.h"
 
+#include <vector>
+
 namespace zz {
 
 class Label {
 public:
-  Label() : location_() {
+  Label() : pos_(0), near_link_pos_(0) {
   }
 
   ~Label() {
@@ -34,9 +36,9 @@ public:
     if (pos_ > 0)
       return pos_ - 1;
     UNREACHABLE();
+    return 0;
   }
 
-private:
   void bind_to(int pos) {
     pos_ = -pos - 1;
   }
@@ -47,6 +49,7 @@ private:
 
 private:
   int pos_;
+  int near_link_pos_;
 };
 
 class ObjectPool {
@@ -57,7 +60,7 @@ public:
 
 private:
   std::vector<Object *> object_pool_;
-}
+};
 
 class AssemblerBase {
 public:
@@ -66,12 +69,12 @@ public:
   }
 
   static void FlushICache(void *start, size_t size);
-  static void FlushICache(Address start, size_t size) {
+  static void FlushICache(uintptr_t start, size_t size) {
     return FlushICache(reinterpret_cast<void *>(start), size);
   }
 
 protected:
-  CodeBuffer *buffer_;
+  CodeBuffer buffer_;
   ObjectPool *object_pool_;
 };
 

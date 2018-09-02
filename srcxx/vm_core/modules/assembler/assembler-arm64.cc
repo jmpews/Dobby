@@ -7,7 +7,7 @@ Assembler::Assembler() {
 }
 
 void Assembler::Emit(int32_t value) {
-  buffer_->Emit(value);
+  buffer_.Emit(value);
 }
 
 // Refer: V8 & Dart
@@ -31,6 +31,8 @@ void Assembler::bind(Label *label) {
 
 // Refer: V8 & Dart
 int Assembler::LinkAndGetByteOffsetTo(Label *label) {
+  int offset;
+
   if (label->is_bound()) {
 
     // The label is bound, so it does not need to be updated. Referring
@@ -60,10 +62,6 @@ int Assembler::LinkAndGetByteOffsetTo(Label *label) {
     label->link_to(pc_offset());
   }
   return offset;
-}
-
-TurboAssembler::TurboAssembler(Assembler &assembler) {
-  assembler_ = assembler;
 }
 
 } // namespace arm64

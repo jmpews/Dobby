@@ -1,4 +1,13 @@
 #include <errno.h>
+#include <limits.h>
+#include <pthread.h>
+#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#include <pthread_np.h> // for pthread_set_name_np
+#endif
+#include <sched.h> // for sched_yield
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -13,16 +22,17 @@
 #include <android/log.h> // NOLINT
 #endif
 
+#include "vm_core/platform/platform-posix.h"
 #include "vm_core/platform/platform.h"
-
 #include "vm_core/macros.h"
+#include "vm_core/logging.h"
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
+#include <mach/vm_statistics.h>
 #endif
 
 namespace zz {
-namespace base {
 
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
@@ -74,7 +84,8 @@ void *OS::Allocate(void *address, size_t size, size_t alignment, MemoryPermissio
   size_t page_size = OS::PageSize();
   DCHECK_EQ(0, size % page_size);
   DCHECK_EQ(0, alignment % page_size);
-  void *result = base::Allocate(address, request_size, access);
+  size_t request_size = size;
+  void *result        = zz::Allocate(address, request_size, access);
   if (result == nullptr)
     return nullptr;
 
@@ -187,6 +198,29 @@ void OS::VPrintError(const char *format, va_list args) {
 
 // ------- class Thread -------
 
+static Thread::LocalStorageKey PthreadKeyToLocalKey(pthread_key_t pthread_key) {
+#if defined(__cygwin__)
+  // We need to cast pthread_key_t to Thread::LocalStorageKey in two steps
+  // because pthread_key_t is a pointer type on Cygwin. This will probably not
+  // work on 64-bit platforms, but Cygwin doesn't support 64-bit anyway.
+  assert(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
+  intptr_t ptr_key = reinterpret_cast<intptr_t>(pthread_key);
+  return static_cast<Thread::LocalStorageKey>(ptr_key);
+#else
+  return static_cast<Thread::LocalStorageKey>(pthread_key);
+#endif
+}
+
+static pthread_key_t LocalKeyToPthreadKey(Thread::LocalStorageKey local_key) {
+#if defined(__cygwin__)
+  assert(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
+  intptr_t ptr_key = static_cast<intptr_t>(local_key);
+  return reinterpret_cast<pthread_key_t>(ptr_key);
+#else
+  return static_cast<pthread_key_t>(local_key);
+#endif
+}
+
 Thread::LocalStorageKey Thread::CreateThreadLocalKey() {
   pthread_key_t key;
   int result = pthread_key_create(&key, nullptr);
@@ -211,6 +245,4 @@ void Thread::SetThreadLocal(LocalStorageKey key, void *value) {
   int result                = pthread_setspecific(pthread_key, value);
   DCHECK_EQ(0, result);
 }
-
-} // namespace base
-} // namespace zz
+}

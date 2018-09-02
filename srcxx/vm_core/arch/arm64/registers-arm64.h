@@ -2,7 +2,7 @@
 #define ZZ_ARCHITECTURE_ARCH_ARM64_REGISTERS
 
 #include "vm_core/arch/arm64/constants-arm64.h"
-#include "vm_core/macros-arch.h"
+#include "vm_core/macros.h"
 
 namespace zz {
 namespace arm64 {
@@ -40,6 +40,10 @@ public:
 
   static CPURegister W(int code) {
     return CPURegister(code, 32, Register_32);
+  }
+
+  bool Is64Bits() const {
+    return reg_size_ == 64;
   }
 
   RegisterType type() const {

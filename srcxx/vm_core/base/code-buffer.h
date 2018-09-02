@@ -4,11 +4,22 @@
 #include "vm_core/objects/objects.h"
 #include "vm_core/macros.h"
 
+#include <stdlib.h>
+
+namespace zz {
 
 class CodeBuffer {
 public:
   CodeBuffer(int capacity = 64) : capacity_(capacity) {
     buffer_ = reinterpret_cast<byte *>(malloc(capacity));
+  }
+
+  int32_t Load32(intptr_t position) {
+    return *reinterpret_cast<int32_t *>(buffer_ + position);
+  }
+
+  void Store32(intptr_t position, int32_t value) {
+    *reinterpret_cast<int32_t *>(buffer_ + position) = value;
   }
 
   void Emit(int32_t inst) {
@@ -18,6 +29,10 @@ public:
   }
 
   void FinalizeInstructions() {
+  }
+
+  size_t Size() const {
+    return cursor_ - buffer_;
   }
 
   void Grow(size_t new_capacity) {
@@ -31,5 +46,7 @@ private:
   // Capacity in bytes of the backing store
   size_t capacity_;
 };
+
+} // namespace zz
 
 #endif

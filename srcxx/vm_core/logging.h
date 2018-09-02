@@ -1,9 +1,7 @@
-#ifndef ZZ_BASE_LOGGING_H_
-#define ZZ_BASE_LOGGING_H_
+#ifndef ZZ_LOGGING_H_
+#define ZZ_LOGGING_H_
 
-#include <cstring>
-#include <sstream>
-#include <string>
+void Fatal(const char *file, int line, const char *format, ...);
 
 #ifdef DEBUG
 #define FATAL(...) Fatal(__FILE__, __LINE__, __VA_ARGS__)

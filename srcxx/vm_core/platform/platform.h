@@ -1,12 +1,15 @@
-#ifndef ZZ_BASE_PLATFORM_PLATFORM_H_
-#define ZZ_BASE_PLATFORM_PLATFORM_H_
+#ifndef ZZ_PLATFORM_PLATFORM_H_
+#define ZZ_PLATFORM_PLATFORM_H_
+
+#include <cstdarg>
+#include <string>
+#include <vector>
+#include <stdio.h>
 
 #include "vm_core/base/page-allocator.h"
 #include "vm_core/macros.h"
 
-
 namespace zz {
-namespace base {
 
 class OS {
 public:
@@ -36,7 +39,9 @@ public:
   enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
 private:
-  friend class zz::PageAllocator;
+  friend class PageAllocator;
+
+  static size_t PageSize();
 
   static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
 
@@ -76,7 +81,6 @@ public:
     return GetThreadLocal(key);
   }
 };
-} // namespace base
 } // namespace zz
 
 #endif

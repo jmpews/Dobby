@@ -12,8 +12,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 option(CXX "use cxx source" ON)
 option(USE_POSIX_IN_DARWIN "use posix function in darwin" OFF)
-option(X_LOG "enable debug log" ON)
-option(X_SHARED "build shared library" ON)
+option(LOG "enable debug log" ON)
+option(SHARED "build shared library" ON)
 
 
 if(PLATFORM STREQUAL "iOS")
@@ -21,7 +21,7 @@ if(PLATFORM STREQUAL "iOS")
 elseif(PLATFORM STREQUAL "Android")
     set(SYSTEM.Android 1)
 else()
-    message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] X_PLATFORM")
+    message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] PLATFORM")
 endif()
 
 if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
@@ -59,6 +59,7 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/vm_core/objects
         ${Target.path}/srcxx/vm_core/platform
         ${Target.path}/srcxx/vm_core/platform/platform-posix
+        ${Target.path}/srcxx/vm_core/platform/platform-darwin
         ${Target.path}/srcxx/vm_core/arch
         )
 

@@ -8,7 +8,7 @@ extern void closure_trampoline_template();
 
 using namespace zz::arm64;
 
-ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline() {
+ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *forward_code) {
 
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)

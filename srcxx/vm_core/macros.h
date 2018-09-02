@@ -1,6 +1,7 @@
-#ifndef V8_BASE_MACROS_H_
-#define V8_BASE_MACROS_H_
+#ifndef ZZ_MACROS_H_
+#define ZZ_MACROS_H_
 
+#include <stdio.h>
 #include <stdint.h>
 
 #include "vm_core/logging.h"
