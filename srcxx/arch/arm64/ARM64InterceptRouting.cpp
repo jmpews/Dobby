@@ -2,15 +2,16 @@
 #include "srcxx/Interceptor.h"
 #include "hookzz_internal.h"
 
+#include "vm_core/modules/codegen/codegen-arm64.h"
+
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_FULL_REDIRECT_SIZE 16
 #define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
 void InterceptRouting::Prepare() {
   uint64_t src_pc          = (uint64_t)entry_->target_address;
+  int need_relocated_size  = ARM64_FULL_REDIRECT_SIZE;
   Interceptor *interceptor = Interceptor::SharedInstance();
-
-  int need_relocated_size = ARM64_FULL_REDIRECT_SIZE;
   if (interceptor->options().enable_b_branch) {
     DLOG("Enable b branch maybe cause crash, if crashed, please disable it.\n");
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
@@ -23,6 +24,28 @@ void InterceptRouting::Prepare() {
 }
 
 void InterceptRouting::BuildPreCallRouting() {
+  // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
+  ClosureTrampolineEntry *closure_trampoline_entry =
+      ClosureTrampoline::CreateClosureTrampoline(entry_, prologue_routing_dispatch);
+  entry_->prologue_dispatch_bridge = closure_trampoline_entry->address;
+
+  Interceptor *interceptor = Interceptor::SharedInstance();
+  if (interceptor->options().enable_b_branch) {
+    BuildFastForwardTrampoline();
+  }
+  DLOG("create pre call closure trampoline to %p\n", closure_trampoline_entry->address);
+}
+
+void InterceptRouting::BuildFastForwardTrampoline() {
+  TurboAssembler *turbo_assembler_;
+#define _ turbo_assembler_
+  CodeGen codegen = CodeGen(turbo_assembler_);
+  if (branch_type_ == kFunctionInlineHook) {
+    codegen.LiteralBrBranch(entry_->replace_call);
+  } else if (branch_type_ == kDynamicBinaryInstrumentation) {
+    codegen.LiteralBrBranch(entry_->dynamic_binary_instrumentation_bridge);
+  }
+  coedgen.Commit();
 }
 
 void ARM64InterceptorBackend::BuildForEnter(HookEntry *entry) {

@@ -1,16 +1,16 @@
-#ifndef ZZ_ARCH_ARM64_CODEGEN
-#define ZZ_ARCH_ARM64_CODEGEN
+#ifndef ZZ_MODULES_CODEGEN_CODEGEN_ARM64_H_
+#define ZZ_MODULES_CODEGEN_CODEGEN_ARM64_H_
 
-#include "src/arch/arm64/assembler-arm64.h"
+#include "vm_core/modules/assembler/assembler.h"
+#include "vm_core/modules/assembler/assembler-arm64.h"
 
 namespace zz {
 namespace arm64 {
-void GenerateRegisterSaveStub() {
-  Assembler _assembler = Assembler();
-#undef __
-#define __ _assembler.
-  __ stp(x0, x1, x2, 8);
+
+class CodeGen : public CodeGenBase {
+  void LiteralFarBranch(uint64_t address);
 }
+
 } // namespace arm64
 } // namespace zz
 
