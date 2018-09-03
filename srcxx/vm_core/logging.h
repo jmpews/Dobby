@@ -1,6 +1,8 @@
 #ifndef ZZ_LOGGING_H_
 #define ZZ_LOGGING_H_
 
+#include <stdio.h>
+
 void Fatal(const char *file, int line, const char *format, ...);
 
 #ifdef DEBUG

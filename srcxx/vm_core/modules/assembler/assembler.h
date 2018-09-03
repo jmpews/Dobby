@@ -4,6 +4,7 @@
 #include "vm_core/base/code-buffer.h"
 #include "vm_core/objects/objects.h"
 
+#include <iostream>
 #include <vector>
 
 namespace zz {

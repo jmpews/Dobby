@@ -9,7 +9,10 @@ namespace zz {
 namespace arm64 {
 
 class CodeGen : public CodeGenBase {
-  void LiteralFarBranch(uint64_t address);
+public:
+  CodeGen(TurboAssembler *turbo_assember) : CodeGenBase(turbo_assember) {
+  }
+  void LiteralBrBranch(uint64_t address);
 };
 
 } // namespace arm64

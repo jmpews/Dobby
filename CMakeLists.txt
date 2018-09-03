@@ -9,6 +9,7 @@ enable_language(ASM)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
 option(CXX "use cxx source" ON)
 option(SHARED "build shared library" ON)

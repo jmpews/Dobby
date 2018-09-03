@@ -5,17 +5,15 @@
 
 #include <iostream>
 
-class Assembler;
+using namespace zz;
 
 class CodeGenBase {
 public:
-  CodeGenBase(Assembler *assembler) : assembler(assembler) {
-
+  CodeGenBase(AssemblerBase *assembler) : assembler_(assembler) {
   }
 
-public:
-  Assembler *assembler;
-
+protected:
+  AssemblerBase *assembler_;
 };
 
 #endif

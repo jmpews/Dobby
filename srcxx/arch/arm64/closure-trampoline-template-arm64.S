@@ -8,7 +8,7 @@
 
 .align 4
 
-#if defined(ENABLE_CLOSURE_TRAMPOLINE_CARRY_OBJECT_PTR)
+#if !defined(ENABLE_CLOSURE_TRAMPOLINE_CARRY_OBJECT_PTR)
 
 // closure trampoline carray the object pointer, and fetch required members at the runtime assembly code.
 #include "srcxx/AssemblyClosureTrampoline.h"
