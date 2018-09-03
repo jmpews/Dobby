@@ -2,7 +2,13 @@
 #include "srcxx/Interceptor.h"
 #include "hookzz_internal.h"
 
+#include "AssemblyClosureTrampoline.h"
+#include "intercept_routing_handler.h"
+
+#include "vm_core/modules/assembler/assembler-arm64.h"
 #include "vm_core/modules/codegen/codegen-arm64.h"
+
+using namespace zz::arm64;
 
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_FULL_REDIRECT_SIZE 16
@@ -26,7 +32,7 @@ void InterceptRouting::Prepare() {
 void InterceptRouting::BuildPreCallRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry =
-      ClosureTrampoline::CreateClosureTrampoline(entry_, prologue_routing_dispatch);
+      ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
   entry_->prologue_dispatch_bridge = closure_trampoline_entry->address;
 
   Interceptor *interceptor = Interceptor::SharedInstance();

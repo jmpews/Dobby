@@ -30,12 +30,12 @@ void closure_bridge_template();
 }
 #endif //__cplusplus
 
-class ClosureTrampoline : public zz::Code {
+class ClosureTrampoline {
 private:
-  std::vector<ClosureTrampolineEntry *> trampolines_;
+  static std::vector<ClosureTrampolineEntry *> trampolines_;
 
 public:
-  ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *forward_code);
+  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *forward_code);
 };
 
 #endif

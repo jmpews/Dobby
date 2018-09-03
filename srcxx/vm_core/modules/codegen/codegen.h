@@ -1,16 +1,21 @@
-#ifndef ZZ_MODULES_CODEGEN_CODGEN_H_
-#define ZZ_MODULES_CODEGEN_CODGEN_H_
+#ifndef ZZ_MODULES_CODEGEN_CODEGEN_H_
+#define ZZ_MODULES_CODEGEN_CODEGEN_H_
 
 #include "vm_core/modules/assembler/assembler.h"
 
+#include <iostream>
+
+class Assembler;
+
 class CodeGenBase {
 public:
-  CodeGenBase(assembler) : assembler(assembler);
+  CodeGenBase(Assembler *assembler) : assembler(assembler) {
+
+  }
 
 public:
   Assembler *assembler;
 
-private:
-}
+};
 
 #endif

@@ -11,8 +11,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 option(CXX "use cxx source" ON)
-option(USE_POSIX_IN_DARWIN "use posix function in darwin" OFF)
-option(LOG "enable debug log" ON)
 option(SHARED "build shared library" ON)
 
 
@@ -58,15 +56,14 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/vm_core/base
         ${Target.path}/srcxx/vm_core/objects
         ${Target.path}/srcxx/vm_core/platform
-        ${Target.path}/srcxx/vm_core/platform/platform-posix
-        ${Target.path}/srcxx/vm_core/platform/platform-darwin
+        ${Target.path}/srcxx/vm_core/modules/assembler
+        ${Target.path}/srcxx/vm_core/modules/codegen
         ${Target.path}/srcxx/vm_core/arch
         )
 
 if(PROCESSOR.aarch64)
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/vm_core/arch/arm64
-        ${Target.path}/srcxx/vm_core/modules/assembler
         )
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/arch/arm64
