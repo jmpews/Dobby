@@ -16,13 +16,18 @@ using namespace zz::arm64;
 #define ARM64_FULL_REDIRECT_SIZE 16
 #define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
+// Determined if use B_Branch or Br_Branch, and backup the origin instrutions
 void InterceptRouting::Prepare() {
   uint64_t src_pc          = (uint64_t)entry_->target_address;
   int need_relocated_size  = ARM64_FULL_REDIRECT_SIZE;
   Interceptor *interceptor = Interceptor::SharedInstance();
   if (interceptor->options().enable_b_branch) {
-    DLOG("Enable b branch maybe cause crash, if crashed, please disable it.\n");
+    DLOG("[!!!] Enable b branch maybe cause crash, if crashed, please disable it.\n");
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
+    branch_type_        = Routing_B_Branch;
+  } else {
+    DLOG("Use Br Branch at %p", entry_->target_address);
+    branch_type_ = Routing_BR_Branch;
   }
 
   // save original prologue
@@ -31,17 +36,17 @@ void InterceptRouting::Prepare() {
   entry_->origin_instructions.address = entry_->target_address;
 }
 
+// Add pre_call(prologue) handler before running the origin function,
 void InterceptRouting::BuildPreCallRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
-  ClosureTrampolineEntry *closure_trampoline_entry =
-      ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
-  entry_->prologue_dispatch_bridge = closure_trampoline_entry->address;
+  ClosureTrampolineEntry *cte = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
+  entry_->prologue_dispatch_bridge = cte->address;
 
-  Interceptor *interceptor = Interceptor::SharedInstance();
-  if (interceptor->options().enable_b_branch) {
+  // build the fast forward trampoline jump to the normal routing(prologue_routing_dispatch).
+  if (branch_type_ == Routing_B_Branch)
     BuildFastForwardTrampoline();
-  }
-  DLOG("create pre call closure trampoline to %p\n", closure_trampoline_entry->address);
+
+  DLOG("create pre call closure trampoline to %p\n", cte->address);
 }
 
 void InterceptRouting::BuildFastForwardTrampoline() {
@@ -55,6 +60,8 @@ void InterceptRouting::BuildFastForwardTrampoline() {
   } else if (entry_->type == kFunctionWrapper) {
     codegen.LiteralBrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
+  turbo_assembler_->Commit();
+  zz::Code *code = zz::Code::FinalizeCode(turbo_assembler_);
 }
 
 void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {

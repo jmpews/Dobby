@@ -1,7 +1,23 @@
 #include "hookzz_internal.h"
-
 #include "Interceptor.h"
 
-RetStatus ZzHook(void *address, void *replace_call, void **origin_call, PRECALL pre_call, POSTCALL post_call) {
-  return RS_DONE;
+#include "InterceptRouting.h"
+
+RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call) {
+  DLOG("[*] Initialize ZzWrap hook at %p", function_address);
+
+  Interceptor *intercepter = Interceptor::SharedInstance();
+
+  HookEntry *entry        = new HookEntry;
+  entry->id               = intercepter->entries.size();
+  entry->pre_call         = pre_call;
+  entry->post_call        = post_call;
+  entry->type             = kFunctionWrapper;
+  entry->function_address = function_address;
+
+  InterceptRouting *route = new InterceptRouting(entry);
+  route->Dispatch();
+  intercepter->AddHookEntry(entry);
+
+  DLOG("[*] Finalize ZzWrap hook at %p", function_address);
 }
