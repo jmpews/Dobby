@@ -6,8 +6,6 @@
 #include <iostream>
 #include <vector>
 
-
-
 typedef struct _InterceptorOptions {
   bool enable_b_branch;
   bool enable_dynamic_closure_bridge;
@@ -20,7 +18,9 @@ public:
 public:
   static Interceptor *SharedInstance();
 
-  const InterceptorOptions& options() const { return options_; }
+  const InterceptorOptions &options() const {
+    return options_;
+  }
 
   HookEntry *FindHookEntry(void *address);
 
@@ -33,7 +33,6 @@ private:
 private:
   static Interceptor *priv_interceptor_;
   static InterceptorOptions options_;
-
 };
 
-#endif //HOOKZZ_INTERCEPTOR_H
+#endif

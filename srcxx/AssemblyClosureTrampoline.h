@@ -1,11 +1,11 @@
 #ifndef ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 #define ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 
-#include <iostream>
 #include <stdint.h>
+#include <iostream>
 #include <vector>
 
-#include "srcxx/hookzz_internal.h"
+#include "hookzz_internal.h"
 
 #include "vm_core/objects/code.h"
 

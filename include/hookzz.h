@@ -12,8 +12,6 @@ extern "C" {
 typedef uintptr_t zz_addr_t;
 typedef void * zz_ptr_t;
 
-#ifndef REGISTER_STATE_STRUCT
-#define REGISTER_STATE_STRUCT
 #if defined(__arm64__) || defined(__aarch64__)
 #define Tx(type) type##arm64
 #define TX() type##ARM64
@@ -92,7 +90,6 @@ typedef struct _RegisterContext {
 
 #define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
 
-#endif
 
 typedef enum _RetStatus {
     RS_UNKOWN = -1,

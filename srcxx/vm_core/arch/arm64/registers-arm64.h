@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCHITECTURE_ARCH_ARM64_REGISTERS
-#define ZZ_ARCHITECTURE_ARCH_ARM64_REGISTERS
+#ifndef ZZ_ARCH_ARM64_REGISTERS
+#define ZZ_ARCH_ARM64_REGISTERS
 
 #include "vm_core/arch/arm64/constants-arm64.h"
 #include "vm_core/macros.h"
@@ -27,10 +27,10 @@ public:
     SIMD_FP_Register_Q = SIMD_FP_Register_128
   };
 
-  CPURegister(int code, int size, RegisterType type) : reg_code_(code), reg_type_(type) {
+  constexpr CPURegister(int code, int size, RegisterType type) : reg_code_(code), reg_size_(size), reg_type_(type) {
   }
 
-  static CPURegister Create(int code, int size, RegisterType type) {
+  static constexpr CPURegister Create(int code, int size, RegisterType type) {
     return CPURegister(code, size, type);
   }
 
@@ -70,7 +70,7 @@ typedef CPURegister VRegister;
   R(16) R(17) R(18) R(19) R(20) R(21) R(22) R(23)         \
   R(24) R(25) R(26) R(27) R(28) R(29) R(30) R(31)
 
-#define DEFINE_REGISTER(register_class, name, ...) register_class name = register_class::Create(__VA_ARGS__)
+#define DEFINE_REGISTER(register_class, name, ...) constexpr register_class name = register_class::Create(__VA_ARGS__)
 
 #define DEFINE_REGISTERS(N)                                                                                            \
   DEFINE_REGISTER(Register, w##N, N, 32, CPURegister::Register_32);                                                                 \

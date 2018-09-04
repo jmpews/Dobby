@@ -1,10 +1,13 @@
 #include "srcxx/Interceptor.h"
 
+Interceptor *Interceptor::priv_interceptor_;
+InterceptorOptions Interceptor::options_;
+
 Interceptor *Interceptor::SharedInstance() {
-  if (priv_interceptor_ == NULL) {
-    priv_interceptor_     = new Interceptor();
+  if (Interceptor::priv_interceptor_ == NULL) {
+    Interceptor::priv_interceptor_ = new Interceptor();
   }
-  return priv_interceptor_;
+  return Interceptor::priv_interceptor_;
 }
 
 HookEntry *Interceptor::FindHookEntry(void *address) {

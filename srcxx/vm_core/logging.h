@@ -3,15 +3,15 @@
 
 #include <stdio.h>
 
-void Fatal(const char *file, int line, const char *format, ...);
+void zFatal(const char *file, int line, const char *format, ...);
 
 #ifdef DEBUG
-#define FATAL(...) Fatal(__FILE__, __LINE__, __VA_ARGS__)
+#define FATAL(...) zFatal(__FILE__, __LINE__, __VA_ARGS__)
 #else
-#define FATAL(...) Fatal("", 0, __VA_ARGS__)
+#define FATAL(...) zFatal("", 0, __VA_ARGS__)
 #endif
-#define UNIMPLEMENTED() FATAL("unimplemented code")
-#define UNREACHABLE() FATAL("unreachable code")
+#define UNIMPLEMENTED() FATAL("%s", "unimplemented code")
+#define UNREACHABLE() FATAL("%s", "unreachable code")
 
 namespace zz {
 

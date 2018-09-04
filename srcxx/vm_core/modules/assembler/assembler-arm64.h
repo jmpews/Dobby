@@ -11,6 +11,8 @@
 #include "vm_core/base/code-buffer.h"
 #include "vm_core/utils.h"
 
+#include <assert.h>
+
 namespace zz {
 namespace arm64 {
 
@@ -67,7 +69,7 @@ public:
 
   void Emit(int32_t value);
 
-  void EmitInt64(int64_t value);
+  void EmitInt64(uint64_t value);
 
   void bind(Label *label);
 

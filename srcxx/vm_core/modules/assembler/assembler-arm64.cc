@@ -10,6 +10,10 @@ void Assembler::Emit(int32_t value) {
   buffer_.Emit(value);
 }
 
+void Assembler::EmitInt64(uint64_t value) {
+  buffer_.Emit64(value);
+}
+
 // Refer: V8 & Dart
 void Assembler::bind(Label *label) {
   const intptr_t bound_pc = pc_offset();

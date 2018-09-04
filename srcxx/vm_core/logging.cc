@@ -8,9 +8,11 @@
 
 namespace zz {} // namespace zz
 
-void Fatal(const char *file, int line, const char *format, ...) {
+void zFatal(const char *file, int line, const char *format, ...) {
+  va_list arguments;
+
   // Print the formatted message to stdout without cropping the output.
-  zz::OS::PrintError("\n\n#\n# Fatal error in %s, line %d\n# ", file, line);
+  zz::OS::PrintError("\n\n#\n# zFatal error in %s, line %d\n# ", file, line);
 
   // Print the error message.
   va_start(arguments, format);

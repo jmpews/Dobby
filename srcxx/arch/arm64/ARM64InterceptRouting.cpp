@@ -2,6 +2,8 @@
 #include "srcxx/Interceptor.h"
 #include "hookzz_internal.h"
 
+#include "Logging.h"
+
 #include "AssemblyClosureTrampoline.h"
 #include "intercept_routing_handler.h"
 

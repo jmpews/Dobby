@@ -1,7 +1,6 @@
 #ifndef HOOKZZ_INTERNAL_H_
 #define HOOKZZ_INTERNAL_H_
 
-#include "Logging.h"
 #include "hookzz.h"
 
 typedef struct _InstructionBackupArray {

@@ -25,6 +25,9 @@ public:
   void Emit(int32_t inst) {
   }
 
+  void Emit64(int64_t inst) {
+  }
+
   void EmitObject(const Object *object) {
   }
 
