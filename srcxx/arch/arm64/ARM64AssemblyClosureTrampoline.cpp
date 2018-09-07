@@ -6,6 +6,7 @@
 
 extern void closure_trampoline_template();
 
+using namespace zz;
 using namespace zz::arm64;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *forward_code) {
@@ -13,7 +14,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
   // use closure trampoline template code, find the executable memory and patch it.
-  zz::Code *code = zz::Code::FinalizeCodeFromAddress(closure_trampoline_template, CLOSURE_TRAMPOLINE_SIZE);
+  Code *code = Code::FinalizeCodeFromAddress(closure_trampoline_template, CLOSURE_TRAMPOLINE_SIZE);
 
 #else
 // use assembler and codegen modules instead of template_code
@@ -29,7 +30,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ PseudoBind(&ClosureTrampolineEntryPtr);
   _ EmitInt64(0); // dummy address
 
-  zz::Code *code = zz::Code::FinalizeCodeFromAddress(0, 0);
+  Code *code = Code::FinalizeCodeFromAddress(0, 0);
 
   return NULL;
 #endif

@@ -13,11 +13,6 @@ public:
   static Code *FinalizeCode(uintptr_t address, int size);
 
   // dummy method
-  static Code *FinalizeCodeFromAddress(uintptr_t address, int size) {
-    return NULL;
-  };
-
-  // dummy method
   inline uintptr_t raw_instruction_start() {
     return 0;
   };
