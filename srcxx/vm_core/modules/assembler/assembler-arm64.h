@@ -71,6 +71,14 @@ public:
 
   void EmitInt64(uint64_t value);
 
+  // dummy
+  zz::Code *GetCode() {
+    void *exec_memory = Isolate::GetExecutableMemory(buffer_.Size())
+
+        // Check the code memory address is align 4
+        assert(exec_memory % 4 == 0);
+  }
+
   void bind(Label *label);
 
   void b(int64_t imm) {

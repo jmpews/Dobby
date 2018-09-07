@@ -30,7 +30,8 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ PseudoBind(&ClosureTrampolineEntryPtr);
   _ EmitInt64(0); // dummy address
 
-  Code *code = Code::FinalizeCodeFromAddress(0, 0);
+  turbo_assembler_->Commit();
+  Code *code = turbo_assembler_->GetCode();
 
   return NULL;
 #endif

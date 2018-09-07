@@ -3,5 +3,9 @@
 using namespace zz;
 
 Code *Code::FinalizeCode(uintptr_t address, int size) {
-  return NULL;
+  instructions_ = new byte(size);
+  memcpy(instructions_, address, size);
+
+  // map the buffer to executable memory
+  Commit();
 }
