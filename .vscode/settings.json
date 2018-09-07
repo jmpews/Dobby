@@ -37,7 +37,18 @@
     "vector": "cpp",
     "utility": "cpp",
     "__functional_03": "cpp",
-    "__locale": "cpp"
+    "__locale": "cpp",
+    "__hash_table": "cpp",
+    "__split_buffer": "cpp",
+    "__tree": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "map": "cpp",
+    "set": "cpp",
+    "string": "cpp",
+    "string_view": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 

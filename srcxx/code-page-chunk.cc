@@ -55,7 +55,7 @@ MemoryOperationError Patch(void *address, void *buffer, int size) {
   int page_align_address = ALIGN_FLOOR(address, page_size);
   int offset             = address - page_align_address;
 
-  return CodePageChunk::Patch(page_align_address, offset, buffer, size);
+  return CodeChunk::Patch(page_align_address, offset, buffer, size);
 }
 
 void *FinalizeAssembler(Assembler *assembler) {

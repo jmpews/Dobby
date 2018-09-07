@@ -1,7 +1,9 @@
 #ifndef HOOKZZ_CODE_PAGE_CHUNK_H_
 #define HOOKZZ_CODE_PAGE_CHUNK_H_
 
-class CodePageChunk : public MemoryChunk {
+#include "vm_core/modules/assembler/assembler.h"
+
+class CodeChunk : public MemoryChunk {
 public:
   enum MemoryOperationError { kNotSupportAllocateExecutableMemory, kNotEnough, kNone };
 
@@ -9,8 +11,10 @@ public:
 
   static MemoryOperationError Patch(void *page_address, int offset, void *buffer, int size);
 
+  void *FinalizeAssembler(Assembler *assembler);
+
 private:
-  std::vector<CodePageChunk *> code_pages_;
+  std::vector<CodeChunk *> code_pages_;
 }
 
 #endif // !1
