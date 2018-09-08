@@ -6,10 +6,11 @@
 #include <vector>
 #include <stdio.h>
 
-#include "vm_core/base/page-allocator.h"
 #include "vm_core/macros.h"
 
 namespace zz {
+
+class PageAllocator;
 
 class OS {
 public:
@@ -81,6 +82,7 @@ public:
     return GetThreadLocal(key);
   }
 };
+
 } // namespace zz
 
 #endif

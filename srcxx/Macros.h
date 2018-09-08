@@ -23,7 +23,4 @@
 #define THUMB_FUNCTION_ADDRESS(address) ((uintptr_t)address & ~(uintptr_t)1)
 #define INSTRUCTION_IS_THUMB(insn_addr) (((uintptr_t)insn_addr & 0x1) == 0x1)
 
-#define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
-#define ALIGN_CEIL(address, range) (((uintptr_t)address + (uintptr_t)range - 1) & ~((uintptr_t)range - 1))
-
 #endif //HOOKZZ_MACROS_H

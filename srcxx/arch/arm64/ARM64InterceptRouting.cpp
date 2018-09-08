@@ -10,6 +10,8 @@
 #include "vm_core/modules/assembler/assembler-arm64.h"
 #include "vm_core/modules/codegen/codegen-arm64.h"
 
+#include "vm_core_extra/custom-code.h"
+
 using namespace zz::arm64;
 
 #define ARM64_TINY_REDIRECT_SIZE 4
@@ -60,8 +62,8 @@ void InterceptRouting::BuildFastForwardTrampoline() {
   } else if (entry_->type == kFunctionWrapper) {
     codegen.LiteralBrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
-  turbo_assembler_->Commit();
-  zz::Code *code = zz::Code::FinalizeCode(turbo_assembler_);
+
+  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
 }
 
 void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {

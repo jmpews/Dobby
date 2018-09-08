@@ -1,5 +1,5 @@
-
-#include "srcxx/InterceptRouting.h"
+#include "hookzz_internal.h"
+#include "InterceptRouting.h"
 
 void InterceptRouting::Dispatch() {
   if (entry_->type == kFunctionWrapper) {

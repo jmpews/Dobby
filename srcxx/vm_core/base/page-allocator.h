@@ -7,10 +7,18 @@
 namespace zz {
 
 class PageAllocator {
-  void *Allocate(MemoryPermission permission) {
+public:
+  static void *Allocate(OS::MemoryPermission permission) {
     int page_size = OS::PageSize();
     void *page    = OS::Allocate(0, page_size, 0, permission);
     return page;
+  }
+
+  static size_t PageSize() {
+    return OS::PageSize();
+  }
+  static bool SetPermissions(void *address, size_t size, OS::MemoryPermission access) {
+    return OS::SetPermissions(address, size, access);
   }
 };
 

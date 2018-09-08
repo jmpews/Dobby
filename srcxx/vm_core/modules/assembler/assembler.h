@@ -3,6 +3,7 @@
 
 #include "vm_core/base/code-buffer.h"
 #include "vm_core/objects/objects.h"
+#include "vm_core/objects/code.h"
 
 #include <iostream>
 #include <vector>
@@ -68,6 +69,18 @@ public:
   int pc_offset() const {
     return buffer_.Size();
   }
+
+  size_t CodeSize() {
+    return buffer_.Size();
+  }
+
+  CodeBuffer *GetCodeBuffer() {
+    return &buffer_;
+  }
+
+  virtual void CommitRealize(void *address) = 0;
+
+  virtual Code *GetCode() = 0;
 
   static void FlushICache(void *start, size_t size);
   static void FlushICache(uintptr_t start, size_t size) {

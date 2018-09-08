@@ -1,7 +1,9 @@
 #ifndef ZZ_OBJECTS_ISOLATE_H_
 #define ZZ_OBJECTS_ISOLATE_H_
 
+#include "vm_core/globals.h"
 #include "vm_core/platform/platform.h"
+#include "vm_core/objects/heap.h"
 
 namespace zz {
 
@@ -20,7 +22,7 @@ private:
   Heap heap_;
 
   static Thread::LocalStorageKey isolate_key_;
-}
+};
 
 } // namespace zz
 

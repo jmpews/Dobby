@@ -17,6 +17,9 @@ typedef char byte;
 #define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
 #define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
 
+#define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
+#define ALIGN_CEIL(address, range) (((uintptr_t)address + (uintptr_t)range - 1) & ~((uintptr_t)range - 1))
+
 /* borrow from gdb, refer: binutils-gdb/gdb/arch/arm.h */
 #define submask(x) ((1L << ((x) + 1)) - 1)
 #define bits(obj, st, fn) (((obj) >> (st)) & submask((fn) - (st)))

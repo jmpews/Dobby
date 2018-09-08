@@ -4,14 +4,16 @@
 #include "vm_core/macros.h"
 #include "vm_core/globals.h"
 #include "vm_core/logging.h"
+#include "vm_core/base/memory-region.h"
 
 namespace zz {
 
 class MemoryChunk {
 public:
-  MemoryChunk() : size_(0), cursor_(NULL), area_start_(NULL), area_end_(NULL);
+  MemoryChunk() : size_(0), cursor_(0), area_start_(0), area_end_(0) {
+  }
 
-  MemoryChunk(void *address, size_t size) : size_(size), area_start_(address) {
+  MemoryChunk(void *address, size_t size) : size_(size), area_start_((uintptr_t)address) {
     cursor_   = area_start_;
     area_end_ = area_start_ + size_;
   }
@@ -19,20 +21,21 @@ public:
   MemoryRegion *Allocate(size_t size) {
     if ((cursor_ + size) > area_end_)
       return NULL;
-    MemoryRegion *region = new MemoryRegion(cursor_, size);
-    cursor += size;
+    MemoryRegion *region = new MemoryRegion((void *)cursor_, (uword)size);
+    cursor_ += size;
     return region;
   }
 
 private:
   size_t size_;
-  byte *cursor_;
-  byte *area_start_;
-  byte *area_end_;
+  uintptr_t cursor_;
+  uintptr_t area_start_;
+  uintptr_t area_end_;
 
   // Dummy
   // memory_blocks in the memory_chunk
   std::vector<MemoryRegion *> memory_regions_;
+};
 
 } // namespace zz
 

@@ -13,13 +13,9 @@ public:
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static Code *FinalizeCode(uintptr_t address, int size);
 
-  ~FinalizeCode() {
-    del instructions_;
-  }
-
   // dummy method
   inline uintptr_t raw_instruction_start() {
-    return instructions_;
+    return (uintptr_t)instructions_;
   };
 
   // dummy method

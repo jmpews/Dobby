@@ -31,11 +31,12 @@ public:
   void EmitObject(const Object *object) {
   }
 
-  void FinalizeInstructions() {
-  }
-
   size_t Size() const {
     return cursor_ - buffer_;
+  }
+
+  void *RawBuffer() {
+    return buffer_;
   }
 
   void Grow(size_t new_capacity) {

@@ -51,26 +51,34 @@ set(Target.SOURCE_FILE
 if(CXX)
 
 set(Target.SOURCE_DIR
-        ${Target.path}
-        ${Target.path}/srcxx
-        )
-set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/vm_core
-        ${Target.path}/srcxx/vm_core/base
-        ${Target.path}/srcxx/vm_core/objects
-        ${Target.path}/srcxx/vm_core/platform
-        ${Target.path}/srcxx/vm_core/modules/assembler
-        ${Target.path}/srcxx/vm_core/modules/codegen
-        ${Target.path}/srcxx/vm_core/arch
-        )
+    ${Target.path}
+    ${Target.path}/srcxx
+)
 
+# vm_core
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/vm_core
+    ${Target.path}/srcxx/vm_core/arch
+    ${Target.path}/srcxx/vm_core/base
+    ${Target.path}/srcxx/vm_core/objects
+    ${Target.path}/srcxx/vm_core/platform
+    ${Target.path}/srcxx/vm_core/modules/assembler
+    ${Target.path}/srcxx/vm_core/modules/codegen
+)
+
+# vm_core_extra
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/vm_core_extra
+)
+
+# vm_core with specific architecture
 if(PROCESSOR.aarch64)
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/vm_core/arch/arm64
-        )
+    )
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/arch/arm64
-        )
+    )
 endif()
 # *.cc
 search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)

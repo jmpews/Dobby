@@ -1,8 +1,9 @@
 #include "srcxx/AssemblyClosureTrampoline.h"
 
-#include "vm_core/objects/code.h"
 #include "vm_core/arch/arm64/registers-arm64.h"
 #include "vm_core/modules/assembler/assembler-arm64.h"
+#include "vm_core_extra/custom-code.h"
+#include "vm_core_extra/code-page-chunk.h"
 
 extern void closure_trampoline_template();
 
@@ -30,13 +31,13 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ PseudoBind(&ClosureTrampolineEntryPtr);
   _ EmitInt64(0); // dummy address
 
-  Code *code = CodeChunk->FinalizeAssembler(turbo_assembler_);
+  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
 
   ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
-  entry->address                = code->raw_instruction_start();
+  entry->address                = (void *)code->raw_instruction_start();
   entry->carry_data             = carry_data;
   entry->forward_code           = forward_code;
-  entry->size                   = code->Size();
+  entry->size                   = code->raw_instruction_size();
   return entry;
 #endif
 }

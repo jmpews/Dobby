@@ -4,6 +4,9 @@
 #include "vm_core/macros.h"
 #include "vm_core/globals.h"
 #include "vm_core/logging.h"
+#include "vm_core/macros.h"
+
+#include <assert.h>
 
 namespace zz {
 
@@ -41,9 +44,15 @@ public:
   }
 
 private:
+  template <typename T> T *ComputeInternalPointer(uword offset) const {
+    assert(size() >= sizeof(T));
+    assert(offset <= size() - sizeof(T));
+    return reinterpret_cast<T *>(start() + offset);
+  }
+
   void *pointer_;
   uword size_;
-}
+};
 
 } // namespace zz
 
