@@ -48,24 +48,42 @@ void InterceptRouting::BuildPreCallRouting() {
   if (branch_type_ == Routing_B_Branch)
     BuildFastForwardTrampoline();
 
-  DLOG("create pre call closure trampoline to %p\n", cte->address);
+  DLOG("create pre call closure trampoline to 'prologue_routing_dispatch'%p\n", cte->address);
 }
 
+// Add post_call(epilogue) handler before `Return` of the origin function, as implementation is replace the origin `Return Address` of the function.
+void InterceptRouting::BuildPostCallRouting() {
+  // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
+  ClosureTrampolineEntry *closure_trampoline_entry =
+      ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)epilogue_routing_dispatch);
+  entry_->epilogue_dispatch_bridge = closure_trampoline_entry->address;
+
+  DLOG("create post call closure trampoline to %p\n", closure_trampoline_entry->address);
+}
+
+// If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
 void InterceptRouting::BuildFastForwardTrampoline() {
   TurboAssembler *turbo_assembler_;
 #define _ turbo_assembler_
   CodeGen codegen(turbo_assembler_);
   if (entry_->type == kFunctionInlineHook) {
     codegen.LiteralBrBranch((uint64_t)entry_->replace_call);
+    DLOG("create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
     codegen.LiteralBrBranch((uint64_t)entry_->prologue_dispatch_bridge);
+    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
   } else if (entry_->type == kFunctionWrapper) {
+    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
     codegen.LiteralBrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
+#undef _
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
+  AssemblerCode *code             = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
+  entry_->fast_forward_trampoline = code->raw_instruction_start();
+  del code;
 }
 
+// Add dbi_call handler before running the origin instructions
 void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry =
@@ -76,14 +94,6 @@ void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
   if (interceptor->options().enable_b_branch) {
     BuildFastForwardTrampoline();
   }
-  DLOG("create dynamic binary instrumentation call closure trampoline to %p\n", closure_trampoline_entry->address);
-}
-
-void InterceptRouting::BuildPostCallRouting() {
-  // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
-  ClosureTrampolineEntry *closure_trampoline_entry =
-      ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)epilogue_routing_dispatch);
-  entry_->epilogue_dispatch_bridge = closure_trampoline_entry->address;
-
-  DLOG("create post call closure trampoline to %p\n", closure_trampoline_entry->address);
+  DLOG("create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
+       closure_trampoline_entry->address);
 }

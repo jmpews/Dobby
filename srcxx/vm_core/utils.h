@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCHITECTURE_UTILS_ARCH_H_
-#define ZZ_ARCHITECTURE_UTILS_ARCH_H_
+#ifndef ZZ_UTILS_H_
+#define ZZ_UTILS_H_
 
 #include "globals.h"
 

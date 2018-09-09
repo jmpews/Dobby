@@ -4,6 +4,10 @@
 #include "vm_core/arch/arm64/constants-arm64.h"
 #include "vm_core/macros.h"
 
+#define X(code) CPURegister::X(code)
+#define Q(code) CPURegister::Q(code)
+#define SP CPURegister::SP()
+
 namespace zz {
 namespace arm64 {
 
@@ -40,6 +44,10 @@ public:
 
   static CPURegister W(int code) {
     return CPURegister(code, 32, Register_32);
+  }
+
+  static CPURegister Q(int code) {
+    return CPURegister(code, 128, SIMD_FP_Register_128);
   }
 
   bool Is64Bits() const {

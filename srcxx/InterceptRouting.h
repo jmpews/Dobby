@@ -1,9 +1,5 @@
-//
-// Created by jmpews on 2018/6/15.
-//
-
-#ifndef ZZ_SRCXX_INTERCEPTROUTING_H_
-#define ZZ_SRCXX_INTERCEPTROUTING_H_
+#ifndef HOOKZZ_INTERCEPTROUTING_H_
+#define HOOKZZ_INTERCEPTROUTING_H_
 
 #include "Interceptor.h"
 
@@ -44,4 +40,4 @@ private:
 
   RoutingType branch_type_;
 };
-#endif //HOOKZZ_INTERCEPTORBACKEND_H
+#endif

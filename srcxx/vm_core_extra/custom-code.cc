@@ -5,12 +5,6 @@
 
 using namespace zz;
 
-#include "vm_core/config.h"
-#if V8_TARGET_ARCH_ARM
-#elif V8_TARGET_ARCH_ARM64
-#include "vm_core/modules/assembler/assembler-arm64.h"
-#endif
-
 #if V8_TARGET_ARCH_ARM
 #elif V8_TARGET_ARCH_ARM64
 using namespace zz::arm64;

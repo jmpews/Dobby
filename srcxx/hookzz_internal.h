@@ -51,6 +51,9 @@ typedef struct _HookEntry {
   // epilogue_dispatch_bridge
   void *epilogue_dispatch_bridge;
 
+  // fast forward trampoline
+  void *fast_forward_trampoline;
+
   // backup origin instructions
   InstructionBackupArray origin_instructions;
 } HookEntry;

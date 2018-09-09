@@ -1,7 +1,3 @@
-//
-// Created by jmpews on 2018/6/15.
-//
-
 #ifndef HOOKZZ_MACROS_H
 #define HOOKZZ_MACROS_H
 
