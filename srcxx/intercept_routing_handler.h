@@ -21,8 +21,10 @@ void set_prologue_routing_next_hop(RegisterContext *reg_ctx, void *address);
 // set the next hop of the epilogue that before function return;
 void set_epilogue_routing_next_hop(RegisterContext *reg_ctx, void *address);
 
+// Dispatch the routing befor running the origin function
 void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
+// Dispatch the routing before the function return . (as it's implementation by relpace `return address` in the stack ,or LR register)
 void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry);

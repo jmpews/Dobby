@@ -1,5 +1,5 @@
-#ifndef ZZ_SRCXX_THREADSTACK_H_
-#define ZZ_SRCXX_THREADSTACK_H_
+#ifndef HOOKZZ_THREADSTACK_H_
+#define HOOKZZ_THREADSTACK_H_
 
 #include <iostream>
 #include <map>
@@ -12,11 +12,11 @@
 typedef struct _StackFrame {
   // context between `pre_call` and `post_call`
   std::map<char *, void *> kv_context;
-
   // origin function ret address
   void *orig_ret;
 } StackFrame;
 
+// (thead) CallStack
 typedef struct _CallStack {
   std::vector<StackFrame *> stackframes;
 } CallStack;
