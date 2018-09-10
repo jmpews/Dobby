@@ -44,8 +44,48 @@ void *get_closure_bridge() {
   _ stp(X(3), X(4), MEM(SP, 2 * 8));
   _ stp(X(1), X(2), MEM(SP, 0 * 8));
 
-  _ PseudoBind(&ClosureTrampolineEntryPtr);
-  _ EmitInt64(0); // dummy address
+#if 1
+  // save {x0}
+  _ sub(SP, SP, 2 * 8);
+  _ str(X(0), MEM(SP, 8));
+#else
+// Ignore, refer: closure_bridge_template
+#endif
+
+  _ mov(X(0), SP);
+  _ mov(X(1), X(14));
+  _ Call(ExternalReference("intercept_routing_common_bridge_handler"));
+
+  // ======= RegisterContext Restore =======
+  // restore x0
+  _ ldr(X(0), MEM(SP, 8));
+  _ add(SP, SP, 2 * 8);
+
+  // restore {x1-x30}
+  _ ldp(X(1), X(2), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(3), X(4), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(5), X(6), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(7), X(8), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(9), X(10), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(11), X(12), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(13), X(14), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(15), X(16), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(17), X(18), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(19), X(20), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(21), X(22), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(23), X(24), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(25), X(26), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(27), X(28), MEM_EXT(SP, 16, PostIndex));
+  _ ldp(X(29), X(30), MEM_EXT(SP, 16, PostIndex));
+
+  // restore {q0-q7}
+  _ ldp(Q(0), Q(1), MEM_EXT(SP, 32, PostIndex));
+  _ ldp(Q(2), Q(3), MEM_EXT(SP, 32, PostIndex));
+  _ ldp(Q(4), Q(5), MEM_EXT(SP, 32, PostIndex));
+  _ ldp(Q(6), Q(7), MEM_EXT(SP, 32, PostIndex));
+
+  // branch to next hop, @modify by `xxx_routing_dispatch`
+  _ br(X(17));
 
 #endif
   return (void *)closure_bridge;
