@@ -3,6 +3,10 @@
 
 #include "vm_core/macros.h"
 
+enum Shift { NO_SHIFT = -1, LSL = 0x0, LSR = 0x1, ASR = 0x2, ROR = 0x3, MSL = 0x4 };
+
+enum Extend { NO_EXTEND = -1, UXTB = 0, UXTH = 1, UXTW = 2, UXTX = 3, SXTB = 4, SXTH = 5, SXTW = 6, SXTX = 7 };
+
 #define Rd(rd) (rd.code())
 #define Rt(rt) (rt.code())
 #define Rt2(rt) (rt.code())

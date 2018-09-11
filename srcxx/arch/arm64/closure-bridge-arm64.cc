@@ -87,6 +87,9 @@ void *get_closure_bridge() {
   // branch to next hop, @modify by `xxx_routing_dispatch`
   _ br(X(17));
 
+  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
+  closure_bridge      = (void *)code->raw_instruction_start();
+
 #endif
   return (void *)closure_bridge;
 }
