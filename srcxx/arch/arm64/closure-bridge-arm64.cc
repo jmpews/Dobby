@@ -1,5 +1,8 @@
 #include "vm_core/modules/assembler/assembler.h"
 #include "vm_core/arch/arm64/registers-arm64.h"
+#include "vm_core_extra/custom-code.h"
+
+using namespace zz::arm64;
 
 static void *closure_bridge = NULL;
 
@@ -15,9 +18,10 @@ void *get_closure_bridge() {
   closure_bridge = closure_bridge_template;
 // otherwise, use the Assembler build the closure_bridge
 #else
-#define _ assembler_->
-#define MEM(reg, offset) LoadStoreAddress(reg, offset)
-  Assembler *assembler_;
+#define _ turbo_assembler_->
+#define MEM(reg, offset) MemOperand(reg, offset)
+#define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
+  TurboAssembler *turbo_assembler_;
 
   // save {q0-q7}
   _ sub(SP, SP, 8 * 16);
@@ -54,7 +58,7 @@ void *get_closure_bridge() {
 
   _ mov(X(0), SP);
   _ mov(X(1), X(14));
-  _ Call(ExternalReference("intercept_routing_common_bridge_handler"));
+  // _ Call(ExternalReference("intercept_routing_common_bridge_handler"));
 
   // ======= RegisterContext Restore =======
   // restore x0

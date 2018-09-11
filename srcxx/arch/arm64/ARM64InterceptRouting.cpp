@@ -79,8 +79,7 @@ void InterceptRouting::BuildFastForwardTrampoline() {
 #undef _
 
   AssemblerCode *code             = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
-  entry_->fast_forward_trampoline = code->raw_instruction_start();
-  del code;
+  entry_->fast_forward_trampoline = (void *)code->raw_instruction_start();
 }
 
 // Add dbi_call handler before running the origin instructions

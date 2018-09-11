@@ -63,33 +63,37 @@ private:
 class Operand {
 public:
   inline Operand(Register reg, Shift shift = LSL, int32_t imm = 0)
-      : immediate_(0), reg_(reg), shift_(shift), extend(NO_EXTEND), shift_extent_imm_(imm) {
+      : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(imm) {
   }
   inline Operand(Register reg, Extend extend, int32_t imm = 0)
       : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(imm) {
   }
 
-  bool Operand::IsShiftedRegister() const {
+  bool IsShiftedRegister() const {
     return /* reg_.IsValid() && */ (shift_ != NO_SHIFT);
   }
 
-  bool Operand::IsExtendedRegister() const {
+  bool IsExtendedRegister() const {
     return /* reg_.IsValid() && */ (extend_ != NO_EXTEND);
   }
 
-  Register Operand::reg() const {
+  Register reg() const {
     DCHECK(IsShiftedRegister() || IsExtendedRegister());
     return reg_;
   }
 
-  Shift Operand::shift() const {
+  Shift shift() const {
     DCHECK(IsShiftedRegister());
     return shift_;
   }
 
-  Extend Operand::extend() const {
+  Extend extend() const {
     DCHECK(IsExtendedRegister());
     return extend_;
+  }
+
+  int32_t shift_extend_imm() const {
+    return shift_extent_imm_;
   }
 
 private:
@@ -103,11 +107,11 @@ private:
 class MemOperand {
 public:
   inline explicit MemOperand(Register base, int64_t offset = 0, AddrMode addrmode = Offset)
-      : base_(base), regoffset_(NoReg), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT), extend_(NO_EXTEND),
-        shift_extend_imm_(0) {
+      : base_(base), regoffset_(InvalidRegister), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT),
+        extend_(NO_EXTEND), shift_extend_imm_(0) {
   }
 
-  inline explicit MemOperand::MemOperand(Register base, Register regoffset, Extend extend, unsigned extend_imm)
+  inline explicit MemOperand(Register base, Register regoffset, Extend extend, unsigned extend_imm)
       : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(NO_SHIFT), extend_(extend),
         shift_extend_imm_(extend_imm) {
   }
@@ -115,14 +119,18 @@ public:
   inline explicit MemOperand(Register base, Register regoffset, Shift shift = LSL, unsigned shift_imm = 0)
       : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(shift), extend_(NO_EXTEND),
         shift_extend_imm_(shift_imm) {
+  }
+
+  inline explicit MemOperand(Register base, const Operand &offset, AddrMode addrmode = Offset)
+      : base_(base), regoffset_(InvalidRegister), addrmode_(addrmode) {
     if (offset.IsShiftedRegister()) {
       regoffset_        = offset.reg();
       shift_            = offset.shift();
       shift_extend_imm_ = offset.shift_extend_imm();
 
-      extend  = NO_EXTEND;
+      extend_ = NO_EXTEND;
       offset_ = 0;
-    } else if (IsExtendedRegister()) {
+    } else if (offset.IsExtendedRegister()) {
       regoffset_        = offset.reg();
       extend_           = offset.extend();
       shift_extend_imm_ = offset.shift_extend_imm();
@@ -131,8 +139,6 @@ public:
       offset_ = 0;
     }
   }
-
-  inline explicit MemOperand(Register base, const Operand &offset, AddrMode addrmode = Offset);
 
   const Register &base() const {
     return base_;
@@ -152,19 +158,19 @@ public:
   Extend extend() const {
     return extend_;
   }
-  unsigned shift_amount() const {
-    return shift_amount_;
+  unsigned shift_extend_imm() const {
+    return shift_extend_imm_;
   }
-  bool MemOperand::IsImmediateOffset() const {
-    return (addrmode_ == Offset) && regoffset_.Is(NoReg);
+  bool IsImmediateOffset() const {
+    return (addrmode_ == Offset);
   }
-  bool MemOperand::IsRegisterOffset() const {
-    return (addrmode_ == Offset) && !regoffset_.Is(NoReg);
+  bool IsRegisterOffset() const {
+    return (addrmode_ == Offset);
   }
-  bool MemOperand::IsPreIndex() const {
+  bool IsPreIndex() const {
     return addrmode_ == PreIndex;
   }
-  bool MemOperand::IsPostIndex() const {
+  bool IsPostIndex() const {
     return addrmode_ == PostIndex;
   }
 
@@ -202,12 +208,19 @@ public:
     int32_t imm26 = imm >> 2;
   }
 
+  void add(const Register &rd, const Register &rn, int64_t imm) {
+  }
+  void sub(const Register &rd, const Register &rn, int64_t imm) {
+  }
+
   void b(Label *label) {
     int offset = LinkAndGetByteOffsetTo(label);
     b(offset);
   }
-
   void br(Register rn) {
+  }
+
+  void mov(const Register &rd, const Register &rm) {
   }
 
   // load literal
@@ -235,23 +248,22 @@ public:
     EmitLoadRegLiteral(op, rt, imm);
   }
 
-  void ldr(Register rt, Register rn, int64_t imm) {
+  void ldr(const CPURegister &rt, const MemOperand &src) {
     LoadStoreUnscaledOffsetOp op = OP_X(LDR);
-    EmitLoadStoreReg(op, rt, rn, imm);
+    LoadStoreReg(op, rt, src);
   }
 
-  void str(Register rt, Register rn, int64_t imm) {
+  void str(const CPURegister &rt, const MemOperand &src) {
     LoadStoreUnscaledOffsetOp op = OP_X(STR);
-    EmitLoadStoreReg(op, rt, rn, imm);
+    LoadStoreReg(op, rt, src);
   }
 
   void ldp(const Register &rt, const Register &rt2, const MemOperand &src) {
-
-    EmitLoadStorePair(OPT_X(LDP, pair), rt, rt2, src);
+    LoadStorePair(OPT_X(LDP, pair), rt, rt2, src);
   }
 
   void stp(const Register &rt, const Register &rt2, const MemOperand &dst) {
-    EmitLoadStorePair(OPT_X(STP, pair), rt, rt2, dst);
+    LoadStorePair(OPT_X(STP, pair), rt, rt2, dst);
   }
 
   // Move and keep.
@@ -283,10 +295,9 @@ private:
     Emit(encoding);
   }
 
-  void EmitLoadStoreReg(LoadStoreUnscaledOffsetOp op, CPURegister rt, CPURegister rn, int64_t imm) {
-    assert(imm > 0);
-    int64_t imm12          = imm;
-    const int32_t encoding = op | LFT(imm12, 12, 10) | Rt(rn) | Rt(rt);
+  void LoadStoreReg(LoadStoreUnscaledOffsetOp op, CPURegister rt, const MemOperand &addr) {
+    int64_t imm12          = addr.offset();
+    const int32_t encoding = op | LFT(imm12, 12, 10) | Rt(addr.regoffset()) | Rt(rt);
     Emit(encoding);
   }
 
@@ -301,18 +312,17 @@ private:
     Emit(op | sf(rd) | hw(shift) | imm16 | Rd(rd));
   }
 
-  void EmitLoadStorePair(LoadStorePairOffsetOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
+  void LoadStorePair(LoadStorePairOffsetOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
     int scale     = bits(op, 30, 31);
     int32_t imm7  = addr.offset() >> scale;
-    int32_t memop = op | imm7 | Rt2(rt2) | Rn(rn) | Rt(addr.reg());
-    int32_t addrmodeop;
+    int32_t memop = op | imm7 | Rt2(rt2) | Rn(addr.regoffset()) | Rt(rt);
 
-    if (add.IsPreIndex()) {
+    int32_t addrmodeop;
+    if (addr.IsPreIndex()) {
       addrmodeop = 0;
     } else {
       addrmodeop = 0;
     }
-
     Emit(addrmodeop | memop);
   }
 }; // namespace arm64

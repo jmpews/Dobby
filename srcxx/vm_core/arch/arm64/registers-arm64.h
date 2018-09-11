@@ -4,10 +4,6 @@
 #include "vm_core/arch/arm64/constants-arm64.h"
 #include "vm_core/macros.h"
 
-#define X(code) CPURegister::X(code)
-#define Q(code) CPURegister::Q(code)
-#define SP CPURegister::SP()
-
 namespace zz {
 namespace arm64 {
 
@@ -28,7 +24,8 @@ public:
     SIMD_FP_Register_64,
     SIMD_FP_Register_D = SIMD_FP_Register_64,
     SIMD_FP_Register_128,
-    SIMD_FP_Register_Q = SIMD_FP_Register_128
+    SIMD_FP_Register_Q = SIMD_FP_Register_128,
+    Invalid
   };
 
   constexpr CPURegister(int code, int size, RegisterType type) : reg_code_(code), reg_size_(size), reg_type_(type) {
@@ -38,16 +35,24 @@ public:
     return CPURegister(code, size, type);
   }
 
-  static CPURegister X(int code) {
+  static constexpr CPURegister X(int code) {
     return CPURegister(code, 64, Register_64);
   }
 
-  static CPURegister W(int code) {
+  static constexpr CPURegister W(int code) {
     return CPURegister(code, 32, Register_32);
   }
 
-  static CPURegister Q(int code) {
+  static constexpr CPURegister Q(int code) {
     return CPURegister(code, 128, SIMD_FP_Register_128);
+  }
+
+  static constexpr CPURegister SP() {
+    return CPURegister(63, 64, Register_64);
+  }
+
+  static constexpr CPURegister None() {
+    return CPURegister(0, 0, Invalid);
   }
 
   bool Is64Bits() const {
@@ -58,7 +63,7 @@ public:
     return reg_type_;
   }
 
-  int32_t code() {
+  int32_t code() const {
     return reg_code_;
   };
 
@@ -100,5 +105,10 @@ GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 
 } // namespace arm64
 } // namespace zz
+
+#define X(code) CPURegister::X(code)
+#define Q(code) CPURegister::Q(code)
+#define SP CPURegister::SP()
+#define InvalidRegister CPURegister::None()
 
 #endif
