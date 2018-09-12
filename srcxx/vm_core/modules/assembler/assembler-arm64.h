@@ -76,6 +76,10 @@ public:
       : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(imm) {
   }
 
+  bool Operand::IsImmediate() const {
+    return reg_.Is(InvalidRegister);
+  }
+
   bool IsShiftedRegister() const {
     return /* reg_.IsValid() && */ (shift_ != NO_SHIFT);
   }
@@ -332,20 +336,24 @@ private:
     Emit(addrmodeop | memop);
   }
 
-  void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp mov_op) {
+  void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp op) {
     assert(shift >= 0);
     shift /= 16;
 
-    XCHECK(imm <= 0xffff);
-
-    int32_t op    = MoveWideImmediateFixed | mov_op;
     int32_t imm16 = LFT(imm, 16, 5);
-    Emit(op | sf(rd) | hw(shift) | imm16 | Rd(rd));
+    Emit(MoveWideImmediateFixed | op | sf(rd) | LFT(shift, 2, 21) | imm16 | Rd(rd));
   }
 
-  AddSub(const Register &rd, const Register &rn, const Operand &operand, FlagsUpdate S, AddSubOp op) {
+  void AddSub(const Register &rd, const Register &rn, const Operand &operand, FlagsUpdate S, AddSubOp op) {
     if (operand.IsImmediate()) {
       int64_t immediate = operand.Immediate();
+
+      Emit(AddSubImmediateFixed | op | sf(rd) | Flags(S) | ImmAddSub(static_cast<int>(immediate)) | dest_reg |
+           RnSP(rn));
+    } else if (operand.IsShiftedRegister()) {
+      UNREACHABLE();
+    } else {
+      UNREACHABLE();
     }
   }
 }; // namespace arm64

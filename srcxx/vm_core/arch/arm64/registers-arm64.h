@@ -55,6 +55,10 @@ public:
     return CPURegister(0, 0, Invalid);
   }
 
+  bool Is(CPURegister &reg) {
+    reg.reg_code_ == this->reg_code_;
+  }
+
   bool Is64Bits() const {
     return reg_size_ == 64;
   }

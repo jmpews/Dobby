@@ -9,6 +9,8 @@ enum Extend { NO_EXTEND = -1, UXTB = 0, UXTH = 1, UXTW = 2, UXTX = 3, SXTB = 4, 
 
 enum AddrMode { Offset, PreIndex, PostIndex };
 
+enum FlagsUpdate { SetFlags = 1, LeaveFlags = 0 };
+
 #define Rd(rd) (rd.code())
 #define Rt(rt) (rt.code())
 #define Rt2(rt) (rt.code())
@@ -97,6 +99,8 @@ enum LoadRegLiteralOp {
 enum LoadStoreUnscaledOffsetOp {
   LoadStoreUnscaledOffsetFixed = 0x38000000,
   LoadStoreUnscaledOffsetMask  = 0xFFE00C00,
+
+// size op
 #define LoadStoreUnscaledOffsetOpSub(size, V, opc)                                                                     \
   LoadStoreUnscaledOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
 #define LOAD_STORE_UNSCALED(opname, size, V, opc) opname = LoadStoreUnscaledOffsetOpSub(size, V, opc)
@@ -108,6 +112,8 @@ enum LoadStoreUnscaledOffsetOp {
 enum LoadStoreUnsignedOffset {
   LoadStoreUnsignedOffsetFixed = 0x39000000,
   LoadStoreUnsignedOffsetMask  = 0xFFC00000,
+
+// size op
 #define LoadStoreUnsignedOffsetSub(size, V, opc)                                                                       \
   LoadStoreUnsignedOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
 #define LOAD_STORE_UNSIGNED_OFFSET(opname, size, V, opc)                                                               \
@@ -134,6 +140,8 @@ enum LoadStoreUnsignedOffset {
 enum LoadStorePairOffsetOp {
   LoadStorePairOffsetFixed = 0x29000000,
   LoadStorePairOffsetMask  = 0xFFC00000,
+
+// size op
 #define LoadStorePairOffsetOpSub(opc, V, L) LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, pair) = LoadStorePairOffsetOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_OFFSET)
@@ -143,8 +151,9 @@ enum LoadStorePairOffsetOp {
 // Generic fields.
 enum GenericInstrField { SixtyFourBits = 0x80000000, ThirtyTwoBits = 0x00000000, FP32 = 0x00000000, FP64 = 0x00400000 };
 
+// Generic utils
 #define sf(rd) (rd.Is64Bits() ? SixtyFourBits : ThirtyTwoBits)
-#define hw(shift) LFT(shift, 2, 21)
+
 // Move wide immediate.
 enum MoveWideImmediateOp {
   MoveWideImmediateFixed = 0x12800000,
@@ -152,16 +161,18 @@ enum MoveWideImmediateOp {
   MOVN                   = 0x00000000,
   MOVZ                   = 0x40000000,
   MOVK                   = 0x60000000,
-  OP_W(MOVN)             = MoveWideImmediateFixed | MOVN,
-  OP_X(MOVN)             = MoveWideImmediateFixed | MOVN | SixtyFourBits,
-  OP_W(MOVZ)             = MoveWideImmediateFixed | MOVZ,
-  OP_X(MOVZ)             = MoveWideImmediateFixed | MOVZ | SixtyFourBits,
-  OP_W(MOVK)             = MoveWideImmediateFixed | MOVK,
-  OP_X(MOVK)             = MoveWideImmediateFixed | MOVK | SixtyFourBits
+
+// size op
+#define MoveWideImmediateOpSub(sf, opc) MoveWideImmediateFixed | LFT(sf, 1, 31) | LFT(opc, 2, 29)
+  OP_W(MOVN) = MoveWideImmediateFixed | MOVN,
+  OP_X(MOVN) = MoveWideImmediateFixed | MOVN | SixtyFourBits,
+  OP_W(MOVZ) = MoveWideImmediateFixed | MOVZ,
+  OP_X(MOVZ) = MoveWideImmediateFixed | MOVZ | SixtyFourBits,
+  OP_W(MOVK) = MoveWideImmediateFixed | MOVK,
+  OP_X(MOVK) = MoveWideImmediateFixed | MOVK | SixtyFourBits
 };
 
 // Add/sub (immediate, shifted and extended.)
-const int kSFOffset = 31;
 enum AddSubOp {
   AddSubOpMask      = 0x60000000,
   AddSubSetFlagsBit = 0x20000000,
@@ -176,9 +187,12 @@ enum AddSubOp {
 enum AddSubImmediateOp {
   AddSubImmediateFixed = 0x11000000,
   AddSubImmediateMask  = 0xFF000000,
+
+// size op
 #define AddSubImmediateOpSub(op_S) AddSubImmediateFixed | op_S
 #define ADD_SUB_IMMEDIATE(opname, op_S)                                                                                \
-  OP_W(opname) = AddSubImmediateOpSub(op_S) | ThirtyTwoBits, OP_X(opname) = AddSubImmediateOpSub(op_S) | SixtyFourBits
+  OPT_W(opname, imm)               = AddSubImmediateOpSub(op_S) | ThirtyTwoBits,                                       \
+                OPT_X(opname, imm) = AddSubImmediateOpSub(op_S) | SixtyFourBits
   ADD_SUB_OP_LIST(ADD_SUB_IMMEDIATE)
 #undef ADD_SUB_IMMEDIATE
 };
@@ -186,6 +200,8 @@ enum AddSubImmediateOp {
 enum AddSubShiftedOp {
   AddSubShiftedFixed = 0x0B000000,
   AddSubShiftedMask  = 0xFF200000,
+
+// size op
 #define AddSubShiftedOpSub(op_S) AddSubShiftedFixed | op_S
 #define ADD_SUB_SHIFTED(opname, op_S)                                                                                  \
   OPT_W(opname, shift)               = AddSubShiftedOpSub(op_S) | ThirtyTwoBits,                                       \
@@ -197,6 +213,8 @@ enum AddSubShiftedOp {
 enum AddSubExtendedOp {
   AddSubExtendedFixed = 0x0B200000,
   AddSubExtendedMask  = 0xFFE00000,
+
+// size op
 #define AddSubExtendedOpSub(op_S) AddSubExtendedFixed | op_S
 #define ADD_SUB_EXTENDED(opname, op_S)                                                                                 \
   OPT_W(opname, extend)               = AddSubExtendedOpSub(op_S) | ThirtyTwoBits,                                     \
@@ -224,10 +242,10 @@ enum LogicalImmediateOp {
   LogicalImmediateFixed = 0x12000000,
   LogicalImmediateMask  = 0xFF800000,
 
+// size op
 #define W_X_OP(opname, combine_fields)                                                                                 \
   OPT_W(opname, imm)               = LogicalImmediateFixed | combine_fields | ThirtyTwoBits,                           \
                 OPT_X(opname, imm) = LogicalImmediateFixed | combine_fields | SixtyFourBits
-
 #define W_X_OP_LIST(V) V(AND, AND), V(ORR, ORR), V(EOR, EOR), V(ANDS, ANDS)
 #undef W_X_OP
 #undef W_X_OP_LIST
@@ -238,10 +256,10 @@ enum LogicalShiftedOp {
   LogicalShiftedFixed = 0x0A000000,
   LogicalShiftedMask  = 0xFF200000,
 
+// size op
 #define W_X_OP(opname, combine_fields)                                                                                 \
   OPT_W(opname, shift)               = LogicalShiftedFixed | combine_fields | ThirtyTwoBits,                           \
                 OPT_X(opname, shift) = LogicalShiftedFixed | combine_fields | SixtyFourBits
-
 #define W_X_OP_LIST(V)                                                                                                 \
   V(AND, AND), V(BIC, BIC), V(ORR, ORR), V(ORN, ORN), V(EOR, EOR), V(EON, EON), V(ANDS, ANDS), V(BICS, BICS)
 #undef W_X_OP
