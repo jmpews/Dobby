@@ -31,7 +31,6 @@ public:
   bool is_near_linked() const {
     return near_link_pos_ > 0;
   }
-
   int pos() const {
     if (pos_ < 0)
       return -pos_ - 1;
@@ -40,11 +39,9 @@ public:
     UNREACHABLE();
     return 0;
   }
-
   void bind_to(int pos) {
     pos_ = -pos - 1;
   }
-
   void link_to(int pos) {
     pos_ = pos + 1;
   }
@@ -62,6 +59,19 @@ public:
 
 private:
   std::vector<Object *> object_pool_;
+};
+
+class ExternalReference {
+public:
+  explicit ExternalReference(void *address) : address_(address) {
+  }
+
+  const inline void *address() {
+    return address_;
+  }
+
+private:
+  const void *address_;
 };
 
 class AssemblerBase {

@@ -5,6 +5,7 @@
 #include "vm_core/macros.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 namespace zz {
 
@@ -12,6 +13,7 @@ class CodeBuffer {
 public:
   CodeBuffer(int capacity = 64) : capacity_(capacity) {
     buffer_ = reinterpret_cast<byte *>(malloc(capacity));
+    cursor_ = buffer_;
   }
 
   int32_t Load32(intptr_t position) {
@@ -23,9 +25,13 @@ public:
   }
 
   void Emit(int32_t inst) {
+    memcpy(cursor_, &inst, sizeof(inst));
+    cursor_ += sizeof(inst);
   }
 
   void Emit64(int64_t inst) {
+    memcpy(cursor_, &inst, sizeof(inst));
+    cursor_ += sizeof(inst);
   }
 
   void EmitObject(const Object *object) {

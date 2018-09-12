@@ -2,6 +2,9 @@
 #include "vm_core/arch/arm64/registers-arm64.h"
 #include "vm_core_extra/custom-code.h"
 
+#include "intercept_routing_handler.h"
+
+using namespace zz;
 using namespace zz::arm64;
 
 static void *closure_bridge = NULL;
@@ -29,7 +32,6 @@ void *get_closure_bridge() {
   _ stp(Q(4), Q(5), MEM(SP, 4 * 16));
   _ stp(Q(2), Q(3), MEM(SP, 2 * 16));
   _ stp(Q(0), Q(1), MEM(SP, 2 * 16));
-
   // save {x1-x30}
   _ sub(SP, SP, 30 * 8);
   _ stp(X(29), X(30), MEM(SP, 28 * 8));
@@ -51,20 +53,19 @@ void *get_closure_bridge() {
 #if 1
   // save {x0}
   _ sub(SP, SP, 2 * 8);
-  _ str(X(0), MEM(SP, 8));
+  _ str(x1, MEM(SP, 8));
 #else
 // Ignore, refer: closure_bridge_template
 #endif
 
-  _ mov(X(0), SP);
-  _ mov(X(1), X(14));
-  // _ Call(ExternalReference("intercept_routing_common_bridge_handler"));
+  _ mov(x0, SP);
+  _ mov(x1, TMP1);
+  _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // ======= RegisterContext Restore =======
   // restore x0
   _ ldr(X(0), MEM(SP, 8));
   _ add(SP, SP, 2 * 8);
-
   // restore {x1-x30}
   _ ldp(X(1), X(2), MEM_EXT(SP, 16, PostIndex));
   _ ldp(X(3), X(4), MEM_EXT(SP, 16, PostIndex));
@@ -81,7 +82,6 @@ void *get_closure_bridge() {
   _ ldp(X(25), X(26), MEM_EXT(SP, 16, PostIndex));
   _ ldp(X(27), X(28), MEM_EXT(SP, 16, PostIndex));
   _ ldp(X(29), X(30), MEM_EXT(SP, 16, PostIndex));
-
   // restore {q0-q7}
   _ ldp(Q(0), Q(1), MEM_EXT(SP, 32, PostIndex));
   _ ldp(Q(2), Q(3), MEM_EXT(SP, 32, PostIndex));

@@ -14,7 +14,7 @@ extern "C" {
 #endif //__cplusplus
 
 typedef struct _ClosureTrampolineEntry {
-  void *forward_code;
+  void *carry_hanlder;
   void *carry_data;
   void *address;
   uintptr_t size;
@@ -35,7 +35,7 @@ private:
   static std::vector<ClosureTrampolineEntry *> trampolines_;
 
 public:
-  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *forward_code);
+  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_hanlder);
 };
 
 #endif

@@ -97,15 +97,15 @@ void *OS::Allocate(void *address, size_t size, size_t alignment, MemoryPermissio
 
 // static
 bool OS::Free(void *address, const size_t size) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % AllocatePageSize());
-  DCHECK_EQ(0, size % AllocatePageSize());
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, size % PageSize());
   return munmap(address, size) == 0;
 }
 
 // static
 bool OS::Release(void *address, size_t size) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % CommitPageSize());
-  DCHECK_EQ(0, size % CommitPageSize());
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, size % PageSize());
   return munmap(address, size) == 0;
 }
 

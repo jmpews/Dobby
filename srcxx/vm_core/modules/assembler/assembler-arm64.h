@@ -16,7 +16,11 @@
 namespace zz {
 namespace arm64 {
 
+constexpr Register TMP0 = x17;
+constexpr Register TMP1 = x16;
+
 class PseudoLabel : public Label {
+public:
   enum PseudoLabelType { kLdrPseudoLabel };
 
   typedef struct _PseudoLabelInstruction {
@@ -24,7 +28,6 @@ class PseudoLabel : public Label {
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
-public:
   bool has_confused_instructions() {
     return instructions_.size() > 0;
   }
@@ -49,6 +52,10 @@ public:
       _buffer->Store32(instruction.position_, encoded);
     }
   };
+
+  void link_to(int pos, PseudoLabelType type) {
+    instructions_.push_back({pos, type});
+  }
 
 private:
   // From a design perspective, these fix-function write as callback, maybe beeter.
@@ -218,9 +225,19 @@ public:
     b(offset);
   }
   void br(Register rn) {
+    Emit(BR | Rn(rn));
   }
 
-  void mov(const Register &rd, const Register &rm) {
+  void blr(Register rn) {
+    Emit(BLR | Rn(rn));
+  }
+
+  void mov(const Register &rd, const Register &rn) {
+    if ((rd == SP) || (rn == SP)) {
+      add(rd, rn, 0);
+    } else {
+      orr(rd, ZR, Operand(rn));
+    }
   }
 
   // load literal
@@ -301,17 +318,6 @@ private:
     Emit(encoding);
   }
 
-  void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp mov_op) {
-    assert(shift >= 0);
-    shift /= 16;
-
-    XCHECK(imm <= 0xffff);
-
-    int32_t op    = MoveWideImmediateFixed | mov_op;
-    int32_t imm16 = LFT(imm, 16, 5);
-    Emit(op | sf(rd) | hw(shift) | imm16 | Rd(rd));
-  }
-
   void LoadStorePair(LoadStorePairOffsetOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
     int scale     = bits(op, 30, 31);
     int32_t imm7  = addr.offset() >> scale;
@@ -325,15 +331,28 @@ private:
     }
     Emit(addrmodeop | memop);
   }
+
+  void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp mov_op) {
+    assert(shift >= 0);
+    shift /= 16;
+
+    XCHECK(imm <= 0xffff);
+
+    int32_t op    = MoveWideImmediateFixed | mov_op;
+    int32_t imm16 = LFT(imm, 16, 5);
+    Emit(op | sf(rd) | hw(shift) | imm16 | Rd(rd));
+  }
+
+  AddSub(const Register &rd, const Register &rn, const Operand &operand, FlagsUpdate S, AddSubOp op) {
+    if (operand.IsImmediate()) {
+      int64_t immediate = operand.Immediate();
+    }
+  }
 }; // namespace arm64
 
 class TurboAssembler : public Assembler {
-private:
-  // std::vector<PseudoLabel *> pseudo_labels;
-
 public:
-  TurboAssembler(Assembler &assembler) {
-    assembler_ = assembler;
+  TurboAssembler() {
   }
 
   void CommitRealize(void *address) {
@@ -343,14 +362,19 @@ public:
     return NULL;
   }
 
-  void Ldr(Register rt, PseudoLabel *label) {
-    const int64_t dest = label->pos() - buffer_.Size();
+  void CallFunction(ExternalReference function) {
+    Mov(TMP0, (uint64_t)function.address());
+    blr(TMP0);
+  }
 
+  void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
+      const int64_t dest = label->pos() - buffer_.Size();
       ldr(rt, dest);
     } else {
-      ldr(rt, label->pos());
-      label->link_to(buffer_.Size());
+      ldr(rt, 0);
+      // record this ldr, and fix later.
+      label->link_to(buffer_.Size(), PseudoLabel::kLdrPseudoLabel);
     }
   }
 

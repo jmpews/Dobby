@@ -24,11 +24,11 @@ void InterceptRouting::Prepare() {
   int need_relocated_size  = ARM64_FULL_REDIRECT_SIZE;
   Interceptor *interceptor = Interceptor::SharedInstance();
   if (interceptor->options().enable_b_branch) {
-    DLOG("[!!!] Enable b branch maybe cause crash, if crashed, please disable it.\n");
+    DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
     branch_type_        = Routing_B_Branch;
   } else {
-    DLOG("Use Br Branch at %p", entry_->target_address);
+    DLOG("[*] Use Br Branch at %p\n", entry_->target_address);
     branch_type_ = Routing_BR_Branch;
   }
 

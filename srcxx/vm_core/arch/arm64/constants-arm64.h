@@ -160,4 +160,92 @@ enum MoveWideImmediateOp {
   OP_X(MOVK)             = MoveWideImmediateFixed | MOVK | SixtyFourBits
 };
 
+// Add/sub (immediate, shifted and extended.)
+const int kSFOffset = 31;
+enum AddSubOp {
+  AddSubOpMask      = 0x60000000,
+  AddSubSetFlagsBit = 0x20000000,
+  ADD               = 0x00000000,
+  ADDS              = ADD | AddSubSetFlagsBit,
+  SUB               = 0x40000000,
+  SUBS              = SUB | AddSubSetFlagsBit
+};
+
+#define ADD_SUB_OP_LIST(V) V(ADD, ADD), V(ADDS, ADDS), V(SUB, SUB), V(SUBS, SUBS)
+
+enum AddSubImmediateOp {
+  AddSubImmediateFixed = 0x11000000,
+  AddSubImmediateMask  = 0xFF000000,
+#define AddSubImmediateOpSub(op_S) AddSubImmediateFixed | op_S
+#define ADD_SUB_IMMEDIATE(opname, op_S)                                                                                \
+  OP_W(opname) = AddSubImmediateOpSub(op_S) | ThirtyTwoBits, OP_X(opname) = AddSubImmediateOpSub(op_S) | SixtyFourBits
+  ADD_SUB_OP_LIST(ADD_SUB_IMMEDIATE)
+#undef ADD_SUB_IMMEDIATE
+};
+
+enum AddSubShiftedOp {
+  AddSubShiftedFixed = 0x0B000000,
+  AddSubShiftedMask  = 0xFF200000,
+#define AddSubShiftedOpSub(op_S) AddSubShiftedFixed | op_S
+#define ADD_SUB_SHIFTED(opname, op_S)                                                                                  \
+  OPT_W(opname, shift)               = AddSubShiftedOpSub(op_S) | ThirtyTwoBits,                                       \
+                OPT_X(opname, shift) = AddSubShiftedOpSub(op_S) | SixtyFourBits
+  ADD_SUB_OP_LIST(ADD_SUB_SHIFTED)
+#undef ADD_SUB_SHIFTED
+};
+
+enum AddSubExtendedOp {
+  AddSubExtendedFixed = 0x0B200000,
+  AddSubExtendedMask  = 0xFFE00000,
+#define AddSubExtendedOpSub(op_S) AddSubExtendedFixed | op_S
+#define ADD_SUB_EXTENDED(opname, op_S)                                                                                 \
+  OPT_W(opname, extend)               = AddSubExtendedOpSub(op_S) | ThirtyTwoBits,                                     \
+                OPT_X(opname, extend) = AddSubExtendedOpSub(op_S) | SixtyFourBits
+  ADD_SUB_OP_LIST(ADD_SUB_EXTENDED)
+#undef ADD_SUB_EXTENDED
+};
+
+// Logical (immediate and shifted register).
+enum LogicalOp {
+  LogicalOpMask = 0x60200000,
+  NOT           = 0x00200000,
+  AND           = 0x00000000,
+  BIC           = AND | NOT,
+  ORR           = 0x20000000,
+  ORN           = ORR | NOT,
+  EOR           = 0x40000000,
+  EON           = EOR | NOT,
+  ANDS          = 0x60000000,
+  BICS          = ANDS | NOT
+};
+
+// Logical immediate.
+enum LogicalImmediateOp {
+  LogicalImmediateFixed = 0x12000000,
+  LogicalImmediateMask  = 0xFF800000,
+
+#define W_X_OP(opname, combine_fields)                                                                                 \
+  OPT_W(opname, imm)               = LogicalImmediateFixed | combine_fields | ThirtyTwoBits,                           \
+                OPT_X(opname, imm) = LogicalImmediateFixed | combine_fields | SixtyFourBits
+
+#define W_X_OP_LIST(V) V(AND, AND), V(ORR, ORR), V(EOR, EOR), V(ANDS, ANDS)
+#undef W_X_OP
+#undef W_X_OP_LIST
+};
+
+// Logical shifted register.
+enum LogicalShiftedOp {
+  LogicalShiftedFixed = 0x0A000000,
+  LogicalShiftedMask  = 0xFF200000,
+
+#define W_X_OP(opname, combine_fields)                                                                                 \
+  OPT_W(opname, shift)               = LogicalShiftedFixed | combine_fields | ThirtyTwoBits,                           \
+                OPT_X(opname, shift) = LogicalShiftedFixed | combine_fields | SixtyFourBits
+
+#define W_X_OP_LIST(V)                                                                                                 \
+  V(AND, AND), V(BIC, BIC), V(ORR, ORR), V(ORN, ORN), V(EOR, EOR), V(EON, EON), V(ANDS, ANDS), V(BICS, BICS)
+#undef W_X_OP
+#undef W_X_OP_LIST
+};
+
 #endif

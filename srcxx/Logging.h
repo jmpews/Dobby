@@ -28,7 +28,7 @@
 #include <string.h>
 
 #if defined(DEBUG)
-#define DLOG(fmt, ...) zz::OS::Print(fmt, )
+#define DLOG(fmt, ...) zz::OS::Print(fmt, __VA_ARGS__)
 #else
 #define DLOG(fmt, ...)
 #endif

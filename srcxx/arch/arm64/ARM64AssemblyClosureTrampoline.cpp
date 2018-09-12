@@ -5,12 +5,16 @@
 #include "vm_core_extra/custom-code.h"
 #include "vm_core_extra/code-page-chunk.h"
 
+#include "AssemblyBridge.h"
+
 extern void closure_trampoline_template();
 
 using namespace zz;
 using namespace zz::arm64;
 
-ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *forward_code) {
+ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_hanlder) {
+
+  ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
 
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
@@ -20,24 +24,27 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #else
 // use assembler and codegen modules instead of template_code
 #include "srcxx/AssemblyClosureTrampoline.h"
-#define _ turbo_assembler_->
-  TurboAssembler *turbo_assembler_;
+#define _ turbo_assembler_.
+  TurboAssembler turbo_assembler_;
 
-  PseudoLabel ClosureTrampolineEntryPtr;
-  _ Ldr(Register::X(17), &ClosureTrampolineEntryPtr);
-  _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
-  _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, forward_code));
+  PseudoLabel ClosureTrampolineEntry;
+  PseudoLabel ForwardCode_ClosureBridge;
+  _ Ldr(Register::X(16), &ClosureTrampolineEntry);
+  // _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
+  // _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_hanlder));
+  _ Ldr(Register::X(17), &ForwardCode_ClosureBridge);
   _ br(Register::X(17));
-  _ PseudoBind(&ClosureTrampolineEntryPtr);
-  _ EmitInt64(0); // dummy address
+  _ PseudoBind(&ClosureTrampolineEntry);
+  _ EmitInt64((int64_t)entry);
+  _ PseudoBind(&ForwardCode_ClosureBridge);
+  _ EmitInt64((int64_t)get_closure_bridge());
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
+  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
-  ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
-  entry->address                = (void *)code->raw_instruction_start();
-  entry->carry_data             = carry_data;
-  entry->forward_code           = forward_code;
-  entry->size                   = code->raw_instruction_size();
+  entry->address       = (void *)code->raw_instruction_start();
+  entry->carry_data    = carry_data;
+  entry->carry_hanlder = carry_hanlder;
+  entry->size          = code->raw_instruction_size();
   return entry;
 #endif
 }

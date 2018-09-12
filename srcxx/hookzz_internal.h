@@ -2,6 +2,7 @@
 #define HOOKZZ_INTERNAL_H_
 
 #include "hookzz.h"
+#include "globals.h"
 #include "Logging.h"
 
 typedef struct _InstructionBackupArray {

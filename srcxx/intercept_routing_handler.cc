@@ -79,7 +79,7 @@ void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
 }
 
 void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->forward_code;
+  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->carry_hanlder;
   UserCodeCall(reg_ctx, entry);
   return;
 }

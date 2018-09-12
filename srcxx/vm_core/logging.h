@@ -51,7 +51,7 @@ namespace zz {
 #define DCHECK_OP(name, op, lhs, rhs)                                                                                  \
   do {                                                                                                                 \
     if (lhs op rhs) {                                                                                                  \
-      FATAL(__FILE__, __LINE__, _msg->c_str());                                                                        \
+      FATAL(__FILE__, __LINE__, "");                                                                                   \
     }                                                                                                                  \
   } while (0)
 

@@ -7,13 +7,20 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 enable_language(ASM)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 # SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
 option(CXX "Use cxx source" ON)
 option(SHARED "Build shared library" ON)
+option(DEBUG "Enable debug log" ON)
+
+if(DEBUG)
+    add_definitions(-DDEBUG)
+else()
+    add_definitions(-DDEBUG)
+endif()
 
 
 if(PLATFORM STREQUAL "iOS")

@@ -14,12 +14,12 @@
 ; #include "srcxx/AssemblyClosureTrampoline.h"
 ; #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 #define OFFSETOF_ClourseTrampolineEntry_carry_data 8
-#define OFFSETOF_ClourseTrampolineEntry_forward_code 0
+#define OFFSETOF_ClourseTrampolineEntry_carry_hanlder 0
 .globl cdecl(closure_trampoline_template)
 cdecl(closure_trampoline_template):
     ldr x17, ClourseTrampolineEntryPtr
     ldr x16, OFFSETOF_ClourseTrampolineEntry_carry_data
-    ldr x17, OFFSETOF_ClourseTrampolineEntry_forward_code
+    ldr x17, OFFSETOF_ClourseTrampolineEntry_carry_hanlder
     br x17
 ClourseTrampolineEntryPtr:
     .long 0
@@ -31,12 +31,12 @@ ClourseTrampolineEntryPtr:
 .globl cdecl(closure_trampoline_template)
 cdecl(closure_trampoline_template):
     ldr x16, =carry_data
-    ldr x17, =forward_code
+    ldr x17, =carry_hanlder
     br x17
 carry_data:
     .long 0
     .long 0
-forward_code:
+carry_hanlder:
     .long 0
     .long 0
 
