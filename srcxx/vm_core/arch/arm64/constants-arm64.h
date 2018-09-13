@@ -41,8 +41,6 @@ enum UnconditionalBranchOp {
   B                        = UnconditionalBranchFixed | 0x00000000,
   BL                       = UnconditionalBranchFixed | 0x80000000
 };
-#define UnconditionalBranchOp_imm26(op) (op & 0x3FFFFFFF)
-#define UnconditionalBranchOp_offset(op) ((UnconditionalBranchOp_imm26(op)) << 2)
 
 // Unconditional branch to register.
 enum UnconditionalBranchToRegisterOp {
@@ -158,9 +156,9 @@ enum GenericInstrField { SixtyFourBits = 0x80000000, ThirtyTwoBits = 0x00000000,
 enum MoveWideImmediateOp {
   MoveWideImmediateFixed = 0x12800000,
   MoveWideImmediateMask  = 0xFF800000,
-  MOVN                   = 0x00000000,
-  MOVZ                   = 0x40000000,
-  MOVK                   = 0x60000000,
+  OP(MOVN)               = 0x00000000,
+  OP(MOVZ)               = 0x40000000,
+  OP(MOVK)               = 0x60000000,
 
 // size op
 #define MoveWideImmediateOpSub(sf, opc) MoveWideImmediateFixed | LFT(sf, 1, 31) | LFT(opc, 2, 29)
@@ -172,55 +170,49 @@ enum MoveWideImmediateOp {
   OP_X(MOVK) = MoveWideImmediateFixed | MOVK | SixtyFourBits
 };
 
-// Add/sub (immediate, shifted and extended.)
-enum AddSubOp {
-  AddSubOpMask      = 0x60000000,
-  AddSubSetFlagsBit = 0x20000000,
-  ADD               = 0x00000000,
-  ADDS              = ADD | AddSubSetFlagsBit,
-  SUB               = 0x40000000,
-  SUBS              = SUB | AddSubSetFlagsBit
-};
-
-#define ADD_SUB_OP_LIST(V) V(ADD, ADD), V(ADDS, ADDS), V(SUB, SUB), V(SUBS, SUBS)
-
 enum AddSubImmediateOp {
   AddSubImmediateFixed = 0x11000000,
   AddSubImmediateMask  = 0xFF000000,
 
-// size op
-#define AddSubImmediateOpSub(op_S) AddSubImmediateFixed | op_S
-#define ADD_SUB_IMMEDIATE(opname, op_S)                                                                                \
-  OPT_W(opname, imm)               = AddSubImmediateOpSub(op_S) | ThirtyTwoBits,                                       \
-                OPT_X(opname, imm) = AddSubImmediateOpSub(op_S) | SixtyFourBits
-  ADD_SUB_OP_LIST(ADD_SUB_IMMEDIATE)
-#undef ADD_SUB_IMMEDIATE
+#define AddSubImmediateOpSub(sf, op, S) AddSubImmediateFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+  OPT_W(ADD, imm)  = AddSubImmediateOpSub(0, 0, 0),
+  OPT_W(ADDS, imm) = AddSubImmediateOpSub(0, 0, 1),
+  OPT_W(SUB, imm)  = AddSubImmediateOpSub(0, 1, 0),
+  OPT_W(SUBS, imm) = AddSubImmediateOpSub(0, 1, 1),
+  OPT_X(ADD, imm)  = AddSubImmediateOpSub(1, 0, 0),
+  OPT_X(ADDS, imm) = AddSubImmediateOpSub(1, 0, 1),
+  OPT_X(SUB, imm)  = AddSubImmediateOpSub(1, 1, 0),
+  OPT_X(SUBS, imm) = AddSubImmediateOpSub(1, 1, 1)
 };
 
 enum AddSubShiftedOp {
   AddSubShiftedFixed = 0x0B000000,
   AddSubShiftedMask  = 0xFF200000,
 
-// size op
-#define AddSubShiftedOpSub(op_S) AddSubShiftedFixed | op_S
-#define ADD_SUB_SHIFTED(opname, op_S)                                                                                  \
-  OPT_W(opname, shift)               = AddSubShiftedOpSub(op_S) | ThirtyTwoBits,                                       \
-                OPT_X(opname, shift) = AddSubShiftedOpSub(op_S) | SixtyFourBits
-  ADD_SUB_OP_LIST(ADD_SUB_SHIFTED)
-#undef ADD_SUB_SHIFTED
+#define AddSubShiftedOpSub(sf, op, S) AddSubShiftedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+  OPT_W(ADD, shift)  = AddSubShiftedOpSub(0, 0, 0),
+  OPT_W(ADDS, shift) = AddSubShiftedOpSub(0, 0, 1),
+  OPT_W(SUB, shift)  = AddSubShiftedOpSub(0, 1, 0),
+  OPT_W(SUBS, shift) = AddSubShiftedOpSub(0, 1, 1),
+  OPT_X(ADD, shift)  = AddSubShiftedOpSub(1, 0, 0),
+  OPT_X(ADDS, shift) = AddSubShiftedOpSub(1, 0, 1),
+  OPT_X(SUB, shift)  = AddSubShiftedOpSub(1, 1, 0),
+  OPT_X(SUBS, shift) = AddSubShiftedOpSub(1, 1, 1)
 };
 
 enum AddSubExtendedOp {
   AddSubExtendedFixed = 0x0B200000,
   AddSubExtendedMask  = 0xFFE00000,
 
-// size op
-#define AddSubExtendedOpSub(op_S) AddSubExtendedFixed | op_S
-#define ADD_SUB_EXTENDED(opname, op_S)                                                                                 \
-  OPT_W(opname, extend)               = AddSubExtendedOpSub(op_S) | ThirtyTwoBits,                                     \
-                OPT_X(opname, extend) = AddSubExtendedOpSub(op_S) | SixtyFourBits
-  ADD_SUB_OP_LIST(ADD_SUB_EXTENDED)
-#undef ADD_SUB_EXTENDED
+#define AddSubExtendedOpSub(sf, op, S) AddSubExtendedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+  OPT_W(ADD, extend)  = AddSubExtendedOpSub(0, 0, 0),
+  OPT_W(ADDS, extend) = AddSubExtendedOpSub(0, 0, 1),
+  OPT_W(SUB, extend)  = AddSubExtendedOpSub(0, 1, 0),
+  OPT_W(SUBS, extend) = AddSubExtendedOpSub(0, 1, 1),
+  OPT_X(ADD, extend)  = AddSubExtendedOpSub(1, 0, 0),
+  OPT_X(ADDS, extend) = AddSubExtendedOpSub(1, 0, 1),
+  OPT_X(SUB, extend)  = AddSubExtendedOpSub(1, 1, 0),
+  OPT_X(SUBS, extend) = AddSubExtendedOpSub(1, 1, 1)
 };
 
 // Logical (immediate and shifted register).

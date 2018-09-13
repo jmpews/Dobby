@@ -69,6 +69,9 @@ private:
 
 class Operand {
 public:
+  inline explicit Operand(int64_t imm)
+      : immediate_(imm), reg_(InvalidRegister), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extent_imm_(0) {
+  }
   inline Operand(Register reg, Shift shift = LSL, int32_t imm = 0)
       : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(imm) {
   }
@@ -77,7 +80,7 @@ public:
   }
 
   bool Operand::IsImmediate() const {
-    return reg_.Is(InvalidRegister);
+    return reg_.Is(InvalidRegister) && imm != 0;
   }
 
   bool IsShiftedRegister() const {
@@ -220,8 +223,16 @@ public:
   }
 
   void add(const Register &rd, const Register &rn, int64_t imm) {
+    AddSubImmediate(rd, rn, Operand(imm), OPT_X(ADD, imm));
+  }
+  void adds(const Register &rd, const Register &rn, int64_t imm) {
+    UNREACHABLE();
   }
   void sub(const Register &rd, const Register &rn, int64_t imm) {
+    AddSubImmediate(rd, rn, Operand(imm), OPT_X(SUB, imm));
+  }
+  void sub(const Register &rd, const Register &rn, int64_t imm) {
+    UNREACHABLE();
   }
 
   void b(Label *label) {
@@ -231,17 +242,8 @@ public:
   void br(Register rn) {
     Emit(BR | Rn(rn));
   }
-
   void blr(Register rn) {
     Emit(BLR | Rn(rn));
-  }
-
-  void mov(const Register &rd, const Register &rn) {
-    if ((rd == SP) || (rn == SP)) {
-      add(rd, rn, 0);
-    } else {
-      orr(rd, ZR, Operand(rn));
-    }
   }
 
   // load literal
@@ -268,37 +270,38 @@ public:
     }
     EmitLoadRegLiteral(op, rt, imm);
   }
-
   void ldr(const CPURegister &rt, const MemOperand &src) {
     LoadStoreUnscaledOffsetOp op = OP_X(LDR);
     LoadStoreReg(op, rt, src);
   }
-
   void str(const CPURegister &rt, const MemOperand &src) {
     LoadStoreUnscaledOffsetOp op = OP_X(STR);
     LoadStoreReg(op, rt, src);
   }
-
   void ldp(const Register &rt, const Register &rt2, const MemOperand &src) {
     LoadStorePair(OPT_X(LDP, pair), rt, rt2, src);
   }
-
   void stp(const Register &rt, const Register &rt2, const MemOperand &dst) {
     LoadStorePair(OPT_X(STP, pair), rt, rt2, dst);
   }
 
-  // Move and keep.
+  void mov(const Register &rd, const Register &rn) {
+    if ((rd == SP) || (rn == SP)) {
+      add(rd, rn, 0);
+    } else {
+      orr(rd, ZR, Operand(rn));
+    }
+  }
   void movk(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move and keep.
     MoveWide(rd, imm, shift, MOVK);
   }
-
-  // Move with non-zero.
   void movn(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move with non-zero.
     MoveWide(rd, imm, shift, MOVN);
   }
-
-  // Move with zero.
   void movz(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move with zero.
     MoveWide(rd, imm, shift, MOVZ);
   }
 
@@ -344,14 +347,11 @@ private:
     Emit(MoveWideImmediateFixed | op | sf(rd) | LFT(shift, 2, 21) | imm16 | Rd(rd));
   }
 
-  void AddSub(const Register &rd, const Register &rn, const Operand &operand, FlagsUpdate S, AddSubOp op) {
+  void AddSubImmediate(const Register &rd, const Register &rn, const Operand &operand, AddSubImmediateOp op) {
     if (operand.IsImmediate()) {
       int64_t immediate = operand.Immediate();
-
-      Emit(AddSubImmediateFixed | op | sf(rd) | Flags(S) | ImmAddSub(static_cast<int>(immediate)) | dest_reg |
-           RnSP(rn));
-    } else if (operand.IsShiftedRegister()) {
-      UNREACHABLE();
+      int32_t imm12     = LFT(immediate, 12, 10);
+      Emit(op | Rd(rd) | Rn(rn) | imm12);
     } else {
       UNREACHABLE();
     }
