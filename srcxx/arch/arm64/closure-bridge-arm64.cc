@@ -21,10 +21,10 @@ void *get_closure_bridge() {
   closure_bridge = closure_bridge_template;
 // otherwise, use the Assembler build the closure_bridge
 #else
-#define _ turbo_assembler_->
+#define _ turbo_assembler_.
 #define MEM(reg, offset) MemOperand(reg, offset)
 #define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
-  TurboAssembler *turbo_assembler_;
+  TurboAssembler turbo_assembler_;
 
   // save {q0-q7}
   _ sub(SP, SP, 8 * 16);
@@ -91,7 +91,7 @@ void *get_closure_bridge() {
   // branch to next hop, @modify by `xxx_routing_dispatch`
   _ br(X(17));
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(turbo_assembler_);
+  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
 
 #endif

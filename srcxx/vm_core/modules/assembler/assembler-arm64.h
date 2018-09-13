@@ -265,7 +265,6 @@ public:
   }
 
   Code *GetCode() {
-    return NULL;
   }
 
   void FlushICache();
@@ -467,10 +466,12 @@ public:
   }
 
   void CommitRealize(void *address) {
+    released_address_ = address;
   }
 
   Code *GetCode() {
-    return NULL;
+    Code *code = new Code(released_address_, CodeSize());
+    return code;
   }
 
   // =====
@@ -521,6 +522,8 @@ public:
 
 private:
   Assembler assembler_;
+
+  void *released_address_;
 };
 
 } // namespace arm64

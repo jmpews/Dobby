@@ -10,6 +10,8 @@ namespace zz {
 class Code : public Object {
 
 public:
+  Code(void *address, size_t size) : instructions_((uint8_t *)address), instruction_size_(size) {
+  }
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static Code *FinalizeCode(uintptr_t address, int size);
 
@@ -24,7 +26,7 @@ public:
   };
 
   // dummy method
-  void Commit();
+  // void Commit();
 
 private:
   uint8_t *instructions_;

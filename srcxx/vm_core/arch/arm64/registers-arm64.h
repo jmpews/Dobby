@@ -38,6 +38,8 @@ public:
     return CPURegister(code, size, type);
   }
 
+  // =====
+
   static constexpr CPURegister X(int code) {
     return CPURegister(code, 64, kRegister_64);
   }
@@ -50,13 +52,11 @@ public:
     return CPURegister(code, 128, kSIMD_FP_Register_128);
   }
 
-  static constexpr CPURegister SP() {
-    return CPURegister(63, 64, kRegister_64);
-  }
-
-  static constexpr CPURegister None() {
+  static constexpr CPURegister InvalidRegister() {
     return CPURegister(0, 0, kInvalid);
   }
+
+  // =====
 
   bool Is(const CPURegister &reg) const {
     return (reg.reg_code_ == this->reg_code_);
@@ -73,6 +73,8 @@ public:
   bool IsVRegister() const {
     return reg_type_ > kVRegister;
   }
+
+  // =====
 
   RegisterType type() const {
     return reg_type_;
@@ -106,7 +108,7 @@ typedef CPURegister VRegister;
     GENERAL_REGISTER_CODE_LIST(DEFINE_REGISTERS)
 #undef DEFINE_REGISTERS
 
-#define DEFINE_VREGISTERS(N)                                                                                           \
+#define DEFINE_VREGISTERS(N)  \
   DEFINE_REGISTER(VRegister, b##N, N, 8, CPURegister::kSIMD_FP_Register_8);                                                                \
   DEFINE_REGISTER(VRegister, h##N, N, 16, CPURegister::kSIMD_FP_Register_16);                                                                \
   DEFINE_REGISTER(VRegister, s##N, N, 32, CPURegister::kSIMD_FP_Register_32);                                                                \
@@ -118,15 +120,23 @@ GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 #undef DEFINE_REGISTER
 // clang-format on
 
+// =====
+
 constexpr Register wzr = w31;
 constexpr Register xzr = x31;
+
+constexpr Register SP  = x15;
+constexpr Register wSP = w15;
+constexpr Register FP  = x29;
+constexpr Register wFP = w29;
+constexpr Register LR  = x30;
+constexpr Register wLR = w30;
 
 } // namespace arm64
 } // namespace zz
 
 #define X(code) CPURegister::X(code)
 #define Q(code) CPURegister::Q(code)
-#define SP CPURegister::SP()
-#define InvalidRegister CPURegister::None()
+#define InvalidRegister CPURegister::InvalidRegister()
 
 #endif
