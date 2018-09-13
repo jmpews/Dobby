@@ -23,21 +23,23 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 
 #else
 // use assembler and codegen modules instead of template_code
+// _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
+// _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_hanlder));
 #include "srcxx/AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_;
 
   PseudoLabel ClosureTrampolineEntry;
   PseudoLabel ForwardCode_ClosureBridge;
-  _ Ldr(Register::X(16), &ClosureTrampolineEntry);
-  // _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
-  // _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_hanlder));
-  _ Ldr(Register::X(17), &ForwardCode_ClosureBridge);
-  _ br(Register::X(17));
+  // ===
+  _ Ldr(x16, &ClosureTrampolineEntry);
+  _ Ldr(x17, &ForwardCode_ClosureBridge);
+  _ br(x17);
   _ PseudoBind(&ClosureTrampolineEntry);
   _ EmitInt64((int64_t)entry);
   _ PseudoBind(&ForwardCode_ClosureBridge);
-  _ EmitInt64((int64_t)get_closure_bridge());
+  _ EmitInt64((int64_t)get_closure_bridge);
+  // ===
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 

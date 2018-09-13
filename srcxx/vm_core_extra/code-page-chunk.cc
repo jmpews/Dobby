@@ -50,6 +50,9 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   vm_inherit_t inherit;
   kern_return_t kr;
   mach_port_t task_self = mach_task_self();
+  
+  // =====
+  
   vm_address_t region   = (vm_address_t)page_address;
   vm_size_t region_size = 0;
   struct vm_region_submap_short_info_64 info;
@@ -59,23 +62,32 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
-
+  prot = info.protection;
+  inherit = info.inheritance;
+  
+  // =====
+  
   kr = vm_copy(task_self, (vm_address_t)page_address, page_size, (vm_address_t)remap_page);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
 
   memcpy((void *)(remap_page + offset), buffer, size);
+  
+  // =====
 
   PageAllocator::SetPermissions((void *)remap_page, page_size, OS::MemoryPermission::kReadExecute);
 
+  // =====
+  
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
   vm_prot_t cur_protection, max_protection;
-
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
                      (mach_vm_address_t)remap_page, TRUE, &cur_protection, &max_protection, inherit);
 
+  CHECK_EQ(kr, KERN_SUCCESS);
   if (kr != KERN_SUCCESS) {
+    // perror((const char *)strerror(errno));
     return kMemoryOperationError;
   }
 

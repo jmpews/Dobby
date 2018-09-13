@@ -14,7 +14,8 @@ AssemblerCode *AssemblerCode::FinalizeTurboAssembler(AssemblerBase *assembler) {
   TurboAssembler *turbo_assembler = reinterpret_cast<TurboAssembler *>(assembler);
   int code_size                   = turbo_assembler->CodeSize();
   // Allocate the executable memory
-  void *code_address = CodeChunk::AllocateCode(code_size);
+  MemoryRegion *code_region = CodeChunk::AllocateCode(code_size);
+  void *code_address = code_region->pointer();
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
   turbo_assembler->CommitRealize(code_address);
   CodeChunk::PatchCodeBuffer(code_address, turbo_assembler->GetCodeBuffer());

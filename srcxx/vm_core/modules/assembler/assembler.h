@@ -36,7 +36,6 @@ public:
       return -pos_ - 1;
     if (pos_ > 0)
       return pos_ - 1;
-    UNREACHABLE();
     return 0;
   }
   void bind_to(int pos) {
@@ -79,6 +78,8 @@ public:
   int pc_offset() const {
     return buffer_.Size();
   }
+  
+  // =====
 
   size_t CodeSize() {
     return buffer_.Size();
@@ -87,15 +88,21 @@ public:
   CodeBuffer *GetCodeBuffer() {
     return &buffer_;
   }
+  
+  virtual Code *GetCode() = 0;
+  
+  // =====
 
   virtual void CommitRealize(void *address) = 0;
 
-  virtual Code *GetCode() = 0;
-
+  // =====
+  
   static void FlushICache(void *start, size_t size);
   static void FlushICache(uintptr_t start, size_t size) {
     return FlushICache(reinterpret_cast<void *>(start), size);
   }
+  
+  // =====
 
 protected:
   CodeBuffer buffer_;

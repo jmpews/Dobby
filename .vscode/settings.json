@@ -1,9 +1,9 @@
 {
-  	"files.autoSave": "onFocusChange",
-	"files.autoSaveDelay": 3000,
-	"editor.formatOnSave": true,
+  "files.autoSave": "onFocusChange",
+  "files.autoSaveDelay": 3000,
+  "editor.formatOnSave": true,
   "cmake.environment": {
-    "CFLAGS":"-DIOS -arch arm64 -miphoneos-version-min=6.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
+    "CFLAGS": "-DIOS -arch arm64 -miphoneos-version-min=6.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
   },
   "cmake.configureArgs": [
     "-DSHARED=ON",
@@ -11,8 +11,8 @@
     "-DARCH=arm64",
     "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
   ],
-  "cmake.buildToolArgs": [
-  ],
+  "cmake.buildArgs": [],
+  "cmake.buildToolArgs": [],
   "cmake.parallelJobs": 1,
   "files.associations": {
     "stack": "cpp",
@@ -61,5 +61,4 @@
     "*.tcc": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
-
 }

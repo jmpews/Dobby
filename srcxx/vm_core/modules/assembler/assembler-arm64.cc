@@ -14,7 +14,6 @@ void Assembler::EmitInt64(uint64_t value) {
   buffer_.Emit64(value);
 }
 
-// Refer: V8 & Dart
 void Assembler::bind(Label *label) {
   const intptr_t bound_pc = pc_offset();
   while (label->is_linked()) {
@@ -23,7 +22,8 @@ void Assembler::bind(Label *label) {
 
     int prevlinkpos = 0;
     if ((inst32 & UnconditionalBranchMask) == UnconditionalBranchFixed) {
-      prevlinkpos = UnconditionalBranchOp_offset(inst32);
+      // TODO
+      // prevlinkpos = UnconditionalBranchOp_offset(inst32);
     }
 
     if (prevlinkpos == kStartOfLabelLinkChain) {
@@ -33,7 +33,6 @@ void Assembler::bind(Label *label) {
   label->bind_to(bound_pc);
 }
 
-// Refer: V8 & Dart
 int Assembler::LinkAndGetByteOffsetTo(Label *label) {
   int offset;
 

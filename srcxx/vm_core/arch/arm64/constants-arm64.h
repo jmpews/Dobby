@@ -11,10 +11,25 @@ enum AddrMode { Offset, PreIndex, PostIndex };
 
 enum FlagsUpdate { SetFlags = 1, LeaveFlags = 0 };
 
-#define Rd(rd) (rd.code())
-#define Rt(rt) (rt.code())
-#define Rt2(rt) (rt.code())
-#define Rn(rn) (rn.code())
+enum InstructionFields {
+
+  // Registers.
+  kRdShift  = 0,
+  kRdBits   = 5,
+  kRnShift  = 5,
+  kRnBits   = 5,
+  kRaShift  = 10,
+  kRaBits   = 5,
+  kRmShift  = 16,
+  kRmBits   = 5,
+  kRtShift  = 0,
+  kRtBits   = 5,
+  kRt2Shift = 10,
+  kRt2Bits  = 5,
+  kRsShift  = 16,
+  kRsBits   = 5,
+
+};
 
 #define OP(op) op
 #define OP_W(op) op##_w
@@ -150,7 +165,7 @@ enum LoadStorePairOffsetOp {
 enum GenericInstrField { SixtyFourBits = 0x80000000, ThirtyTwoBits = 0x00000000, FP32 = 0x00000000, FP64 = 0x00400000 };
 
 // Generic utils
-#define sf(rd) (rd.Is64Bits() ? SixtyFourBits : ThirtyTwoBits)
+// #define sf(rd) (rd.Is64Bits() ? SixtyFourBits : ThirtyTwoBits)
 
 // Move wide immediate.
 enum MoveWideImmediateOp {

@@ -10,22 +10,25 @@ namespace arm64 {
 class CPURegister {
 public:
   enum RegisterType {
-    Register_32,
-    Register_W = Register_32,
-    Register_64,
-    Register_X = Register_64,
+    kRegister_32,
+    kRegister_W = kRegister_32,
+    kRegister_64,
+    kRegister_X = kRegister_64,
+    kRegister,
 
-    SIMD_FP_Register_8,
-    SIMD_FP_Register_B = SIMD_FP_Register_8,
-    SIMD_FP_Register_16,
-    SIMD_FP_Register_H = SIMD_FP_Register_16,
-    SIMD_FP_Register_32,
-    SIMD_FP_Register_S = SIMD_FP_Register_32,
-    SIMD_FP_Register_64,
-    SIMD_FP_Register_D = SIMD_FP_Register_64,
-    SIMD_FP_Register_128,
-    SIMD_FP_Register_Q = SIMD_FP_Register_128,
-    Invalid
+    kVRegister,
+    kSIMD_FP_Register_8,
+    kSIMD_FP_Register_B = kSIMD_FP_Register_8,
+    kSIMD_FP_Register_16,
+    kSIMD_FP_Register_H = kSIMD_FP_Register_16,
+    kSIMD_FP_Register_32,
+    kSIMD_FP_Register_S = kSIMD_FP_Register_32,
+    kSIMD_FP_Register_64,
+    kSIMD_FP_Register_D = kSIMD_FP_Register_64,
+    kSIMD_FP_Register_128,
+    kSIMD_FP_Register_Q = kSIMD_FP_Register_128,
+
+    kInvalid
   };
 
   constexpr CPURegister(int code, int size, RegisterType type) : reg_code_(code), reg_size_(size), reg_type_(type) {
@@ -36,31 +39,39 @@ public:
   }
 
   static constexpr CPURegister X(int code) {
-    return CPURegister(code, 64, Register_64);
+    return CPURegister(code, 64, kRegister_64);
   }
 
   static constexpr CPURegister W(int code) {
-    return CPURegister(code, 32, Register_32);
+    return CPURegister(code, 32, kRegister_32);
   }
 
   static constexpr CPURegister Q(int code) {
-    return CPURegister(code, 128, SIMD_FP_Register_128);
+    return CPURegister(code, 128, kSIMD_FP_Register_128);
   }
 
   static constexpr CPURegister SP() {
-    return CPURegister(63, 64, Register_64);
+    return CPURegister(63, 64, kRegister_64);
   }
 
   static constexpr CPURegister None() {
-    return CPURegister(0, 0, Invalid);
+    return CPURegister(0, 0, kInvalid);
   }
 
-  bool Is(CPURegister &reg) {
-    reg.reg_code_ == this->reg_code_;
+  bool Is(const CPURegister &reg) const {
+    return (reg.reg_code_ == this->reg_code_);
   }
 
   bool Is64Bits() const {
     return reg_size_ == 64;
+  }
+
+  bool IsRegister() const {
+    return reg_type_ < kRegister;
+  }
+
+  bool IsVRegister() const {
+    return reg_type_ > kVRegister;
   }
 
   RegisterType type() const {
@@ -90,22 +101,25 @@ typedef CPURegister VRegister;
 #define DEFINE_REGISTER(register_class, name, ...) constexpr register_class name = register_class::Create(__VA_ARGS__)
 
 #define DEFINE_REGISTERS(N)                                                                                            \
-  DEFINE_REGISTER(Register, w##N, N, 32, CPURegister::Register_32);                                                                 \
-  DEFINE_REGISTER(Register, x##N, N, 64, CPURegister::Register_64);
+  DEFINE_REGISTER(Register, w##N, N, 32, CPURegister::kRegister_32);                                                                 \
+  DEFINE_REGISTER(Register, x##N, N, 64, CPURegister::kRegister_64);
     GENERAL_REGISTER_CODE_LIST(DEFINE_REGISTERS)
 #undef DEFINE_REGISTERS
 
 #define DEFINE_VREGISTERS(N)                                                                                           \
-  DEFINE_REGISTER(VRegister, b##N, N, 8, CPURegister::SIMD_FP_Register_8);                                                                \
-  DEFINE_REGISTER(VRegister, h##N, N, 16, CPURegister::SIMD_FP_Register_16);                                                                \
-  DEFINE_REGISTER(VRegister, s##N, N, 32, CPURegister::SIMD_FP_Register_32);                                                                \
-  DEFINE_REGISTER(VRegister, d##N, N, 64, CPURegister::SIMD_FP_Register_64);                                                                \
-  DEFINE_REGISTER(VRegister, q##N, N, 128, CPURegister::SIMD_FP_Register_128);                                                                \
+  DEFINE_REGISTER(VRegister, b##N, N, 8, CPURegister::kSIMD_FP_Register_8);                                                                \
+  DEFINE_REGISTER(VRegister, h##N, N, 16, CPURegister::kSIMD_FP_Register_16);                                                                \
+  DEFINE_REGISTER(VRegister, s##N, N, 32, CPURegister::kSIMD_FP_Register_32);                                                                \
+  DEFINE_REGISTER(VRegister, d##N, N, 64, CPURegister::kSIMD_FP_Register_64);                                                                \
+  DEFINE_REGISTER(VRegister, q##N, N, 128, CPURegister::kSIMD_FP_Register_128);                                                                \
 GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 #undef DEFINE_VREGISTERS
 
 #undef DEFINE_REGISTER
 // clang-format on
+
+constexpr Register wzr = w31;
+constexpr Register xzr = x31;
 
 } // namespace arm64
 } // namespace zz

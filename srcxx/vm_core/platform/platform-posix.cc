@@ -34,6 +34,8 @@
 
 namespace zz {
 
+// =====
+  
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
 #else
@@ -134,6 +136,8 @@ bool OS::SetPermissions(void *address, size_t size, MemoryPermission access) {
 
   return ret == 0;
 }
+  
+// ======
 
 int OS::GetCurrentProcessId() {
   return static_cast<int>(getpid());
