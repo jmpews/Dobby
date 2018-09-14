@@ -16,6 +16,8 @@ public:
     cursor_ = buffer_;
   }
 
+  // =====
+  
   int32_t Load32(intptr_t position) {
     return *reinterpret_cast<int32_t *>(buffer_ + position);
   }
@@ -23,19 +25,32 @@ public:
   void Store32(intptr_t position, int32_t value) {
     *reinterpret_cast<int32_t *>(buffer_ + position) = value;
   }
+  
+  // =====
 
   void Emit(int32_t inst) {
+    Ensure(sizeof(int32_t));
     memcpy(cursor_, &inst, sizeof(inst));
     cursor_ += sizeof(inst);
   }
 
   void Emit64(int64_t inst) {
+    Ensure(sizeof(int64_t));
     memcpy(cursor_, &inst, sizeof(inst));
     cursor_ += sizeof(inst);
+  }
+  
+  template <typename T>
+  void Emit(T value) {
+    Ensure(sizeof(T));
+    *reinterpret_cast<T*>(cursor_) = value;
+    cursor_ += sizeof(T);
   }
 
   void EmitObject(const Object *object) {
   }
+  
+  // =====
 
   size_t Size() const {
     return cursor_ - buffer_;
@@ -44,8 +59,20 @@ public:
   void *RawBuffer() {
     return buffer_;
   }
+  
+  // =====
+  
+  void Ensure(int size) {
+    if((cursor_ + size) >= (buffer_+capacity_)) {
+      Grow(2*capacity_);
+    }
+  }
 
   void Grow(size_t new_capacity) {
+    byte *buffer = (byte *)realloc(buffer_, new_capacity);
+    cursor_ = buffer + Size();
+    buffer_ = buffer;
+    capacity_  = new_capacity;
   }
 
 private:

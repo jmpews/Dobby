@@ -90,7 +90,7 @@ public:
   // =====
 
   bool IsImmediate() const {
-    return reg_.Is(InvalidRegister) && immediate_ != 0;
+    return reg_.Is(InvalidRegister);
   }
   bool IsShiftedRegister() const {
     return /* reg_.IsValid() && */ (shift_ != NO_SHIFT);
@@ -220,6 +220,7 @@ public:
     return (op | sf(reg));
   }
 
+  // register operation size, 32 bits or 64 bits
   static int32_t sf(const Register &reg) {
     if (reg.Is64Bits())
       return LFT(1, 1, 31);
@@ -230,16 +231,27 @@ public:
     return (op | V(reg));
   }
 
+  // register type, SIMD_FD register or general register
   static int32_t V(const Register &reg) {
     if (reg.IsVRegister())
       return LFT(1, 1, 26);
     return 0;
   }
 
+  // load or store
+  static int32_t L(bool load_or_store) {
+    if (load_or_store) {
+      return LFT(1, 1, 22);
+    }
+    return 0;
+  }
+
+  // shift type
   static int32_t shift(Shift shift) {
     return LFT(shift, 2, 22);
   }
 
+  // LogicalImmeidate
   static int32_t EncodeLogicalImmediate(const Register &rd, const Register &rn, const Operand &operand) {
     int64_t imm = operand.Immediate();
     int32_t N, imms, immr;
@@ -250,9 +262,35 @@ public:
     return (sf(rd) | LFT(immr, 6, 16) | LFT(imms, 6, 10) | Rd(rd) | Rn(rn));
   }
 
+  // LogicalShift
   static int32_t EncodeLogicalShift(const Register &rd, const Register &rn, const Operand &operand) {
     return (sf(rd) | shift(operand.shift()) | Rm(operand.reg()) | LFT(operand.shift_extend_imm(), 6, 10) | Rn(rn) |
             Rd(rd));
+  }
+
+  // LoadStore
+  static int32_t LoadStorePair(LoadStorePairOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
+    int32_t scale = 2;
+    int32_t opc   = 0;
+    int imm7;
+    opc = bits(op, 30, 31);
+    if (rt.IsRegister()) {
+      scale += bit(opc, 1);
+    } else if (rt.IsVRegister()) {
+      scale += opc;
+    }
+
+    imm7 = addr.offset() >> scale;
+    return LFT(imm7, 7, 15);
+  }
+  
+  // scale
+  static int32_t scale(int32_t op) {
+    int scale = 0;
+    if((op & LoadStoreUnsignedOffsetFixed)  == LoadStoreUnsignedOffsetFixed) {
+      scale = bits(op, 30, 31);
+    }
+    return scale;
   }
 };
 
@@ -344,18 +382,28 @@ public:
     EmitLoadRegLiteral(op, rt, imm);
   }
   void ldr(const CPURegister &rt, const MemOperand &src) {
-    LoadStoreUnscaledOffsetOp op = OP_X(LDR);
-    LoadStoreReg(op, rt, src);
+    LoadStore(OP_X(LDR), rt, src);
   }
   void str(const CPURegister &rt, const MemOperand &src) {
-    LoadStoreUnscaledOffsetOp op = OP_X(STR);
-    LoadStoreReg(op, rt, src);
+    LoadStore(OP_X(STR), rt, src);
   }
   void ldp(const Register &rt, const Register &rt2, const MemOperand &src) {
-    LoadStorePair(OPT_X(LDP, pair), rt, rt2, src);
+    if (rt.type() == Register::kSIMD_FP_Register_128) {
+      LoadStorePair(OP_Q(LDP), rt, rt2, src);
+    } else if (rt.type() == Register::kRegister_X) {
+      LoadStorePair(OP_X(LDP), rt, rt2, src);
+    } else {
+      UNREACHABLE();
+    }
   }
   void stp(const Register &rt, const Register &rt2, const MemOperand &dst) {
-    LoadStorePair(OPT_X(STP, pair), rt, rt2, dst);
+    if (rt.type() == Register::kSIMD_FP_Register_128) {
+      LoadStorePair(OP_Q(STP), rt, rt2, dst);
+    } else if (rt.type() == Register::kRegister_X) {
+      LoadStorePair(OP_X(STP), rt, rt2, dst);
+    } else {
+      UNREACHABLE();
+    }
   }
 
   // =====
@@ -399,30 +447,48 @@ private:
     const int32_t encoding = op | LFT(imm, 26, 5) | Rt(rt);
     Emit(encoding);
   }
-  void LoadStoreReg(LoadStoreUnscaledOffsetOp op, CPURegister rt, const MemOperand &addr) {
-    int64_t imm12          = addr.offset();
-    const int32_t encoding = op | LFT(imm12, 12, 10) | Rt(addr.regoffset()) | Rt(rt);
-    Emit(encoding);
-  }
-  void LoadStorePair(LoadStorePairOffsetOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
-    int scale     = bits(op, 30, 31);
-    int32_t imm7  = addr.offset() >> scale;
-    int32_t memop = op | imm7 | Rt2(rt2) | Rn(addr.regoffset()) | Rt(rt);
 
-    int32_t addrmodeop;
-    if (addr.IsPreIndex()) {
-      addrmodeop = 0;
+  // =====
+
+  void LoadStore(LoadStoreOp op, CPURegister rt, const MemOperand &addr) {
+    int64_t imm12          = addr.offset();
+    if (addr.IsImmediateOffset()) {
+      // TODO: check Scaled ???
+      imm12 = addr.offset() >> OpEncode::scale(LoadStoreUnsignedOffsetFixed | op);
+      Emit(LoadStoreUnsignedOffsetFixed | op | LFT(imm12, 12, 10) | Rn(addr.base()) | Rt(rt));
+    } else if (addr.IsRegisterOffset()) {
+      UNREACHABLE();
     } else {
-      addrmodeop = 0;
+      // pre-index & post-index
+      UNREACHABLE();
     }
-    Emit(addrmodeop | memop);
+  }
+
+  // =====
+
+  void LoadStorePair(LoadStorePairOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
+    int32_t combine_fields_op = OpEncode::LoadStorePair(op, rt, rt2, addr) | Rt2(rt2) | Rn(addr.base()) | Rt(rt);
+    int32_t addrmodeop;
+
+    if (addr.IsImmediateOffset()) {
+      addrmodeop = LoadStorePairOffsetFixed;
+    } else {
+      if (addr.IsPreIndex()) {
+        addrmodeop = LoadStorePairPreIndexFixed;
+      } else {
+        addrmodeop = LoadStorePairPostIndexFixed;
+      }
+    }
+    Emit(op | addrmodeop | combine_fields_op);
   }
 
   // =====
 
   void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp op) {
-    assert(shift >= 0);
-    shift /= 16;
+    if(shift > 0)
+      shift /= 16;
+    else
+      shift = 0;
 
     int32_t imm16 = LFT(imm, 16, 5);
     Emit(MoveWideImmediateFixed | op | OpEncode::sf(rd) | LFT(shift, 2, 21) | imm16 | Rd(rd));
@@ -455,7 +521,7 @@ private:
   }
   void LogicalShift(const Register &rd, const Register &rn, const Operand &operand, LogicalOp op) {
     int32_t combine_fields_op = OpEncode::EncodeLogicalShift(rd, rn, operand);
-    Emit(op | combine_fields_op);
+    Emit(op | LogicalShiftedFixed | combine_fields_op);
   }
 
 }; // namespace arm64

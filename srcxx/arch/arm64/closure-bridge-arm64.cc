@@ -15,6 +15,7 @@ void *get_closure_bridge() {
   if (closure_bridge)
     return closure_bridge;
 
+
 // check if enable the inline-assembly closure_bridge_template
 #if ENABLE_CLOSURE_BRIDGE_TEMPLATE
   extern void closure_bridge_tempate();
@@ -93,6 +94,8 @@ void *get_closure_bridge() {
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
+  
+  DLOG("[*] Build the closure bridge at %p\n",closure_bridge);
 
 #endif
   return (void *)closure_bridge;

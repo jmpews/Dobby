@@ -49,6 +49,8 @@ enum InstructionFields {
 #define OPT_D(op, attribute) op##_d_##attribute
 #define OPT_Q(op, attribute) op##_q_##attribute
 
+// =====
+
 // Unconditional branch.
 enum UnconditionalBranchOp {
   UnconditionalBranchFixed = 0x14000000,
@@ -56,6 +58,8 @@ enum UnconditionalBranchOp {
   B                        = UnconditionalBranchFixed | 0x00000000,
   BL                       = UnconditionalBranchFixed | 0x80000000
 };
+
+// =====
 
 // Unconditional branch to register.
 enum UnconditionalBranchToRegisterOp {
@@ -65,6 +69,8 @@ enum UnconditionalBranchToRegisterOp {
   BLR                                = UnconditionalBranchToRegisterFixed | 0x003F0000,
   RET                                = UnconditionalBranchToRegisterFixed | 0x005F0000
 };
+
+// =====
 
 enum LoadRegLiteralOp {
   LoadRegLiteralFixed = 0x18000000,
@@ -79,6 +85,8 @@ enum LoadRegLiteralOp {
   OPT_D(LDR, literal) = LoadRegLiteralSub(0b01, 1),
   OPT_Q(LDR, literal) = LoadRegLiteralSub(0b10, 1),
 };
+
+// =====
 
 // clang-format off
 #define LOAD_STORE_OP_LIST(V)   \
@@ -108,15 +116,35 @@ enum LoadRegLiteralOp {
   V(OP_D(LDR),    0b11, 1, 0b01),
 // clang-format on
 
+// Load/store
+enum LoadStoreOp {
+#define LoadStoreOpSub(size, V, opc) LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+#define LOAD_STORE(opname, size, V, opc) OP(opname) = LoadStoreOpSub(size, V, opc)
+  LOAD_STORE_OP_LIST(LOAD_STORE)
+#undef LOAD_STORE
+};
+
+// Load/store register offset.
+enum LoadStoreRegisterOffsetOp {
+  LoadStoreRegisterOffsetFixed = 0x38200800,
+  LoadStoreRegisterOffsetMask  = 0xFFE00C00,
+
+#define LoadStoreRegisterOffsetOpSub(size, V, opc)                                                                     \
+  LoadStoreRegisterOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+#define LOAD_STORE_REGISTER_OFFSET(opname, size, V, opc)                                                               \
+  OPT(opname, register) = LoadStoreRegisterOffsetOpSub(size, V, opc)
+  LOAD_STORE_OP_LIST(LOAD_STORE_REGISTER_OFFSET)
+#undef LOAD_STORE_REGISTER_OFFSET
+};
+
 // Load/store register (unscaled immediate)
 enum LoadStoreUnscaledOffsetOp {
   LoadStoreUnscaledOffsetFixed = 0x38000000,
   LoadStoreUnscaledOffsetMask  = 0xFFE00C00,
 
-// size op
 #define LoadStoreUnscaledOffsetOpSub(size, V, opc)                                                                     \
   LoadStoreUnscaledOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
-#define LOAD_STORE_UNSCALED(opname, size, V, opc) opname = LoadStoreUnscaledOffsetOpSub(size, V, opc)
+#define LOAD_STORE_UNSCALED(opname, size, V, opc) OPT(opname, unscaled) = LoadStoreUnscaledOffsetOpSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE_UNSCALED)
 #undef LOAD_STORE_UNSCALED
 };
@@ -126,7 +154,6 @@ enum LoadStoreUnsignedOffset {
   LoadStoreUnsignedOffsetFixed = 0x39000000,
   LoadStoreUnsignedOffsetMask  = 0xFFC00000,
 
-// size op
 #define LoadStoreUnsignedOffsetSub(size, V, opc)                                                                       \
   LoadStoreUnsignedOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
 #define LOAD_STORE_UNSIGNED_OFFSET(opname, size, V, opc)                                                               \
@@ -134,6 +161,8 @@ enum LoadStoreUnsignedOffset {
   LOAD_STORE_OP_LIST(LOAD_STORE_UNSIGNED_OFFSET)
 #undef LOAD_STORE_UNSIGNED_OFFSET
 };
+
+// =====
 
 // clang-format off
 #define LOAD_STORE_PAIR_OP_LIST(V) \
@@ -150,22 +179,52 @@ enum LoadStoreUnsignedOffset {
   V(OP_Q(LDP),    0b10, 1, 1)
 // clang-format on
 
+enum LoadStorePairOp {
+#define LoadStorePairOpSub(opc, V, L) LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LOAD_STORE_PAIR(opname, opc, V, L) OP(opname) = LoadStorePairOpSub(opc, V, L)
+  LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR)
+#undef LOAD_STORE_PAIR
+};
+
 enum LoadStorePairOffsetOp {
   LoadStorePairOffsetFixed = 0x29000000,
   LoadStorePairOffsetMask  = 0xFFC00000,
 
-// size op
 #define LoadStorePairOffsetOpSub(opc, V, L) LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
-#define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, pair) = LoadStorePairOffsetOpSub(opc, V, L)
+#define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, offset) = LoadStorePairOffsetOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_OFFSET)
 #undef LOAD_STORE_PAIR_OFFSET
 };
+
+enum LoadStorePairPostIndexOp {
+  LoadStorePairPostIndexFixed = 0x29800000,
+  LoadStorePairPostIndexMask  = 0xFFC00000,
+
+#define LoadStorePairPostOpSub(opc, V, L) LoadStorePairPostIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LOAD_STORE_PAIR_POST_INDEX(opname, opc, V, L) OPT(opname, post) = LoadStorePairPostOpSub(opc, V, L)
+  LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_POST_INDEX)
+#undef LOAD_STORE_PAIR_POST_INDEX
+};
+
+enum LoadStorePairPreIndexOp {
+  LoadStorePairPreIndexFixed = 0x29800000,
+  LoadStorePairPreIndexMask  = 0xFFC00000,
+
+#define LoadStorePairPreOpSub(opc, V, L) LoadStorePairPreIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LOAD_STORE_PAIR_PRE_INDEX(opname, opc, V, L) OPT(opname, pre) = LoadStorePairPreOpSub(opc, V, L)
+  LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_PRE_INDEX)
+#undef LOAD_STORE_PAIR_PRE_INDEX
+};
+
+// =====
 
 // Generic fields.
 enum GenericInstrField { SixtyFourBits = 0x80000000, ThirtyTwoBits = 0x00000000, FP32 = 0x00000000, FP64 = 0x00400000 };
 
 // Generic utils
 // #define sf(rd) (rd.Is64Bits() ? SixtyFourBits : ThirtyTwoBits)
+
+// =====
 
 // Move wide immediate.
 enum MoveWideImmediateOp {
@@ -184,6 +243,8 @@ enum MoveWideImmediateOp {
   OP_W(MOVK) = MoveWideImmediateFixed | MOVK,
   OP_X(MOVK) = MoveWideImmediateFixed | MOVK | SixtyFourBits
 };
+
+// =====
 
 enum AddSubImmediateOp {
   AddSubImmediateFixed = 0x11000000,
@@ -229,6 +290,8 @@ enum AddSubExtendedOp {
   OPT_X(SUB, extend)  = AddSubExtendedOpSub(1, 1, 0),
   OPT_X(SUBS, extend) = AddSubExtendedOpSub(1, 1, 1)
 };
+
+// =====
 
 // Logical (immediate and shifted register).
 enum LogicalOp {

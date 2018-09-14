@@ -125,8 +125,8 @@ GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 constexpr Register wzr = w31;
 constexpr Register xzr = x31;
 
-constexpr Register SP  = x15;
-constexpr Register wSP = w15;
+constexpr Register SP  = x31;
+constexpr Register wSP = w31;
 constexpr Register FP  = x29;
 constexpr Register wFP = w29;
 constexpr Register LR  = x30;
