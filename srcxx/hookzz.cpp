@@ -18,6 +18,7 @@ PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_
   InterceptRouting *route = new InterceptRouting(entry);
   route->Dispatch();
   intercepter->AddHookEntry(entry);
-
-  DLOG("[*] Finalize 'ZzWrap' hook at %p\n", function_address);
+  route->Commit();
+  
+  DLOG("[*] Finalize %p\n", function_address);
 }

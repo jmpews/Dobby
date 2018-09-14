@@ -9,9 +9,13 @@ public:
 
   InterceptRouting(HookEntry *entry) : entry_(entry){};
 
+  // =====
+  
   void Dispatch();
 
-  void Emit();
+  void Commit();
+  
+  // =====
 
   RoutingType type() {
     return branch_type_;
@@ -23,6 +27,8 @@ public:
 
 private:
   void Prepare();
+  
+  void Active();
 
   void BuildFastForwardTrampoline();
 

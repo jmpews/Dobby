@@ -283,11 +283,11 @@ public:
     imm7 = addr.offset() >> scale;
     return LFT(imm7, 7, 15);
   }
-  
+
   // scale
   static int32_t scale(int32_t op) {
     int scale = 0;
-    if((op & LoadStoreUnsignedOffsetFixed)  == LoadStoreUnsignedOffsetFixed) {
+    if ((op & LoadStoreUnsignedOffsetFixed) == LoadStoreUnsignedOffsetFixed) {
       scale = bits(op, 30, 31);
     }
     return scale;
@@ -299,6 +299,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler();
 
+  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
   void CommitRealize(void *address) {
   }
 
@@ -451,7 +452,7 @@ private:
   // =====
 
   void LoadStore(LoadStoreOp op, CPURegister rt, const MemOperand &addr) {
-    int64_t imm12          = addr.offset();
+    int64_t imm12 = addr.offset();
     if (addr.IsImmediateOffset()) {
       // TODO: check Scaled ???
       imm12 = addr.offset() >> OpEncode::scale(LoadStoreUnsignedOffsetFixed | op);
@@ -485,7 +486,7 @@ private:
   // =====
 
   void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp op) {
-    if(shift > 0)
+    if (shift > 0)
       shift /= 16;
     else
       shift = 0;
