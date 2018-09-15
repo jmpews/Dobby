@@ -3,6 +3,10 @@
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 
+  StackFrame *stackframe = new StackFrame;
+  // create stack frame as common variable between pre_call and post_call
+  ThreadSupport::PushStackFrame(stackframe);
+  
   // run the `pre_call` before execute origin function which has been relocated(fixed)
   if (entry->pre_call) {
     PRECALL pre_call;
@@ -10,15 +14,10 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     entry_info.hook_id        = entry->id;
     entry_info.target_address = entry->target_address;
     pre_call                  = entry->pre_call;
-
-    StackFrame *stackframe = new StackFrame;
-    // create stack frame as common variable between pre_call and post_call
-    ThreadSupport::PushStackFrame(stackframe);
-
     // run the pre_call with the power of accessing all registers
     (*pre_call)(reg_ctx, &entry_info);
   }
-
+  
   // set the prologue bridge next hop address with the patched instructions has been relocated
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_function);
 
@@ -27,6 +26,8 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 }
 
 void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
+  // pop stack frame as common variable between pre_call and post_call
+  StackFrame *stackframe = ThreadSupport::PopStackFrame();
 
   // run the `post_call`, and access all the register value, as the origin function done,
   if (entry->post_call) {
@@ -39,9 +40,6 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     // run the post_call with the power of accessing all registers
     (*post_call)(reg_ctx, (const HookEntryInfo *)&entry_info);
   }
-
-  // pop stack frame as common variable between pre_call and post_call
-  StackFrame *stackframe = ThreadSupport::PopStackFrame();
 
   // set epilogue bridge next hop address with origin ret address, restore the call.
   set_epilogue_routing_next_hop(reg_ctx, stackframe->orig_ret);

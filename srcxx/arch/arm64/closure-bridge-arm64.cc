@@ -92,7 +92,7 @@ void *get_closure_bridge() {
   _ ldp(Q(6), Q(7), MEM_EXT(SP, 32, PostIndex));
 
   // branch to next hop, @modify by `xxx_routing_dispatch`
-  _ br(X(17));
+  _ br(x16);
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
