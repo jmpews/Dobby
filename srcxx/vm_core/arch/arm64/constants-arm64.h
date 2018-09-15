@@ -51,30 +51,53 @@ enum InstructionFields {
 
 // =====
 
+// Exception.
+enum ExceptionOp {
+  ExceptionFixed = 0xD4000000,
+  ExceptionFMask = 0xFF000000,
+  ExceptionMask  = 0xFFE0001F,
+  
+  HLT            = ExceptionFixed | 0x00400000,
+  BRK            = ExceptionFixed | 0x00200000,
+  SVC            = ExceptionFixed | 0x00000001,
+  HVC            = ExceptionFixed | 0x00000002,
+  SMC            = ExceptionFixed | 0x00000003,
+  DCPS1          = ExceptionFixed | 0x00A00001,
+  DCPS2          = ExceptionFixed | 0x00A00002,
+  DCPS3          = ExceptionFixed | 0x00A00003
+};
+
+// =====
+
 // Unconditional branch.
 enum UnconditionalBranchOp {
-  UnconditionalBranchFixed = 0x14000000,
-  UnconditionalBranchMask  = 0xFC000000,
-  B                        = UnconditionalBranchFixed | 0x00000000,
-  BL                       = UnconditionalBranchFixed | 0x80000000
+  UnconditionalBranchFixed     = 0x14000000,
+  UnconditionalBranchFixedMask = 0x7C000000,
+  UnconditionalBranchMask      = 0xFC000000,
+
+  B  = UnconditionalBranchFixed | 0x00000000,
+  BL = UnconditionalBranchFixed | 0x80000000
 };
 
 // =====
 
 // Unconditional branch to register.
 enum UnconditionalBranchToRegisterOp {
-  UnconditionalBranchToRegisterFixed = 0xD6000000,
-  UnconditionalBranchToRegisterMask  = 0xFFFFFC1F,
-  BR                                 = UnconditionalBranchToRegisterFixed | 0x001F0000,
-  BLR                                = UnconditionalBranchToRegisterFixed | 0x003F0000,
-  RET                                = UnconditionalBranchToRegisterFixed | 0x005F0000
+  UnconditionalBranchToRegisterFixed     = 0xD6000000,
+  UnconditionalBranchToRegisterFixedMask = 0xFE000000,
+  UnconditionalBranchToRegisterMask      = 0xFFFFFC1F,
+
+  BR  = UnconditionalBranchToRegisterFixed | 0x001F0000,
+  BLR = UnconditionalBranchToRegisterFixed | 0x003F0000,
+  RET = UnconditionalBranchToRegisterFixed | 0x005F0000
 };
 
 // =====
 
 enum LoadRegLiteralOp {
-  LoadRegLiteralFixed = 0x18000000,
-  LoadRegLiteralMask  = 0xFF000000,
+  LoadRegLiteralFixed  = 0x18000000,
+  LoadRegLiteralFixedMask = 0x3B000000,
+  LoadRegLiteralMask   = 0xFF000000,
 
 #define LoadRegLiteralSub(opc, V) LoadRegLiteralFixed | LFT(opc, 2, 30) | LFT(V, 1, 26)
   OPT_W(LDR, literal) = LoadRegLiteralSub(0b00, 0),
@@ -126,8 +149,9 @@ enum LoadStoreOp {
 
 // Load/store register offset.
 enum LoadStoreRegisterOffsetOp {
-  LoadStoreRegisterOffsetFixed = 0x38200800,
-  LoadStoreRegisterOffsetMask  = 0xFFE00C00,
+  LoadStoreRegisterOffsetFixed     = 0x38200800,
+  LoadStoreRegisterOffsetFixedMask = 0x3B200C00,
+  LoadStoreRegisterOffsetMask      = 0xFFE00C00,
 
 #define LoadStoreRegisterOffsetOpSub(size, V, opc)                                                                     \
   LoadStoreRegisterOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
@@ -139,8 +163,9 @@ enum LoadStoreRegisterOffsetOp {
 
 // Load/store register (unscaled immediate)
 enum LoadStoreUnscaledOffsetOp {
-  LoadStoreUnscaledOffsetFixed = 0x38000000,
-  LoadStoreUnscaledOffsetMask  = 0xFFE00C00,
+  LoadStoreUnscaledOffsetFixed     = 0x38000000,
+  LoadStoreUnscaledOffsetFixedMask = 0x3B200C00,
+  LoadStoreUnscaledOffsetMask      = 0xFFE00C00,
 
 #define LoadStoreUnscaledOffsetOpSub(size, V, opc)                                                                     \
   LoadStoreUnscaledOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
@@ -151,8 +176,9 @@ enum LoadStoreUnscaledOffsetOp {
 
 // Load/store unsigned offset.
 enum LoadStoreUnsignedOffset {
-  LoadStoreUnsignedOffsetFixed = 0x39000000,
-  LoadStoreUnsignedOffsetMask  = 0xFFC00000,
+  LoadStoreUnsignedOffsetFixed     = 0x39000000,
+  LoadStoreUnsignedOffsetFixedMask = 0x3B000000,
+  LoadStoreUnsignedOffsetMask      = 0xFFC00000,
 
 #define LoadStoreUnsignedOffsetSub(size, V, opc)                                                                       \
   LoadStoreUnsignedOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
@@ -187,8 +213,9 @@ enum LoadStorePairOp {
 };
 
 enum LoadStorePairOffsetOp {
-  LoadStorePairOffsetFixed = 0x29000000,
-  LoadStorePairOffsetMask  = 0xFFC00000,
+  LoadStorePairOffsetFixed     = 0x29000000,
+  LoadStorePairOffsetFixedMask = 0x3B800000,
+  LoadStorePairOffsetMask      = 0xFFC00000,
 
 #define LoadStorePairOffsetOpSub(opc, V, L) LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, offset) = LoadStorePairOffsetOpSub(opc, V, L)
@@ -197,8 +224,9 @@ enum LoadStorePairOffsetOp {
 };
 
 enum LoadStorePairPostIndexOp {
-  LoadStorePairPostIndexFixed = 0x29800000,
-  LoadStorePairPostIndexMask  = 0xFFC00000,
+  LoadStorePairPostIndexFixed     = 0x28800000,
+  LoadStorePairPostIndexFixedMask = 0x3B800000,
+  LoadStorePairPostIndexMask      = 0xFFC00000,
 
 #define LoadStorePairPostOpSub(opc, V, L) LoadStorePairPostIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_POST_INDEX(opname, opc, V, L) OPT(opname, post) = LoadStorePairPostOpSub(opc, V, L)
@@ -207,8 +235,9 @@ enum LoadStorePairPostIndexOp {
 };
 
 enum LoadStorePairPreIndexOp {
-  LoadStorePairPreIndexFixed = 0x29800000,
-  LoadStorePairPreIndexMask  = 0xFFC00000,
+  LoadStorePairPreIndexFixed     = 0x29800000,
+  LoadStorePairPreIndexFixedMask = 0x3B800000,
+  LoadStorePairPreIndexMask      = 0xFFC00000,
 
 #define LoadStorePairPreOpSub(opc, V, L) LoadStorePairPreIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_PRE_INDEX(opname, opc, V, L) OPT(opname, pre) = LoadStorePairPreOpSub(opc, V, L)
@@ -228,13 +257,14 @@ enum GenericInstrField { SixtyFourBits = 0x80000000, ThirtyTwoBits = 0x00000000,
 
 // Move wide immediate.
 enum MoveWideImmediateOp {
-  MoveWideImmediateFixed = 0x12800000,
-  MoveWideImmediateMask  = 0xFF800000,
-  OP(MOVN)               = 0x00000000,
-  OP(MOVZ)               = 0x40000000,
-  OP(MOVK)               = 0x60000000,
+  MoveWideImmediateFixed     = 0x12800000,
+  MoveWideImmediateFixedMask = 0x1F800000,
+  MoveWideImmediateMask      = 0xFF800000,
 
-// size op
+  OP(MOVN) = 0x00000000,
+  OP(MOVZ) = 0x40000000,
+  OP(MOVK) = 0x60000000,
+
 #define MoveWideImmediateOpSub(sf, opc) MoveWideImmediateFixed | LFT(sf, 1, 31) | LFT(opc, 2, 29)
   OP_W(MOVN) = MoveWideImmediateFixed | MOVN,
   OP_X(MOVN) = MoveWideImmediateFixed | MOVN | SixtyFourBits,
@@ -247,8 +277,9 @@ enum MoveWideImmediateOp {
 // =====
 
 enum AddSubImmediateOp {
-  AddSubImmediateFixed = 0x11000000,
-  AddSubImmediateMask  = 0xFF000000,
+  AddSubImmediateFixed     = 0x11000000,
+  AddSubImmediateFixedMask = 0x1F000000,
+  AddSubImmediateMask      = 0xFF000000,
 
 #define AddSubImmediateOpSub(sf, op, S) AddSubImmediateFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
   OPT_W(ADD, imm)  = AddSubImmediateOpSub(0, 0, 0),
@@ -262,8 +293,9 @@ enum AddSubImmediateOp {
 };
 
 enum AddSubShiftedOp {
-  AddSubShiftedFixed = 0x0B000000,
-  AddSubShiftedMask  = 0xFF200000,
+  AddSubShiftedFixed     = 0x0B000000,
+  AddSubShiftedFixedMask = 0x1F200000,
+  AddSubShiftedMask      = 0xFF200000,
 
 #define AddSubShiftedOpSub(sf, op, S) AddSubShiftedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
   OPT_W(ADD, shift)  = AddSubShiftedOpSub(0, 0, 0),
@@ -277,8 +309,9 @@ enum AddSubShiftedOp {
 };
 
 enum AddSubExtendedOp {
-  AddSubExtendedFixed = 0x0B200000,
-  AddSubExtendedMask  = 0xFFE00000,
+  AddSubExtendedFixed     = 0x0B200000,
+  AddSubExtendedFixedMask = 0x1F200000,
+  AddSubExtendedMask      = 0xFFE00000,
 
 #define AddSubExtendedOpSub(sf, op, S) AddSubExtendedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
   OPT_W(ADD, extend)  = AddSubExtendedOpSub(0, 0, 0),
@@ -309,10 +342,10 @@ enum LogicalOp {
 
 // Logical immediate.
 enum LogicalImmediateOp {
-  LogicalImmediateFixed = 0x12000000,
-  LogicalImmediateMask  = 0xFF800000,
+  LogicalImmediateFixed     = 0x12000000,
+  LogicalImmediateFixedMask = 0x1F800000,
+  LogicalImmediateMask      = 0xFF800000,
 
-// size op
 #define W_X_OP(opname, combine_fields)                                                                                 \
   OPT_W(opname, imm)               = LogicalImmediateFixed | combine_fields | ThirtyTwoBits,                           \
                 OPT_X(opname, imm) = LogicalImmediateFixed | combine_fields | SixtyFourBits
@@ -323,10 +356,10 @@ enum LogicalImmediateOp {
 
 // Logical shifted register.
 enum LogicalShiftedOp {
-  LogicalShiftedFixed = 0x0A000000,
-  LogicalShiftedMask  = 0xFF200000,
+  LogicalShiftedFixed     = 0x0A000000,
+  LogicalShiftedFixedMask = 0x1F000000,
+  LogicalShiftedMask      = 0xFF200000,
 
-// size op
 #define W_X_OP(opname, combine_fields)                                                                                 \
   OPT_W(opname, shift)               = LogicalShiftedFixed | combine_fields | ThirtyTwoBits,                           \
                 OPT_X(opname, shift) = LogicalShiftedFixed | combine_fields | SixtyFourBits

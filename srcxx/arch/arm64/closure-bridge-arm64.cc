@@ -54,11 +54,13 @@ void *get_closure_bridge() {
 #if 1
   // save {x0}
   _ sub(SP, SP, 2 * 8);
-  _ str(x1, MEM(SP, 8));
+  _ str(x0, MEM(SP, 8));
 #else
 // Ignore, refer: closure_bridge_template
 #endif
-
+  
+  // _ brk(0); // for debug
+  
   _ mov(x0, SP);
   _ mov(x1, TMP1);
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));

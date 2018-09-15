@@ -92,7 +92,7 @@ typedef struct _RegisterContext {
 
 
 typedef enum _RetStatus {
-    RS_UNKOWN = -1,
+    kUnknown = -1,
     RS_DONE = 0,
     RS_SUCCESS,
     RS_FAILED

@@ -304,6 +304,8 @@ public:
   }
 
   Code *GetCode() {
+    UNREACHABLE();
+    return NULL;
   }
 
   void FlushICache();
@@ -318,6 +320,12 @@ public:
 
   void bind(Label *label);
 
+  // =====
+  
+  void brk(int code) {
+    Emit(BRK | LFT(code, 16, 5));
+  }
+  
   // =====
 
   void add(const Register &rd, const Register &rn, int64_t imm) {
@@ -583,7 +591,7 @@ public:
     const uint16_t h3 = High16Bits(w1);
     movz(rd, h0, 0);
     movk(rd, h1, 16);
-    movk(rd, 32);
+    movk(rd, h2, 32);
     movk(rd, h3, 48);
   }
 

@@ -6,6 +6,7 @@
 
 #include "AssemblyClosureTrampoline.h"
 #include "intercept_routing_handler.h"
+#include "arch/arm64/ARM64InstructionRelocation.h"
 
 #include "vm_core/modules/assembler/assembler-arm64.h"
 #include "vm_core/modules/codegen/codegen-arm64.h"
@@ -30,9 +31,19 @@ void InterceptRouting::Prepare() {
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
     branch_type_        = Routing_B_Branch;
   } else {
-    DLOG("[*] Use Br Branch at %p\n", entry_->target_address);
+    DLOG("%s", "[*] Use br branch.\n");
     branch_type_ = Routing_BR_Branch;
   }
+
+  // Gen the relocated code
+  Code *code;
+  if (branch_type_ == Routing_B_Branch) {
+    code = GenRelocateCode(src_pc, ARM64_TINY_REDIRECT_SIZE / 4);
+  } else {
+    code = GenRelocateCode(src_pc, ARM64_FULL_REDIRECT_SIZE / 4);
+  }
+  entry_->relocated_origin_function = (void *)code->raw_instruction_start();
+  DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)code->raw_instruction_start());
 
   // save original prologue
   memcpy(entry_->origin_instructions.data, entry_->target_address, need_relocated_size);
@@ -60,7 +71,8 @@ void InterceptRouting::BuildPostCallRouting() {
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)epilogue_routing_dispatch);
   entry_->epilogue_dispatch_bridge = closure_trampoline_entry->address;
 
-  DLOG("[*] create post call closure trampoline to 'prologue_routing_dispatch' at %p\n", closure_trampoline_entry->address);
+  DLOG("[*] create post call closure trampoline to 'prologue_routing_dispatch' at %p\n",
+       closure_trampoline_entry->address);
 }
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
@@ -121,6 +133,6 @@ void InterceptRouting::Active() {
   err = CodeChunk::PatchCodeBuffer((void *)target_address, turbo_assembler_.GetCodeBuffer());
   CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
   Code::FinalizeFromAddress(target_address, turbo_assembler_.CodeSize());
-  
+
   DLOG("[*] Active the routing at %p\n", entry_->target_address);
 }
