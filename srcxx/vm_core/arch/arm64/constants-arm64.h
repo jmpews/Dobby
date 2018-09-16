@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCH_ARM64_CONSTANTS
-#define ZZ_ARCH_ARM64_CONSTANTS
+#ifndef ZZ_ARCH_ARM64_CONSTANTS_H_
+#define ZZ_ARCH_ARM64_CONSTANTS_H_
 
 #include "vm_core/macros.h"
 
@@ -56,15 +56,15 @@ enum ExceptionOp {
   ExceptionFixed = 0xD4000000,
   ExceptionFMask = 0xFF000000,
   ExceptionMask  = 0xFFE0001F,
-  
-  HLT            = ExceptionFixed | 0x00400000,
-  BRK            = ExceptionFixed | 0x00200000,
-  SVC            = ExceptionFixed | 0x00000001,
-  HVC            = ExceptionFixed | 0x00000002,
-  SMC            = ExceptionFixed | 0x00000003,
-  DCPS1          = ExceptionFixed | 0x00A00001,
-  DCPS2          = ExceptionFixed | 0x00A00002,
-  DCPS3          = ExceptionFixed | 0x00A00003
+
+  HLT   = ExceptionFixed | 0x00400000,
+  BRK   = ExceptionFixed | 0x00200000,
+  SVC   = ExceptionFixed | 0x00000001,
+  HVC   = ExceptionFixed | 0x00000002,
+  SMC   = ExceptionFixed | 0x00000003,
+  DCPS1 = ExceptionFixed | 0x00A00001,
+  DCPS2 = ExceptionFixed | 0x00A00002,
+  DCPS3 = ExceptionFixed | 0x00A00003
 };
 
 // =====
@@ -95,9 +95,9 @@ enum UnconditionalBranchToRegisterOp {
 // =====
 
 enum LoadRegLiteralOp {
-  LoadRegLiteralFixed  = 0x18000000,
+  LoadRegLiteralFixed     = 0x18000000,
   LoadRegLiteralFixedMask = 0x3B000000,
-  LoadRegLiteralMask   = 0xFF000000,
+  LoadRegLiteralMask      = 0xFF000000,
 
 #define LoadRegLiteralSub(opc, V) LoadRegLiteralFixed | LFT(opc, 2, 30) | LFT(V, 1, 26)
   OPT_W(LDR, literal) = LoadRegLiteralSub(0b00, 0),

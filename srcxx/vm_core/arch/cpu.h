@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCHITECTURE_CPU_H_
-#define ZZ_ARCHITECTURE_CPU_H_
+#ifndef ZZ_ARCH_CPU_H_
+#define ZZ_ARCH_CPU_H_
 
 #include "vm_core/globals.h"
 
