@@ -36,6 +36,20 @@ class Assembler : public AssemblerBase {
   }
   void str(Register src, const MemOperand &dst, Condition cond = al) {
   }
+
+  // =====
+
+  // Branch instructions.
+  void b(int branch_offset, Condition cond = al) {
+  }
+  void bl(int branch_offset, Condition cond = al) {
+  }
+  void blx(int branch_offset) {
+  }
+  void blx(Register target, Condition cond = al) {
+  }
+  void bx(Register target, Condition cond = al) {
+  }
 }
 
 } // namespace arm

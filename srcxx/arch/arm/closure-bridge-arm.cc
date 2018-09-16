@@ -66,10 +66,7 @@ void *get_closure_bridge() {
   _ ldr(r12, MEM_EXT(sp, 4, PostIndex));
   _ ldr(lr, MEM_EXT(sp, 4, PostIndex));
 
-#if 1
-  _ str(r12, MEM(sp, -4));
-
-#endif
+  _ mov(pc, r12);
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();

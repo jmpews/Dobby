@@ -6,7 +6,7 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   StackFrame *stackframe = new StackFrame;
   // create stack frame as common variable between pre_call and post_call
   ThreadSupport::PushStackFrame(stackframe);
-  
+
   // run the `pre_call` before execute origin function which has been relocated(fixed)
   if (entry->pre_call) {
     PRECALL pre_call;
@@ -17,7 +17,7 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     // run the pre_call with the power of accessing all registers
     (*pre_call)(reg_ctx, &entry_info);
   }
-  
+
   // set the prologue bridge next hop address with the patched instructions has been relocated
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_function);
 
@@ -77,7 +77,7 @@ void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
 }
 
 void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->carry_hanlder;
+  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->carry_handler;
   UserCodeCall(reg_ctx, entry);
   return;
 }

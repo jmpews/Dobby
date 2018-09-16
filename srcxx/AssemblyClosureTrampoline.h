@@ -1,9 +1,10 @@
 #ifndef ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 #define ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 
-#include <stdint.h>
 #include <iostream>
+#include <stdint.h>
 #include <vector>
+
 
 #include "hookzz_internal.h"
 
@@ -14,7 +15,7 @@ extern "C" {
 #endif //__cplusplus
 
 typedef struct _ClosureTrampolineEntry {
-  void *carry_hanlder;
+  void *carry_handler;
   void *carry_data;
   void *address;
   uintptr_t size;
@@ -35,7 +36,7 @@ private:
   static std::vector<ClosureTrampolineEntry *> trampolines_;
 
 public:
-  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_hanlder);
+  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_handler);
 };
 
 #endif
