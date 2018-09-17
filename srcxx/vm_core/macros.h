@@ -13,6 +13,10 @@ typedef char byte;
 // globals macro
 #define XCHECK(cond) assert(cond)
 
+#define ASSERT(X) ((void)0)
+
+// =====
+
 // left/right shift
 #define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
 #define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))

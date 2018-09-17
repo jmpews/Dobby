@@ -43,14 +43,14 @@ namespace zz {
 // Don't use this macro directly in your code, use CHECK_EQ et al below.
 #define CHECK_OP(name, op, lhs, rhs)                                                                                   \
   do {                                                                                                                 \
-    if (!(lhs op rhs)) {                                                                                                  \
+    if (!(lhs op rhs)) {                                                                                               \
       FATAL("Check failed: %s.", #lhs " " #op " " #rhs);                                                               \
     }                                                                                                                  \
   } while (0)
 
 #define DCHECK_OP(name, op, lhs, rhs)                                                                                  \
   do {                                                                                                                 \
-    if (!(lhs op rhs)) {                                                                                                  \
+    if (!((lhs)op(rhs))) {                                                                                             \
       FATAL(__FILE__, __LINE__, "");                                                                                   \
     }                                                                                                                  \
   } while (0)

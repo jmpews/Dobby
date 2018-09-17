@@ -6,6 +6,7 @@
 using namespace zz;
 
 #if V8_TARGET_ARCH_ARM
+using namespace zz::arm;
 #elif V8_TARGET_ARCH_ARM64
 using namespace zz::arm64;
 #endif

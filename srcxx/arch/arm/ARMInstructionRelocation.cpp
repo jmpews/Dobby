@@ -12,6 +12,8 @@ Code *GenRelocateCode(uintptr_t src_pc, int count) {
   uint32_t inst    = *(uint32_t *)src_pc;
   int t            = 0;
 
+  TurboAssembler turbo_assembler_;
+
   // Generate executable code
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   return code;

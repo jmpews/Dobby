@@ -78,7 +78,7 @@ public:
   int pc_offset() const {
     return buffer_.Size();
   }
-  
+
   // =====
 
   size_t CodeSize() {
@@ -88,20 +88,20 @@ public:
   CodeBuffer *GetCodeBuffer() {
     return &buffer_;
   }
-  
+
   virtual Code *GetCode() = 0;
-  
+
   // =====
 
   virtual void CommitRealize(void *address) = 0;
 
   // =====
-  
+
   static void FlushICache(void *start, size_t size);
   static void FlushICache(uintptr_t start, size_t size) {
     return FlushICache(reinterpret_cast<void *>(start), size);
   }
-  
+
   // =====
 
 protected:
@@ -113,6 +113,7 @@ protected:
 
 #include "vm_core/config.h"
 #if V8_TARGET_ARCH_ARM
+#include "vm_core/modules/assembler/assembler-arm.h"
 #elif V8_TARGET_ARCH_ARM64
 #include "vm_core/modules/assembler/assembler-arm64.h"
 #endif
