@@ -44,16 +44,15 @@ endif()
 include(cmake/Macros.cmake)
 
 set(Target.path .)
-set(Target.arch arm64)
-set(Target.cpp_prefix ARM64)
-set(Target.cc_suffix arm64)
+set(Target.arch arm)
+set(Target.cpp_prefix ARM)
+set(Target.cc_suffix arm)
 set(Target.SOURCE_FILE
 #  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}InstructionRelocation.cpp
 #  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
 #  ${Target.path}/srcxx/arch/${Target.arch}/closure-trampoline-template-${Target.cc_suffix}.S
 #  ${Target.path}/srcxx/arch/${Target.arch}/dynamic-closure-trampoline-template-${Target.cc_suffix}.S
 )
-
 
 if(CXX)
 
@@ -69,8 +68,8 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/vm_core/base
     ${Target.path}/srcxx/vm_core/objects
     ${Target.path}/srcxx/vm_core/platform
-    ${Target.path}/srcxx/vm_core/modules/assembler
-    ${Target.path}/srcxx/vm_core/modules/codegen
+    # ${Target.path}/srcxx/vm_core/modules/assembler
+    # ${Target.path}/srcxx/vm_core/modules/codegen
 )
 
 # vm_core_extra
@@ -85,6 +84,23 @@ if(PROCESSOR.aarch64)
     )
     set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
         ${Target.path}/srcxx/arch/arm64
+    )
+elseif(PROCESSOR.arm)
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/vm_core/arch/arm
+    )
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/arch/arm
+    )
+
+    include_directories(${Target.path}/srcxx/vm_core/modules/assembler)
+
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${Target.path}/srcxx/vm_core/modules/assembler/assembler-arm.cc
+    )
+    set(Target.HEADER_FILE ${Target.HEADER_FILE}
+        ${Target.path}/srcxx/vm_core/modules/assembler/assembler-arm.h
+        ${Target.path}/srcxx/vm_core/modules/assembler/assembler.h
     )
 endif()
 # *.cc
@@ -105,14 +121,12 @@ search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
 set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE_CPP} ${Target.SOURCE_C} ${Target.SOURCE_ASSEMBLY})
 set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
 
-message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}")
+message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
 
 else()
 endif()
 
 include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
-
-message(STATUS "Target.SOURCE_FILE ${Target.SOURCE_DIR}")
 
 if(SHARED)
     # build shared library
