@@ -32,7 +32,7 @@ __attribute__((naked)) void closure_bridge_template() {
 
   xASM("mov r0, sp");
   xASM("mov r1, r12");
-  xASM("bl " cdecl("interceptor_routing_common_bridge_handler"));
+  xASM("bl " cdecl("intercept_routing_common_bridge_handler"));
 
   // dummy align
   xASM("add sp, sp, #8");

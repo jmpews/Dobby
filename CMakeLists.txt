@@ -12,7 +12,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 # SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
-option(CXX "Use cxx source" ON)
 option(SHARED "Build shared library" ON)
 option(DEBUG "Enable debug log" ON)
 
@@ -22,21 +21,26 @@ else()
     add_definitions(-DDEBUG)
 endif()
 
-
+# Platform
 if(PLATFORM STREQUAL "iOS")
     set(SYSTEM.iOS 1)
+    MESSAGE(STATUS "[*] Compile for iOS")
 elseif(PLATFORM STREQUAL "Android")
     set(SYSTEM.Android 1)
+    MESSAGE(STATUS "[*] Compile for Android")
 else()
     message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] PLATFORM")
 endif()
 
+# Architecture
 if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(PROCESSOR.arm 1)
+    MESSAGE(STATUS "[*] Compile for arm")
 elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(PROCESSOR.aarch64 1)
+    MESSAGE(STATUS "[*] Compile for aarch64")
 else()
     message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] ARCH")
 endif()
@@ -44,21 +48,20 @@ endif()
 include(cmake/Macros.cmake)
 
 set(Target.path .)
-set(Target.arch arm)
-set(Target.cpp_prefix ARM)
-set(Target.cc_suffix arm)
-set(Target.SOURCE_FILE
-#  ${Target.path}/srcxx/arch/${Target.arch}/${Target.cpp_prefix}InstructionRelocation.cpp
-#  ${Target.path}/srcxx/arch/${Target.arch}/closure-bridge-template-${Target.cc_suffix}.c
-#  ${Target.path}/srcxx/arch/${Target.arch}/closure-trampoline-template-${Target.cc_suffix}.S
-#  ${Target.path}/srcxx/arch/${Target.arch}/dynamic-closure-trampoline-template-${Target.cc_suffix}.S
-)
-
-if(CXX)
+if(PROCESSOR.arm)
+    set(Target.arch arm)
+    set(Target.cpp_prefix ARM)
+    set(Target.cc_suffix arm)
+elseif(PROCESSOR.aarch64)
+    set(Target.arch arm64)
+    set(Target.cpp_prefix ARM64)
+    set(Target.cc_suffix arm64)
+endif()
 
 set(Target.SOURCE_DIR
     ${Target.path}
     ${Target.path}/srcxx
+    ${Target.path}/srcxx/arch
 )
 
 # vm_core
@@ -67,9 +70,6 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/vm_core/arch
     ${Target.path}/srcxx/vm_core/base
     ${Target.path}/srcxx/vm_core/objects
-    ${Target.path}/srcxx/vm_core/platform
-    # ${Target.path}/srcxx/vm_core/modules/assembler
-    # ${Target.path}/srcxx/vm_core/modules/codegen
 )
 
 # vm_core_extra
@@ -77,32 +77,17 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/vm_core_extra
 )
 
-# vm_core with specific architecture
-if(PROCESSOR.aarch64)
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/vm_core/arch/arm64
-    )
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/arch/arm64
-    )
-elseif(PROCESSOR.arm)
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/vm_core/arch/arm
-    )
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+if(PROCESSOR.arm)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/arch/arm
-    )
-
-    include_directories(${Target.path}/srcxx/vm_core/modules/assembler)
-
-    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
-        ${Target.path}/srcxx/vm_core/modules/assembler/assembler-arm.cc
-    )
-    set(Target.HEADER_FILE ${Target.HEADER_FILE}
-        ${Target.path}/srcxx/vm_core/modules/assembler/assembler-arm.h
-        ${Target.path}/srcxx/vm_core/modules/assembler/assembler.h
-    )
+)
+elseif(PROCESSOR.aarch64)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/arch/arm64
+)
 endif()
+# =====
+
 # *.cc
 search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)
 
@@ -121,10 +106,78 @@ search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
 set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE_CPP} ${Target.SOURCE_C} ${Target.SOURCE_ASSEMBLY})
 set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
 
-message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
+# =====
 
-else()
+# vm_core modules
+# vm_core with specific architecture
+set(MODULES.path ${Target.path}/srcxx/vm_core/modules)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${MODULES.path}
+    ${MODULES.path}/assembler
+    ${MODULES.path}/codegen
+)
+# modules/assembler
+set(ASSEMBLER.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/assembler/assembler.h
+)
+# modules/codegen
+set(CODEGEN.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/codegen/codegen.h
+)
+
+# assembler
+set(ASSEMBLER.SOURCE_FILE ${ASSEMBLER.SOURCE_FILE}
+    ${MODULES.path}/assembler/assembler-${Target.cc_suffix}.cc
+)
+set(ASSEMBLER.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/assembler/assembler-${Target.cc_suffix}.h
+)
+# codegen
+set(CODEGEN.SOURCE_FILE ${CODEGEN.SOURCE_FILE}
+    ${MODULES.path}/codegen/codegen-${Target.cc_suffix}.cc
+)
+set(CODEGEN.HEADER_FILE ${CODEGEN.HEADER_FILE}
+    ${MODULES.path}/codegen/codegen-${Target.cc_suffix}.h
+)
+
+set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+    ${ASSEMBLER.SOURCE_FILE}
+    ${CODEGEN.SOURCE_FILE}
+)
+
+set(Target.HEADER_FILE ${Target.HEADER_FILE}
+    ${ASSEMBLER.HEADER_FILE}
+    ${CODEGEN.HEADER_FILE}
+)
+
+# =====
+
+# vm_core platforms
+# vm_core with specific platform
+set(PLATFORM.path ${Target.path}/srcxx/vm_core/platform)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${PLATFORM.path}
+)
+set(Target.HEADER_FILE ${Target.HEADER_FILE}
+    ${PLATFORM.path}/platform.h
+)
+if(SYSTEM.iOS)
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${PLATFORM.path}/platform-posix.cc
+        ${PLATFORM.path}/platform-darwin.cc
+    )
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${PLATFORM.path}/platform-darwin
+    )
+elseif(SYSTEM.Android)
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${PLATFORM.path}/platform-posix.cc
+    )
 endif()
+
+# =====
+
+message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
 
 include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 

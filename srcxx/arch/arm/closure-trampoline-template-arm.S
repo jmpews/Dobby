@@ -1,4 +1,4 @@
-; .section	__TEXT,__text,regular,pure_instructions
+// .section	__TEXT,__text,regular,pure_instructions
 
 #if defined(__WIN32__) || defined(__APPLE__)
 #define cdecl(s) _##s
@@ -17,7 +17,7 @@
 #define OFFSETOF_ClourseTrampolineEntry_carry_handler 0
 .globl cdecl(closure_trampoline_template)
 cdecl(closure_trampoline_template):
-    ldr r12, =ClourseTrampolineEntryPtr
+    ldr r12, ClourseTrampolineEntryPtr
     ldr pc, [r12, #0]
 ClourseTrampolineEntryPtr:
     .long 0
