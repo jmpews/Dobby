@@ -3,7 +3,7 @@
 namespace zz {
 namespace arm {
 
-void CodeGen::LiteralBrBranch(uint32_t address) {
+void CodeGen::LiteralLdrBranch(uint32_t address) {
 }
 
 } // namespace arm

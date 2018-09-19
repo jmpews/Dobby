@@ -28,9 +28,9 @@ typedef struct _PseudoLabelData {
 } PseudoLabelData;
 
 Code *GenRelocateCode(uint64_t src_pc, int count) {
-  uint64_t cur_pc            = src_pc;
-  uint32_t inst              = *(uint32_t *)src_pc;
-  int t                      = 0;
+  uint64_t cur_pc = src_pc;
+  uint32_t inst   = *(uint32_t *)src_pc;
+  int t           = 0;
 
   std::vector<PseudoLabelData> labels;
 
@@ -104,8 +104,8 @@ Code *GenRelocateCode(uint64_t src_pc, int count) {
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralBrBranch(cur_pc + 4);
-  
+  codegen.LiteralLdrBranch(cur_pc + 4);
+
   // Realize all the Pseudo-Label-Data
   for (auto it : labels) {
     _ PseudoBind(&(it.label));

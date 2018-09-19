@@ -3,7 +3,7 @@
 namespace zz {
 namespace arm64 {
 
-void CodeGen::LiteralBrBranch(uint64_t address) {
+void CodeGen::LiteralLdrBranch(uint64_t address) {
   TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
 #define _ turbo_assembler_->
   PseudoLabel address_ptr;

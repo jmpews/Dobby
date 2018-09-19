@@ -21,7 +21,7 @@ using namespace zz::arm;
 #define ARM_FULL_REDIRECT_SIZE 16
 #define ARM_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
-// Determined if use B_Branch or Br_Branch, and backup the origin instrutions
+// Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
 void InterceptRouting::Prepare() {
   uintptr_t src_pc         = (uintptr_t)entry_->target_address;
   int need_relocated_size  = ARM_FULL_REDIRECT_SIZE;
@@ -32,7 +32,7 @@ void InterceptRouting::Prepare() {
     branch_type_        = Routing_B_Branch;
   } else {
     DLOG("%s", "[*] Use br branch.\n");
-    branch_type_ = Routing_BR_Branch;
+    branch_type_ = Routing_LDR_Branch;
   }
 
   // Gen the relocated code
@@ -80,14 +80,14 @@ void InterceptRouting::BuildFastForwardTrampoline() {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
   if (entry_->type == kFunctionInlineHook) {
-    codegen.LiteralBrBranch((uintptr_t)entry_->replace_call);
+    codegen.LiteralLdrBranch((uintptr_t)entry_->replace_call);
     DLOG("create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
-    codegen.LiteralBrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
+    codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
     DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
   } else if (entry_->type == kFunctionWrapper) {
     DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
-    codegen.LiteralBrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
+    codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
   }
 
   AssemblerCode *code             = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
@@ -120,10 +120,10 @@ void InterceptRouting::Active() {
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-  if (branch_type_ == Routing_BR_Branch) {
+  if (branch_type_ == Routing_LDR_Branch) {
     // branch to prologue_dispatch_bridge
     CodeGen codegen(&turbo_assembler_);
-    codegen.LiteralBrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
+    codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
   } else if (branch_type_ == Routing_B_Branch) {
     // branch to fast_forward_trampoline
     _ b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address);

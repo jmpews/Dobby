@@ -17,6 +17,52 @@ namespace arm {
 
 constexpr Register TMP0 = r12;
 
+class PseudoLabel : public Label {
+public:
+  enum PseudoLabelType { kLdrLiteralPseudoLabel };
+
+  typedef struct _PseudoLabelInstruction {
+    int position_;
+    PseudoLabelType type_;
+  } PseudoLabelInstruction;
+
+  bool has_confused_instructions() {
+    return instructions_.size() > 0;
+  }
+
+  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
+    CodeBuffer *_buffer;
+    if (buffer)
+      _buffer = buffer;
+
+    for (auto instruction : instructions_) {
+      int32_t offset       = pos() - instruction.position_;
+      const int32_t inst32 = _buffer->Load32(instruction.position_);
+      int32_t encoded      = 0;
+
+      switch (instruction.type_) {
+      case kLdrLiteralPseudoLabel: {
+        encoded = inst32 & 0xFF00001F;
+        encoded = encoded | LFT((offset >> 2), 19, 5);
+      } break;
+      default:
+        UNREACHABLE();
+        break;
+      }
+      _buffer->Store32(instruction.position_, encoded);
+    }
+  };
+
+  void link_to(int pos, PseudoLabelType type) {
+    instructions_.push_back({pos, type});
+  }
+
+private:
+  std::vector<PseudoLabelInstruction> instructions_;
+};
+
+// =====
+
 class Operand {
 public:
   explicit Operand(int immediate) : immediate_(immediate), rm_(no_reg), rs_(no_reg) {
@@ -66,6 +112,8 @@ private:
   friend class OpEncode;
 };
 
+// =====
+
 class MemOperand {
 public:
   explicit MemOperand(Register rn, int32_t offset = 0, AddrMode am = Offset)
@@ -94,8 +142,9 @@ private:
   friend class OpEncode;
 };
 
-class OpEncode {
+// =====
 
+class OpEncode {
 public:
   static inline uint32_t Rd(Register rd) {
     // ASSERT(rd.code() < 16);
@@ -150,6 +199,8 @@ public:
     return encoding;
   }
 };
+
+// =====
 
 class Assembler : public AssemblerBase {
 public:
@@ -233,6 +284,19 @@ public:
   Code *GetCode() {
     Code *code = new Code(released_address_, CodeSize());
     return code;
+  }
+
+  // =====
+
+  void Ldr(Register rt, PseudoLabel *label) {
+    if (label->is_bound()) {
+      const int64_t dest = label->pos() - buffer_.Size();
+      ldr(rt, MemOperand(pc, dest));
+    } else {
+      // record this ldr, and fix later.
+      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteralPseudoLabel);
+      ldr(rt, MemOperand(pc, 0));
+    }
   }
 
   // =====

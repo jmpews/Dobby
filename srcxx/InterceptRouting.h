@@ -5,16 +5,16 @@
 
 class InterceptRouting {
 public:
-  enum RoutingType { Routing_B_Branch, Routing_BR_Branch };
+  enum RoutingType { Routing_B_Branch, Routing_LDR_Branch };
 
   InterceptRouting(HookEntry *entry) : entry_(entry){};
 
   // =====
-  
+
   void Dispatch();
 
   void Commit();
-  
+
   // =====
 
   RoutingType type() {
@@ -27,7 +27,7 @@ public:
 
 private:
   void Prepare();
-  
+
   void Active();
 
   void BuildFastForwardTrampoline();

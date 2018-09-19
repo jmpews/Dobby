@@ -66,14 +66,17 @@ public:
   }
 
 private:
+#if 0
   // From a design perspective, these fix-function write as callback, maybe beeter.
   void FixLdr(PseudoLabelInstruction *instruction){
       // dummy
   };
-
+#endif
 private:
   std::vector<PseudoLabelInstruction> instructions_;
 };
+
+// =====
 
 class Operand {
 public:
@@ -127,6 +130,8 @@ private:
   Extend extend_;
   int32_t shift_extent_imm_;
 };
+
+// =====
 
 class MemOperand {
 public:
@@ -213,8 +218,9 @@ private:
   int32_t shift_extend_imm_;
 };
 
-class OpEncode {
+// =====
 
+class OpEncode {
 public:
   static int32_t sf(const Register &reg, int32_t op) {
     return (op | sf(reg));
@@ -294,8 +300,9 @@ public:
   }
 };
 
-class Assembler : public AssemblerBase {
+// =====
 
+class Assembler : public AssemblerBase {
 public:
   Assembler();
 
@@ -321,11 +328,11 @@ public:
   void bind(Label *label);
 
   // =====
-  
+
   void brk(int code) {
     Emit(BRK | LFT(code, 16, 5));
   }
-  
+
   // =====
 
   void add(const Register &rd, const Register &rn, int64_t imm) {

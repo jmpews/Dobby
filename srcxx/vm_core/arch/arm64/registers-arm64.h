@@ -3,11 +3,12 @@
 
 #include "vm_core/arch/arm64/constants-arm64.h"
 #include "vm_core/macros.h"
+#include "vm_core/arch/register.h"
 
 namespace zz {
 namespace arm64 {
 
-class CPURegister {
+class CPURegister : RegisterBase<CPURegister> {
 public:
   enum RegisterType {
     kRegister_32,
@@ -31,7 +32,7 @@ public:
     kInvalid
   };
 
-  constexpr CPURegister(int code, int size, RegisterType type) : reg_code_(code), reg_size_(size), reg_type_(type) {
+  constexpr CPURegister(int code, int size, RegisterType type) : RegisterBase(code), reg_size_(size), reg_type_(type) {
   }
 
   static constexpr CPURegister Create(int code, int size, RegisterType type) {
@@ -86,7 +87,6 @@ public:
 
 private:
   RegisterType reg_type_;
-  int reg_code_;
   int reg_size_;
 };
 
