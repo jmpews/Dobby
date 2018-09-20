@@ -57,7 +57,7 @@ public:
     instructions_.push_back({pos, type});
   }
 
-private:
+protected:
   std::vector<PseudoLabelInstruction> instructions_;
 };
 

@@ -22,10 +22,20 @@ public:
     return *reinterpret_cast<int32_t *>(buffer_ + position);
   }
 
+  template <typename T>
+  T Load(intptr_t  position) {
+    return *reinterpret_cast<T *>(buffer_ + position);
+  }
+
   void Store32(intptr_t position, int32_t value) {
     *reinterpret_cast<int32_t *>(buffer_ + position) = value;
   }
-  
+
+  template <typename T>
+  void Store(intptr_t  position, T value) {
+    *reinterpret_cast<T *>(buffer_ + position) = value;
+  }
+
   // =====
 
   void Emit(int32_t inst) {

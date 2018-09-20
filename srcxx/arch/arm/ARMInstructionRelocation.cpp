@@ -150,7 +150,7 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
 
 // =====
 
-void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, TurboAssembler &turbo_assembler) {
+void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
 
   uint32_t val, op, rm, rn, rd, shift, cond;
   int32_t offset;
@@ -164,18 +164,13 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, TurboAssembler &tur
     if (cur_pc % 4)
       _ t1_nop();
 
-    PseudoLabel PseudoDataLabel;
+    CustomThumbPseudoLabel label;
     // =====
-    _ T1_Ldr(Register::from_code(rd), &PseudoDataLabel);
+    _ T1_Ldr(Register::from_code(rd), &label);
     // =====
-    labels.push_back({PseudoDataLabel, val}) rewrite_flag = true;
+    labels.push_back({label, val});
   }
 
-  // conditional branch fix scheme:
-  // 0x4: b_cond 0x4
-  // 0x6: nop
-  // 0x8: b.w 0x0
-  // 0xc: ldr.w pc, [pc, #label]
   if ((inst & 0xf000) == 0xd000) {
     uint16_t cond = bits(inst, 8, 11);
     // cond != 111x
@@ -183,66 +178,201 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, TurboAssembler &tur
       UNREACHABLE();
     }
     uint16_t imm8  = bits(inst, 0, 7);
-    uint32_t label = imm8 << 2;
-    val            = cur_pc + label;
+    uint32_t offset = imm8 << 2;
+    val            = cur_pc + offset;
 
     if (cur_pc % 4)
       _ t1_nop();
 
-    PseudoLabel PseudoDataLabel;
+    CustomThumbPseudoLabel label;
     // modify imm8 field
     imm8 = 0x4 >> 2;
     // =====
     _ EmitInt16((inst & 0xfff0) | imm8);
     _ t1_nop();
     _ t1_b(0);
-    _ T1_Ldr(pc, &PseudoDataLabel);
+    _ T1_Ldr(pc, &label);
     // =====
-    labels.push_back({PseudoDataLabel, val});
+    labels.push_back({label, val});
   }
 
   // compare branch (cbz, cbnz)
   if ((inst & 0xf500) == 0xb100) {
     uint16_t imm5  = bits(inst, 3, 7);
     uint16_t i     = bit(inst, 9);
-    uint32_t label = (i << 6) | (imm5 << 1);
-    val            = cur_pc + label;
+    uint32_t offset = (i << 6) | (imm5 << 1);
+    val            = cur_pc + offset;
 
     rn = bits(inst, 0, 2);
 
     if (cur_pc % 4)
       _ t1_nop();
 
-    PseudoLabel PseudoDataLabel;
+    CustomThumbPseudoLabel label;
     // =====
     imm5 = bits(0x4 >> 1, 1, 5);
     i    = bit(0x4 >> 1, 6);
     _ EmitInt16((inst & 0xfd07) | imm5 << 3 | i << 9);
     _ t1_nop();
-    _ t2_b(0);
-    _ T1_Ldr(pc, &PseudoDataLabel);
+    _ t1_b(0);
+    _ T1_Ldr(pc, &label);
   }
 
   // unconditional branch
   if ((inst & 0xf800) == 0xe000) {
     uint16_t imm11 = bits(inst, 0, 10);
-    uint32_t label = imm11 << 1;
-    val            = cur_pc + label;
+    uint32_t offset = imm11 << 1;
+    val            = cur_pc + offset;
 
-    if (self->output->pc % 4)
+    if (cur_pc % 4)
       _ t1_nop();
 
-    PseudoLabel PseudoDataLabel;
+    CustomThumbPseudoLabel label;
     // =====
-    _ T1_Ldr(pc, &PseudoDataLabel);
+    _ T1_Ldr(pc, &label);
     // =====
   }
 }
 
-void Thumb2RelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_assembler) {
+void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
+
+  // Branches and miscellaneous control
+  if ((inst1 & 0x8000) == 0x8000 && (inst2 & 0xf800) == 0xf000) {
+
+    int32_t op1, op3;
+    op1 = bits(inst2, 6, 9);
+    if (op1 >= 0b1110)
+      return ;
+
+    // B-T3
+    if (op3 == 0b000 || op3 == 0b010) {
+
+      int S     = sbits(inst1, 10, 10);
+      int J1    = bit(inst2, 13);
+      int J2    = bit(inst2, 11);
+      int imm6  = bits(inst1, 0, 5);
+      int imm11 = bits(inst2, 0, 10);
+
+      int32_t label = (imm11 << 1) | (imm6 << 12) | (J1 << 18) | (J2 << 19) | (S << 20);
+      int32_t  val           = cur_pc + label;
+
+      imm11 = 0x4 >> 1;
+      _ Emit2Int16(inst1 & 0xfbff, (inst2 & 0xd800) | imm11);
+      _ t2_b(0x0);
+      _ t2_ldr(pc, MemOperand(pc, -4));
+      _ Emit(val);
+    }
+
+    // B-T4
+    if (op3 == 0b001 || op3 == 0b011) {
+      int S     = sbits(inst1, 10, 10);
+      int J1    = bit(inst2, 13);
+      int J2    = bit(inst2, 11);
+      int imm10 = bits(inst1, 0, 9);
+      int imm11 = bits(inst2, 0, 10);
+      int i1    = !(J1 ^ S);
+      int i2    = !(J2 ^ S);
+
+      int32_t label = (imm11 << 1) | (imm10 << 12) | (J1 << 22) | (J2 << 23) | (S << 24);
+      int32_t val           = cur_pc + label;
+      _ t2_ldr(pc, MemOperand(pc, -4));
+      _ Emit(val);
+    }
+
+    // BL, BLX (immediate) - T1 variant
+    if (op3 == 0b100 || op3 == 0b110) {
+      int S         = sbits(inst1, 10, 10);
+      int J1        = bit(inst2, 13);
+      int J2        = bit(inst2, 11);
+      int i1        = !(J1 ^ S);
+      int i2        = !(J2 ^ S);
+      int imm11     = bits(inst2, 0, 10);
+      int imm10     = bits(inst1, 0, 9);
+      int32_t label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (S << 24);
+      int32_t val           = cur_pc + label;
+
+      // =====
+      _ t2_bl(0);
+      _ t2_b(0);
+      _ t2_ldr();
+      _ Emit(val);
+      // =====
+    }
+
+    // BL, BLX (immediate) - T2 variant
+    if (op3 == 0b101 || op3 == 0b111) {
+      int S         = sbits(inst1, 10, 10);
+      int J1        = bit(inst2, 13);
+      int J2        = bit(inst2, 11);
+      int i1        = !(J1 ^ S);
+      int i2        = !(J2 ^ S);
+      int imm10h    = bits(inst1, 0, 9);
+      int imm10l    = bits(inst2, 1, 10);
+      int32_t label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (S << 24);
+      int32_t  val           = cur_pc + label;
+
+      // =====
+      _ t2_bl(0);
+      _ t2_b(0);
+      _ t2_ldr();
+      _ Emit(val);
+      // =====
+    }
+  }
+
+  // Data-processing (simple immediate)
+  if ((inst1 & 0xfb50) == 0xf200 & (inst2 & 0x8000) == 0) {
+    int o1 = bit(inst1, 7);
+    int o2 = bit(inst1, 5);
+    int rn = bits(inst1, 0, 3);
+
+    // ===
+    uint32_t i     = bit(inst1, 10);
+    uint32_t imm3  = bits(inst2, 12, 14);
+    uint32_t imm8  = bits(inst2, 0, 7);
+    uint32_t label = imm8 | (imm3 << 8) | (i << 11);
+    int32_t  val;
+    if (rn == 15 && o1 == 0 && o2 == 0) {
+      // ADR - T3 variant
+      // adr with add
+      val = cur_pc + label;
+    } else if (rn == 15 && o1 == 1 && o2 == 1) {
+      // ADR - T2 variant
+      // adr with sub
+      val = cur_pc - label;
+    }
+
+    uint16_t rd = bits(inst2, 8, 11);
+    // =====
+    _ t2_ldr(Register::from_code(rd), MemOperand(pc, -4));
+    _ Emit(val);
+    // =====
+  }
+
+  // Load literal
+  if ((inst1 & 0xff0f) == 0xf85f) {
+    uint32_t U     = bit(inst1, 7);
+    uint32_t imm12 = bits(inst2, 0, 11);
+    uint16_t rt    = bits(inst2, 12, 15);
+
+    uint32_t label = imm12;
+    if (U == 1) {
+      val = val + label;
+    } else {
+      val = val - label;
+    }
+
+    Register regRt = Register::from_code(rt);
+    // =====
+    _ t2_ldr(regRt, MemOperand(pc, -4));
+    _ t2_ldr(regRt, MemOperand(regRt, 0));
+    // =====
+  }
 }
 
 void ThumbRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_assembler) {
+  Thumb1RelocateSingleInst((int16_t)inst, cur_pc, turbo_assembler);
+  Thumb2RelocateSingleInst((int16_t)inst, (int16_t)(inst >> 16), cur_pc, turbo_assembler);
 }
 
 // =====
@@ -255,6 +385,7 @@ Code *GenRelocateCode(uintptr_t src_pc, int count) {
 #define _ turbo_assembler_.
   while (t < count) {
     ARMRelocateSingleInst(inst, cur_pc, turbo_assembler_);
+    ThumbRelocateSingleInst(inst, cur_pc, turbo_assembler_);
 
     // Move to next instruction
     cur_pc += 4;
