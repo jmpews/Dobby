@@ -198,6 +198,16 @@ public:
     }
     return encoding;
   }
+
+  // =====
+  static uint32_t ImmeidateChecked(uint32_t imm, uint len) {
+    // TODO: uint32_t 0xffffffff = -1
+    if (imm > (1 << len)) {
+      DLOG("immeidate check failed imm: %d, len: %d", imm, len);
+      FATAL("exit.");
+    }
+    return imm;
+  }
 };
 
 // =====

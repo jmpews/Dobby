@@ -21,6 +21,8 @@ static inline int32_t High32Bits(int64_t value) {
   return static_cast<int32_t>(value >> 32);
 }
 
+// =====
+
 } // namespace zz
 
 #endif

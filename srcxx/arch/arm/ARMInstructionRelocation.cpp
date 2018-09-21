@@ -103,7 +103,7 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
   }
 
   // Branch, branch with link, and block data transfer
-  if (cond && (op0 & 0b110) == 0b100) {
+  if ((op0 & 0b110) == 0b100) {
     uint32_t cond, op0;
     cond = bits(inst, 28, 31);
     op0  = bit(inst, 25);
@@ -150,6 +150,7 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
 
 // =====
 
+// relocate thumb-1 instructions
 void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
 
   uint32_t val, op, rm, rn, rd, shift, cond;
@@ -294,7 +295,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc, Cus
       // =====
       _ t2_bl(0);
       _ t2_b(0);
-      _ t2_ldr();
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // =====
     }
@@ -314,7 +315,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc, Cus
       // =====
       _ t2_bl(0);
       _ t2_b(0);
-      _ t2_ldr();
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // =====
     }
@@ -356,6 +357,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc, Cus
     uint16_t rt    = bits(inst2, 12, 15);
 
     uint32_t label = imm12;
+    int32_t val;
     if (U == 1) {
       val = val + label;
     } else {
@@ -370,7 +372,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc, Cus
   }
 }
 
-void ThumbRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_assembler) {
+void ThumbRelocateSingleInst(int32_t inst, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
   Thumb1RelocateSingleInst((int16_t)inst, cur_pc, turbo_assembler);
   Thumb2RelocateSingleInst((int16_t)inst, (int16_t)(inst >> 16), cur_pc, turbo_assembler);
 }
@@ -385,7 +387,7 @@ Code *GenRelocateCode(uintptr_t src_pc, int count) {
 #define _ turbo_assembler_.
   while (t < count) {
     ARMRelocateSingleInst(inst, cur_pc, turbo_assembler_);
-    ThumbRelocateSingleInst(inst, cur_pc, turbo_assembler_);
+    ThumbRelocateSingleInst(inst, cur_pc, reinterpret_cast<CustomThumbTurboAssembler &>(turbo_assembler_));
 
     // Move to next instruction
     cur_pc += 4;
