@@ -19,11 +19,11 @@ constexpr Register TMP0 = r12;
 
 class PseudoLabel : public Label {
 public:
-  enum PseudoLabelType { kLdrLiteralPseudoLabel };
+  enum PseudoLabelType { kLdrLiteral };
 
   typedef struct _PseudoLabelInstruction {
     int position_;
-    PseudoLabelType type_;
+    uword type_;
   } PseudoLabelInstruction;
 
   bool has_confused_instructions() {
@@ -41,7 +41,7 @@ public:
       int32_t encoded      = 0;
 
       switch (instruction.type_) {
-      case kLdrLiteralPseudoLabel: {
+      case kLdrLiteral: {
         encoded = inst32 & 0xFF00001F;
         encoded = encoded | LFT((offset >> 2), 19, 5);
       } break;
@@ -53,7 +53,7 @@ public:
     }
   };
 
-  void link_to(int pos, PseudoLabelType type) {
+  void link_to(int pos, uword type) {
     instructions_.push_back({pos, type});
   }
 
@@ -82,7 +82,6 @@ public:
       : immediate_(-1), rm_(rm), rs_(no_reg), shift_(shift), shift_imm_(shift & 31) {
     UNREACHABLE();
 
-    // ===
     assert(shift_imm < (1 << kShiftImmBits));
     type_ = 0;
     encoding_ =
@@ -91,7 +90,6 @@ public:
   explicit Operand(Register rm, Shift shift, Register rs) : immediate_(-1), rm_(rm), rs_(rs), shift_(shift) {
     UNREACHABLE();
 
-    // ===
     type_     = 0;
     encoding_ = static_cast<uint32_t>(rs.code()) << kShiftRegisterShift | static_cast<uint32_t>(shift) << kShiftShift |
                 (1 << 4) | static_cast<uint32_t>(rm.code());
@@ -128,6 +126,31 @@ public:
   explicit MemOperand(Register rn, Register rm, Shift shift, int shift_imm, AddrMode am = Offset)
       : rn_(rn), rm_(rm), shift_(shift), shift_imm_(shift_imm & 31), am_(am) {
     UNREACHABLE();
+  }
+
+  // =====
+  const Register &rn() const {
+    return rn_;
+  }
+  const Register &rm() const {
+    return rm_;
+  }
+  int32_t offset() const {
+    return offset_;
+  }
+
+  // =====
+  bool IsImmediateOffset() const {
+    return (am_ == Offset);
+  }
+  bool IsRegisterOffset() const {
+    return (am_ == Offset);
+  }
+  bool IsPreIndex() const {
+    return am_ == PreIndex;
+  }
+  bool IsPostIndex() const {
+    return am_ == PostIndex;
   }
 
 private:
@@ -203,7 +226,6 @@ public:
   static uint32_t ImmeidateChecked(uint32_t imm, uint len) {
     // TODO: uint32_t 0xffffffff = -1
     if (imm > (1 << len)) {
-      DLOG("immeidate check failed imm: %d, len: %d", imm, len);
       FATAL("exit.");
     }
     return imm;
@@ -240,7 +262,9 @@ public:
   void mov(Register dst, const Operand &src, Condition cond = AL) {
     EmitType01(cond, MOV, 0, dst, no_reg, src);
   }
+
   void mov(Register dst, Register src, Condition cond = AL) {
+    mov(dst, Operand(src), AL);
   }
 
   // =====
@@ -250,12 +274,16 @@ public:
     EmitType5(cond, branch_offset, false);
   }
   void bl(int branch_offset, Condition cond = AL) {
+    EmitType5(cond, branch_offset, true);
   }
   void blx(int branch_offset) {
+    UNIMPLEMENTED();
   }
   void blx(Register target, Condition cond = AL) {
+    UNIMPLEMENTED();
   }
   void bx(Register target, Condition cond = AL) {
+    UNIMPLEMENTED();
   }
 
 private:
@@ -304,7 +332,7 @@ public:
       ldr(rt, MemOperand(pc, dest));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteralPseudoLabel);
+      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteral);
       ldr(rt, MemOperand(pc, 0));
     }
   }

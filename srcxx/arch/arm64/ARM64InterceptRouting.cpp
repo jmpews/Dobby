@@ -31,7 +31,7 @@ void InterceptRouting::Prepare() {
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
     branch_type_        = Routing_B_Branch;
   } else {
-    DLOG("%s", "[*] Use br branch.\n");
+    DLOG("%s", "[*] Use Ldr branch.\n");
     branch_type_ = Routing_LDR_Branch;
   }
 

@@ -5,7 +5,6 @@
 #include "vm_core_extra/code-page-chunk.h"
 #include "vm_core_extra/custom-code.h"
 
-
 #include "AssemblyBridge.h"
 
 extern void closure_trampoline_template();
@@ -38,9 +37,9 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ Ldr(x17, &ForwardCode_ClosureBridge);
   _ br(x17);
   _ PseudoBind(&ClosureTrampolineEntry);
-  _ EmitInt64((int64_t)entry);
+  _ EmitInt64((uword)entry);
   _ PseudoBind(&ForwardCode_ClosureBridge);
-  _ EmitInt64((int64_t)get_closure_bridge());
+  _ EmitInt64((uword)get_closure_bridge());
   // ===
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));

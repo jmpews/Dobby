@@ -27,7 +27,7 @@ constexpr Register TMP1 = x16;
 
 class PseudoLabel : public Label {
 public:
-  enum PseudoLabelType { kLdrLiteralPseudoLabel };
+  enum PseudoLabelType { kLdrLiteral };
 
   typedef struct _PseudoLabelInstruction {
     int position_;
@@ -49,7 +49,7 @@ public:
       int32_t encoded      = 0;
 
       switch (instruction.type_) {
-      case kLdrLiteralPseudoLabel: {
+      case kLdrLiteral: {
         encoded = inst32 & 0xFF00001F;
         encoded = encoded | LFT((offset >> 2), 19, 5);
       } break;
@@ -571,7 +571,7 @@ public:
       ldr(rt, dest);
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteralPseudoLabel);
+      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteral);
       ldr(rt, 0);
     }
   }

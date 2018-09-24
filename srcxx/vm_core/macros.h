@@ -13,7 +13,9 @@ typedef char byte;
 // globals macro
 #define XCHECK(cond) assert(cond)
 
+// assert
 #define ASSERT(X) ((void)0)
+#define ZAssert(x) ((void)0)
 
 // =====
 
