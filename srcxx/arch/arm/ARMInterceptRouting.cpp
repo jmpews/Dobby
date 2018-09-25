@@ -1,12 +1,5 @@
-#include "hookzz_internal.h"
-#include "srcxx/InterceptRouting.h"
-#include "srcxx/Interceptor.h"
-
-#include "Logging.h"
-
-#include "AssemblyClosureTrampoline.h"
+#include "arch/arm/ARMInterceptRouting.h"
 #include "arch/arm/ARMInstructionRelocation.h"
-#include "intercept_routing_handler.h"
 
 #include "vm_core/modules/assembler/assembler-arm.h"
 #include "vm_core/modules/codegen/codegen-arm.h"
@@ -17,23 +10,91 @@
 
 using namespace zz::arm;
 
+// arm branch meta info
 #define ARM_TINY_REDIRECT_SIZE 4
-#define ARM_FULL_REDIRECT_SIZE 16
-#define ARM_NEAR_JUMP_RANGE ((1 << 25) << 2)
+#define ARM_B_XXX_RANGE (1 << 25) // signed
+#define ARM_FULL_REDIRECT_SIZE 8
+
+// thumb branch meta info
+#define THUMB1_TINY_REDIRECT_SIZE 2
+#define THUMB2_TINY_REDIRECT_SIZE 4
+#define THUMB1_B_XXX_RANGE (1 << 11) // signed
+#define THUMB2_B_XXX_RANGE (1 << 25) // signed
+#define THUMB_FULL_REDIRECT_SIZE 8
+
+static bool is_thumb2(uint32_t inst) {
+  uint16_t inst1, inst2;
+  inst1        = inst & 0x0000ffff;
+  inst2        = (inst & 0xffff0000) >> 16;
+  uint32_t op0 = bits(inst1, 11, 12);
+
+  if (op0 == 0b111) {
+    return true;
+  }
+  return false;
+}
+
+InterceptRouting *InterceptRouting::New(HookEntry *entry) {
+  return reinterpret_cast<InterceptRouting *>(new ARMInterceptRouting(entry));
+}
 
 // Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
-void InterceptRouting::Prepare() {
+void ARMInterceptRouting::Prepare() {
   uintptr_t src_pc         = (uintptr_t)entry_->target_address;
-  int need_relocated_size  = ARM_FULL_REDIRECT_SIZE;
   Interceptor *interceptor = Interceptor::SharedInstance();
-  if (interceptor->options().enable_b_branch) {
-    DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
-    need_relocated_size = ARM_TINY_REDIRECT_SIZE;
-    branch_type_        = Routing_B_Branch;
-  } else {
-    DLOG("%s", "[*] Use Ldr branch.\n");
-    branch_type_ = Routing_LDR_Branch;
+
+  // set instruction running state
+  execute_state_ = ARMExecuteState;
+  if (src_pc % 2) {
+    execute_state_ = ThumbExecuteState;
   }
+
+  if (execute_state_ == ThumbExecuteState) {
+    if (interceptor->options().enable_b_branch) {
+      DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
+      uint32_t inst = *(uint32_t *)src_pc;
+      MemoryRegion *region;
+      // If the first instuction is thumb1(2 bytes), the first choice for use is thumb1 b-xxx, else use thumb2 b-xxx
+      if (!is_thumb2(inst)) {
+        region = CodeChunk::AllocateCodeCave(src_pc, THUMB1_B_XXX_RANGE, THUMB1_TINY_REDIRECT_SIZE);
+        if (region) {
+          branch_type_ = Thumb1_B_Branch;
+        }
+      }
+      // Otherwith condisider the thumb2(4 bytes) b-xxx
+      if (!region) {
+        region = CodeChunk::AllocateCodeCave(src_pc, THUMB2_B_XXX_RANGE, THUMB2_TINY_REDIRECT_SIZE);
+        if (region) {
+          branch_type_ = Thumb2_B_Branch;
+        }
+      }
+      if (region)
+        delete region;
+      else {
+        DLOG("%s", "[!] Can't find any cove cave, change to ldr branch");
+        // Can't find any code cave, change to ldr branch
+        if (!is_thumb2(inst))
+          branch_type_ = Thumb1_LDR_Branch;
+        else
+          branch_type_ = Thumb2_LDR_Branch;
+      }
+    }
+  } else {
+    if (interceptor->options().enable_b_branch) {
+      MemoryRegion *region;
+      region = CodeChunk::AllocateCodeCave(src_pc, THUMB1_B_XXX_RANGE, THUMB1_TINY_REDIRECT_SIZE);
+      if (region) {
+        branch_type_ = ARM_B_Branch;
+      } else {
+        DLOG("%s", "[!] Can't find any cove cave, change to ldr branch");
+        // Can't find any code cave, change to ldr branch
+        delete region;
+        branch_type_ = ARM_LDR_Branch;
+      }
+    }
+  }
+
+  int need_relocated_size = 0;
 
   // Gen the relocated code
   Code *code;
@@ -52,7 +113,7 @@ void InterceptRouting::Prepare() {
 }
 
 // Add pre_call(prologue) handler before running the origin function,
-void InterceptRouting::BuildPreCallRouting() {
+void ARMInterceptRouting::BuildPreCallRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *cte = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
   entry_->prologue_dispatch_bridge = cte->address;
@@ -65,7 +126,7 @@ void InterceptRouting::BuildPreCallRouting() {
 }
 
 // Add post_call(epilogue) handler before `Return` of the origin function, as implementation is replace the origin `Return Address` of the function.
-void InterceptRouting::BuildPostCallRouting() {
+void ARMInterceptRouting::BuildPostCallRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry =
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)epilogue_routing_dispatch);
@@ -76,7 +137,7 @@ void InterceptRouting::BuildPostCallRouting() {
 }
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
-void InterceptRouting::BuildFastForwardTrampoline() {
+void ARMInterceptRouting::BuildFastForwardTrampoline() {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
   if (entry_->type == kFunctionInlineHook) {
@@ -95,7 +156,7 @@ void InterceptRouting::BuildFastForwardTrampoline() {
 }
 
 // Add dbi_call handler before running the origin instructions
-void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
+void ARMInterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry =
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
@@ -110,12 +171,12 @@ void InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
 }
 
 // alias Active
-void InterceptRouting::Commit() {
+void ARMInterceptRouting::Commit() {
   Active();
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
-void InterceptRouting::Active() {
+void ARMInterceptRouting::Active() {
   uintptr_t target_address = (uintptr_t)entry_->target_address;
 
   TurboAssembler turbo_assembler_;

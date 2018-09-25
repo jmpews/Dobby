@@ -37,6 +37,38 @@ MemoryRegion *CodeChunk::AllocateCode(size_t size) {
   return region;
 }
 
+// Search code cave from MemoryLayout
+MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t size) {
+  std::vector<OS::MemoryRegion> memory_layout = OS::GetMemoryLayout();
+  // initialize needed variable
+  char *dummy_0 = (char *)malloc(size);
+  memset(dummy_0, 0, size);
+  uintptr_t limit_start  = pos - range_size;
+  uintptr_t limit_end    = pos + range_size;
+  uintptr_t search_start = 0, search_end = 0;
+
+  auto it = memory_layout.begin();
+  for (it; it != memory_layout.end(); it++) {
+    if ((*it).permission != OS::MemoryPermission::kReadExecute)
+      continue;
+
+    if (limit_start > (*it).end)
+      continue;
+    if (limit_end < (*it).start)
+      continue;
+
+    search_start = limit_start > (*it).start ? limit_start : (*it).start;
+    search_end   = limit_end < (*it).end ? limit_end : (*it).end;
+
+    for (uintptr_t i = search_start; i < (search_end - size); i++) {
+      if (memcmp((void *)i, dummy_0, size) == 0) {
+        return new MemoryRegion((void *)i, size);
+      }
+    }
+  }
+  return NULL;
+}
+
 CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset, void *buffer, int size) {
   int page_size = (int)PageAllocator::PageSize();
 
@@ -50,9 +82,9 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   vm_inherit_t inherit;
   kern_return_t kr;
   mach_port_t task_self = mach_task_self();
-  
+
   // =====
-  
+
   vm_address_t region   = (vm_address_t)page_address;
   vm_size_t region_size = 0;
   struct vm_region_submap_short_info_64 info;
@@ -62,24 +94,24 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
-  prot = info.protection;
+  prot    = info.protection;
   inherit = info.inheritance;
-  
+
   // =====
-  
+
   kr = vm_copy(task_self, (vm_address_t)page_address, page_size, (vm_address_t)remap_page);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
 
   memcpy((void *)(remap_page + offset), buffer, size);
-  
+
   // =====
 
   PageAllocator::SetPermissions((void *)remap_page, page_size, OS::MemoryPermission::kReadExecute);
 
   // =====
-  
+
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
   vm_prot_t cur_protection, max_protection;
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,

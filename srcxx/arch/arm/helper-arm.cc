@@ -22,3 +22,5 @@ void set_prologue_routing_next_hop(RegisterContext *reg_ctx, void *address) {
 void set_epilogue_routing_next_hop(RegisterContext *reg_ctx, void *address) {
   *reinterpret_cast<void **>(&reg_ctx->general.regs.r12) = address;
 }
+
+// =====

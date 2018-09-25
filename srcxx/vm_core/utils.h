@@ -22,7 +22,10 @@ static inline int32_t High32Bits(int64_t value) {
 }
 
 // =====
-static inline bool CheckSignLength(uword value, int len) {
+static inline bool CheckLength(uword value, int len) {
+  return true;
+}
+static inline bool CheckSignLength(word value, int len) {
   return true;
 }
 static inline bool CheckAlign(uword value, int align) {

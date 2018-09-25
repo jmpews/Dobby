@@ -32,8 +32,8 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   PseudoLabel ForwardCode_ClosureBridge;
 
   // =====
-  _ ldr(r12, &ClosureTrampolineEntry);
-  _ ldr(pc, &ForwardCode_ClosureBridge);
+  _ Ldr(r12, &ClosureTrampolineEntry);
+  _ Ldr(pc, &ForwardCode_ClosureBridge);
   _ PseudoBind(&ClosureTrampolineEntry);
   _ Emit((uword)entry);
   _ PseudoBind(&ForwardCode_ClosureBridge);

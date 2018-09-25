@@ -35,7 +35,7 @@
 namespace zz {
 
 // =====
-  
+
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
 #else
@@ -136,7 +136,7 @@ bool OS::SetPermissions(void *address, size_t size, MemoryPermission access) {
 
   return ret == 0;
 }
-  
+
 // ======
 
 int OS::GetCurrentProcessId() {
@@ -154,6 +154,8 @@ int OS::GetCurrentThreadId() {
   return static_cast<int>(reinterpret_cast<intptr_t>(pthread_self()));
 #endif
 }
+
+// =====
 
 void OS::Print(const char *format, ...) {
   va_list args;
@@ -200,7 +202,7 @@ void OS::VPrintError(const char *format, va_list args) {
 #endif
 }
 
-// ------- class Thread -------
+// =====
 
 static Thread::LocalStorageKey PthreadKeyToLocalKey(pthread_key_t pthread_key) {
 #if defined(__cygwin__)
@@ -249,4 +251,6 @@ void Thread::SetThreadLocal(LocalStorageKey key, void *value) {
   int result                = pthread_setspecific(pthread_key, value);
   DCHECK_EQ(0, result);
 }
+
+// =====
 }

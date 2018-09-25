@@ -12,7 +12,7 @@ public:
   }
 
   static constexpr SubType no_reg() {
-    return SubType{-1};
+    return SubType{0};
   }
 
 protected:

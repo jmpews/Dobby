@@ -123,16 +123,16 @@ private:
     ZAssert(CheckSignLength(operand, 25));
     ZAssert(CheckAlign(operand, 2));
 
-    uint32_t encoding;
-    uint32_t value;
-    uint32_t signbit = (operand >> 31) & 0x1;
-    uint32_t i1      = (operand >> 22) & 0x1;
-    uint32_t i2      = (operand >> 21) & 0x1;
-    uint32_t imm10   = (operand >> 11) & 0x03ff;
-    uint32_t imm11   = operand & 0x07ff;
-    uint32_t j1      = (i1 ^ signbit) ? 0 : 1;
-    uint32_t j2      = (i2 ^ signbit) ? 0 : 1;
-    value            = (signbit << 26) | (j1 << 13) | (j2 << 11) | (imm10 << 16) | imm11;
+    uint32_t encoding = 0;
+    uint32_t value    = 0;
+    uint32_t signbit  = (operand >> 31) & 0x1;
+    uint32_t i1       = (operand >> 22) & 0x1;
+    uint32_t i2       = (operand >> 21) & 0x1;
+    uint32_t imm10    = (operand >> 11) & 0x03ff;
+    uint32_t imm11    = operand & 0x07ff;
+    uint32_t j1       = (i1 ^ signbit) ? 0 : 1;
+    uint32_t j2       = (i2 ^ signbit) ? 0 : 1;
+    value             = (signbit << 26) | (j1 << 13) | (j2 << 11) | (imm10 << 16) | imm11;
 
     if (cond != AL) {
       UNIMPLEMENTED();

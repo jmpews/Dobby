@@ -3,7 +3,18 @@
 
 #include <stdio.h>
 
+#define zDLog zFatal
+
 void zFatal(const char *file, int line, const char *format, ...);
+
+#ifndef DLOG
+#ifdef DEBUG
+#define DLOG FATAL
+#else
+#define DLOG
+#endif
+
+#endif
 
 #ifdef DEBUG
 #define FATAL(...) zFatal(__FILE__, __LINE__, __VA_ARGS__)

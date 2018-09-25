@@ -15,10 +15,10 @@ PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_
   entry->type             = kFunctionWrapper;
   entry->function_address = function_address;
 
-  InterceptRouting *route = new InterceptRouting(entry);
+  InterceptRouting *route = InterceptRouting::New(entry);
   route->Dispatch();
   intercepter->AddHookEntry(entry);
   route->Commit();
-  
+
   DLOG("[*] Finalize %p\n", function_address);
 }

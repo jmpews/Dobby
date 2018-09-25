@@ -14,6 +14,9 @@ class PageAllocator;
 
 class OS {
 public:
+  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+
+  // ===
   // Print output to console. This is mostly used for debugging output.
   // On platforms that has standard terminal output, the output
   // should go to stdout.
@@ -33,11 +36,38 @@ public:
 
   static void VPrintError(const char *format, va_list args);
 
+  // ===
+
   static int GetCurrentProcessId();
 
   static int GetCurrentThreadId();
 
-  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+  // ===
+
+  struct SharedLibraryAddress {
+    SharedLibraryAddress(const std::string &library_path, uintptr_t start, uintptr_t end)
+        : library_path(library_path), start(start), end(end), aslr_slide(0) {
+    }
+    SharedLibraryAddress(const std::string &library_path, uintptr_t start, uintptr_t end, intptr_t aslr_slide)
+        : library_path(library_path), start(start), end(end), aslr_slide(aslr_slide) {
+    }
+
+    std::string library_path;
+    uintptr_t start;
+    uintptr_t end;
+    intptr_t aslr_slide;
+  };
+
+  static std::vector<SharedLibraryAddress> GetSharedLibraryAddresses();
+
+  // ===
+  struct MemoryRegion {
+    uintptr_t start;
+    uintptr_t end;
+    MemoryPermission permission;
+  };
+
+  static std::vector<MemoryRegion> GetMemoryLayout();
 
 private:
   friend class PageAllocator;

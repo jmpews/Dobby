@@ -14,6 +14,8 @@ public:
   CodeBuffer(int capacity = 64) : capacity_(capacity) {
     buffer_ = reinterpret_cast<byte *>(malloc(capacity));
     cursor_ = buffer_;
+    // reset code buffer memory
+    memset(buffer_, 'A', capacity_);
   }
 
   // =====
@@ -82,7 +84,11 @@ public:
     byte *buffer = (byte *)realloc(buffer_, new_capacity);
     cursor_ = buffer + Size();
     buffer_ = buffer;
+    // reset code buffer memory
+    memset(buffer_ + capacity_, 'A', new_capacity - capacity_);
     capacity_  = new_capacity;
+    DLOG("[*] Codebuffer Grow at %p with capacity %d\n", buffer_, capacity_);
+
   }
 
 private:

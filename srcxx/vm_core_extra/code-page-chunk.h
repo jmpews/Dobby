@@ -24,6 +24,8 @@ public:
 
   static CodeChunk *AllocateCodePage();
 
+  static zz::MemoryRegion *AllocateCodeCave(uword pos, uword range_size, size_t size);
+
   static MemoryOperationError Patch(void *address, void *buffer, int size);
 
   static MemoryOperationError Patch(void *page_address, int offset, void *buffer, int size);

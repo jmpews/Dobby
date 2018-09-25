@@ -3,47 +3,42 @@
 
 #include "Interceptor.h"
 
+typedef int RoutingType;
+
 class InterceptRouting {
 public:
-  enum RoutingType { Routing_B_Branch, Routing_LDR_Branch };
-
-  InterceptRouting(HookEntry *entry) : entry_(entry){};
-
-  // =====
-
-  void Dispatch();
-
-  void Commit();
-
-  // =====
-
-  RoutingType type() {
-    return branch_type_;
+  InterceptRouting(HookEntry *entry) : entry_(entry) {
   }
 
+  static InterceptRouting *New(HookEntry *entry);
+
+  // ===
+  void Dispatch();
+
+  virtual void Commit(){};
+
+  // ===
   int length() {
     return routing_length_;
   }
 
 private:
-  void Prepare();
+  virtual void Prepare(){};
 
-  void Active();
+  virtual void Active(){};
 
-  void BuildFastForwardTrampoline();
+  virtual void BuildFastForwardTrampoline(){};
 
-  void BuildPreCallRouting();
+  virtual void BuildPreCallRouting(){};
 
-  void BuildDynamicBinaryInstrumentationRouting();
+  virtual void BuildDynamicBinaryInstrumentationRouting(){};
 
-  void BuildPostCallRouting();
-
-public:
-  int routing_length_;
+  virtual void BuildPostCallRouting(){};
 
 private:
-  HookEntry *entry_;
+  int routing_length_;
 
-  RoutingType branch_type_;
+protected:
+  HookEntry *entry_;
 };
 #endif

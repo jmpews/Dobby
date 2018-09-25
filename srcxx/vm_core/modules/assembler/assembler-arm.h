@@ -15,6 +15,10 @@
 namespace zz {
 namespace arm {
 
+// ARM design had a 3-stage pipeline (fetch-decode-execute)
+#define ARM_PC_OFFSET 8
+#define Thumb_PC_OFFSET 4
+
 constexpr Register TMP0 = r12;
 
 class PseudoLabel : public Label {
@@ -42,8 +46,10 @@ public:
 
       switch (instruction.type_) {
       case kLdrLiteral: {
-        encoded = inst32 & 0xFF00001F;
-        encoded = encoded | LFT((offset >> 2), 19, 5);
+        encoded        = inst32 & 0xfffff000;
+        uint32_t imm12 = offset - ARM_PC_OFFSET;
+        ZAssert(CheckSignLength(imm12));
+        encoded = encoded | imm12;
       } break;
       default:
         UNREACHABLE();
@@ -191,7 +197,7 @@ public:
 
   // ===
   static inline uint32_t MemOperand(const MemOperand x) {
-    uint32_t encoding;
+    uint32_t encoding = 0;
     if (x.rm_.code() == no_reg.code()) {
       if (x.offset_ < 0) {
         encoding = (x.am_ ^ (1 << kUShift)) | -x.offset_; // Flip U to adjust sign.
@@ -208,11 +214,11 @@ public:
 
   // ===
   static inline uint32_t Operand(const Operand o) {
-    uint32_t encoding;
+    uint32_t encoding = 0;
 
     // Immeidate
     if (o.rm_.code() == no_reg.code()) {
-      encoding |= o.immediate_;
+      encoding = o.immediate_;
       encoding |= B25;
     } else if (o.rm_.code() != no_reg.code()) {
       encoding = static_cast<uint32_t>(o.rm_.code());
@@ -268,7 +274,6 @@ public:
   }
 
   // =====
-
   // Branch instructions.
   void b(int branch_offset, Condition cond = AL) {
     EmitType5(cond, branch_offset, false);
@@ -291,21 +296,27 @@ private:
     ASSERT(rd != no_reg);
     ASSERT(cond != kNoCondition);
 
-    int32_t encoding = static_cast<int32_t>(cond) << kConditionShift | static_cast<int32_t>(opcode) << kOpcodeShift |
-                       set_cc << kSShift | OpEncode::Rn(rn) | OpEncode::Rd(rd) | OpEncode::Operand(o);
+    int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) |
+                       (static_cast<int32_t>(opcode) << kOpcodeShift) | (set_cc << kSShift);
+    encoding = encoding | (rn.Is(no_reg) ? 0 :  OpEncode::Rn(rn)) | OpEncode::Rd(rd) | OpEncode::Operand(o);
     Emit(encoding);
   }
   void EmitType5(Condition cond, int32_t offset, bool link) {
     ASSERT(cond != kNoCondition);
-    int32_t encoding = static_cast<int32_t>(cond) << kConditionShift | LFT(5, 3, 25) | (link ? 1 : 0) << kLinkShift;
-    Emit(offset | encoding);
+    int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | LFT(5, 3, 25) | ((link ? 1 : 0) << kLinkShift);
+    int32_t imm24 = offset >> 2;
+    ZAssert(CheckSignLength(imm24, 24));
+    Emit(imm24 | encoding);
   }
+
+  // =====
+  // load store operation
   void EmitMemOp(Condition cond, bool load, bool byte, Register rd, const MemOperand x) {
     ASSERT(rd != no_reg);
     ASSERT(cond != kNoCondition);
 
-    int32_t encoding =
-        (static_cast<int32_t>(cond) << kConditionShift) | B26 | (load ? L : 0) | (byte ? B : 0) | OpEncode::Rd(rd);
+    int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | B26 | (load ? L : 0) | (byte ? B : 0);
+    encoding         = encoding | OpEncode::Rd(rd) | OpEncode::MemOperand(x);
     Emit(encoding);
   }
 };
@@ -337,6 +348,15 @@ public:
     }
   }
 
+  void PseudoBind(PseudoLabel *label) {
+    const uintptr_t bound_pc = buffer_.Size();
+    label->bind_to(bound_pc);
+    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(this->GetCodeBuffer());
+    }
+  }
+
   // =====
 
   void CallFunction(ExternalReference function) {
@@ -344,7 +364,7 @@ public:
     bl(0);
     b(4);
     ldr(pc, MemOperand(pc, -4));
-    Emit((uint32_t)function.address());
+    Emit((uword)function.address());
   }
 
   // =====
