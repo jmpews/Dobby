@@ -33,6 +33,7 @@ void platform_darwin_test() {
   int dummy;
 }
 
+namespace zz {
 std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
   std::vector<SharedLibraryAddress> result;
   unsigned int images_count = _dyld_image_count();
@@ -57,7 +58,7 @@ std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
   return result;
 }
 
-std::vector<MemoryRegion> OS::GetMemoryLayout() {
+std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
   std::vector<MemoryRegion> result;
 
   mach_msg_type_number_t count;
@@ -86,11 +87,11 @@ std::vector<MemoryRegion> OS::GetMemoryLayout() {
       uintptr_t end   = addr;
       MemoryPermission permission;
       if ((info.protection & PROT_READ) && (info.protection & PROT_WRITE)) {
-        permission = kReadWrite;
+        permission = OS::MemoryPermission::kReadWrite;
       } else if ((info.protection & PROT_READ) == info.protection) {
-        permission = kRead;
+        permission = OS::MemoryPermission::kRead;
       } else if ((info.protection & PROT_READ) && (info.protection & PROT_EXEC)) {
-        permission = kReadExecute;
+        permission = OS::MemoryPermission::kReadExecute;
       } else {
         continue;
       }
@@ -98,3 +99,5 @@ std::vector<MemoryRegion> OS::GetMemoryLayout() {
     }
   }
 }
+
+} // namespace zz

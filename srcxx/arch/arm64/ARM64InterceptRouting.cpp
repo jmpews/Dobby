@@ -18,30 +18,28 @@
 using namespace zz::arm64;
 
 #define ARM64_TINY_REDIRECT_SIZE 4
+#define ARM64_B_XXX_RANGE (1 << 25) // signed
 #define ARM64_FULL_REDIRECT_SIZE 16
-#define ARM64_NEAR_JUMP_RANGE ((1 << 25) << 2)
 
 // Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
 void InterceptRouting::Prepare() {
   uint64_t src_pc          = (uint64_t)entry_->target_address;
-  int need_relocated_size  = ARM64_FULL_REDIRECT_SIZE;
   Interceptor *interceptor = Interceptor::SharedInstance();
+  int need_relocated_size  = 0;
+
   if (interceptor->options().enable_b_branch) {
     DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
     need_relocated_size = ARM64_TINY_REDIRECT_SIZE;
     branch_type_        = Routing_B_Branch;
   } else {
     DLOG("%s", "[*] Use Ldr branch.\n");
-    branch_type_ = Routing_LDR_Branch;
+    branch_type_        = Routing_LDR_Branch;
+    need_relocated_size = ARM64_FULL_REDIRECT_SIZE;
   }
 
   // Gen the relocated code
   Code *code;
-  if (branch_type_ == Routing_B_Branch) {
-    code = GenRelocateCode(src_pc, ARM64_TINY_REDIRECT_SIZE / 4);
-  } else {
-    code = GenRelocateCode(src_pc, ARM64_FULL_REDIRECT_SIZE / 4);
-  }
+  code                              = GenRelocateCode(src_pc, need_relocated_size);
   entry_->relocated_origin_function = (void *)code->raw_instruction_start();
   DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)code->raw_instruction_start());
 

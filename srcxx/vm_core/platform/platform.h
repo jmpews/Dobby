@@ -62,6 +62,9 @@ public:
 
   // ===
   struct MemoryRegion {
+    MemoryRegion(uintptr_t start, uintptr_t end, MemoryPermission permission)
+        : start(start), end(end), permission(permission) {
+    }
     uintptr_t start;
     uintptr_t end;
     MemoryPermission permission;
