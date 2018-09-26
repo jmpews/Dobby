@@ -21,4 +21,5 @@ PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_
   route->Commit();
 
   DLOG("[*] Finalize %p\n", function_address);
+  return RS_SUCCESS;
 }

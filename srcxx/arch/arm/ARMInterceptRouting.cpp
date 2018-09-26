@@ -1,5 +1,6 @@
 #include "arch/arm/ARMInterceptRouting.h"
 #include "arch/arm/ARMInstructionRelocation.h"
+#include "arch/arm/ARMInstructionRelocation.h"
 
 #include "vm_core/modules/assembler/assembler-arm.h"
 #include "vm_core/modules/codegen/codegen-arm.h"
@@ -58,7 +59,8 @@ void ARMInterceptRouting::Prepare() {
       do {
         // If the first instuction is thumb1(2 bytes), the first choice for use is thumb1 b-xxx, else use thumb2 b-xxx
         if (!is_thumb2(inst)) {
-          region = CodeChunk::AllocateCodeCave(src_pc, THUMB1_B_XXX_RANGE, THUMB1_TINY_REDIRECT_SIZE);
+          // Try allocate a code cave for fast-forward-transfer-trampoline
+          region = CodeChunk::AllocateCodeCave(src_pc, THUMB1_B_XXX_RANGE, ARM_FULL_REDIRECT_SIZE);
           if (region) {
             DLOG("%s", "[*] Use Thumb1 B-xxx Branch\n");
             branch_type_        = Thumb1_B_Branch;
@@ -67,7 +69,8 @@ void ARMInterceptRouting::Prepare() {
           }
         }
         // Otherwith condisider the thumb2(4 bytes) b-xxx
-        region = CodeChunk::AllocateCodeCave(src_pc, THUMB2_B_XXX_RANGE, THUMB2_TINY_REDIRECT_SIZE);
+        // Try allocate a code cave for fast-forward-transfer-trampoline
+        region = CodeChunk::AllocateCodeCave(src_pc, THUMB2_B_XXX_RANGE, ARM_FULL_REDIRECT_SIZE);
         if (region) {
           DLOG("%s", "[*] Use Thumb2 B-xxx Branch\n");
           branch_type_        = Thumb2_B_Branch;
@@ -81,20 +84,14 @@ void ARMInterceptRouting::Prepare() {
     if (region)
       delete region;
     else {
-      if (!is_thumb2(inst)) {
-        DLOG("%s", "[*] Use Thumb1 Ldr Branch\n");
-        branch_type_        = Thumb1_LDR_Branch;
-        need_relocated_size = 6;
-      } else {
-        DLOG("%s", "[*] Use Thumb2 Ldr Branch\n");
-        branch_type_        = Thumb2_LDR_Branch;
-        need_relocated_size = 8;
-      }
+      DLOG("%s", "[*] Use Thumb2 Ldr Branch\n");
+      branch_type_        = Thumb2_LDR_Branch;
+      need_relocated_size = 8;
     }
   } else {
     MemoryRegion *region;
     if (interceptor->options().enable_b_branch) {
-      region = CodeChunk::AllocateCodeCave(src_pc, THUMB1_B_XXX_RANGE, THUMB1_TINY_REDIRECT_SIZE);
+      region = CodeChunk::AllocateCodeCave(src_pc, ARM_B_XXX_RANGE, ARM_FULL_REDIRECT_SIZE);
       if (region) {
         DLOG("%s", "[*] Use ARM B-xxx Branch\n");
         branch_type_        = ARM_B_Branch;
@@ -192,13 +189,44 @@ void ARMInterceptRouting::Commit() {
 void ARMInterceptRouting::Active() {
   uintptr_t target_address = (uintptr_t)entry_->target_address;
 
-  TurboAssembler turbo_assembler_;
+  if (execute_state_ == ARMExecuteState) {
+    TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
+    if (branch_type_ == ARM_B_Branch) {
+      _ b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address);
+    } else {
+      CodeGen codegen(&turbo_assembler_);
+      codegen.LiteralLdrBranch((uint32_t)entry_->prologue_dispatch_bridge);
+    }
 
-  CodeChunk::MemoryOperationError err;
-  err = CodeChunk::PatchCodeBuffer((void *)target_address, turbo_assembler_.GetCodeBuffer());
-  CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
-  Code::FinalizeFromAddress(target_address, turbo_assembler_.CodeSize());
-
+    // Patch
+    CodeChunk::MemoryOperationError err;
+    err = CodeChunk::PatchCodeBuffer((void *)target_address, turbo_assembler_.GetCodeBuffer());
+    CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
+    Code::FinalizeFromAddress(target_address, turbo_assembler_.CodeSize());
+  } else {
+    CustomThumbTurboAssembler turbo_assembler_;
+#define _ turbo_assembler_.
+    if (branch_type_ == Thumb1_B_Branch) {
+      _ t1_b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address);
+    } else if (branch_type_ == Thumb2_B_Branch) {
+      _ t2_b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address);
+    } else if (branch_type_ == Thumb2_LDR_Branch) {
+      // Check if needed pc align, (relative pc needed 4 align)
+      if (target_address % 4)
+        _ t2_ldr(pc, MemOperand(pc, -2));
+      else {
+        _ t2_ldr(pc, MemOperand(pc, -4));
+        _ Emit((int32_t)entry_->prologue_dispatch_bridge);
+      }
+    } else {
+      UNREACHABLE();
+    }
+    // Patch
+    CodeChunk::MemoryOperationError err;
+    err = CodeChunk::PatchCodeBuffer((void *)target_address, turbo_assembler_.GetCodeBuffer());
+    CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
+    Code::FinalizeFromAddress(target_address, turbo_assembler_.CodeSize());
+  }
   DLOG("[*] Active the routing at %p\n", entry_->target_address);
 }

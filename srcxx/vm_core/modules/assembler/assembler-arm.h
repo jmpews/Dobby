@@ -242,6 +242,15 @@ public:
 
 class Assembler : public AssemblerBase {
 public:
+  void CommitRealize(void *address) {
+    released_address_ = address;
+  }
+  Code *GetCode() {
+    Code *code = new Code(released_address_, CodeSize());
+    return code;
+  }
+
+  // ===
   void Emit(int32_t value) {
     buffer_.Emit(value);
   }
@@ -298,13 +307,13 @@ private:
 
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) |
                        (static_cast<int32_t>(opcode) << kOpcodeShift) | (set_cc << kSShift);
-    encoding = encoding | (rn.Is(no_reg) ? 0 :  OpEncode::Rn(rn)) | OpEncode::Rd(rd) | OpEncode::Operand(o);
+    encoding = encoding | (rn.Is(no_reg) ? 0 : OpEncode::Rn(rn)) | OpEncode::Rd(rd) | OpEncode::Operand(o);
     Emit(encoding);
   }
   void EmitType5(Condition cond, int32_t offset, bool link) {
     ASSERT(cond != kNoCondition);
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | LFT(5, 3, 25) | ((link ? 1 : 0) << kLinkShift);
-    int32_t imm24 = offset >> 2;
+    int32_t imm24    = offset >> 2;
     ZAssert(CheckSignLength(imm24, 24));
     Emit(imm24 | encoding);
   }
@@ -319,6 +328,9 @@ private:
     encoding         = encoding | OpEncode::Rd(rd) | OpEncode::MemOperand(x);
     Emit(encoding);
   }
+
+private:
+  void *released_address_;
 };
 
 class TurboAssembler : public Assembler {
@@ -326,17 +338,7 @@ public:
   TurboAssembler() {
   }
 
-  void CommitRealize(void *address) {
-    released_address_ = address;
-  }
-
-  Code *GetCode() {
-    Code *code = new Code(released_address_, CodeSize());
-    return code;
-  }
-
-  // =====
-
+  // ===
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
       const int64_t dest = label->pos() - buffer_.Size();
@@ -371,9 +373,6 @@ public:
 
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
   }
-
-private:
-  void *released_address_;
 };
 
 } // namespace arm

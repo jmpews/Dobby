@@ -11,14 +11,7 @@
 class ARMInterceptRouting : public InterceptRouting {
 public:
   // trampoline branch type
-  enum RoutingType {
-    ARM_B_Branch,
-    ARM_LDR_Branch,
-    Thumb1_B_Branch,
-    Thumb2_B_Branch,
-    Thumb1_LDR_Branch,
-    Thumb2_LDR_Branch
-  };
+  enum RoutingType { ARM_B_Branch, ARM_LDR_Branch, Thumb1_B_Branch, Thumb2_B_Branch, Thumb2_LDR_Branch };
 
   // execute arm instruction or thumb instruction
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };

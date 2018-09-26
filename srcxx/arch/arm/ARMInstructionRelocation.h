@@ -172,6 +172,9 @@ public:
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
+
+private:
+  void *released_address_;
 };
 
 // Generate the relocated instruction

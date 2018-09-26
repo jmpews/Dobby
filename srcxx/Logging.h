@@ -27,10 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef DLOG
 #if defined(DEBUG)
 #define DLOG(fmt, ...) zz::OS::Print(fmt, __VA_ARGS__)
 #else
 #define DLOG(fmt, ...)
+#endif
 #endif
 
 #endif

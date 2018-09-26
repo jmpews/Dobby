@@ -98,6 +98,7 @@ std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
       result.push_back(OS::MemoryRegion(start, end, permission));
     }
   }
+  return result;
 }
 
 } // namespace zz

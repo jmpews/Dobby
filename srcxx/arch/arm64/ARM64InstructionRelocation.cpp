@@ -27,16 +27,15 @@ typedef struct _PseudoLabelData {
   uintptr_t address;
 } PseudoLabelData;
 
-Code *GenRelocateCode(uint64_t src_pc, int count) {
+Code *GenRelocateCode(uint64_t src_pc, int size) {
   uint64_t cur_pc = src_pc;
   uint32_t inst   = *(uint32_t *)src_pc;
-  int t           = 0;
 
   std::vector<PseudoLabelData> labels;
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-  while (t < count) {
+  while (cur_pc < (src_pc + size)) {
     if ((inst & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) {
       int rt                  = bits(inst, 0, 4);
       int32_t imm19           = bits(inst, 5, 23);
@@ -98,7 +97,6 @@ Code *GenRelocateCode(uint64_t src_pc, int count) {
 
     // Move to next instruction
     cur_pc += 4;
-    t++;
     inst = *(uint32_t *)cur_pc;
   }
 

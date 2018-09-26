@@ -306,13 +306,13 @@ class Assembler : public AssemblerBase {
 public:
   Assembler();
 
-  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
   void CommitRealize(void *address) {
+    released_address_ = address;
   }
 
   Code *GetCode() {
-    UNREACHABLE();
-    return NULL;
+    Code *code = new Code(released_address_, CodeSize());
+    return code;
   }
 
   void FlushICache();
@@ -540,6 +540,9 @@ private:
     Emit(op | LogicalShiftedFixed | combine_fields_op);
   }
 
+private:
+  void *released_address_;
+
 }; // namespace arm64
 
 class TurboAssembler : public Assembler {
@@ -547,24 +550,13 @@ public:
   TurboAssembler() {
   }
 
-  void CommitRealize(void *address) {
-    released_address_ = address;
-  }
-
-  Code *GetCode() {
-    Code *code = new Code(released_address_, CodeSize());
-    return code;
-  }
-
-  // =====
-
+  // ===
   void CallFunction(ExternalReference function) {
     Mov(TMP0, (uint64_t)function.address());
     blr(TMP0);
   }
 
-  // =====
-
+  // ===
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
       const int64_t dest = label->pos() - buffer_.Size();
@@ -576,8 +568,7 @@ public:
     }
   }
 
-  // =====
-
+  // ===
   void PseudoBind(PseudoLabel *label) {
     const uintptr_t bound_pc = buffer_.Size();
     label->bind_to(bound_pc);
@@ -587,8 +578,7 @@ public:
     }
   }
 
-  // =====
-
+  // ===
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Low32Bits(imm);
     const uint32_t w1 = High32Bits(imm);
@@ -604,8 +594,6 @@ public:
 
 private:
   Assembler assembler_;
-
-  void *released_address_;
 };
 
 } // namespace arm64

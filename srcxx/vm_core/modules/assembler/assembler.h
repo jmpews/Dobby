@@ -72,7 +72,7 @@ public:
 private:
   const void *address_;
 };
-  
+
 // =====
 
 class AssemblerBase {
@@ -80,7 +80,7 @@ public:
   AssemblerBase() {
     DLOG("[*] Assembler buffer at %p\n", buffer_.RawBuffer());
   }
-  
+
   int pc_offset() const {
     return buffer_.Size();
   }
