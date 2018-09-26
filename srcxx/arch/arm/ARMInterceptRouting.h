@@ -34,8 +34,23 @@ private:
 
   virtual void BuildPostCallRouting();
 
+// private for thumb & arm
 private:
+  void prepare_arm();
+  
+  void prepare_thumb();
+  
+  // active arm routing
+  void active_arm_intercept_routing();
+  
+  // active thumb routing
+  void active_thumb_intercept_routing();
+  
+private:
+  int need_relocated_size;
+  
   RoutingType branch_type_;
+  
   ExecuteState execute_state_;
 };
 

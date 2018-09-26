@@ -103,7 +103,7 @@ private:
       }
     } else {
       // use bit accelerate
-      uint32_t P, W, U;
+      uint32_t P = 0, W = 0, U = 0;
       uint32_t imm8 = x.offset() > 0 ? x.offset() : -x.offset();
       U             = x.offset() > 0 ? 0 : B9;
       if (x.IsPostIndex()) {
@@ -162,6 +162,7 @@ public:
   }
 
   // =====
+
   void T2_Ldr(Register rt, CustomThumbPseudoLabel *label) {
     if (label->is_bound()) {
       const int64_t dest = label->pos() - buffer_.Size();

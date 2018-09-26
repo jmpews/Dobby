@@ -14,6 +14,8 @@
 
 namespace zz {
 namespace arm {
+  
+#define ThumbAlign(x) (((uword)-2) & x)
 
 // ARM design had a 3-stage pipeline (fetch-decode-execute)
 #define ARM_PC_OFFSET 8
