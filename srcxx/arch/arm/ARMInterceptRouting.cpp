@@ -43,7 +43,7 @@ void ARMInterceptRouting::prepare_thumb() {
   uintptr_t src_pc         = (uintptr_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
   MemoryRegion *region     = NULL;
-  uword aligned_src_pc = ThumbAlign(src_pc);
+  uword aligned_src_pc     = ThumbAlign(src_pc);
 
   uint32_t inst = *(uint32_t *)aligned_src_pc;
   if (interceptor->options().enable_b_branch) {
@@ -222,28 +222,29 @@ void ARMInterceptRouting::active_thumb_intercept_routing() {
   CustomThumbTurboAssembler thumb_turbo_assembler_;
 #define _ thumb_turbo_assembler_.
 
-  uintptr_t target_address = (uintptr_t)entry_->target_address;
+  uintptr_t target_address         = (uintptr_t)entry_->target_address;
+  uintptr_t aligned_target_address = ThumbAlign(target_address);
 
   if (branch_type_ == ARMInterceptRouting::Thumb1_B_Branch) {
-    _ t1_b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address - Thumb_PC_OFFSET);
+    _ t1_b((int32_t)entry_->fast_forward_trampoline - (int32_t)aligned_target_address - Thumb_PC_OFFSET);
   } else if (branch_type_ == ARMInterceptRouting::Thumb2_B_Branch) {
-    _ t2_b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address - Thumb_PC_OFFSET);
+    _ t2_b((int32_t)entry_->fast_forward_trampoline - (int32_t)aligned_target_address - Thumb_PC_OFFSET);
   } else if (branch_type_ == ARMInterceptRouting::Thumb2_LDR_Branch) {
     // Check if needed pc align, (relative pc instructions needed 4 align)
-    if (target_address % 4)
-      _ t2_ldr(pc, MemOperand(pc, -2));
+    if (aligned_target_address % 4)
+      _ t2_ldr(pc, MemOperand(pc, 2));
     else {
-      _ t2_ldr(pc, MemOperand(pc, -4));
-      _ Emit((int32_t)entry_->prologue_dispatch_bridge);
+      _ t2_ldr(pc, MemOperand(pc, 0));
     }
+    _ Emit((int32_t)entry_->prologue_dispatch_bridge);
   } else {
     UNREACHABLE();
   }
   // Patch
   CodeChunk::MemoryOperationError err;
-  err = CodeChunk::PatchCodeBuffer((void *)target_address, thumb_turbo_assembler_.GetCodeBuffer());
+  err = CodeChunk::PatchCodeBuffer((void *)aligned_target_address, thumb_turbo_assembler_.GetCodeBuffer());
   CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
-  Code::FinalizeFromAddress(target_address, thumb_turbo_assembler_.CodeSize());
+  Code::FinalizeFromAddress(aligned_target_address, thumb_turbo_assembler_.CodeSize());
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.

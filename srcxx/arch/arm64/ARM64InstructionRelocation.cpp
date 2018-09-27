@@ -35,7 +35,7 @@ Code *GenRelocateCode(uint64_t src_pc, int *relocate_size) {
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-  while (cur_pc < (src_pc + relocate_size)) {
+  while (cur_pc < (src_pc + *relocate_size)) {
     if ((inst & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) {
       int rt                  = bits(inst, 0, 4);
       int32_t imm19           = bits(inst, 5, 23);

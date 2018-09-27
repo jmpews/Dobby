@@ -212,7 +212,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     // ===
     _ EmitInt16((inst & 0xfff0) | imm8);
     _ t1_nop();
-    _ t1_b(0);
+    _ t2_b(0);
     _ T2_Ldr(pc, &label);
     // ===
     labels.push_back({label, val});
@@ -232,12 +232,11 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
       _ t1_nop();
 
     CustomThumbPseudoLabel label;
-    // ===
     imm5 = bits(0x4 >> 1, 1, 5);
     i    = bit(0x4 >> 1, 6);
+    // ===
     _ EmitInt16((inst & 0xfd07) | imm5 << 3 | i << 9);
-    _ t1_nop();
-    _ t1_b(0);
+    _ t2_b(0);
     _ T2_Ldr(pc, &label);
     // ===
     labels.push_back({label, val});
@@ -290,16 +289,16 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
       int32_t label = (imm11 << 1) | (imm6 << 12) | (J1 << 18) | (J2 << 19) | (S << 20);
       int32_t val   = cur_pc + label + Thumb_PC_OFFSET;
-      
+
       if (cur_pc % 4)
         _ t1_nop();
       // ===
       imm11 = 0x4 >> 1;
-      _ EmitInt16(inst1 & 0xffc0); // clear imm6
+      _ EmitInt16(inst1 & 0xffc0);         // clear imm6
       _ EmitInt16(inst2 & 0xd000 | imm11); // 1. clear J1, J2, origin_imm12 2. set new imm11
-      
-      _ t2_b(0x0);
-      _ t2_ldr(pc, MemOperand(pc, -4));
+
+      _ t2_b(4);
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // ===
       rewrite_flag = true;
@@ -317,11 +316,11 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
       int32_t label = (imm11 << 1) | (imm10 << 12) | (J1 << 22) | (J2 << 23) | (S << 24);
       int32_t val   = cur_pc + label;
-      
+
       if (cur_pc % 4)
         _ t1_nop();
       // ===
-      _ t2_ldr(pc, MemOperand(pc, -4));
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // ===
       rewrite_flag = true;
@@ -340,9 +339,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       int32_t val   = cur_pc + label;
 
       // =====
-      _ t2_bl(0);
-      _ t2_b(0);
-      _ t2_ldr(pc, MemOperand(pc, -4));
+      _ t2_bl(4);
+      _ t2_b(4);
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // =====
       rewrite_flag = true;
@@ -361,9 +360,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       int32_t val   = cur_pc + label;
 
       // =====
-      _ t2_bl(0);
-      _ t2_b(0);
-      _ t2_ldr(pc, MemOperand(pc, -4));
+      _ t2_bl(4);
+      _ t2_b(4);
+      _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val);
       // =====
       rewrite_flag = true;
@@ -379,10 +378,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     uint32_t i     = bit(inst1, 10);
     uint32_t imm3  = bits(inst2, 12, 14);
     uint32_t imm8  = bits(inst2, 0, 7);
-    uint32_t rd = bits(inst2, 8, 11);
+    uint32_t rd    = bits(inst2, 8, 11);
     uint32_t label = imm8 | (imm3 << 8) | (i << 11);
     int32_t val    = 0;
-    
+
     if (rn == 15 && o1 == 0 && o2 == 0) {
       // ADR - T3 variant
       // adr with add
@@ -394,7 +393,8 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     }
 
     // ===
-    _ t2_ldr(Register::from_code(rd), MemOperand(pc, -4));
+    _ t2_ldr(Register::from_code(rd), MemOperand(pc, 4));
+    _ t2_b(0);
     _ Emit(val);
     // ===
     rewrite_flag = true;
@@ -416,7 +416,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
     Register regRt = Register::from_code(rt);
     // =====
-    _ t2_ldr(regRt, MemOperand(pc, -4));
+    _ t2_ldr(regRt, MemOperand(pc, 4));
+    _ t2_b(0);
+    _ Emit(val);
     _ t2_ldr(regRt, MemOperand(regRt, 0));
     // =====
     rewrite_flag = true;
@@ -490,8 +492,8 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_pc, int *relocate_s
   if (cur_pc % 4) {
     _ t1_nop();
   }
-  _ t2_ldr(pc, MemOperand(pc, -4));
-  _ Emit(cur_pc + Thumb_PC_OFFSET);
+  _ t2_ldr(pc, MemOperand(pc, 0));
+  _ Emit(cur_pc);
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   return code;
