@@ -1,6 +1,7 @@
 #ifndef ZZ_LOGGING_H_
 #define ZZ_LOGGING_H_
 
+#include "vm_core/platform/platform.h"
 #include <stdio.h>
 
 #define zDLog zFatal
@@ -9,9 +10,9 @@ void zFatal(const char *file, int line, const char *format, ...);
 
 #ifndef DLOG
 #ifdef DEBUG
-#define DLOG FATAL
+#define DLOG(fmt, ...) zz::OS::Print(fmt, __VA_ARGS__)
 #else
-#define DLOG
+#define DLOG(fmt, ...)
 #endif
 
 #endif

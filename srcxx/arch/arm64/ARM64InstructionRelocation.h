@@ -19,7 +19,7 @@ namespace zz {
 namespace arm64 {
 
 // Generate the relocated instruction
-Code *GenRelocateCode(uint64_t src_pc, int count);
+Code *GenRelocateCode(uint64_t src_pc, int *relocate_size);
 
 } // namespace arm64
 } // namespace zz

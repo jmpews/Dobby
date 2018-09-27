@@ -91,16 +91,32 @@ public:
   }
 
 private:
-  void EmitThumb2LoadLiteral() {
+  void EmitThumb2LoadLiteral(Register rt, const MemOperand x) {
+    bool add = true;
+    uint32_t U, imm12;
+    int32_t offset = x.offset();
+    if (offset > 0) {
+      U = B7;
+      imm12 = offset;
+    } else {
+      U     = 0;
+      imm12 = -offset;
+    }
+    EmitInt16(0xf85f | U);
+    EmitInt16(0x0 | (rt.code() << 12) | imm12);
   }
   void EmitThumb2LoadStore(bool load, Register rt, const MemOperand x) {
+    if (x.rn().Is(pc)) {
+      EmitThumb2LoadLiteral(rt, x);
+      return;
+    }
+
     bool index, add, wback;
-    if (x.IsRegisterOffset()) {
-      if (x.offset() > 0) {
-        index = true, add = true, wback = false;
-        uint32_t imm12 = x.offset();
-        Emit(0xf8c00000 | LFT(rt.code(), 4, 12) | x.offset());
-      }
+    if (x.IsRegisterOffset() && x.offset() >= 0) {
+      index = true, add = true, wback = false;
+      uint32_t imm12 = x.offset();
+      EmitInt16(0xf8d0 | (x.rn().code() << 0));
+      EmitInt16(0x0 | (rt.code() << 12) | imm12);
     } else {
       // use bit accelerate
       uint32_t P = 0, W = 0, U = 0;
@@ -114,7 +130,8 @@ private:
       index = (P == B10);
       add   = (U == B9);
       wback = (W == B8);
-      Emit(0xf8400800 | P | U | W | imm8);
+      EmitInt16(0xf850 | (x.rn().code() << 0));
+      EmitInt16(0x0800 | (rt.code() << 12) | P | U | W | imm8);
     }
   }
 
@@ -123,27 +140,25 @@ private:
     ZAssert(CheckSignLength(operand, 25));
     ZAssert(CheckAlign(operand, 2));
 
-    uint32_t encoding = 0;
-    uint32_t value    = 0;
-    uint32_t signbit  = (operand >> 31) & 0x1;
-    uint32_t i1       = (operand >> 22) & 0x1;
-    uint32_t i2       = (operand >> 21) & 0x1;
-    uint32_t imm10    = (operand >> 11) & 0x03ff;
-    uint32_t imm11    = operand & 0x07ff;
-    uint32_t j1       = (i1 ^ signbit) ? 0 : 1;
-    uint32_t j2       = (i2 ^ signbit) ? 0 : 1;
-    value             = (signbit << 26) | (j1 << 13) | (j2 << 11) | (imm10 << 16) | imm11;
+    uint32_t signbit = (operand >> 31) & 0x1;
+    uint32_t i1      = (operand >> 22) & 0x1;
+    uint32_t i2      = (operand >> 21) & 0x1;
+    uint32_t imm10   = (operand >> 11) & 0x03ff;
+    uint32_t imm11   = operand & 0x07ff;
+    uint32_t j1      = (i1 ^ signbit) ? 0 : 1;
+    uint32_t j2      = (i2 ^ signbit) ? 0 : 1;
 
     if (cond != AL) {
       UNIMPLEMENTED();
     }
-    encoding = 0xf0009000;
+
+    EmitInt16(0xf0 | LFT(S, 1, 10) | LFT(imm10, 10, 0));
     if (link) {
       // Not use LFT(1, 1, 14), and use B14 for accelerate
-      encoding = encoding | B14;
+      EmitInt16(0x9000 | LFT(j1, 1, 13) | (LFT(j2, 1, 11)) | LFT(imm11, 11, 0) | B14);
+    } else {
+      EmitInt16(0x9000 | LFT(j1, 1, 13) | (LFT(j2, 1, 11)) | LFT(imm11, 11, 0));
     }
-    encoding |= value;
-    Emit(encoding);
   }
 };
 
@@ -151,6 +166,10 @@ class CustomThumbTurboAssembler : public CustomThumbAssembler {
 public:
   // =====
   void T1_Ldr(Register rt, CustomThumbPseudoLabel *label) {
+    UNREACHABLE();
+
+    // ===
+
     if (label->is_bound()) {
       const int64_t dest = label->pos() - buffer_.Size();
       ldr(rt, MemOperand(pc, dest));
@@ -179,7 +198,7 @@ private:
 };
 
 // Generate the relocated instruction
-Code *GenRelocateCode(uintptr_t src_pc, int count);
+Code *GenRelocateCode(uintptr_t src_pc, int *relocate_size);
 
 } // namespace arm
 } // namespace zz

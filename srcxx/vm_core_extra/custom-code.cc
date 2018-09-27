@@ -21,5 +21,6 @@ AssemblerCode *AssemblerCode::FinalizeTurboAssembler(AssemblerBase *assembler) {
   turbo_assembler->CommitRealize(code_address);
   CodeChunk::PatchCodeBuffer(code_address, turbo_assembler->GetCodeBuffer());
   Code *code = turbo_assembler->GetCode();
+  DLOG("[*] AssemblerCode finalize assembler at %p\n", code->raw_instruction_start());
   return reinterpret_cast<AssemblerCode *>(code);
 }

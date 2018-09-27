@@ -6,7 +6,6 @@
 #include "vm_core/modules/assembler/assembler-arm.h"
 #include "vm_core/modules/codegen/codegen-arm.h"
 
-
 namespace zz {
 namespace arm {
 
@@ -188,7 +187,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
     CustomThumbPseudoLabel label;
     // ===
-    _ T1_Ldr(Register::from_code(rd), &label);
+    _ T2_Ldr(Register::from_code(rd), &label);
     // ===
     labels.push_back({label, val});
     rewrite_flag = true;
@@ -214,7 +213,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     _ EmitInt16((inst & 0xfff0) | imm8);
     _ t1_nop();
     _ t1_b(0);
-    _ T1_Ldr(pc, &label);
+    _ T2_Ldr(pc, &label);
     // ===
     labels.push_back({label, val});
     rewrite_flag = true;
@@ -239,7 +238,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     _ EmitInt16((inst & 0xfd07) | imm5 << 3 | i << 9);
     _ t1_nop();
     _ t1_b(0);
-    _ T1_Ldr(pc, &label);
+    _ T2_Ldr(pc, &label);
     // ===
     labels.push_back({label, val});
     rewrite_flag = true;
@@ -256,10 +255,15 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
     CustomThumbPseudoLabel label;
     // ===
-    _ T1_Ldr(pc, &label);
+    _ T2_Ldr(pc, &label);
     // ===
     labels.push_back({label, val});
     rewrite_flag = true;
+  }
+
+  // if the inst do not needed relocate, just rewrite the origin
+  if (!rewrite_flag) {
+    _ EmitInt16(inst);
   }
 }
 
@@ -268,9 +272,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
   bool rewrite_flag = false;
   // Branches and miscellaneous control
-  if ((inst1 & 0x8000) == 0x8000 && (inst2 & 0xf800) == 0xf000) {
+  if ((inst1 & 0xf800) == 0xf000 && (inst2 & 0x8000) == 0x8000) {
     int32_t op1 = 0, op3 = 0;
-    op1 = bits(inst2, 6, 9);
+    op1 = bits(inst1, 6, 9);
+    op3 = bits(inst2, 12, 14);
     if (op1 >= 0b1110)
       return;
 
@@ -284,10 +289,15 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       int imm11 = bits(inst2, 0, 10);
 
       int32_t label = (imm11 << 1) | (imm6 << 12) | (J1 << 18) | (J2 << 19) | (S << 20);
-      int32_t val   = cur_pc + label;
+      int32_t val   = cur_pc + label + Thumb_PC_OFFSET;
+      
+      if (cur_pc % 4)
+        _ t1_nop();
       // ===
       imm11 = 0x4 >> 1;
-      _ Emit2Int16(inst1 & 0xfbff, (inst2 & 0xd800) | imm11);
+      _ EmitInt16(inst1 & 0xffc0); // clear imm6
+      _ EmitInt16(inst2 & 0xd000 | imm11); // 1. clear J1, J2, origin_imm12 2. set new imm11
+      
       _ t2_b(0x0);
       _ t2_ldr(pc, MemOperand(pc, -4));
       _ Emit(val);
@@ -307,6 +317,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
       int32_t label = (imm11 << 1) | (imm10 << 12) | (J1 << 22) | (J2 << 23) | (S << 24);
       int32_t val   = cur_pc + label;
+      
+      if (cur_pc % 4)
+        _ t1_nop();
       // ===
       _ t2_ldr(pc, MemOperand(pc, -4));
       _ Emit(val);
@@ -329,7 +342,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       // =====
       _ t2_bl(0);
       _ t2_b(0);
-      _ t2_ldr(pc, MemOperand(pc, 0));
+      _ t2_ldr(pc, MemOperand(pc, -4));
       _ Emit(val);
       // =====
       rewrite_flag = true;
@@ -350,7 +363,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       // =====
       _ t2_bl(0);
       _ t2_b(0);
-      _ t2_ldr(pc, MemOperand(pc, 0));
+      _ t2_ldr(pc, MemOperand(pc, -4));
       _ Emit(val);
       // =====
       rewrite_flag = true;
@@ -363,12 +376,13 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     int o2 = bit(inst1, 5);
     int rn = bits(inst1, 0, 3);
 
-    // ===
     uint32_t i     = bit(inst1, 10);
     uint32_t imm3  = bits(inst2, 12, 14);
     uint32_t imm8  = bits(inst2, 0, 7);
+    uint32_t rd = bits(inst2, 8, 11);
     uint32_t label = imm8 | (imm3 << 8) | (i << 11);
     int32_t val    = 0;
+    
     if (rn == 15 && o1 == 0 && o2 == 0) {
       // ADR - T3 variant
       // adr with add
@@ -379,11 +393,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       val = cur_pc - label;
     }
 
-    uint16_t rd = bits(inst2, 8, 11);
-    // =====
+    // ===
     _ t2_ldr(Register::from_code(rd), MemOperand(pc, -4));
     _ Emit(val);
-    // =====
+    // ===
     rewrite_flag = true;
   }
 
@@ -408,25 +421,25 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     // =====
     rewrite_flag = true;
   }
-}
 
-void ThumbRelocateSingleInst(int32_t inst, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
-  if (is_thumb2(inst))
-    Thumb2RelocateSingleInst((int16_t)inst, (int16_t)(inst >> 16), cur_pc, turbo_assembler);
-  else
-    Thumb1RelocateSingleInst((int16_t)inst, cur_pc, turbo_assembler);
+  // if the inst do not needed relocate, just rewrite the origin
+  if (!rewrite_flag) {
+    _ EmitInt16(inst1);
+    _ EmitInt16(inst2);
+  }
 }
 
 // =====
 
-AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_pc, int size) {
+AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_pc, int *relocate_size) {
   uintptr_t cur_pc = aligned_src_pc;
   uint32_t inst    = *(uint32_t *)aligned_src_pc;
-  
+
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-  while (cur_pc < (aligned_src_pc + size)) {
+  while (cur_pc < (aligned_src_pc + *relocate_size)) {
     ARMRelocateSingleInst(inst, cur_pc, turbo_assembler_);
+    DLOG("[*] relocate arm inst: 0x%x\n", inst);
     // Move to next instruction
     cur_pc += 4;
     inst = *(uint32_t *)cur_pc;
@@ -445,14 +458,34 @@ AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_pc, int size) {
   return code;
 }
 
-AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_pc, int size) {
-  uintptr_t cur_pc = aligned_src_pc;
-  uint32_t inst    = *(uint32_t *)aligned_src_pc;
+AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_pc, int *relocate_size) {
+  uintptr_t cur_pc         = aligned_src_pc;
+  uint32_t inst            = *(uint32_t *)aligned_src_pc;
+  int actual_relocate_size = 0;
   CustomThumbTurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-  while (cur_pc < (aligned_src_pc + size)) {
-      ThumbRelocateSingleInst(inst, cur_pc, reinterpret_cast<CustomThumbTurboAssembler &>(turbo_assembler_));
+  while (cur_pc < (aligned_src_pc + *relocate_size)) {
+    if (is_thumb2(inst)) {
+      Thumb2RelocateSingleInst((int16_t)inst, (int16_t)(inst >> 16), cur_pc, turbo_assembler_);
+      DLOG("[*] relocate thumb2 inst: 0x%x\n", inst);
+
+      // Move to next instruction
+      cur_pc += 4;
+      actual_relocate_size += 4;
+      inst = *(uint32_t *)cur_pc;
+    } else {
+      Thumb1RelocateSingleInst((int16_t)inst, cur_pc, turbo_assembler_);
+      DLOG("[*] relocate thumb1 inst: 0x%x\n", (uint16_t)inst);
+
+      // Move to next instruction
+      cur_pc += 2;
+      actual_relocate_size += 2;
+      inst = *(uint32_t *)cur_pc;
+    }
   }
+
+  // set the actual relocate instruction size;
+  *relocate_size = actual_relocate_size;
 
   if (cur_pc % 4) {
     _ t1_nop();
@@ -464,16 +497,16 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_pc, int size) {
   return code;
 }
 
-Code *GenRelocateCode(uintptr_t src_pc, int size) {
+Code *GenRelocateCode(uintptr_t src_pc, int *relocate_size) {
   uword aligned_pc = ThumbAlign(src_pc);
 
   bool is_thumb = src_pc % 2;
 
   AssemblerCode *code = NULL;
   if (is_thumb) {
-    code = gen_thumb_relocate_code(aligned_pc, size);
+    code = gen_thumb_relocate_code(aligned_pc, relocate_size);
   } else {
-    code = gen_arm_relocate_code(aligned_pc, size);
+    code = gen_arm_relocate_code(aligned_pc, relocate_size);
   }
   return code;
 }
