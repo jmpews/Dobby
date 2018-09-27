@@ -146,10 +146,10 @@ int OS::GetCurrentProcessId() {
 int OS::GetCurrentThreadId() {
 #if defined(__APPLE__)
   return static_cast<int>(pthread_mach_thread_np(pthread_self()));
-#elif defined(__linux__)
-  return static_cast<int>(syscall(__NR_gettid));
 #elif defined(__ANDROID__)
   return static_cast<int>(gettid());
+#elif defined(__linux__)
+  return static_cast<int>(syscall(__NR_gettid));
 #else
   return static_cast<int>(reinterpret_cast<intptr_t>(pthread_self()));
 #endif

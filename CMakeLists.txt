@@ -175,6 +175,7 @@ if(SYSTEM.iOS)
 elseif(SYSTEM.Android)
     set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
         ${PLATFORM.path}/platform-posix.cc
+        ${PLATFORM.path}/platform-linux.cc
     )
 endif()
 

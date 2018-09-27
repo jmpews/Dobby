@@ -1,4 +1,4 @@
-; .section	__TEXT,__text,regular,pure_instructions
+// .section	__TEXT,__text,regular,pure_instructions
 
 #if defined(__WIN32__) || defined(__APPLE__)
 #define cdecl(s) _##s
