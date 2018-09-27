@@ -11,7 +11,7 @@ enable_language(ASM)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++ -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
-SET(CMAKE_ASM_FLAGS "${CFLAGS} -arch armv7 -x assembler-with-cpp")
+SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
 
 option(SHARED "Build shared library" ON)
 option(DEBUG "Enable debug log" ON)
