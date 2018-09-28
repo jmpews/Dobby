@@ -3,6 +3,9 @@
 
 #include <cstdarg>
 #include <string>
+
+#include <string.h>
+#include <stdlib.h>
 #include <vector>
 #include <stdio.h>
 

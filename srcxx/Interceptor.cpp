@@ -1,7 +1,7 @@
 #include "srcxx/Interceptor.h"
 
-Interceptor *Interceptor::priv_interceptor_;
-InterceptorOptions Interceptor::options_;
+Interceptor *Interceptor::priv_interceptor_ = nullptr;
+InterceptorOptions Interceptor::options_    = {0};
 
 Interceptor *Interceptor::SharedInstance() {
   if (Interceptor::priv_interceptor_ == NULL) {

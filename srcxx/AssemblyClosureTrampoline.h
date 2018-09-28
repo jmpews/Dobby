@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <vector>
 
-
 #include "hookzz_internal.h"
 
 #include "vm_core/objects/code.h"

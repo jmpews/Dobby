@@ -15,7 +15,6 @@ void *get_closure_bridge() {
   if (closure_bridge)
     return closure_bridge;
 
-
 // check if enable the inline-assembly closure_bridge_template
 #if ENABLE_CLOSURE_BRIDGE_TEMPLATE
   extern void closure_bridge_tempate();
@@ -58,9 +57,7 @@ void *get_closure_bridge() {
 #else
 // Ignore, refer: closure_bridge_template
 #endif
-  
-  // _ brk(0); // for debug
-  
+
   _ mov(x0, SP);
   _ mov(x1, TMP1);
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
@@ -91,13 +88,15 @@ void *get_closure_bridge() {
   _ ldp(Q(4), Q(5), MEM_EXT(SP, 32, PostIndex));
   _ ldp(Q(6), Q(7), MEM_EXT(SP, 32, PostIndex));
 
+  // _ brk(0); // for debug
+
   // branch to next hop, @modify by `xxx_routing_dispatch`
   _ br(x16);
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
-  
-  DLOG("[*] Build the closure bridge at %p\n",closure_bridge);
+
+  DLOG("[*] Build the closure bridge at %p\n", closure_bridge);
 
 #endif
   return (void *)closure_bridge;

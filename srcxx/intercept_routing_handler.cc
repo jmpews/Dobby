@@ -2,8 +2,8 @@
 #include "srcxx/ThreadSupport.h"
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
-
-  StackFrame *stackframe = new StackFrame;
+  DLOG("%s\n", "[*] catch pre_call_forward_handler");
+  StackFrame *stackframe = new StackFrame();
   // create stack frame as common variable between pre_call and post_call
   ThreadSupport::PushStackFrame(stackframe);
 
@@ -17,6 +17,9 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     // run the pre_call with the power of accessing all registers
     (*pre_call)(reg_ctx, &entry_info);
   }
+  
+  // save the origin ret address, and use in `post_call_forword_handler`
+  stackframe->orig_ret = get_func_ret_address(reg_ctx);
 
   // set the prologue bridge next hop address with the patched instructions has been relocated
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_function);
@@ -46,7 +49,6 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 }
 
 void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
-
   // run the `dbi_call`, before the `instruction_address`
   if (entry->dbi_call) {
     DBICALL dbi_call;
@@ -61,7 +63,9 @@ void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ct
   set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_instructions);
 }
 
+// run the user handler **before run the origin-instructions(which have been relocated)**
 void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
+  DLOG("%s\n", "[*] catch prologue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   if (entry->type == kFunctionWrapper)
     pre_call_forward_handler(reg_ctx, entry);
@@ -70,13 +74,18 @@ void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
   return;
 }
 
+// run the user handler **before the function return** by replace the lr register
 void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
+  DLOG("%s\n", "[*] catch epilogue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   post_call_forward_handler(reg_ctx, entry);
   return;
 }
 
+// Closure bridge branch here unitily, then  common_bridge_handler will dispatch to other handler.
 void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
+  DLOG("[*] catch common bridge handler, carry data: %p, carry handler: %p\n",
+       ((HookEntry *)entry->carry_data)->target_address, entry->carry_handler);
   USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->carry_handler;
   UserCodeCall(reg_ctx, entry);
   return;
