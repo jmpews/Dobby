@@ -295,7 +295,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       // ===
       imm11 = 0x4 >> 1;
       _ EmitInt16(inst1 & 0xffc0);         // clear imm6
-      _ EmitInt16(inst2 & 0xd000 | imm11); // 1. clear J1, J2, origin_imm12 2. set new imm11
+      _ EmitInt16((inst2 & 0xd000) | imm11); // 1. clear J1, J2, origin_imm12 2. set new imm11
 
       _ t2_b(4);
       _ t2_ldr(pc, MemOperand(pc, 0));
