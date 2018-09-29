@@ -13,5 +13,7 @@ void InterceptRouting::Dispatch() {
     BuildFastForwardTrampoline();
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
     DLOG("[*] Dispatch as 'kFunctionWrapper' at %p\n", entry_->instruction_address);
+    Prepare();
+    BuildDynamicBinaryInstrumentationRouting();
   }
 }

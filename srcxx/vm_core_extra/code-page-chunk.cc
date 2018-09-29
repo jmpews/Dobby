@@ -97,8 +97,7 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   prot    = info.protection;
   inherit = info.inheritance;
 
-  // =====
-
+  // ===
   kr = vm_copy(task_self, (vm_address_t)page_address, page_size, (vm_address_t)remap_page);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
@@ -106,12 +105,10 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
 
   memcpy((void *)(remap_page + offset), buffer, size);
 
-  // =====
-
+  // ===
   PageAllocator::SetPermissions((void *)remap_page, page_size, OS::MemoryPermission::kReadExecute);
 
-  // =====
-
+  // ===
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
   vm_prot_t cur_protection, max_protection;
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
@@ -123,10 +120,10 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
     return kMemoryOperationError;
   }
 
-#elif __posix__
-  OS::SetPermissions(page_address, page_size, MemoryPermission::kReadWriteExecute);
-  memcpy(page_address + offset, buffer, size);
-  OS::SetPermissions(page_address, page_size, MemoryPermission::kReadExecute);
+#elif defined(__ANDROID__) || defined(__linux__)
+  PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadWriteExecute);
+  memcpy((void *)((uintptr_t )page_address + offset), buffer, size);
+  PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadExecute);
 #endif
 
   CPU::FlushCache((uintptr_t)page_address + offset, size);
