@@ -1,12 +1,8 @@
-此分支为重构分支仅支持 [Android|iOS]|[ARM64] | [转到分支MASTER(need update)](https://github.com/jmpews/HookZz/tree/master)
-
 ## What is HookZz ?
 
+[![](https://img.shields.io/badge/HookZz-Discord-green.svg?style=flat-square&longCache=true&colorB=7289da)](https://discord.gg/P4uCTTH)
+
 **a hook framework for arm/arm64/ios/android**
-
-ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://github.com/TsudaKageyu/minhook) and [substrate](https://github.com/jevinskie/substrate).
-
-**special thanks to [frida-gum](https://github.com/frida/frida-gum) perfect code and modular architecture, frida is aircraft carrier, HookZz is boat, but still with some tricks**
 
 ## Features
 
@@ -26,13 +22,13 @@ ref to: [frida-gum](https://github.com/frida/frida-gum) and [minhook](https://gi
 
 - runtime code patch
 
-- it's cute, **100kb**
+- it's cute, **<100kb**
 
 ## Compile
 
-**`git clone --depth 1 git@github.com:jmpews/HookZz.git --branch master-c`**
+**`git clone --depth 1 git@github.com:jmpews/HookZz.git --branch master`**
 
-#### build for iOS/ARM64
+#### Build for iOS/ARM64
 
 ```
 mkdir build
@@ -156,13 +152,12 @@ __attribute__((constructor)) void initlializeTemplate() {
     printf(">>> decrypt address: %p\n", (void *)finalAddr);
     ZzDynamicBinaryInstrumentation((void *)finalAddr, catchDecrypt);
 }
-```
 
-## Contact me
+#### Refer
 
-```
-recommend_email: jmpews@gmail.com
-QQ: 858982985
-```
-
-<img with="220px" height="220px" src="http://ww1.sinaimg.cn/large/a4decaedgy1ft0c1qh4s2j209a099wfi.jpg" alt="qrcode">
+1. [frida-gum](https://github.com/frida/frida-gum) 
+2. [minhook](https://github.com/TsudaKageyu/minhook) 
+3. [substrate](https://github.com/jevinskie/substrate).
+4. [v8](https://github.com/v8/v8)
+5. [dart](https://github.com/dart-lang/sdk)
+6. [vixl](https://git.linaro.org/arm/vixl.git)

@@ -122,11 +122,11 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
 
 #elif defined(__ANDROID__) || defined(__linux__)
   PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadWriteExecute);
-  memcpy((void *)((uintptr_t )page_address + offset), buffer, size);
+  memcpy((void *)((uintptr_t)page_address + offset), buffer, size);
   PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadExecute);
 #endif
 
-  CPU::FlushCache((uintptr_t)page_address + offset, size);
+  CpuFeatures::FlushICache((void *)((uintptr_t)page_address + offset), size);
   return kMemoryOperationSuccess;
 }
 

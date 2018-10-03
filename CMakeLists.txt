@@ -9,8 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 enable_language(ASM)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++ -fvisibility=hidden")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++ -fvisibility=hidden")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
@@ -99,10 +99,12 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
 if(PROCESSOR.arm)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/arch/arm
+    ${Target.path}/srcxx/vm_core/arch/arm
 )
 elseif(PROCESSOR.aarch64)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/arch/arm64
+    ${Target.path}/srcxx/vm_core/arch/arm64
 )
 endif()
 # =====
@@ -126,7 +128,6 @@ set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE
 set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
 
 # =====
-
 # vm_core modules
 # vm_core with specific architecture
 set(MODULES.path ${Target.path}/srcxx/vm_core/modules)
