@@ -1,8 +1,16 @@
-## What is HookZz ?
+# HookZz  [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
 
-[![](https://img.shields.io/badge/HookZz-Discord-green.svg?style=flat-square&longCache=true&colorB=7289da)](https://discord.gg/P4uCTTH)
+A hook framework for arm / arm64 / iOS / Android
 
-**a hook framework for arm/arm64/ios/android**
+| Branch Type | Arch/Mode | Trampoline Assembly | Bytes | Range |
+| - | - | - | - | - |
+| NearBranch | ARM64 | `b xxx` | 4 | 2^25 |
+| FarBranch | ARM64 | `ldr x17, 8`<br>`br x17`<br>`.long 0x?`<br>`.long 0x?` | 16 | 2^64 |
+| NearBranch | ARM/ARM | `b 0x?` | 4 | 2^25 |
+| FarBranch | ARM/ARM | `ldr pc, [pc, #-4]`<br>`.long 0x?` | 8 | 2^32 |
+| NearBranch | ARM/Thumb1 | `b 0x?` | 2 | 2^6 |
+| NearBranch | ARM/Thumb2 | `b 0x?` | 4 | 2^25 |
+| FarBranch | ARM/Thumb2 | `ldr pc, [pc, #-[2\|4]`<br>`.long 0x?` | 8 | 2^32 |
 
 ## Features
 
