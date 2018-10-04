@@ -35,8 +35,21 @@ typedef char byte;
 // =====
 
 /* definition to expand macro then apply to pragma message */
+// #pragma message(VAR_NAME_VALUE(HOST_OS_IOS))
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 #define VAR_NAME_VALUE(var) #var "=" VALUE(var)
+
+// =====
+
+#define V8PRIxPTR V8_PTR_PREFIX "x"
+
+#if defined(__arm64__) || defined(__aarch64__)
+#define V8_PTR_PREFIX "l"
+#elif defined(__arm__)
+#define V8_PTR_PREFIX ""
+#else
+#error "uncatch architecture"
+#endif
 
 #endif
