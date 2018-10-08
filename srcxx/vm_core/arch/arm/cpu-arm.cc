@@ -6,13 +6,18 @@
 
 #include "vm_core/platform/globals.h"
 
+#if !HOST_OS_IOS
+#include <sys/syscall.h> // for cache flushing.
+#endif
+
+
 void CpuFeatures::FlushICache(void *startp, void *endp) {
 
 #if HOST_OS_IOS
   // Precompilation never patches code so there should be no I cache flushes.
   CpuFeatures::ClearCache(startp, endp);
+
 #else
-#include <sys/syscall.h> // for cache flushing.
 
   register uint32_t beg asm("r0") = reinterpret_cast<uint32_t>(startp);
   register uint32_t end asm("r1") = reinterpret_cast<uint32_t>(endp);

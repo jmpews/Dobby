@@ -125,6 +125,10 @@ void ARMInterceptRouting::Prepare() {
   Code *code;
   code                              = GenRelocateCode(src_pc, &relocate_size);
   entry_->relocated_origin_function = (void *)code->raw_instruction_start();
+  // If Thumb Execute, code snippet address should be odd.
+  if (execute_state_ == ThumbExecuteState) {
+    entry_->relocated_origin_function = (void *)((uint32_t)entry_->relocated_origin_function + 1);
+  }
   DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)code->raw_instruction_start());
 
   // backup original prologue
@@ -163,12 +167,12 @@ void ARMInterceptRouting::BuildFastForwardTrampoline() {
   CodeGen codegen(&turbo_assembler_);
   if (entry_->type == kFunctionInlineHook) {
     codegen.LiteralLdrBranch((uintptr_t)entry_->replace_call);
-    DLOG("create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
+    DLOG("[*] create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
     codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
-    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
+    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
   } else if (entry_->type == kFunctionWrapper) {
-    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
+    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
     codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
   }
 
@@ -207,7 +211,11 @@ void ARMInterceptRouting::active_arm_intercept_routing() {
     _ b((int32_t)entry_->fast_forward_trampoline - (int32_t)target_address - ARM_PC_OFFSET);
   } else {
     CodeGen codegen(&turbo_assembler_);
-    codegen.LiteralLdrBranch((uint32_t)entry_->prologue_dispatch_bridge);
+    // check if enable "fast forward trampoline"
+    if (entry_->fast_forward_trampoline)
+      codegen.LiteralLdrBranch((uint64_t)entry_->fast_forward_trampoline);
+    else
+      codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
 
   // Patch
@@ -236,7 +244,11 @@ void ARMInterceptRouting::active_thumb_intercept_routing() {
     else {
       _ t2_ldr(pc, MemOperand(pc, 0));
     }
-    _ Emit((int32_t)entry_->prologue_dispatch_bridge);
+    // check if enable "fast forward trampoline"
+    if (entry_->fast_forward_trampoline)
+      _ Emit((int32_t)entry_->fast_forward_trampoline);
+    else
+      _ Emit((int32_t)entry_->prologue_dispatch_bridge);
   } else {
     UNREACHABLE();
   }

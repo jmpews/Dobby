@@ -89,12 +89,12 @@ void ARM64InterceptRouting::BuildFastForwardTrampoline() {
   CodeGen codegen(&turbo_assembler_);
   if (entry_->type == kFunctionInlineHook) {
     codegen.LiteralLdrBranch((uint64_t)entry_->replace_call);
-    DLOG("create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
+    DLOG("[*] create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
     codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
-    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
+    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
   } else if (entry_->type == kFunctionWrapper) {
-    DLOG("create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
+    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
     codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
 
@@ -132,7 +132,11 @@ void ARM64InterceptRouting::Active() {
 
   } else {
     CodeGen codegen(&turbo_assembler_);
-    codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
+    // check if enable "fast forward trampoline"
+    if (entry_->fast_forward_trampoline)
+      codegen.LiteralLdrBranch((uint64_t)entry_->fast_forward_trampoline);
+    else
+      codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
   }
 
   CodeChunk::MemoryOperationError err;
