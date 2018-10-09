@@ -47,6 +47,7 @@ cmake .. \
 -DARCH=arm64 \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_OSX_SYSROOT=""
+make
 ```
 
 if you want generate Xcode Project, just replace with `cmake -G Xcode `.
@@ -62,10 +63,11 @@ cmake .. \
 -DCMAKE_BUILD_TYPE=Release \
 -DANDROID_ABI=arm64-v8a \
 -DSHARED=ON \
--DPLATFORM=iOS \
+-DPLATFORM=Android \
 -DARCH=arm64 \
 -DCMAKE_VERBOSE_MAKEFILE=OFF \
 -DCMAKE_BUILD_TYPE=Release 
+make
 ```
 
 ## Demo
