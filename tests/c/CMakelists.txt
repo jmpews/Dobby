@@ -1,0 +1,76 @@
+cmake_minimum_required(VERSION 3.5)
+project(HookZzTest)
+
+include(../../cmake/Util.cmake)
+
+set(CMAKE_CXX_STANDARD 11)
+enable_language(ASM)
+
+set(CMAKE_C_FLAGS "-g ${CMAKE_C_FLAGS} -g -std=gnu11")
+set(CMAKE_CXX_FLAGS "-g ${CMAKE_CXX_FLAGS}")
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+
+
+# build c source
+set(HookZz.Path ../..)
+set(GLOBAL.SOURCE_DIR
+    # ${HookZz.Path}/src
+    ${HookZz.Path}/src/std_kit
+    # ${HookZz.Path}/src/platforms/arch-arm64
+    ${HookZz.Path}/src/platforms/backend-darwin
+    ${HookZz.Path}/src/platforms/backend-posix
+)
+
+set(GLOBAL.HEADER_DIR
+    ${HookZz.Path}/include
+)
+
+# *.c
+search_suffix_files("c" GLOBAL.SOURCE_DIR HookZz.SOURCE_C)
+
+# *.S
+# search_suffix_files("S" GLOBAL.SOURCE_DIR HookZz.SOURCE_ASSEMBLY)
+
+# *.h
+search_suffix_files("h" GLOBAL.SOURCE_DIR HookZz.HEADER_H)
+
+set(GLOBAL.SOURCE_FILE ${GLOBAL.SOURCE_FILE} ${HookZz.SOURCE_C} ${HookZz.SOURCE_ASSEMBLY})
+set(GLOBAL.HEADER_FILE ${GLOBAL.HEADER_FILE} ${HookZz.HEADER_H})
+
+include_directories(${GLOBAL.HEADER_DIR}
+    .
+    ${GLOBAL.SOURCE_DIR}
+    ${HookZz.Path}/src
+    ${HookZz.Path}/src/platforms/arch-arm64
+)
+
+add_executable(HookZzTest
+    ${GLOBAL.SOURCE_FILE}
+    ${HookZz.Path}/src/memory_manager.c
+    ${HookZz.Path}/src/interceptor.c
+    ${HookZz.Path}/src/platforms/arch-arm64/arch-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/ARM64AssemblyCore.c
+    ${HookZz.Path}/src/platforms/arch-arm64/instruction.c
+    ${HookZz.Path}/src/platforms/arch-arm64/reader-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/register-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/writer-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/relocator-arm64.c
+    hookzz_test.cpp
+    ${GLOBAL.HEADER_FILE}
+)
+
+add_executable(HookZzTestExe
+    ${GLOBAL.SOURCE_FILE}
+    ${HookZz.Path}/src/memory_manager.c
+    ${HookZz.Path}/src/interceptor.c
+    ${HookZz.Path}/src/platforms/arch-arm64/arch-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/ARM64AssemblyCore.c
+    ${HookZz.Path}/src/platforms/arch-arm64/instruction.c
+    ${HookZz.Path}/src/platforms/arch-arm64/reader-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/register-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/writer-arm64.c
+    ${HookZz.Path}/src/platforms/arch-arm64/relocator-arm64.c
+    hookzz_test_exe.cpp
+    ${GLOBAL.HEADER_FILE}
+)
