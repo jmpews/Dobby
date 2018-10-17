@@ -10,7 +10,6 @@
 #include <sys/syscall.h> // for cache flushing.
 #endif
 
-
 void CpuFeatures::FlushICache(void *startp, void *endp) {
 
 #if HOST_OS_IOS

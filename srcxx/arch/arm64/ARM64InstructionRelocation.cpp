@@ -118,7 +118,7 @@ Code *GenRelocateCode(uint64_t src_address, int *relocate_size) {
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralLdrBranch(cur_pc + 4);
+  codegen.LiteralLdrBranch(cur_pc);
 
   // Realize all the Pseudo-Label-Data
   for (auto it : labels) {

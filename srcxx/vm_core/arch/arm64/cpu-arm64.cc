@@ -3,6 +3,7 @@
 
 #include "vm_core/arch/cpu.h"
 #include "vm_core/globals.h"
+#include "vm_core/platform/globals.h"
 
 class CacheLineSizes {
 public:
@@ -36,7 +37,7 @@ void CpuFeatures::FlushICache(void *startp, void *endp) {
 
 #if HOST_OS_IOS
   // Precompilation never patches code so there should be no I cache flushes.
-  CpuFeatures::ClearCache(start, endp);
+  CpuFeatures::ClearCache(startp, endp);
 #else
   uintptr_t start = reinterpret_cast<uintptr_t>(startp);
   // Sizes will be used to generate a mask big enough to cover a pointer.
