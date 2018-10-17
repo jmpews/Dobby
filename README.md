@@ -1,4 +1,4 @@
-# HookZz  [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
+# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
 
 A hook framework for arm / arm64 / iOS / Android
 
@@ -16,9 +16,9 @@ _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 
 - the power to hook short function(even single one instruction)
 
-- the power to access registers directly(ex: `reg_ctx->general.regs.x15`)
+- the power to access registers directly(ex: `reg_ctx->general.regs.x16`)
 
-- it's cute, **<100kb**
+- it's cute, **70kb+-**
 
 ## Multiple Branch Type Support
 
@@ -39,14 +39,29 @@ _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 #### 0x1. Build for iOS/ARM64
 
 ```
+# 1: not recommend
 export CFLAGS="-DIOS -arch arm64 -miphoneos-version-min=6.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
-
 cmake .. \
--DSHARED=ON \
 -DPLATFORM=iOS \
 -DARCH=arm64 \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_OSX_SYSROOT=""
+-DSHARED=ON \
+-DCMAKE_OSX_SYSROOT="" \
+-DCMAKE_BUILD_TYPE=Release
+
+# 2: recommend
+cmake .. -G Xcode \
+-DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
+-DIOS_PLATFORM=OS \
+-DIOS_ARCH=arm64 \
+-DENABLE_ARC=FALSE \
+-DENABLE_BITCODE=OFF \
+-DDEBUG=ON \
+-DSHARED=ON \
+-DPLATFORM=iOS \
+-DARCH=armv8 \
+-DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+
+make -j4
 ```
 
 if you want generate Xcode Project, just replace with `cmake -G Xcode `.
@@ -66,6 +81,8 @@ cmake .. \
 -DARCH=armv7 \
 -DCMAKE_VERBOSE_MAKEFILE=OFF \
 -DCMAKE_BUILD_TYPE=Release 
+
+make -j4
 ```
 
 ## Usage
@@ -114,7 +131,6 @@ __attribute__((constructor)) void initlializeTemplate() {
 ```
 
 ## Refer
-
 1. [frida-gum](https://github.com/frida/frida-gum) 
 2. [minhook](https://github.com/TsudaKageyu/minhook) 
 3. [substrate](https://github.com/jevinskie/substrate).
