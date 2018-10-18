@@ -47,13 +47,14 @@ PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **or
   return RS_SUCCESS;
 }
 
-PUBLIC RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL) {
+PUBLIC RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call) {
   DLOG("[*] Initialize 'ZzDynamicBinaryInstrumentation' hook at %p\n", inst_address);
 
   Interceptor *intercepter = Interceptor::SharedInstance();
 
   HookEntry *entry           = new HookEntry();
   entry->id                  = intercepter->entries.size();
+  entry->dbi_call            = dbi_call;
   entry->type                = kDynamicBinaryInstrumentation;
   entry->instruction_address = inst_address;
 

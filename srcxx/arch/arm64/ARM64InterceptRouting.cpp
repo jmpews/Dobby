@@ -113,7 +113,7 @@ void ARM64InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
   if (interceptor->options().enable_b_branch) {
     BuildFastForwardTrampoline();
   }
-  DLOG("create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
+  DLOG("[*] create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
        closure_trampoline_entry->address);
 }
 
