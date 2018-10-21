@@ -25,8 +25,10 @@ CodeChunk *CodeChunk::AllocateCodePage() {
 MemoryRegion *CodeChunk::AllocateCode(size_t size) {
   MemoryRegion *region = nullptr;
   auto it              = CodeChunk::code_pages_.begin();
-  for (it; it != CodeChunk::code_pages_.end(); it++) {
+  for (; it != CodeChunk::code_pages_.end(); it++) {
     region = (*it)->Allocate(size);
+    if (region)
+      return region;
   }
   // Not found the free memory
   if (!region) {
@@ -48,7 +50,7 @@ MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t si
   uintptr_t search_start = 0, search_end = 0;
 
   auto it = memory_layout.begin();
-  for (it; it != memory_layout.end(); it++) {
+  for (; it != memory_layout.end(); it++) {
     if ((*it).permission != OS::MemoryPermission::kReadExecute)
       continue;
 

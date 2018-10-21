@@ -14,13 +14,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
+
 option(SHARED "Build shared library" ON)
 option(DEBUG "Enable debug log" ON)
+option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
+
+if(CLOSURE_BRIDGE_TEMPLATE)
+    add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
+endif()
 
 if(DEBUG)
-    add_definitions(-DDEBUG)
-else()
-    # add_definitions(-DDEBUG)
+   add_definitions(-DDEBUG)
 endif()
 
 # Platform
@@ -117,8 +121,10 @@ search_suffix_files("cpp" Target.SOURCE_DIR Target.SOURCE_CPP)
 # *.c
 search_suffix_files("c" Target.SOURCE_DIR Target.SOURCE_C)
 
-# *.S
-search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
+if(CLOSURE_BRIDGE_TEMPLATE)
+    # *.S
+    search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
+endif()
 
 # *.h
 search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
