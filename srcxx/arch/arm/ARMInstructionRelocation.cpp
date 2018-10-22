@@ -188,6 +188,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     int32_t imm8   = bits(inst, 0, 7);
     int32_t offset = imm8 << 2;
     val            = cur_pc + offset;
+    val            = ALIGN_FLOOR(val, 4);
     rt             = bits(inst, 8, 10);
 
     CustomThumbPseudoLabel label;
@@ -277,8 +278,10 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
   // if the inst do not needed relocate, just rewrite the origin
   if (!rewrite_flag) {
-    if (cur_pc % Thumb2_INST_LEN)
-      _ t1_nop();
+#if 0
+        if (cur_pc % Thumb2_INST_LEN)
+            _ t1_nop();
+#endif
     _ EmitInt16(inst);
   }
 }
@@ -427,6 +430,8 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       val = val - label;
     }
 
+    val = ALIGN_FLOOR(val, 4);
+
     Register regRt = Register::from_code(rt);
     // =====
     _ t2_ldr(regRt, MemOperand(pc, 4));
@@ -439,8 +444,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
   // if the inst do not needed relocate, just rewrite the origin
   if (!rewrite_flag) {
-    if (cur_pc % 4)
-      _ t1_nop();
+#if 0
+        if (cur_pc % Thumb2_INST_LEN)
+            _ t1_nop();
+#endif
     _ EmitInt16(inst1);
     _ EmitInt16(inst2);
   }
