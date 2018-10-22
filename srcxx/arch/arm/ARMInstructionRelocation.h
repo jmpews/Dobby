@@ -191,8 +191,8 @@ public:
   }
 
   // ===
-  void AlignNop() {
-    if (CodeSize() % 4) {
+  void AlignThumbNop() {
+    if (CodeSize() % Thumb2_INST_LEN) {
       t1_nop();
     }
   }

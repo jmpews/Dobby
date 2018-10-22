@@ -180,8 +180,26 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
 // relocate thumb-1 instructions
 void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAssembler &turbo_assembler) {
   bool rewrite_flag = false;
-  uint32_t val = 0, op = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
+  uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t offset = 0;
+
+  // ldr literal
+  if ((inst & 0xf800) == 0x4800) {
+    int32_t imm8   = bits(inst, 0, 7);
+    int32_t offset = imm8 << 2;
+    val            = cur_pc + offset;
+    rt             = bits(inst, 8, 10);
+
+    CustomThumbPseudoLabel label;
+    // ===
+    _ T2_Ldr(Register::from_code(rt), &label);
+    _ t2_ldr(Register::from_code(rt), MemOperand(Register::from_code(rt), 0));
+    // ===
+    if (pc.code() == rt)
+      val += 1;
+    thumb_labels.push_back({label, val});
+    rewrite_flag = true;
+  }
 
   // adr
   if ((inst & 0xf800) == 0xa000) {
@@ -193,6 +211,8 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     // ===
     _ T2_Ldr(Register::from_code(rd), &label);
     // ===
+    if (pc.code() == rd)
+      val += 1;
     thumb_labels.push_back({label, val});
     rewrite_flag = true;
   }
@@ -217,7 +237,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     _ t2_b(4);
     _ T2_Ldr(pc, &label);
     // ===
-    thumb_labels.push_back({label, val});
+    thumb_labels.push_back({label, val + 1});
     rewrite_flag = true;
   }
 
@@ -237,7 +257,7 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     _ t2_b(0);
     _ T2_Ldr(pc, &label);
     // ===
-    thumb_labels.push_back({label, val});
+    thumb_labels.push_back({label, val + 1});
     rewrite_flag = true;
   }
 
@@ -251,13 +271,13 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
     // ===
     _ T2_Ldr(pc, &label);
     // ===
-    thumb_labels.push_back({label, val});
+    thumb_labels.push_back({label, val + 1});
     rewrite_flag = true;
   }
 
   // if the inst do not needed relocate, just rewrite the origin
   if (!rewrite_flag) {
-    if (cur_pc % 4)
+    if (cur_pc % Thumb2_INST_LEN)
       _ t1_nop();
     _ EmitInt16(inst);
   }
@@ -466,13 +486,13 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *reloc
   CustomThumbTurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
 
-  // put nop if src address is nop
-  if (aligned_src_address)
+  // put nop if the first instruction type is thumb1
+  if (aligned_src_address % Thumb2_INST_LEN)
     _ t1_nop();
 
   while (cur_addr < (aligned_src_address + *relocate_size)) {
     // align nop
-    _ AlignNop();
+    _ AlignThumbNop();
 
     if (is_thumb2(inst)) {
       Thumb2RelocateSingleInst((int16_t)inst, (int16_t)(inst >> 16), cur_pc, turbo_assembler_);
@@ -505,7 +525,7 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *reloc
   // Realize all the Pseudo-Label-Data
   for (auto it : thumb_labels) {
     _ CustomThumbPseudoBind(&(it.label));
-    _ Emit(it.address + THUMB_ADDRESS_FLAG);
+    _ Emit(it.address);
   }
 
   AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
