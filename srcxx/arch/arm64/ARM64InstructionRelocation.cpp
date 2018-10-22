@@ -94,7 +94,7 @@ Code *GenRelocateCode(uint64_t src_address, int *relocate_size) {
       uint64_t target_address;
       imm19          = bits(inst, 5, 23);
       target_address = (imm19 << 2) + cur_pc;
-      int32_t b_cond = (inst & 0xff00001f) | (8 >> 2);
+      int32_t b_cond = (inst & 0xff00001f) | LFT((8 >> 2), 19, 5);
 
       PseudoLabel TargetAddressLabel;
       Label FalseLabel;

@@ -22,17 +22,26 @@ void Assembler::bind(Label *label) {
 
     int prevlinkpos = 0;
     if ((inst & UnconditionalBranchMask) == UnconditionalBranchFixed) {
-      int32_t imm26 = bits(inst, 0, 25);
-      int offset    = imm26 << 2;
-      prevlinkpos   = offset;
+      int32_t imm26 = 0;
+
+      // fix the b-inst
+      int offset           = bound_pc - linkpos;
+      imm26                = offset >> 2;
+      int32_t rewrite_inst = (inst & 0xfc000000) | LFT(imm26, 26, 0);
+      buffer_.Store32(linkpos, rewrite_inst);
+
+      // caculate next label
+      imm26                 = bits(inst, 0, 25);
+      int next_label_offset = imm26 << 2;
+      prevlinkpos           = linkpos - next_label_offset;
     }
 
-    if (prevlinkpos == kStartOfLabelLinkChain) {
+    if ((linkpos - prevlinkpos) == kStartOfLabelLinkChain) {
       // AKA pos_ = 0;
       label->link_to(-1);
     } else {
       // AKA pos_ = prevlinkpos
-       label->link_to(prevlinkpos);
+      label->link_to(prevlinkpos);
     }
   }
   label->bind_to(bound_pc);
