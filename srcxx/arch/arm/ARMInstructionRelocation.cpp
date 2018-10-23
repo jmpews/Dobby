@@ -295,11 +295,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     int32_t op1 = 0, op3 = 0;
     op1 = bits(inst1, 6, 9);
     op3 = bits(inst2, 12, 14);
-    if (op1 >= 0b1110)
-      return;
 
     // B-T3
-    if (op3 == 0b000 || op3 == 0b010) {
+    if (((op1 & 0b1110) != 0b1110) && ((op3 & 0b101) == 0b000)) {
 
       int S     = sbits(inst1, 10, 10);
       int J1    = bit(inst2, 13);
@@ -323,7 +321,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     }
 
     // B-T4
-    if (op3 == 0b001 || op3 == 0b011) {
+    if ((op3 & 0b101) == 0b001) {
       int S     = sbits(inst1, 10, 10);
       int J1    = bit(inst2, 13);
       int J2    = bit(inst2, 11);
@@ -342,44 +340,46 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       rewrite_flag = true;
     }
 
-    // BL, BLX (immediate) - T1 variant
-    if (op3 == 0b100 || op3 == 0b110) {
-      int S         = sbits(inst1, 10, 10);
-      int J1        = bit(inst2, 13);
-      int J2        = bit(inst2, 11);
-      int i1        = !(J1 ^ S);
-      int i2        = !(J2 ^ S);
-      int imm11     = bits(inst2, 0, 10);
-      int imm10     = bits(inst1, 0, 9);
-      int32_t label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (S << 24);
+    // BL, BLX (immediate) - T1 variant AKA bl
+    if ((op3 & 0b101) == 0b101) {
+      int S     = bit(inst1, 10);
+      int J1    = bit(inst2, 13);
+      int J2    = bit(inst2, 11);
+      int i1    = !(J1 ^ S);
+      int i2    = !(J2 ^ S);
+      int imm11 = bits(inst2, 0, 10);
+      int imm10 = bits(inst1, 0, 9);
+      // S is sign-bit, '-S' maybe not better
+      int32_t label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
       int32_t val   = cur_pc + label;
 
       // =====
       _ t2_bl(4);
-      _ t2_b(4);
+      _ t2_b(8);
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ Emit(val + THUMB_ADDRESS_FLAG);
       // =====
       rewrite_flag = true;
     }
 
-    // BL, BLX (immediate) - T2 variant
-    if (op3 == 0b101 || op3 == 0b111) {
-      int S         = sbits(inst1, 10, 10);
-      int J1        = bit(inst2, 13);
-      int J2        = bit(inst2, 11);
-      int i1        = !(J1 ^ S);
-      int i2        = !(J2 ^ S);
-      int imm10h    = bits(inst1, 0, 9);
-      int imm10l    = bits(inst2, 1, 10);
-      int32_t label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (S << 24);
-      int32_t val   = cur_pc + label;
+    // BL, BLX (immediate) - T2 variant AKA blx
+    if ((op3 & 0b101) == 0b100) {
+      int S      = bit(inst1, 10);
+      int J1     = bit(inst2, 13);
+      int J2     = bit(inst2, 11);
+      int i1     = !(J1 ^ S);
+      int i2     = !(J2 ^ S);
+      int imm10h = bits(inst1, 0, 9);
+      int imm10l = bits(inst2, 1, 10);
+      // S is sign-bit, '-S' maybe not better
+      int32_t label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
+      uint32_t val  = cur_pc + label;
 
       // =====
       _ t2_bl(4);
-      _ t2_b(4);
+      _ t2_b(8);
       _ t2_ldr(pc, MemOperand(pc, 0));
-      _ Emit(val + THUMB_ADDRESS_FLAG);
+      _ Emit(val);
       // =====
       rewrite_flag = true;
     }
@@ -425,9 +425,9 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     uint32_t label = imm12;
     int32_t val    = 0;
     if (U == 1) {
-      val = val + label;
+      val = cur_pc + label;
     } else {
-      val = val - label;
+      val = cur_pc - label;
     }
 
     val = ALIGN_FLOOR(val, 4);
