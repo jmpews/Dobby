@@ -525,6 +525,8 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *reloc
   // set the actual relocate instruction size, as the thumb1 || thumb2 cause  relocate_size != actual_relocate_size
   *relocate_size = actual_relocate_size;
 
+  _ AlignThumbNop();
+
   // Branch to the rest of instructions
   _ t2_ldr(pc, MemOperand(pc, 0));
   _ Emit(cur_addr + THUMB_ADDRESS_FLAG);
