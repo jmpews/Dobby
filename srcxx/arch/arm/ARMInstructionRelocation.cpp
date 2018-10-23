@@ -6,6 +6,8 @@
 #include "vm_core/modules/assembler/assembler-arm.h"
 #include "vm_core/modules/codegen/codegen-arm.h"
 
+#define TEMP_REG r12
+
 namespace zz {
 namespace arm {
 
@@ -68,8 +70,8 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
       PseudoLabel PseudoDataLabel;
       Register regRt = Register::from_code(Rt);
       // ===
-      _ Ldr(regRt, &PseudoDataLabel);
-      _ ldr(regRt, MemOperand(regRt));
+      _ Ldr(TEMP_REG, &PseudoDataLabel);
+      _ ldr(regRt, MemOperand(TEMP_REG));
       // ===
       // Record the pseudo label to realized at the last.
       labels.push_back({PseudoDataLabel, target_address});
@@ -193,11 +195,9 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
     CustomThumbPseudoLabel label;
     // ===
-    _ T2_Ldr(Register::from_code(rt), &label);
-    _ t2_ldr(Register::from_code(rt), MemOperand(Register::from_code(rt), 0));
+    _ T2_Ldr(TEMP_REG, &label);
+    _ t2_ldr(Register::from_code(rt), MemOperand(TEMP_REG, 0));
     // ===
-    if (pc.code() == rt)
-      val += 1;
     thumb_labels.push_back({label, val});
     rewrite_flag = true;
   }
@@ -416,8 +416,8 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     rewrite_flag = true;
   }
 
-  // Load literal
-  if ((inst1 & 0xff0f) == 0xf85f) {
+  // LDR literal (T2)
+  if ((inst1 & 0xff7f) == 0xf85f) {
     uint32_t U     = bit(inst1, 7);
     uint32_t imm12 = bits(inst2, 0, 11);
     uint16_t rt    = bits(inst2, 12, 15);
@@ -434,10 +434,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
     Register regRt = Register::from_code(rt);
     // =====
-    _ t2_ldr(regRt, MemOperand(pc, 4));
-    _ t2_b(0);
+    _ t2_ldr(TEMP_REG, MemOperand(pc, 4));
+    _ t2_b(4);
     _ Emit(val);
-    _ t2_ldr(regRt, MemOperand(regRt, 0));
+    _ t2_ldr(regRt, MemOperand(TEMP_REG, 0));
     // =====
     rewrite_flag = true;
   }
