@@ -34,6 +34,7 @@ typedef struct _CustomThumbPseudoLabelData {
   uintptr_t address;
 } CustomThumbPseudoLabelData;
 
+// TODO: NOT THREAD SAFE!!!
 static std::vector<PseudoLabelData> labels;
 static std::vector<CustomThumbPseudoLabelData> thumb_labels;
 
@@ -547,6 +548,11 @@ Code *GenRelocateCode(uintptr_t src_address, int *relocate_size) {
   bool is_thumb = src_address % 2;
 
   AssemblerCode *code = NULL;
+
+  // Clear labels cache, Not-Thread-Safe
+  labels.clear();
+  thumb_labels.clear();
+
   if (is_thumb) {
     code = gen_thumb_relocate_code(aligned_src_address, relocate_size);
   } else {
