@@ -186,6 +186,27 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
   uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t offset = 0;
 
+  // [F3.2.3 Special data instructions and branch and exchange]
+  // [Add, subtract, compare, move (two high registers)]
+  if((inst & 0xfc00) == 0x4400) {
+    int rs = bits(inst, 3, 6);
+    // rs is PC register
+    if(rs == 15) {
+      val = cur_pc;
+
+      uint16_t rewrite_inst = 0;
+      rewrite_inst = (inst & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
+
+      CustomThumbPseudoLabel label;
+      // ===
+      _ T2_Ldr(TEMP_REG, &label);
+      _ EmitInt16(rewrite_inst);
+      // ===
+      thumb_labels.push_back({label, val});
+      rewrite_flag = true;
+    }
+  }
+
   // ldr literal
   if ((inst & 0xf800) == 0x4800) {
     int32_t imm8   = bits(inst, 0, 7);
