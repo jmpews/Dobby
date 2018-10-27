@@ -66,3 +66,23 @@ PUBLIC RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_
   DLOG("[*] Finalize %p\n", inst_address);
   return RS_SUCCESS;
 }
+
+PUBLIC RetStatus zz_enable_arm_arm64_b_branch() {
+  DLOG("%s", "[*] Enable Intercepter ARM/ARM64 B Branch\n");
+
+  Interceptor *intercepter = Interceptor::SharedInstance();
+  // TODO: replace with getter or setter
+  intercepter->enable_arm_arm64_b_branch();
+
+  return RS_SUCCESS;
+}
+
+PUBLIC RetStatus zz_disable_arm_arm64_b_branch() {
+  DLOG("%s", "[*] Enable Intercepter ARM/ARM64 B Branch\n");
+
+  Interceptor *intercepter = Interceptor::SharedInstance();
+  // TODO: replace with getter or setter
+  intercepter->disable_arm_arm64_b_branch();
+
+  return RS_SUCCESS;
+}

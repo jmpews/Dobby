@@ -7,7 +7,7 @@
 #include <vector>
 
 typedef struct _InterceptorOptions {
-  bool enable_b_branch;
+  bool enable_arm_arm64_b_branch;
   bool enable_dynamic_closure_bridge;
 } InterceptorOptions;
 
@@ -18,17 +18,20 @@ public:
 public:
   static Interceptor *SharedInstance();
 
-  const InterceptorOptions &options() const {
-    return options_;
-  }
+  // ===
+  const InterceptorOptions &options() const { return options_; }
 
+  void enable_arm_arm64_b_branch() {options_.enable_arm_arm64_b_branch = true;}
+
+  void disable_arm_arm64_b_branch() {options_.enable_arm_arm64_b_branch = false;}
+
+  // ===
   HookEntry *FindHookEntry(void *address);
 
   void AddHookEntry(HookEntry *hook_entry);
 
 private:
-  Interceptor() {
-  }
+  Interceptor() {}
 
 private:
   static Interceptor *priv_interceptor_;

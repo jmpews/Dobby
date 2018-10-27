@@ -1,14 +1,11 @@
-#include "AssemblyClosureTrampoline.h"
-#include "intercept_routing_handler.h"
-#include "arch/arm64/ARM64InstructionRelocation.h"
 #include "arch/arm64/ARM64InterceptRouting.h"
+#include "AssemblyClosureTrampoline.h"
+#include "arch/arm64/ARM64InstructionRelocation.h"
+#include "intercept_routing_handler.h"
 
 #include "vm_core/modules/assembler/assembler-arm64.h"
 #include "vm_core/modules/codegen/codegen-arm64.h"
 #include "vm_core/objects/code.h"
-
-#include "vm_core_extra/custom-code.h"
-#include "vm_core_extra/code-page-chunk.h"
 
 using namespace zz::arm64;
 
@@ -27,7 +24,7 @@ void ARM64InterceptRouting::Prepare() {
   int relocate_size        = 0;
   MemoryRegion *region     = NULL;
 
-  if (interceptor->options().enable_b_branch) {
+  if (interceptor->options().enable_arm_arm64_b_branch) {
     DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
     DLOG("%s", "[*] Use ARM64 B-xxx Branch.\n");
     region = CodeChunk::AllocateCodeCave(src_address, ARM64_B_XXX_RANGE, ARM64_TINY_REDIRECT_SIZE);
@@ -40,7 +37,7 @@ void ARM64InterceptRouting::Prepare() {
   }
 
   if (region)
-    delete region;
+    fast_forward_region = region;
   else {
     DLOG("%s", "[*] Use ARM64 Ldr Branch.\n");
     branch_type_  = ARM64_LDR_Branch;
@@ -83,22 +80,38 @@ void ARM64InterceptRouting::BuildPostCallRouting() {
        closure_trampoline_entry->address);
 }
 
+void ARM64InterceptRouting::BuildReplaceRouting() {
+  // build the fast forward trampoline jump to the normal routing(prologue_routing_dispatch).
+  if (branch_type_ == ARM64_B_Branch) {
+    DLOG("%s", "[*] Fast forward to ReplaceCall\n");
+    BuildFastForwardTrampoline();
+  }
+}
+
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
 void ARM64InterceptRouting::BuildFastForwardTrampoline() {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
+  uint64_t forward_address;
+
   if (entry_->type == kFunctionInlineHook) {
-    codegen.LiteralLdrBranch((uint64_t)entry_->replace_call);
-    DLOG("[*] create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
+    forward_address = (uint64_t)entry_->replace_call;
   } else if (entry_->type == kDynamicBinaryInstrumentation) {
-    codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
-    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
+    forward_address = (uint64_t)entry_->prologue_dispatch_bridge;
   } else if (entry_->type == kFunctionWrapper) {
-    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
-    codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
+    forward_address = (uint64_t)entry_->prologue_dispatch_bridge;
+  } else {
+    UNREACHABLE();
   }
 
-  AssemblerCode *code             = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  codegen.LiteralLdrBranch(forward_address);
+
+  // Patch
+  CodeChunk::MemoryOperationError err;
+  err = CodeChunk::PatchCodeBuffer(fast_forward_region->pointer(), turbo_assembler_.GetCodeBuffer());
+  CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
+  Code *code = Code::FinalizeFromAddress((uintptr_t)fast_forward_region->pointer(), turbo_assembler_.CodeSize());
+
   entry_->fast_forward_trampoline = (void *)code->raw_instruction_start();
 }
 
@@ -109,8 +122,9 @@ void ARM64InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
   entry_->prologue_dispatch_bridge = closure_trampoline_entry->address;
 
-  Interceptor *interceptor = Interceptor::SharedInstance();
-  if (interceptor->options().enable_b_branch) {
+  if (branch_type_ == ARM64_B_Branch) {
+    DLOG("%s", "[*] Fast forward to DynamicBinaryInstrumention\n");
+
     BuildFastForwardTrampoline();
   }
   DLOG("[*] create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
@@ -118,9 +132,7 @@ void ARM64InterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
 }
 
 // alias Active
-void ARM64InterceptRouting::Commit() {
-  Active();
-}
+void ARM64InterceptRouting::Commit() { Active(); }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
 void ARM64InterceptRouting::Active() {
@@ -129,14 +141,17 @@ void ARM64InterceptRouting::Active() {
 #define _ turbo_assembler_.
   if (branch_type_ == ARM64_B_Branch) {
     _ b((int64_t)entry_->fast_forward_trampoline - (int64_t)target_address);
-
   } else {
     CodeGen codegen(&turbo_assembler_);
     // check if enable "fast forward trampoline"
     if (entry_->fast_forward_trampoline)
-      codegen.LiteralLdrBranch((uint64_t)entry_->fast_forward_trampoline);
-    else
-      codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
+      _ Emit((int64_t)entry_->fast_forward_trampoline);
+    else if (entry_->prologue_dispatch_bridge)
+      _ Emit((int64_t)entry_->prologue_dispatch_bridge);
+    else {
+      if (entry_->type == kFunctionInlineHook)
+        _ Emit((int64_t)entry_->replace_call);
+    }
   }
 
   CodeChunk::MemoryOperationError err;

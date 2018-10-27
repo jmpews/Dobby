@@ -17,7 +17,7 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
     // run the pre_call with the power of accessing all registers
     (*pre_call)(reg_ctx, &entry_info);
   }
-  
+
   // save the origin ret address, and use in `post_call_forword_handler`
   stackframe->orig_ret = get_func_ret_address(reg_ctx);
 

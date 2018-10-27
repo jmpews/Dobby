@@ -1,13 +1,9 @@
 #include "arch/arm/ARMInterceptRouting.h"
 #include "arch/arm/ARMInstructionRelocation.h"
-#include "arch/arm/ARMInstructionRelocation.h"
 
 #include "vm_core/modules/assembler/assembler-arm.h"
 #include "vm_core/modules/codegen/codegen-arm.h"
 #include "vm_core/objects/code.h"
-
-#include "vm_core_extra/code-page-chunk.h"
-#include "vm_core_extra/custom-code.h"
 
 using namespace zz::arm;
 
@@ -19,15 +15,16 @@ using namespace zz::arm;
 // thumb branch meta info
 #define THUMB1_TINY_REDIRECT_SIZE 2
 #define THUMB2_TINY_REDIRECT_SIZE 4
-#define THUMB1_B_XXX_RANGE (1 << 11) // signed
-#define THUMB2_B_XXX_RANGE (1 << 25) // signed
+#define THUMB1_B_XXX_RANGE (1 << 10) // signed
+#define THUMB2_B_XXX_RANGE (1 << 23) // signed
 #define THUMB_FULL_REDIRECT_SIZE 8
 
 static bool is_thumb2(uint32_t inst) {
   uint16_t inst1, inst2;
-  inst1        = inst & 0x0000ffff;
-  inst2        = (inst & 0xffff0000) >> 16;
-  uint32_t op0 = bits(inst1, 11, 12);
+  inst1 = inst & 0x0000ffff;
+  inst2 = (inst & 0xffff0000) >> 16;
+  // refer: Top level T32 instruction set encoding
+  uint32_t op0 = bits(inst1, 13, 15);
 
   if (op0 == 0b111) {
     return true;
@@ -46,7 +43,7 @@ void ARMInterceptRouting::prepare_thumb() {
   uword aligned_src_address = ThumbAlign(src_address);
 
   uint32_t inst = *(uint32_t *)aligned_src_address;
-  if (interceptor->options().enable_b_branch) {
+  if (interceptor->options().enable_arm_arm64_b_branch) {
     DLOG("%s", "[*] Enable b branch maybe cause crash, if crashed, please disable it.\n");
     // If the first instuction is thumb1(2 bytes), the first choice for use is thumb1 b-xxx, else use thumb2 b-xxx
     if (!is_thumb2(inst)) {
@@ -66,13 +63,13 @@ void ARMInterceptRouting::prepare_thumb() {
         DLOG("%s", "[*] Use Thumb2 B-xxx Branch\n");
         branch_type_  = Thumb2_B_Branch;
         relocate_size = 4;
-      }
-      DLOG("%s", "[!] Can't find any cove cave, change to ldr branch");
+      } else
+        DLOG("%s", "[!] Can't find any cove cave, change to ldr branch");
     }
   }
 
   if (region)
-    delete region;
+    fast_forward_region = region;
   else {
     DLOG("%s", "[*] Use Thumb2 Ldr Branch\n");
     branch_type_  = Thumb2_LDR_Branch;
@@ -84,7 +81,7 @@ void ARMInterceptRouting::prepare_arm() {
   uintptr_t src_address    = (uintptr_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
   MemoryRegion *region     = NULL;
-  if (interceptor->options().enable_b_branch) {
+  if (interceptor->options().enable_arm_arm64_b_branch) {
     region = CodeChunk::AllocateCodeCave(src_address, ARM_B_XXX_RANGE, ARM_FULL_REDIRECT_SIZE);
     if (region) {
       DLOG("%s", "[*] Use ARM B-xxx Branch\n");
@@ -96,7 +93,7 @@ void ARMInterceptRouting::prepare_arm() {
     }
   }
   if (region)
-    delete region;
+    fast_forward_region = region;
   else {
     DLOG("%s", "[*] Use ARM LDR Branch\n");
     branch_type_  = ARM_LDR_Branch;
@@ -144,8 +141,10 @@ void ARMInterceptRouting::BuildPreCallRouting() {
   entry_->prologue_dispatch_bridge = cte->address;
 
   // build the fast forward trampoline jump to the normal routing(prologue_routing_dispatch).
-  if (branch_type_ == ARM_B_Branch || branch_type_ == Thumb1_B_Branch || branch_type_ == Thumb2_B_Branch)
+  if (branch_type_ == ARM_B_Branch || branch_type_ == Thumb1_B_Branch || branch_type_ == Thumb2_B_Branch) {
+    DLOG("%s", "[*] Fast forward to Pre-ClosureTrampoline\n");
     BuildFastForwardTrampoline();
+  }
 
   DLOG("[*] create pre call closure trampoline to 'prologue_routing_dispatch' at %p\n", cte->address);
 }
@@ -161,22 +160,59 @@ void ARMInterceptRouting::BuildPostCallRouting() {
        closure_trampoline_entry->address);
 }
 
-// If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
-void ARMInterceptRouting::BuildFastForwardTrampoline() {
+void ARMInterceptRouting::BuildReplaceRouting() {
+  // build the fast forward trampoline jump to the normal routing(prologue_routing_dispatch).
+  if (branch_type_ == ARM_B_Branch || branch_type_ == Thumb1_B_Branch || branch_type_ == Thumb2_B_Branch) {
+    DLOG("%s", "[*] Fast forward to ReplaceCall\n");
+    BuildFastForwardTrampoline();
+  }
+}
+
+static Code *build_arm_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
+  CustomThumbTurboAssembler thumb_turbo_assembler_;
+#define _ thumb_turbo_assembler_.
+
+  _ t2_ldr(pc, MemOperand(pc, 0));
+  _ Emit((int32_t)address);
+
+  // Patch
+  CodeChunk::MemoryOperationError err;
+  err = CodeChunk::PatchCodeBuffer((void *)region->pointer(), thumb_turbo_assembler_.GetCodeBuffer());
+  CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
+  Code *code = Code::FinalizeFromAddress((uintptr_t)region->pointer(), thumb_turbo_assembler_.CodeSize());
+}
+
+static Code *build_thumb_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
-  if (entry_->type == kFunctionInlineHook) {
-    codegen.LiteralLdrBranch((uintptr_t)entry_->replace_call);
-    DLOG("[*] create fast forward trampoline to 'replace_call' %p\n", entry_->replace_call);
-  } else if (entry_->type == kDynamicBinaryInstrumentation) {
-    codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
-    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
-  } else if (entry_->type == kFunctionWrapper) {
-    DLOG("[*] create fast forward trampoline to 'prologue_dispatch_bridge' %p\n", entry_->prologue_dispatch_bridge);
-    codegen.LiteralLdrBranch((uintptr_t)entry_->prologue_dispatch_bridge);
-  }
+  codegen.LiteralLdrBranch(address);
 
-  AssemblerCode *code             = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  // Patch
+  CodeChunk::MemoryOperationError err;
+  err = CodeChunk::PatchCodeBuffer((void *)region->pointer(), turbo_assembler_.GetCodeBuffer());
+  CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
+  Code *code = Code::FinalizeFromAddress((uintptr_t)region->pointer(), turbo_assembler_.CodeSize());
+}
+
+// If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
+void ARMInterceptRouting::BuildFastForwardTrampoline() {
+  uint32_t forward_address;
+  Code *code;
+  if (entry_->type == kFunctionInlineHook) {
+    forward_address = (uintptr_t)entry_->replace_call;
+  } else if (entry_->type == kDynamicBinaryInstrumentation) {
+    forward_address = (uintptr_t)entry_->prologue_dispatch_bridge;
+  } else if (entry_->type == kFunctionWrapper) {
+    forward_address = (uintptr_t)entry_->prologue_dispatch_bridge;
+  } else {
+    UNREACHABLE();
+    exit(-1);
+  }
+  if (execute_state_ == ThumbExecuteState) {
+    code = build_thumb_fast_forward_trampoline(forward_address, fast_forward_region);
+  } else {
+    code = build_arm_fast_forward_trampoline(forward_address, fast_forward_region);
+  }
   entry_->fast_forward_trampoline = (void *)code->raw_instruction_start();
 }
 
@@ -187,8 +223,7 @@ void ARMInterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
   entry_->prologue_dispatch_bridge = closure_trampoline_entry->address;
 
-  Interceptor *interceptor = Interceptor::SharedInstance();
-  if (interceptor->options().enable_b_branch) {
+  if (branch_type_ == ARM_B_Branch || branch_type_ == Thumb1_B_Branch || branch_type_ == Thumb2_B_Branch) {
     BuildFastForwardTrampoline();
   }
   DLOG("create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
@@ -196,9 +231,7 @@ void ARMInterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
 }
 
 // alias Active
-void ARMInterceptRouting::Commit() {
-  Active();
-}
+void ARMInterceptRouting::Commit() { Active(); }
 
 // active arm intercept routing
 void ARMInterceptRouting::active_arm_intercept_routing() {
@@ -244,11 +277,16 @@ void ARMInterceptRouting::active_thumb_intercept_routing() {
     else {
       _ t2_ldr(pc, MemOperand(pc, 0));
     }
+
     // check if enable "fast forward trampoline"
     if (entry_->fast_forward_trampoline)
       _ Emit((int32_t)entry_->fast_forward_trampoline);
-    else
+    else if (entry_->prologue_dispatch_bridge)
       _ Emit((int32_t)entry_->prologue_dispatch_bridge);
+    else {
+      if (entry_->type == kFunctionInlineHook)
+        _ Emit((int32_t)entry_->replace_call);
+    }
   } else {
     UNREACHABLE();
   }

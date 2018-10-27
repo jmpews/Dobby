@@ -9,9 +9,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef uintptr_t zz_addr_t;
-typedef void * zz_ptr_t;
-
 #if defined(__arm64__) || defined(__aarch64__)
 #define Tx(type) type##arm64
 #define TX() type##ARM64
@@ -70,26 +67,11 @@ typedef struct _RegisterContext {
 
     uint32_t lr;
 } RegisterContext;
-#elif defined(__i386__)
-#define Tx(type) type##arm
-#define TX() type##ARM
-#define xT() arm##type
-#define XT() ARM##type
-typedef struct _RegisterContext {
-    int dummy;
-} RegisterContext;
-#elif defined(__x86_64__)
-#define Tx(type) type##x64
-#define TX() type##X64
-#define xT() x64##type
-#define XT() X64##type
-typedef struct _RegisterContext {
-    int dummy;
-} RegisterContext;
+#elif defined(__i386__) || defined(__x86_64__)
+#error "Unsupported x86/x86_64 architecture"
 #endif
 
 #define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
-
 
 typedef enum _RetStatus {
     kUnknown = -1,
@@ -117,25 +99,19 @@ typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 
-// open near jump, use code cave & b xxx
-void zz_enable_near_jump();
+// use `b xxx` as trampoline 
+RetStatus zz_enable_arm_arm64_b_branch();
 
-// close near jump, use `ldr x17, #0x8; br x17; .long 0x0; .long 0x0`
-void zz_disable_near_jump();
+// disable
+RetStatus zz_disable_arm_arm64_b_branch();
 
-// use pre_call and post_call wrap a function
+// wrap function with pre_call and post_call
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 
-// use inline hook to replace function
+// replace function
 RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
-// use pre_call and post_call wrap a GOT(imported) function
-RetStatus ZzWrapGOT(void *image_header, char *image_name, char *function_name, PRECALL pre_call, POSTCALL post_call);
-
-// replace got
-RetStatus ZzReplaceGOT(void *image_header, char *image_name, char *function_name, void *replace_call, void **origin_call);
-
-// hook instruction with DBI
+// dynamic binary instrument for instruction
 RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call);
 
 #ifdef __cplusplus

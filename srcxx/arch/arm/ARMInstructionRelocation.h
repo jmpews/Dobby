@@ -50,18 +50,14 @@ public:
 class CustomThumbAssembler : public Assembler {
 public:
   // =====
-  void EmitInt16(int16_t val) {
-    GetCodeBuffer()->Emit<int16_t>(val);
-  }
+  void EmitInt16(int16_t val) { GetCodeBuffer()->Emit<int16_t>(val); }
   void Emit2Int16(int16_t val1, int16_t val2) {
     EmitInt16(val1);
     EmitInt16(val2);
   }
 
   // =====
-  void t1_nop() {
-    EmitInt16(0xbf00);
-  }
+  void t1_nop() { EmitInt16(0xbf00); }
   void t1_b(int32_t imm) {
     ZAssert(CheckSignLength(imm, 12));
     ZAssert(CheckAlign(imm, 2));
@@ -71,20 +67,12 @@ public:
   }
 
   // =====
-  void t2_b(uint32_t imm) {
-    EmitThumb2Branch(AL, imm, false);
-  }
-  void t2_bl(uint32_t imm) {
-    EmitThumb2Branch(AL, imm, true);
-  }
-  void t2_blx(uint32_t imm) {
-    UNIMPLEMENTED();
-  }
+  void t2_b(uint32_t imm) { EmitThumb2Branch(AL, imm, false); }
+  void t2_bl(uint32_t imm) { EmitThumb2Branch(AL, imm, true); }
+  void t2_blx(uint32_t imm) { UNIMPLEMENTED(); }
 
   // =====
-  void t2_ldr(Register dst, const MemOperand &src) {
-    EmitThumb2LoadStore(true, dst, src);
-  }
+  void t2_ldr(Register dst, const MemOperand &src) { EmitThumb2LoadStore(true, dst, src); }
 
 private:
   void EmitThumb2LoadLiteral(Register rt, const MemOperand x) {
@@ -132,24 +120,24 @@ private:
   }
 
   // =====
-  void EmitThumb2Branch(Condition cond, uint32_t imm, bool link) {
+  void EmitThumb2Branch(Condition cond, int32_t imm, bool link) {
     uint32_t operand = imm >> 1;
     ZAssert(CheckSignLength(operand, 25));
     ZAssert(CheckAlign(operand, 2));
 
-    uint32_t signbit = (operand >> 31) & 0x1;
+    uint32_t signbit = (imm >> 31) & 0x1;
     uint32_t i1      = (operand >> 22) & 0x1;
     uint32_t i2      = (operand >> 21) & 0x1;
     uint32_t imm10   = (operand >> 11) & 0x03ff;
     uint32_t imm11   = operand & 0x07ff;
-    uint32_t j1      = (i1 ^ signbit) ? 0 : 1;
-    uint32_t j2      = (i2 ^ signbit) ? 0 : 1;
+    uint32_t j1      = (!(i1 ^ signbit));
+    uint32_t j2      = (!(i2 ^ signbit));
 
     if (cond != AL) {
       UNIMPLEMENTED();
     }
 
-    EmitInt16(0xf000 | LFT(S, 1, 10) | LFT(imm10, 10, 0));
+    EmitInt16(0xf000 | LFT(signbit, 1, 10) | LFT(imm10, 10, 0));
     if (link) {
       // Not use LFT(1, 1, 14), and use B14 for accelerate
       EmitInt16(0x9000 | LFT(j1, 1, 13) | (LFT(j2, 1, 11)) | LFT(imm11, 11, 0) | B14);

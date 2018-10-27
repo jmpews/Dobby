@@ -1,12 +1,15 @@
 #ifndef HOOKZZ_ARCH_ARM_INTERCEPT_ROUTING_H_
 #define HOOKZZ_ARCH_ARM_INTERCEPT_ROUTING_H_
 
-#include "hookzz_internal.h"
+#include "AssemblyClosureTrampoline.h"
 #include "InterceptRouting.h"
 #include "Interceptor.h"
 #include "Logging.h"
-#include "AssemblyClosureTrampoline.h"
+#include "hookzz_internal.h"
 #include "intercept_routing_handler.h"
+
+#include "vm_core_extra/code-page-chunk.h"
+#include "vm_core_extra/custom-code.h"
 
 class ARMInterceptRouting : public InterceptRouting {
 public:
@@ -16,8 +19,7 @@ public:
   // execute arm instruction or thumb instruction
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
-  ARMInterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
-  }
+  ARMInterceptRouting(HookEntry *entry) : InterceptRouting(entry) {}
 
   virtual void Commit();
 
@@ -27,6 +29,8 @@ private:
   virtual void Active();
 
   virtual void BuildFastForwardTrampoline();
+
+  virtual void BuildReplaceRouting();
 
   virtual void BuildPreCallRouting();
 
@@ -52,6 +56,8 @@ private:
   RoutingType branch_type_;
 
   ExecuteState execute_state_;
+
+  MemoryRegion *fast_forward_region;
 };
 
 #endif

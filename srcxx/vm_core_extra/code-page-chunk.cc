@@ -61,12 +61,18 @@ MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t si
 
     search_start = limit_start > (*it).start ? limit_start : (*it).start;
     search_end   = limit_end < (*it).end ? limit_end : (*it).end;
-
-    for (uintptr_t i = search_start; i < (search_end - size); i++) {
+#if defined(__arm__) || defined(__arm64__) || defined(__aarch64__)
+    search_start = ALIGN_CEIL(search_start, 4);
+    search_end = ALIGN_FLOOR(search_end, 4);
+    size = ALIGN_CEIL(size, 4);
+    for (uintptr_t i = search_start; i < (search_end - size); i += 4 ) {
       if (memcmp((void *)i, dummy_0, size) == 0) {
         return new MemoryRegion((void *)i, size);
       }
     }
+#else
+#error "Unsupported x86/x86_64 architecture""
+#endif
   }
   return NULL;
 }
