@@ -24,13 +24,13 @@ _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 
 | Branch Type | Arch/Mode | Trampoline Assembly | Bytes | Range |
 | - | - | - | - | - |
-| - | ARM64 | `B xxx` | 4 | 2^25 |
-| - | ARM64 | `LDR x17, 8`<br>`BR x17`<br>`.long 0x41414141`<br>`.long 0x41414141` | 16 | 2^64 |
-| - | ARM/ARM | `B xxx` | 4 | 2^25 |
-| - | ARM/ARM | `LDR pc, [pc, #-4]`<br>`.long 0x41414141` | 8 | 2^32 |
-| - | ARM/Thumb1 | `B xxx` | 2 | 2^6 |
-| - | ARM/Thumb2 | `B xxx` | 4 | 2^25 |
-| - | ARM/Thumb2 | `LDR pc, [pc, #-[2\|4]`<br>`.long 0x41414141` | 8 | 2^32 |
+| - | ARM64 | `B xxx` | 4 | +-(1<<25) |
+| - | ARM64 | `LDR x17, 8`<br>`BR x17`<br>`.long 0x41414141`<br>`.long 0x41414141` | 16 | (1<<64) |
+| - | ARM/ARM | `B xxx` | 4 | +-(1<<25) |
+| - | ARM/ARM | `LDR pc, [pc, #-4]`<br>`.long 0x41414141` | 8 | (1<<32) |
+| - | ARM/Thumb1 | `B xxx` | 2 | +-(1<<10) |
+| - | ARM/Thumb2 | `B xxx` | 4 | +-(1<<23) |
+| - | ARM/Thumb2 | `LDR pc, [pc, #-[2\|4]`<br>`.long 0x41414141` | 8 | (1<<32) |
 
 ## Compile
 
@@ -86,9 +86,22 @@ make -j4
 ```
 
 ## Usage
-#### 0x0. near jump
+#### 0x0. ARM/ARM64 B-xxx Branch
 
-if you want enable near jump, just add `zz_enable_near_jump();` before hook funciton, and stop with `zz_disable_near_jump();`
+when should i use?
+
+![](http://ww1.sinaimg.cn/large/a4decaedly1fwo1wdsum8j20af03gmx2.jpg)
+
+```
+#define FAKE(func) fake_##func
+#define ORIG(func) orig_##func
+void hook_demo() {
+    zz_enable_arm_arm64_b_branch();
+    // find the `AES_set_encrypt_key` symbol address by yourself
+    int ret = ZzReplace((void *)AES_set_encrypt_key, (void *)FAKE(AES_set_encrypt_key), (void **)&ORIG(AES_set_encrypt_key));
+    zz_disable_arm_arm64_b_branch();
+}
+```
 
 #### 0x1. replace hook function
 ```
@@ -106,12 +119,13 @@ void hook_fread() {
 
 #### 2. wrap hook function
 ```
-void open_post_call(RegisterContext *reg_ctx, ThreadStackPublic *tsp, CallStackPublic *csp, const HookEntryInfo *info) {
-    // Do What you Want.
+void common_pre_call(RegisterContext *reg_ctx, const HookEntryInfo *info)
+{
+    printf("common pre call\n");
 }
 
 void hook_open() {
-    ZzWrap((void *)open, open_pre_call, open_post_call);
+    ZzWrap((void *)open, common_pre_call, NULL);
 }
 ```
 
@@ -129,6 +143,11 @@ __attribute__((constructor)) void initlializeTemplate() {
     ZzDynamicBinaryInstrumentation((void *)finalAddr, catchDecrypt);
 }
 ```
+
+## Known Issues
+
+#### Android / ARM
+1. not fixed `pld`
 
 ## Refer
 1. [frida-gum](https://github.com/frida/frida-gum) 
