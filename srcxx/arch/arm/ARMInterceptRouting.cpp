@@ -168,7 +168,7 @@ void ARMInterceptRouting::BuildReplaceRouting() {
   }
 }
 
-static Code *build_arm_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
+static Code *build_thumb_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
   CustomThumbTurboAssembler thumb_turbo_assembler_;
 #define _ thumb_turbo_assembler_.
 
@@ -180,9 +180,10 @@ static Code *build_arm_fast_forward_trampoline(uintptr_t address, MemoryRegion *
   err = CodeChunk::PatchCodeBuffer((void *)region->pointer(), thumb_turbo_assembler_.GetCodeBuffer());
   CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
   Code *code = Code::FinalizeFromAddress((uintptr_t)region->pointer(), thumb_turbo_assembler_.CodeSize());
+  return code;
 }
 
-static Code *build_thumb_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
+static Code *build_arm_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(address);
@@ -192,6 +193,7 @@ static Code *build_thumb_fast_forward_trampoline(uintptr_t address, MemoryRegion
   err = CodeChunk::PatchCodeBuffer((void *)region->pointer(), turbo_assembler_.GetCodeBuffer());
   CHECK_EQ(err, CodeChunk::kMemoryOperationSuccess);
   Code *code = Code::FinalizeFromAddress((uintptr_t)region->pointer(), turbo_assembler_.CodeSize());
+  return code;
 }
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
