@@ -188,14 +188,14 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
   // [F3.2.3 Special data instructions and branch and exchange]
   // [Add, subtract, compare, move (two high registers)]
-  if((inst & 0xfc00) == 0x4400) {
+  if ((inst & 0xfc00) == 0x4400) {
     int rs = bits(inst, 3, 6);
     // rs is PC register
-    if(rs == 15) {
+    if (rs == 15) {
       val = cur_pc;
 
       uint16_t rewrite_inst = 0;
-      rewrite_inst = (inst & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
+      rewrite_inst          = (inst & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
 
       CustomThumbPseudoLabel label;
       // ===
@@ -318,7 +318,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
     op1 = bits(inst1, 6, 9);
     op3 = bits(inst2, 12, 14);
 
-    // B-T3
+    // B-T3 AKA b.cond
     if (((op1 & 0b1110) != 0b1110) && ((op3 & 0b101) == 0b000)) {
 
       int S     = sbits(inst1, 10, 10);
@@ -327,7 +327,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       int imm6  = bits(inst1, 0, 5);
       int imm11 = bits(inst2, 0, 10);
 
-      int32_t label = (imm11 << 1) | (imm6 << 12) | (J1 << 18) | (J2 << 19) | (S << 20);
+      int32_t label = (S << 20) | (J2 << 19) | (J1 << 18) | (imm6 << 12) | (imm11 << 1);
       uint32_t val  = cur_pc + label;
 
       // ===
@@ -342,7 +342,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       rewrite_flag = true;
     }
 
-    // B-T4
+    // B-T4 AKA b.w
     if ((op3 & 0b101) == 0b001) {
       int S     = sbits(inst1, 10, 10);
       int J1    = bit(inst2, 13);
@@ -352,7 +352,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
       int i1    = !(J1 ^ S);
       int i2    = !(J2 ^ S);
 
-      int32_t label = (imm11 << 1) | (imm10 << 12) | (J1 << 22) | (J2 << 23) | (S << 24);
+      int32_t label = (S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
       int32_t val   = cur_pc + label;
 
       // ===
