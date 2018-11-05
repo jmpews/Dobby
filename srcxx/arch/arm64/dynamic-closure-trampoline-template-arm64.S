@@ -3,6 +3,8 @@
 // For iOS, we can't allocate executable memory, but we can use `remap` doing some trick.
 // For details, please refer `libffi`
 
+#if defined(ENABLE_CLOSURE_BRIDGE_TEMPLATE)
+
 #if defined(__WIN32__) || defined(__APPLE__)
     #define cdecl(s) _##s
 #else
@@ -25,3 +27,5 @@ sub x16, x16, #0x4000 // [DynamicClosureTrampoline **]
 ldr x16, [x16, #0] // [DynamicClosureTrampoline *]
 ldr x17, [x16, #0] // trampolineTo 
 br x17
+
+#endif

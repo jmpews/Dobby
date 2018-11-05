@@ -1,6 +1,8 @@
 // .section	__TEXT,__text,regular,pure_instructions
 // .ios_version_min 11, 0
 
+#if defined(ENABLE_CLOSURE_BRIDGE_TEMPLATE)
+
 #if defined(__WIN32__) || defined(__APPLE__)
 #define cdecl(s) "_" s
 #else
@@ -59,3 +61,5 @@ __attribute__((naked)) void closure_bridge_template() {
   xASM("mov pc, r12");
 #endif
 }
+
+#endif

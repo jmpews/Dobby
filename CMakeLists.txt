@@ -121,10 +121,8 @@ search_suffix_files("cpp" Target.SOURCE_DIR Target.SOURCE_CPP)
 # *.c
 search_suffix_files("c" Target.SOURCE_DIR Target.SOURCE_C)
 
-if(CLOSURE_BRIDGE_TEMPLATE)
-    # *.S
-    search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
-endif()
+# *.S
+search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
 
 # *.h
 search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)

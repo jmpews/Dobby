@@ -1,3 +1,5 @@
+#if defined(ENABLE_CLOSURE_BRIDGE_TEMPLATE)
+
 #if defined(__WIN32__) || defined(__APPLE__)
 #define xcdecl(s) "_" s
 #else
@@ -97,3 +99,5 @@ __attribute__((naked)) void closure_bridge_template() {
 
   xASM("br x15");
 };
+
+#endif
