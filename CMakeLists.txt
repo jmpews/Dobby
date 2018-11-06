@@ -29,6 +29,9 @@ endif()
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
+    # -lstdc++
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     set(SYSTEM.iOS 1)
     MESSAGE(STATUS "[*] Compile for iOS")
 elseif(PLATFORM STREQUAL "Android")
