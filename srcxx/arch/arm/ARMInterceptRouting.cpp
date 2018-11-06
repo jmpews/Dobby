@@ -248,9 +248,13 @@ void ARMInterceptRouting::active_arm_intercept_routing() {
     CodeGen codegen(&turbo_assembler_);
     // check if enable "fast forward trampoline"
     if (entry_->fast_forward_trampoline)
-      codegen.LiteralLdrBranch((uint64_t)entry_->fast_forward_trampoline);
-    else
-      codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
+      codegen.LiteralLdrBranch((uint32_t)entry_->fast_forward_trampoline);
+    else if (entry_->prologue_dispatch_bridge)
+      codegen.LiteralLdrBranch((uint32_t)entry_->prologue_dispatch_bridge);
+    else {
+      if (entry_->type == kFunctionInlineHook)
+        codegen.LiteralLdrBranch((uint32_t)entry_->replace_call);
+    }
   }
 
   // Patch

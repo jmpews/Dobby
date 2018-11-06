@@ -145,12 +145,12 @@ void ARM64InterceptRouting::Active() {
     CodeGen codegen(&turbo_assembler_);
     // check if enable "fast forward trampoline"
     if (entry_->fast_forward_trampoline)
-      _ Emit((int64_t)entry_->fast_forward_trampoline);
+      codegen.LiteralLdrBranch((uint64_t)entry_->fast_forward_trampoline);
     else if (entry_->prologue_dispatch_bridge)
-      _ Emit((int64_t)entry_->prologue_dispatch_bridge);
+      codegen.LiteralLdrBranch((uint64_t)entry_->prologue_dispatch_bridge);
     else {
       if (entry_->type == kFunctionInlineHook)
-        _ Emit((int64_t)entry_->replace_call);
+        codegen.LiteralLdrBranch((uint64_t)entry_->replace_call);
     }
   }
 
