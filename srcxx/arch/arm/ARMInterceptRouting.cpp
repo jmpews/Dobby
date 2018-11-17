@@ -25,8 +25,9 @@ static bool is_thumb2(uint32_t inst) {
   inst2 = (inst & 0xffff0000) >> 16;
   // refer: Top level T32 instruction set encoding
   uint32_t op0 = bits(inst1, 13, 15);
+  uint32_t op1 = bits(inst1, 11, 12);
 
-  if (op0 == 0b111) {
+  if (op0 == 0b111 && op1 != 0b00) {
     return true;
   }
   return false;
