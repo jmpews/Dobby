@@ -72,8 +72,8 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
       PseudoLabel PseudoDataLabel;
       Register regRt = Register::from_code(Rt);
       // ===
-      _ Ldr(TEMP_REG, &PseudoDataLabel);
-      _ ldr(regRt, MemOperand(TEMP_REG));
+      _ Ldr(regRt, &PseudoDataLabel);
+      _ ldr(regRt, MemOperand(regRt));
       // ===
       // Record the pseudo label to realized at the last.
       labels.push_back({PseudoDataLabel, target_address});
@@ -140,7 +140,7 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
       uint32_t cond = 0, H = 0, imm24 = 0;
       bool flag_link;
       do {
-        int imm24               = bits(inst, 0, 23);
+        int imm24                = bits(inst, 0, 23);
         int label               = imm24 << 2;
         uint32_t target_address = cur_pc + label;
         if (cond != 0b1111 && H == 0) {
@@ -218,8 +218,8 @@ void Thumb1RelocateSingleInst(int16_t inst, uint32_t cur_pc, CustomThumbTurboAss
 
     CustomThumbPseudoLabel label;
     // ===
-    _ T2_Ldr(TEMP_REG, &label);
-    _ t2_ldr(Register::from_code(rt), MemOperand(TEMP_REG, 0));
+    _ T2_Ldr(Register::from_code(rt), &label);
+    _ t2_ldr(Register::from_code(rt), MemOperand(Register::from_code(rt), 0));
     // ===
     thumb_labels.push_back({label, val});
     rewrite_flag = true;
@@ -457,10 +457,10 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
     Register regRt = Register::from_code(rt);
     // =====
-    _ t2_ldr(TEMP_REG, MemOperand(pc, 4));
+    _ t2_ldr(regRt, MemOperand(pc, 4));
     _ t2_b(4);
     _ Emit(val);
-    _ t2_ldr(regRt, MemOperand(TEMP_REG, 0));
+    _ t2_ldr(regRt, MemOperand(regRt, 0));
     // =====
     rewrite_flag = true;
   }
