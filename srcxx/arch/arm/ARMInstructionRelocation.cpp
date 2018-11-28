@@ -140,7 +140,7 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
       uint32_t cond = 0, H = 0, imm24 = 0;
       bool flag_link;
       do {
-        int imm24                = bits(inst, 0, 23);
+        int imm24               = bits(inst, 0, 23);
         int label               = imm24 << 2;
         uint32_t target_address = cur_pc + label;
         if (cond != 0b1111 && H == 0) {
@@ -496,8 +496,8 @@ AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_address, int *relocat
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
-  // next instruction address  == cur_pc - 4
-  codegen.LiteralLdrBranch(cur_pc - ARM_INST_LEN);
+  // next instruction address  == cur_addr
+  codegen.LiteralLdrBranch(cur_addr);
 
   // Realize all the Pseudo-Label-Data
   for (auto it : labels) {
