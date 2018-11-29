@@ -9,7 +9,7 @@ using namespace zz::arm;
 
 // arm branch meta info
 #define ARM_TINY_REDIRECT_SIZE 4
-#define ARM_B_XXX_RANGE (1 << 25) // signed
+#define ARM_B_XXX_RANGE (1 << 25) // signed == (1 << (24-1))<< 2
 #define ARM_FULL_REDIRECT_SIZE 8
 
 // thumb branch meta info

@@ -327,7 +327,7 @@ private:
   void EmitType5(Condition cond, int32_t offset, bool link) {
     ASSERT(cond != kNoCondition);
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | LFT(5, 3, 25) | ((link ? 1 : 0) << kLinkShift);
-    int32_t imm24    = offset >> 2;
+    int32_t imm24    = bits(offset >> 2, 0, 23);
     ZAssert(CheckSignLength(imm24, 24));
     Emit(imm24 | encoding);
   }
