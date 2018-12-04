@@ -49,17 +49,17 @@ cmake .. \
 -DCMAKE_BUILD_TYPE=Release
 
 # 2: recommend
-cmake .. -G Xcode \
+cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
 -DIOS_PLATFORM=OS \
 -DIOS_ARCH=arm64 \
 -DENABLE_ARC=FALSE \
 -DENABLE_BITCODE=OFF \
--DDEBUG=ON \
+-DDEBUG=OFF \
 -DSHARED=ON \
 -DPLATFORM=iOS \
 -DARCH=armv8 \
--DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+-DCMAKE_BUILD_TYPE=Release
 
 make -j4
 ```
@@ -73,14 +73,12 @@ export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
 
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
--DANDROID_NDK=$ANDROID_NDK \
 -DCMAKE_BUILD_TYPE=Release \
--DANDROID_ABI=armeabi-v7a \
--DSHARED=ON \
--DPLATFORM=Android \
--DARCH=armv7 \
--DCMAKE_VERBOSE_MAKEFILE=OFF \
--DCMAKE_BUILD_TYPE=Release 
+-DANDROID_ABI="armeabi-v7a" \
+-DANDROID_STL=c++_static \
+-DANDROID_NATIVE_API_LEVEL=android-14 \
+-DDEBUG=OFF \
+-DSHARED=ON
 
 make -j4
 ```

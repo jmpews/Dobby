@@ -25,13 +25,12 @@ endif()
 
 if(DEBUG)
    add_definitions(-DDEBUG)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
-    # -lstdc++
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     set(SYSTEM.iOS 1)
     MESSAGE(STATUS "[*] Compile for iOS")
 elseif(PLATFORM STREQUAL "Android")
@@ -47,29 +46,39 @@ else()
     endif()
 endif()
 
+if(SYSTEM.iOS)
+    # -lstdc++
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+elseif(SYSTEM.Android)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,--gc-sections")
+endif()
+
 # Architecture
 if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(PROCESSOR.arm 1)
     MESSAGE(STATUS "[*] Compile for arm")
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
 elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(PROCESSOR.aarch64 1)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
     MESSAGE(STATUS "[*] Compile for aarch64")
 else()
     if(PROCESSOR.arm)
         set(CMAKE_SYSTEM_PROCESSOR arm)
         MESSAGE(STATUS "[*] Compile for arm")
-        set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
     elseif(PROCESSOR.aarch64)
         set(CMAKE_SYSTEM_PROCESSOR aarch64)
-        set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
         MESSAGE(STATUS "[*] Compile for aarch64")
     else()
         message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] ARCH")
     endif()
+endif()
+
+if(PROCESSOR.arm)
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
+elseif(PROCESSOR.aarch64)
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
 endif()
 
 set(Target.path .)
@@ -204,7 +213,7 @@ endif()
 
 # =====
 
-message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
+# message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
 
 include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 
