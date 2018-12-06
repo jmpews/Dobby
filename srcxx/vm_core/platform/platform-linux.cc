@@ -1,10 +1,10 @@
 
-#include "vm_core/platform/platform-posix.h"
-#include "vm_core/platform/platform.h"
+#include "platform/platform.h"
+#include "../macros.h"
 
 namespace zz {
 
-std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
+std::vector<OSMemory::SharedLibraryAddress> OSMemory::GetSharedLibraryAddresses() {
   std::vector<SharedLibraryAddress> result;
   // This function assumes that the layout of the file is as follows:
   // hex_start_addr-hex_end_addr rwxp <unused data> [binary_file_name]
@@ -22,11 +22,11 @@ std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
     uintptr_t start, end, offset;
     char attr_r, attr_w, attr_x, attr_p;
     // Parse the addresses and permission bits at the beginning of the line.
-    if (fscanf(fp, "%" V8PRIxPTR "-%" V8PRIxPTR, &start, &end) != 2)
+    if (fscanf(fp, "%" PRIxPTR "-%" PRIxPTR, &start, &end) != 2)
       break;
     if (fscanf(fp, " %c%c%c%c", &attr_r, &attr_w, &attr_x, &attr_p) != 4)
       break;
-    if (fscanf(fp, "%" V8PRIxPTR, &offset) != 1)
+    if (fscanf(fp, "%" PRIxPTR, &offset) != 1)
       break;
 
     // Adjust {start} based on {offset}.
@@ -57,7 +57,7 @@ std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
         lib_name[strlen(lib_name) - 1] = '\0';
       } else {
         // No library name found, just record the raw address range.
-        snprintf(lib_name, kLibNameLen, "%08" V8PRIxPTR "-%08" V8PRIxPTR, start, end);
+        snprintf(lib_name, kLibNameLen, "%08" PRIxPTR "-%08" PRIxPTR, start, end);
       }
       result.push_back(SharedLibraryAddress(lib_name, start, end));
     } else {
@@ -75,18 +75,18 @@ std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
   return result;
 }
 
-std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
-  std::vector<OS::MemoryRegion> result;
+std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
+  std::vector<OSMemory::MemoryRegion> result;
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
     return result;
 
   while (!feof(fp)) {
-    char line_buffer[1024+1];
+    char line_buffer[1024 + 1];
     fgets(line_buffer, 1024, fp);
     // ignore the rest of characters
-    if(strlen(line_buffer) == 1024 && line_buffer[1024] != '\n') {
+    if (strlen(line_buffer) == 1024 && line_buffer[1024] != '\n') {
       // Entry not describing executable data. Skip to end of line to set up
       // reading the next entry.
       int c;
@@ -100,11 +100,11 @@ std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
     uintptr_t region_start;
     uintptr_t region_end;
     uintptr_t region_offset;
-    char permissions[5] = {'\0'};  // Ensure NUL-terminated string.
-    uint8_t dev_major = 0;
-    uint8_t dev_minor = 0;
-    long inode = 0;
-    int path_index = 0;
+    char permissions[5] = {'\0'}; // Ensure NUL-terminated string.
+    uint8_t dev_major   = 0;
+    uint8_t dev_minor   = 0;
+    long inode          = 0;
+    int path_index      = 0;
 
     // Sample format from man 5 proc:
     //
@@ -114,25 +114,27 @@ std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
     // The final %n term captures the offset in the input string, which is used
     // to determine the path name. It *does not* increment the return value.
     // Refer to man 3 sscanf for details.
-    if (sscanf(line_buffer, "%" V8PRIxPTR "-%" V8PRIxPTR " %4c " "%" V8PRIxPTR " %hhx:%hhx %ld %n",
-            &region_start, &region_end, permissions, &region_offset,
-            &dev_major, &dev_minor, &inode, &path_index) < 7) {
+    if (sscanf(line_buffer,
+               "%" PRIxPTR "-%" PRIxPTR " %4c "
+               "%" PRIxPTR " %hhx:%hhx %ld %n",
+               &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
+               &path_index) < 7) {
       FATAL("[!] /proc/self/maps parse failed!");
       exit(-1);
     }
 
-    OS::MemoryPermission permission;
-    if(permissions[0] == 'r' && permissions[1] == 'w') {
-      permission = OS::MemoryPermission::kReadWrite;
-    } else if(permissions[0] == 'r' && permissions[2] == 'x') {
-      permission = OS::MemoryPermission::kReadExecute;
-    } else if(permissions[0] == 'r' && permissions[1] == 'w' && permissions[2] == 'x') {
-      permission = OS::MemoryPermission::kReadWriteExecute;
+    OSMemory::MemoryPermission permission;
+    if (permissions[0] == 'r' && permissions[1] == 'w') {
+      permission = OSMemory::MemoryPermission::kReadWrite;
+    } else if (permissions[0] == 'r' && permissions[2] == 'x') {
+      permission = OSMemory::MemoryPermission::kReadExecute;
+    } else if (permissions[0] == 'r' && permissions[1] == 'w' && permissions[2] == 'x') {
+      permission = OSMemory::MemoryPermission::kReadWriteExecute;
     } else {
-      permission = OS::MemoryPermission::kNoAccess;
+      permission = OSMemory::MemoryPermission::kNoAccess;
     }
 
-    result.push_back(OS::MemoryRegion(region_start, region_end, permission));
+    result.push_back(OSMemory::MemoryRegion(region_start, region_end, permission));
   }
   return result;
 }

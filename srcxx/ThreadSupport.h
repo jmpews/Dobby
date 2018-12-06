@@ -59,7 +59,7 @@ public:
   static CallStack *CurrentThreadCallStack();
 
 private:
-  static zz::Thread::LocalStorageKey thread_callstack_key_;
+  static zz::OSThread::LocalStorageKey thread_callstack_key_;
 };
 
 #endif

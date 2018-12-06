@@ -40,9 +40,7 @@ public:
     uword type_;
   } PseudoLabelInstruction;
 
-  bool has_confused_instructions() {
-    return instructions_.size() > 0;
-  }
+  bool has_confused_instructions() { return instructions_.size() > 0; }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
     CodeBuffer *_buffer;
@@ -58,7 +56,7 @@ public:
       case kLdrLiteral: {
         encoded        = inst32 & 0xfffff000;
         uint32_t imm12 = offset - ARM_PC_OFFSET;
-        ZAssert(CheckSignLength(imm12));
+        ASSERT(CheckSignLength(imm12));
         encoded = encoded | imm12;
       } break;
       default:
@@ -69,9 +67,7 @@ public:
     }
   };
 
-  void link_to(int pos, uword type) {
-    instructions_.push_back({pos, type});
-  }
+  void link_to(int pos, uword type) { instructions_.push_back({pos, type}); }
 
 protected:
   std::vector<PseudoLabelInstruction> instructions_;
@@ -131,8 +127,7 @@ private:
 class MemOperand {
 public:
   explicit MemOperand(Register rn, int32_t offset = 0, AddrMode am = Offset)
-      : rn_(rn), rm_(no_reg), offset_(offset), am_(am) {
-  }
+      : rn_(rn), rm_(no_reg), offset_(offset), am_(am) {}
 
   explicit MemOperand(Register rn, Register rm, AddrMode am = Offset)
       : rn_(rn), rm_(rm), shift_(LSL), shift_imm_(0), am_(am) {
@@ -145,29 +140,15 @@ public:
   }
 
   // =====
-  const Register &rn() const {
-    return rn_;
-  }
-  const Register &rm() const {
-    return rm_;
-  }
-  int32_t offset() const {
-    return offset_;
-  }
+  const Register &rn() const { return rn_; }
+  const Register &rm() const { return rm_; }
+  int32_t offset() const { return offset_; }
 
   // =====
-  bool IsImmediateOffset() const {
-    return (am_ == Offset);
-  }
-  bool IsRegisterOffset() const {
-    return (am_ == Offset);
-  }
-  bool IsPreIndex() const {
-    return am_ == PreIndex;
-  }
-  bool IsPostIndex() const {
-    return am_ == PostIndex;
-  }
+  bool IsImmediateOffset() const { return (am_ == Offset); }
+  bool IsRegisterOffset() const { return (am_ == Offset); }
+  bool IsPreIndex() const { return am_ == PreIndex; }
+  bool IsPostIndex() const { return am_ == PostIndex; }
 
 private:
   Register rn_;    // base
@@ -256,18 +237,14 @@ public:
     uint32_t aligned_address = ALIGN_FLOOR(address, 4);
     released_address_        = (void *)aligned_address;
   }
-  void *ReleaseAddress() {
-    return released_address_;
-  }
+  void *ReleaseAddress() { return released_address_; }
   Code *GetCode() {
     Code *code = new Code(released_address_, CodeSize());
     return code;
   }
 
   // ===
-  void Emit(int32_t value) {
-    buffer_.Emit(value);
-  }
+  void Emit(int32_t value) { buffer_.Emit(value); }
 
   // ===
   void sub(Register dst, Register src1, const Operand &src2, Condition cond = AL) {
@@ -279,40 +256,22 @@ public:
 
   // =====
 
-  void ldr(Register dst, const MemOperand &src, Condition cond = AL) {
-    EmitMemOp(cond, true, false, dst, src);
-  }
-  void str(Register src, const MemOperand &dst, Condition cond = AL) {
-    EmitMemOp(cond, false, false, src, dst);
-  }
+  void ldr(Register dst, const MemOperand &src, Condition cond = AL) { EmitMemOp(cond, true, false, dst, src); }
+  void str(Register src, const MemOperand &dst, Condition cond = AL) { EmitMemOp(cond, false, false, src, dst); }
 
   // =====
 
-  void mov(Register dst, const Operand &src, Condition cond = AL) {
-    EmitType01(cond, MOV, 0, dst, no_reg, src);
-  }
+  void mov(Register dst, const Operand &src, Condition cond = AL) { EmitType01(cond, MOV, 0, dst, no_reg, src); }
 
-  void mov(Register dst, Register src, Condition cond = AL) {
-    mov(dst, Operand(src), AL);
-  }
+  void mov(Register dst, Register src, Condition cond = AL) { mov(dst, Operand(src), AL); }
 
   // =====
   // Branch instructions.
-  void b(int branch_offset, Condition cond = AL) {
-    EmitType5(cond, branch_offset, false);
-  }
-  void bl(int branch_offset, Condition cond = AL) {
-    EmitType5(cond, branch_offset, true);
-  }
-  void blx(int branch_offset) {
-    UNIMPLEMENTED();
-  }
-  void blx(Register target, Condition cond = AL) {
-    UNIMPLEMENTED();
-  }
-  void bx(Register target, Condition cond = AL) {
-    UNIMPLEMENTED();
-  }
+  void b(int branch_offset, Condition cond = AL) { EmitType5(cond, branch_offset, false); }
+  void bl(int branch_offset, Condition cond = AL) { EmitType5(cond, branch_offset, true); }
+  void blx(int branch_offset) { UNIMPLEMENTED(); }
+  void blx(Register target, Condition cond = AL) { UNIMPLEMENTED(); }
+  void bx(Register target, Condition cond = AL) { UNIMPLEMENTED(); }
 
 private:
   void EmitType01(Condition cond, Opcode opcode, int set_cc, Register rd, Register rn, Operand o) {
@@ -328,7 +287,7 @@ private:
     ASSERT(cond != kNoCondition);
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | LFT(5, 3, 25) | ((link ? 1 : 0) << kLinkShift);
     int32_t imm24    = bits(offset >> 2, 0, 23);
-    ZAssert(CheckSignLength(imm24, 24));
+    ASSERT(CheckSignLength(imm24, 24));
     Emit(imm24 | encoding);
   }
 
@@ -349,8 +308,7 @@ private:
 
 class TurboAssembler : public Assembler {
 public:
-  TurboAssembler() {
-  }
+  TurboAssembler() {}
 
   // ===
   void Ldr(Register rt, PseudoLabel *label) {
@@ -385,8 +343,7 @@ public:
 
   // =====
 
-  void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
-  }
+  void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {}
 };
 
 } // namespace arm

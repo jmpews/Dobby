@@ -484,6 +484,7 @@ AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_address, int *relocat
   uint32_t inst      = *(uint32_t *)cur_addr;
 
   TurboAssembler turbo_assembler_;
+#undef _
 #define _ turbo_assembler_.
   while (cur_addr < (aligned_src_address + *relocate_size)) {
     ARMRelocateSingleInst(inst, cur_pc, turbo_assembler_);

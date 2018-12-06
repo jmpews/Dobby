@@ -16,7 +16,7 @@ using namespace zz;
 std::vector<CodeChunk *> CodeChunk::code_pages_;
 
 CodeChunk *CodeChunk::AllocateCodePage() {
-  void *new_code_page   = PageAllocator::Allocate(OS::MemoryPermission::kReadExecute);
+  void *new_code_page   = PageAllocator::Allocate(OSMemory::MemoryPermission::kReadExecute);
   CodeChunk *code_chunk = new CodeChunk(new_code_page, PageAllocator::PageSize());
   CodeChunk::code_pages_.push_back(code_chunk);
   return code_chunk;
@@ -41,7 +41,7 @@ MemoryRegion *CodeChunk::AllocateCode(size_t size) {
 
 // Search code cave from MemoryLayout
 MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t size) {
-  std::vector<OS::MemoryRegion> memory_layout = OS::GetMemoryLayout();
+  std::vector<OSMemory::MemoryRegion> memory_layout = OSMemory::GetMemoryLayout();
   // initialize needed variable
   char *dummy_0 = (char *)malloc(size);
   memset(dummy_0, 0, size);
@@ -51,7 +51,7 @@ MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t si
 
   auto it = memory_layout.begin();
   for (; it != memory_layout.end(); it++) {
-    if ((*it).permission != OS::MemoryPermission::kReadExecute)
+    if ((*it).permission != OSMemory::MemoryPermission::kReadExecute)
       continue;
 
     if (limit_start > (*it).end)
@@ -63,9 +63,9 @@ MemoryRegion *CodeChunk::AllocateCodeCave(uword pos, uword range_size, size_t si
     search_end   = limit_end < (*it).end ? limit_end : (*it).end;
 #if defined(__arm__) || defined(__arm64__) || defined(__aarch64__)
     search_start = ALIGN_CEIL(search_start, 4);
-    search_end = ALIGN_FLOOR(search_end, 4);
-    size = ALIGN_CEIL(size, 4);
-    for (uintptr_t i = search_start; i < (search_end - size); i += 4 ) {
+    search_end   = ALIGN_FLOOR(search_end, 4);
+    size         = ALIGN_CEIL(size, 4);
+    for (uintptr_t i = search_start; i < (search_end - size); i += 4) {
       if (memcmp((void *)i, dummy_0, size) == 0) {
         return new MemoryRegion((void *)i, size);
       }
@@ -81,10 +81,10 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   int page_size = (int)PageAllocator::PageSize();
 
 #ifdef __APPLE__
-  // MemoryRegion *region = PageAllocator::Allocate(OS::MemoryPermission::kReadWrite);
+  // MemoryRegion *region = PageAllocator::Allocate(OSMemory::MemoryPermission::kReadWrite);
   // uintptr_t remap_page = (uintptr_t)region->pointer();
 
-  uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(OS::MemoryPermission::kReadWrite);
+  uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(OSMemory::MemoryPermission::kReadWrite);
 
   vm_prot_t prot;
   vm_inherit_t inherit;
@@ -113,7 +113,7 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   memcpy((void *)(remap_page + offset), buffer, size);
 
   // ===
-  PageAllocator::SetPermissions((void *)remap_page, page_size, OS::MemoryPermission::kReadExecute);
+  PageAllocator::SetPermissions((void *)remap_page, page_size, OSMemory::MemoryPermission::kReadExecute);
 
   // ===
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
@@ -128,9 +128,9 @@ CodeChunk::_MemoryOperationError CodeChunk::Patch(void *page_address, int offset
   }
 
 #elif defined(__ANDROID__) || defined(__linux__)
-  PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadWriteExecute);
+  PageAllocator::SetPermissions(page_address, page_size, OSMemory::MemoryPermission::kReadWriteExecute);
   memcpy((void *)((uintptr_t)page_address + offset), buffer, size);
-  PageAllocator::SetPermissions(page_address, page_size, OS::MemoryPermission::kReadExecute);
+  PageAllocator::SetPermissions(page_address, page_size, OSMemory::MemoryPermission::kReadExecute);
 #endif
 
   CpuFeatures::FlushICache((void *)((uintptr_t)page_address + offset), size);

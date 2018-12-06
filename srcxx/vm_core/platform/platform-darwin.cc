@@ -26,22 +26,19 @@
 
 #include <cmath>
 
-#include "vm_core/platform/platform-posix.h"
-#include "vm_core/platform/platform.h"
+#include "platform.h"
 
-void platform_darwin_test() {
-  int dummy;
-}
+void platform_darwin_test() { int dummy; }
 
 namespace zz {
-std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
+std::vector<OSMemory::SharedLibraryAddress> OSMemory::GetSharedLibraryAddresses() {
   std::vector<SharedLibraryAddress> result;
   unsigned int images_count = _dyld_image_count();
   for (unsigned int i = 0; i < images_count; ++i) {
     const mach_header *header = _dyld_get_image_header(i);
     if (header == nullptr)
       continue;
-#if V8_HOST_ARCH_X64
+#if HOST_ARCH_X64
     uint64_t size;
     char *code_ptr =
         getsectdatafromheader_64(reinterpret_cast<const mach_header_64 *>(header), SEG_TEXT, SECT_TEXT, &size);
@@ -58,7 +55,7 @@ std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
   return result;
 }
 
-std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
+std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
   std::vector<MemoryRegion> result;
 
   mach_msg_type_number_t count;
@@ -87,15 +84,15 @@ std::vector<OS::MemoryRegion> OS::GetMemoryLayout() {
       uintptr_t end   = addr;
       MemoryPermission permission;
       if ((info.protection & PROT_READ) && (info.protection & PROT_WRITE)) {
-        permission = OS::MemoryPermission::kReadWrite;
+        permission = OSMemory::MemoryPermission::kReadWrite;
       } else if ((info.protection & PROT_READ) == info.protection) {
-        permission = OS::MemoryPermission::kRead;
+        permission = OSMemory::MemoryPermission::kRead;
       } else if ((info.protection & PROT_READ) && (info.protection & PROT_EXEC)) {
-        permission = OS::MemoryPermission::kReadExecute;
+        permission = OSMemory::MemoryPermission::kReadExecute;
       } else {
         continue;
       }
-      result.push_back(OS::MemoryRegion(start, end, permission));
+      result.push_back(OSMemory::MemoryRegion(start, end, permission));
     }
   }
   return result;

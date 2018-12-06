@@ -239,6 +239,7 @@ void ARMInterceptRouting::Commit() { Active(); }
 // active arm intercept routing
 void ARMInterceptRouting::active_arm_intercept_routing() {
   TurboAssembler turbo_assembler_;
+#undef _
 #define _ turbo_assembler_.
 
   uintptr_t target_address = (uintptr_t)entry_->target_address;
@@ -268,6 +269,7 @@ void ARMInterceptRouting::active_arm_intercept_routing() {
 // active thumb intercept routing
 void ARMInterceptRouting::active_thumb_intercept_routing() {
   CustomThumbTurboAssembler thumb_turbo_assembler_;
+#undef _
 #define _ thumb_turbo_assembler_.
 
   uintptr_t target_address         = (uintptr_t)entry_->target_address;

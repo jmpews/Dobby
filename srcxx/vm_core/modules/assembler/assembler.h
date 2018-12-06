@@ -11,25 +11,15 @@
 namespace zz {
 class Label {
 public:
-  Label() : pos_(0), near_link_pos_(0) {
-  }
+  Label() : pos_(0), near_link_pos_(0) {}
 
-  ~Label() {
-  }
+  ~Label() {}
 
 public:
-  bool is_bound() const {
-    return pos_ < 0;
-  }
-  bool is_unused() const {
-    return pos_ == 0 && near_link_pos_ == 0;
-  }
-  bool is_linked() const {
-    return pos_ > 0;
-  }
-  bool is_near_linked() const {
-    return near_link_pos_ > 0;
-  }
+  bool is_bound() const { return pos_ < 0; }
+  bool is_unused() const { return pos_ == 0 && near_link_pos_ == 0; }
+  bool is_linked() const { return pos_ > 0; }
+  bool is_near_linked() const { return near_link_pos_ > 0; }
   int pos() const {
     if (pos_ < 0)
       return -pos_ - 1;
@@ -37,9 +27,7 @@ public:
       return pos_ - 1;
     return 0;
   }
-  void bind_to(int pos) {
-    pos_ = -pos - 1;
-  }
+  void bind_to(int pos) { pos_ = -pos - 1; }
   void link_to(int pos) {
     // for special condition: link_to(0)
     pos_ = pos + 1;
@@ -63,12 +51,9 @@ private:
 
 class ExternalReference {
 public:
-  explicit ExternalReference(void *address) : address_(address) {
-  }
+  explicit ExternalReference(void *address) : address_(address) {}
 
-  const inline void *address() {
-    return address_;
-  }
+  const inline void *address() { return address_; }
 
 private:
   const void *address_;
@@ -78,23 +63,15 @@ private:
 
 class AssemblerBase {
 public:
-  AssemblerBase() {
-    DLOG("[*] Assembler buffer at %p\n", buffer_.RawBuffer());
-  }
+  AssemblerBase() { DLOG("[*] Assembler buffer at %p\n", buffer_.RawBuffer()); }
 
-  int pc_offset() const {
-    return buffer_.Size();
-  }
+  int pc_offset() const { return buffer_.Size(); }
 
   // =====
 
-  size_t CodeSize() {
-    return buffer_.Size();
-  }
+  size_t CodeSize() { return buffer_.Size(); }
 
-  CodeBuffer *GetCodeBuffer() {
-    return &buffer_;
-  }
+  CodeBuffer *GetCodeBuffer() { return &buffer_; }
 
   virtual Code *GetCode() = 0;
 
@@ -105,9 +82,7 @@ public:
   // =====
 
   static void FlushICache(void *start, size_t size);
-  static void FlushICache(uintptr_t start, size_t size) {
-    return FlushICache(reinterpret_cast<void *>(start), size);
-  }
+  static void FlushICache(uintptr_t start, size_t size) { return FlushICache(reinterpret_cast<void *>(start), size); }
 
   // =====
 
@@ -118,10 +93,10 @@ protected:
 
 } // namespace zz
 
-#include "vm_core/config.h"
-#if V8_TARGET_ARCH_ARM
+#include "vm_core/globals.h"
+#if TARGET_ARCH_ARM
 #include "vm_core/modules/assembler/assembler-arm.h"
-#elif V8_TARGET_ARCH_ARM64
+#elif TARGET_ARCH_ARM64
 #include "vm_core/modules/assembler/assembler-arm64.h"
 #endif
 

@@ -59,8 +59,8 @@ public:
   // =====
   void t1_nop() { EmitInt16(0xbf00); }
   void t1_b(int32_t imm) {
-    ZAssert(CheckSignLength(imm, 12));
-    ZAssert(CheckAlign(imm, 2));
+    ASSERT(CheckSignLength(imm, 12));
+    ASSERT(CheckAlign(imm, 2));
 
     int32_t imm11 = bits(imm >> 1, 0, 10);
     EmitInt16(0xe000 | imm11);
@@ -122,8 +122,8 @@ private:
   // =====
   void EmitThumb2Branch(Condition cond, int32_t imm, bool link) {
     uint32_t operand = imm >> 1;
-    ZAssert(CheckSignLength(operand, 25));
-    ZAssert(CheckAlign(operand, 2));
+    ASSERT(CheckSignLength(operand, 25));
+    ASSERT(CheckAlign(operand, 2));
 
     uint32_t signbit = (imm >> 31) & 0x1;
     uint32_t i1      = (operand >> 22) & 0x1;

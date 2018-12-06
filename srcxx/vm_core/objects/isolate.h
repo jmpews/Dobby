@@ -10,7 +10,7 @@ namespace zz {
 class Isolate {
 public:
   static Isolate *Current() {
-    Isolate *isolate = reinterpret_cast<Isolate *>(Thread::GetExistingThreadLocal(isolate_key_));
+    Isolate *isolate = reinterpret_cast<Isolate *>(OSThread::GetExistingThreadLocal(isolate_key_));
     return isolate;
   }
 
@@ -21,7 +21,7 @@ public:
 private:
   Heap heap_;
 
-  static Thread::LocalStorageKey isolate_key_;
+  static OSThread::LocalStorageKey isolate_key_;
 };
 
 } // namespace zz

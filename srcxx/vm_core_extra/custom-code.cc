@@ -5,9 +5,9 @@
 
 using namespace zz;
 
-#if V8_TARGET_ARCH_ARM
+#if TARGET_ARCH_ARM
 using namespace zz::arm;
-#elif V8_TARGET_ARCH_ARM64
+#elif TARGET_ARCH_ARM64
 using namespace zz::arm64;
 #endif
 
@@ -16,7 +16,7 @@ AssemblerCode *AssemblerCode::FinalizeTurboAssembler(AssemblerBase *assembler) {
   int code_size                   = turbo_assembler->CodeSize();
 
 // Allocate the executable memory
-#if V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_ARM
+#if TARGET_ARCH_ARM64 || TARGET_ARCH_ARM
   // extra bytes for align needed
   MemoryRegion *code_region = CodeChunk::AllocateCode(code_size + 4);
 #else

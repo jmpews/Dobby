@@ -9,17 +9,12 @@
 #include <vector>
 #include <stdio.h>
 
-#include "vm_core/macros.h"
+#include <iostream>
 
 namespace zz {
 
-class PageAllocator;
-
-class OS {
+class OSPrint {
 public:
-  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
-
-  // ===
   // Print output to console. This is mostly used for debugging output.
   // On platforms that has standard terminal output, the output
   // should go to stdout.
@@ -38,22 +33,19 @@ public:
   static void PrintError(const char *format, ...);
 
   static void VPrintError(const char *format, va_list args);
+};
 
-  // ===
-
-  static int GetCurrentProcessId();
-
-  static int GetCurrentThreadId();
+class OSMemory {
+public:
+  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
   // ===
 
   struct SharedLibraryAddress {
     SharedLibraryAddress(const std::string &library_path, uintptr_t start, uintptr_t end)
-        : library_path(library_path), start(start), end(end), aslr_slide(0) {
-    }
+        : library_path(library_path), start(start), end(end), aslr_slide(0) {}
     SharedLibraryAddress(const std::string &library_path, uintptr_t start, uintptr_t end, intptr_t aslr_slide)
-        : library_path(library_path), start(start), end(end), aslr_slide(aslr_slide) {
-    }
+        : library_path(library_path), start(start), end(end), aslr_slide(aslr_slide) {}
 
     std::string library_path;
     uintptr_t start;
@@ -63,20 +55,15 @@ public:
 
   static std::vector<SharedLibraryAddress> GetSharedLibraryAddresses();
 
-  // ===
   struct MemoryRegion {
     MemoryRegion(uintptr_t start, uintptr_t end, MemoryPermission permission)
-        : start(start), end(end), permission(permission) {
-    }
+        : start(start), end(end), permission(permission) {}
     uintptr_t start;
     uintptr_t end;
     MemoryPermission permission;
   };
 
   static std::vector<MemoryRegion> GetMemoryLayout();
-
-private:
-  friend class PageAllocator;
 
   static size_t PageSize();
 
@@ -89,9 +76,13 @@ private:
   static bool SetPermissions(void *address, size_t size, MemoryPermission access);
 };
 
-class Thread {
+class OSThread {
 public:
   typedef int32_t LocalStorageKey;
+
+  static int GetCurrentProcessId();
+
+  static int GetCurrentThreadId();
 
   // Thread-local storage.
   static LocalStorageKey CreateThreadLocalKey();
@@ -110,13 +101,9 @@ public:
     SetThreadLocal(key, reinterpret_cast<void *>(static_cast<intptr_t>(value)));
   }
 
-  static bool HasThreadLocal(LocalStorageKey key) {
-    return GetThreadLocal(key) != nullptr;
-  }
+  static bool HasThreadLocal(LocalStorageKey key) { return GetThreadLocal(key) != nullptr; }
 
-  static inline void *GetExistingThreadLocal(LocalStorageKey key) {
-    return GetThreadLocal(key);
-  }
+  static inline void *GetExistingThreadLocal(LocalStorageKey key) { return GetThreadLocal(key); }
 };
 
 } // namespace zz

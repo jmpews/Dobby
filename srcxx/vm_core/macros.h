@@ -4,18 +4,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "vm_core/logging.h"
-
+// offset of struct member
 #define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
 
-typedef char byte;
+// =====
 
-// globals macro
-#define XCHECK(cond) assert(cond)
-
-// assert
 #define ASSERT(X) ((void)0)
-#define ZAssert(x) ((void)0)
 
 // =====
 
@@ -42,14 +36,13 @@ typedef char byte;
 
 // =====
 
-#define V8PRIxPTR V8_PTR_PREFIX "x"
-
+#define PRIxPTR PTR_PREFIX "x"
 #if defined(__arm64__) || defined(__aarch64__)
-#define V8_PTR_PREFIX "l"
+#define PTR_PREFIX "l"
 #elif defined(__arm__)
-#define V8_PTR_PREFIX ""
+#define PTR_PREFIX ""
 #else
-#error "uncatch architecture"
+#error "unsupported architecture"
 #endif
 
 #endif
