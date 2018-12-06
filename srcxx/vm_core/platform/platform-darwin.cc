@@ -80,6 +80,7 @@ std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
     if (info.is_submap) {
       nesting_depth++;
     } else {
+      addr += size;
       uintptr_t start = addr - size;
       uintptr_t end   = addr;
       MemoryPermission permission;

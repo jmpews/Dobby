@@ -303,8 +303,8 @@ public:
   // =====
 
   void b(int64_t imm) {
-    int32_t imm26 = imm >> 2;
-    
+    int32_t imm26 = bits(imm >> 2, 0, 25);
+
     Emit(B | imm26);
   }
   void b(Label *label) {

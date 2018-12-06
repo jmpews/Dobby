@@ -26,7 +26,7 @@ void Assembler::bind(Label *label) {
 
       // fix the b-inst
       int offset           = bound_pc - linkpos;
-      imm26                = offset >> 2;
+      imm26                = bits(offset >> 2, 0, 25);
       int32_t rewrite_inst = (inst & 0xfc000000) | LFT(imm26, 26, 0);
       buffer_.Store32(linkpos, rewrite_inst);
 
