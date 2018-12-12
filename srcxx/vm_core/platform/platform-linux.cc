@@ -1,6 +1,7 @@
 
 #include "platform/platform.h"
-#include "../macros.h"
+#include "vm_core/logging.h"
+#include "vm_core/macros.h"
 
 namespace zz {
 

@@ -78,7 +78,7 @@ PUBLIC RetStatus zz_enable_arm_arm64_b_branch() {
 }
 
 PUBLIC RetStatus zz_disable_arm_arm64_b_branch() {
-  DLOG("%s", "[*] Enable Intercepter ARM/ARM64 B Branch\n");
+  DLOG("%s", "[*] Disable Intercepter ARM/ARM64 B Branch\n");
 
   Interceptor *intercepter = Interceptor::SharedInstance();
   // TODO: replace with getter or setter
