@@ -44,18 +44,22 @@
 # *****************************************************************************
 #      Now maintained by Alexander Widerberg (widerbergaren [at] gmail.com)
 #                      under the BSD-3-Clause license
+#                   https://github.com/leetal/ios-cmake
 # *****************************************************************************
 #
 #                           INFORMATION / HELP
 #
 # The following variables control the behaviour of this toolchain:
 #
-# IOS_PLATFORM: OS (default) or SIMULATOR or SIMULATOR64 or TVOS or SIMULATOR_TVOS
+# IOS_PLATFORM: OS (default) or SIMULATOR or SIMULATOR64 or TVOS or SIMULATOR_TVOS or WATCHOS or SIMULATOR_WATCHOS
 #    OS = Build for iPhoneOS.
+#    OS64 = Build for arm64 arm64e iPhoneOS.
 #    SIMULATOR = Build for x86 i386 iPhone Simulator.
 #    SIMULATOR64 = Build for x86_64 iPhone Simulator.
 #    TVOS = Build for AppleTVOS.
 #    SIMULATOR_TVOS = Build for x86_64 AppleTV Simulator.
+#    WATCHOS = Build for armv7k arm64_32 for WatchOS.
+#    SIMULATOR_WATCHOS = Build for x86_64 for Watch Simulator.
 # CMAKE_OSX_SYSROOT: Path to the iOS SDK to use.  By default this is
 #    automatically determined from IOS_PLATFORM and xcodebuild, but
 #    can also be manually specified (although this should not be required).
@@ -66,12 +70,15 @@
 # ENABLE_BITCODE: (1|0) Enables or disables bitcode support. Default 1 (true)
 # ENABLE_ARC: (1|0) Enables or disables ARC support. Default 1 (true, ARC enabled by default)
 # ENABLE_VISIBILITY: (1|0) Enables or disables symbol visibility support. Default 0 (false, visibility hidden by default)
-# IOS_ARCH: (armv7 armv7s arm64 i386 x86_64) If specified, will override the default architectures for the given IOS_PLATFORM
-#    OS = armv7 armv7s arm64
+# IOS_ARCH: (armv7 armv7s armv7k arm64 arm64e arm64_32 i386 x86_64) If specified, will override the default architectures for the given IOS_PLATFORM
+#    OS = armv7 armv7s arm64 arm64e (if applicable)
+#    OS64 = arm64 arm64e (if applicable)
 #    SIMULATOR = i386
 #    SIMULATOR64 = x86_64
 #    TVOS = arm64
-#    SIMULATOR_TVOS = x86_64
+#    SIMULATOR_TVOS = x86_64 (i386 has since long been deprecated)
+#    WATCHOS = armv7k arm64_32 (if applicable)
+#    SIMULATOR_WATCHOS = x86_64 (i386 has since long been deprecated)
 #
 # This toolchain defines the following variables for use externally:
 #
@@ -119,6 +126,8 @@ if (NOT DEFINED IOS_PLATFORM)
       set(IOS_PLATFORM "SIMULATOR")
     elseif (CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
       set(IOS_PLATFORM "SIMULATOR64")
+    elseif (CMAKE_OSX_ARCHITECTURES MATCHES "armv7k")
+      set(IOS_PLATFORM "WATCHOS")
     endif()
   endif()
   if (NOT IOS_PLATFORM)
@@ -132,13 +141,27 @@ set(IOS_PLATFORM ${IOS_PLATFORM} CACHE STRING
 if (IOS_PLATFORM STREQUAL "OS")
   set(XCODE_IOS_PLATFORM iphoneos)
   if(NOT IOS_ARCH)
-    set(IOS_ARCH armv7 armv7s arm64)
+    if (XCODE_VERSION VERSION_GREATER 10.0)
+      set(IOS_ARCH armv7 armv7s arm64 arm64e)
+    else()
+      set(IOS_ARCH armv7 armv7s arm64)
+    endif()
+  endif()
+ elseif (IOS_PLATFORM STREQUAL "OS64")
+  set(XCODE_IOS_PLATFORM iphoneos)
+  if(NOT IOS_ARCH)
+    if (XCODE_VERSION VERSION_GREATER 10.0)
+      set(IOS_ARCH arm64 arm64e)
+    else()
+      set(IOS_ARCH arm64)
+    endif()
   endif()
 elseif (IOS_PLATFORM STREQUAL "SIMULATOR")
   set(XCODE_IOS_PLATFORM iphonesimulator)
   if(NOT IOS_ARCH)
     set(IOS_ARCH i386)
   endif()
+  message(WARNING "SIMULATOR IS DEPRECATED. Consider using SIMULATOR64 instead.")
 elseif(IOS_PLATFORM STREQUAL "SIMULATOR64")
   set(XCODE_IOS_PLATFORM iphonesimulator)
   if(NOT IOS_ARCH)
@@ -154,28 +177,60 @@ elseif (IOS_PLATFORM STREQUAL "SIMULATOR_TVOS")
   if(NOT IOS_ARCH)
     set(IOS_ARCH x86_64)
   endif()
+elseif (IOS_PLATFORM STREQUAL "WATCHOS")
+  set(XCODE_IOS_PLATFORM watchos)
+  if(NOT IOS_ARCH)
+    if (XCODE_VERSION VERSION_GREATER 10.0)
+      set(IOS_ARCH armv7k arm64_32)
+    else()
+      set(IOS_ARCH armv7k)
+    endif()
+  endif()
+elseif (IOS_PLATFORM STREQUAL "SIMULATOR_WATCHOS")
+  set(XCODE_IOS_PLATFORM watchsimulator)
+  if(NOT IOS_ARCH)
+    set(IOS_ARCH x86_64)
+  endif()
 else()
   message(FATAL_ERROR "Invalid IOS_PLATFORM: ${IOS_PLATFORM}")
 endif()
 message(STATUS "Configuring iOS build for platform: ${IOS_PLATFORM}, "
   "architecture(s): ${IOS_ARCH}")
 # If user did not specify the SDK root to use, then query xcodebuild for it.
-if (NOT CMAKE_OSX_SYSROOT)
+execute_process(COMMAND xcodebuild -version -sdk ${XCODE_IOS_PLATFORM} Path
+    OUTPUT_VARIABLE CMAKE_OSX_SYSROOT_INT
+     OUTPUT_QUIET ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+# If user did not specify the SDK root to use, then query xcodebuild for it.
+if (NOT DEFINED CMAKE_OSX_SYSROOT OR (NOT CMAKE_OSX_SYSROOT STREQUAL CMAKE_OSX_SYSROOT_INT))
   execute_process(COMMAND xcodebuild -version -sdk ${XCODE_IOS_PLATFORM} Path
     OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  message(STATUS "Using SDK: ${CMAKE_OSX_SYSROOT} for platform: ${IOS_PLATFORM}")
 endif()
 if (NOT EXISTS ${CMAKE_OSX_SYSROOT})
+  message(SEND_ERROR "Please make sure that Xcode is installed and that the toolchain"
+  "is pointing to the correct path. Please run:"
+  "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+  "and see if that fixes the problem for you.")
   message(FATAL_ERROR "Invalid CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT} "
-    "does not exist.")
+  "does not exist.")
+elseif(DEFINED CMAKE_OSX_SYSROOT)
+  message(STATUS "Using manually set SDK path: ${CMAKE_OSX_SYSROOT} for platform: ${IOS_PLATFORM}")
+else()
+   message(STATUS "Using SDK: ${CMAKE_OSX_SYSROOT} for platform: ${IOS_PLATFORM}")
 endif()
 # Specify minimum version of deployment target.
 if (NOT DEFINED IOS_DEPLOYMENT_TARGET)
-  # Unless specified, SDK version 8.0 is used by default as minimum target version.
-  set(IOS_DEPLOYMENT_TARGET "8.0"
-      CACHE STRING "Minimum iOS version to build for." )
+  if (IOS_PLATFORM STREQUAL "WATCHOS" OR IOS_PLATFORM STREQUAL "SIMULATOR_WATCHOS")
+    # Unless specified, SDK version 2.0 is used by default as minimum target version (watchOS).
+    set(IOS_DEPLOYMENT_TARGET "2.0"
+            CACHE STRING "Minimum iOS version to build for." )
+  else()
+    # Unless specified, SDK version 8.0 is used by default as minimum target version (iOS, tvOS).
+    set(IOS_DEPLOYMENT_TARGET "8.0"
+            CACHE STRING "Minimum iOS version to build for." )
+  endif()
   message(STATUS "Using the default min-version since IOS_DEPLOYMENT_TARGET not provided!")
 endif()
 # Use bitcode or not
@@ -263,11 +318,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "" CACHE STRING
   "Must be empty for iOS builds." FORCE)
 # Set the architectures for which to build.
 set(CMAKE_OSX_ARCHITECTURES ${IOS_ARCH} CACHE STRING "Build architecture for iOS")
-# Skip the platform compiler checks for cross compiling.
-set(CMAKE_CXX_COMPILER_FORCED TRUE)
-set(CMAKE_CXX_COMPILER_WORKS TRUE)
-set(CMAKE_C_COMPILER_FORCED TRUE)
-set(CMAKE_C_COMPILER_WORKS TRUE)
+# Change the type of target generated for try_compile() so it'll work when cross-compiling
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # All iOS/Darwin specific settings - some may be redundant.
 set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
 set(CMAKE_SHARED_LIBRARY_SUFFIX ".dylib")
@@ -284,7 +336,7 @@ set(CMAKE_C_OSX_CURRENT_VERSION_FLAG "-current_version ")
 set(CMAKE_CXX_OSX_COMPATIBILITY_VERSION_FLAG "${CMAKE_C_OSX_COMPATIBILITY_VERSION_FLAG}")
 set(CMAKE_CXX_OSX_CURRENT_VERSION_FLAG "${CMAKE_C_OSX_CURRENT_VERSION_FLAG}")
 
-if(IOS_ARCH MATCHES "((^|, )(arm64|x86_64))+")
+if(IOS_ARCH MATCHES "((^|, )(arm64|arm64e|x86_64))+")
   set(CMAKE_C_SIZEOF_DATA_PTR 8)
   set(CMAKE_CXX_SIZEOF_DATA_PTR 8)
   message(STATUS "Using a data_ptr size of 8")
@@ -299,7 +351,7 @@ message(STATUS "Building for minimum iOS version: ${IOS_DEPLOYMENT_TARGET}"
 # Note that only Xcode 7+ supports the newer more specific:
 # -m${XCODE_IOS_PLATFORM}-version-min flags, older versions of Xcode use:
 # -m(ios/ios-simulator)-version-min instead.
-if (IOS_PLATFORM STREQUAL "OS")
+if (IOS_PLATFORM STREQUAL "OS" OR IOS_PLATFORM STREQUAL "OS64")
   if (XCODE_VERSION VERSION_LESS 7.0)
     set(XCODE_IOS_PLATFORM_VERSION_FLAGS
       "-mios-version-min=${IOS_DEPLOYMENT_TARGET}")
@@ -314,6 +366,12 @@ elseif (IOS_PLATFORM STREQUAL "TVOS")
 elseif (IOS_PLATFORM STREQUAL "SIMULATOR_TVOS")
   set(XCODE_IOS_PLATFORM_VERSION_FLAGS
     "-mtvos-simulator-version-min=${IOS_DEPLOYMENT_TARGET}")
+elseif (IOS_PLATFORM STREQUAL "WATCHOS")
+  set(XCODE_IOS_PLATFORM_VERSION_FLAGS
+    "-mwatchos-version-min=${IOS_DEPLOYMENT_TARGET}")
+elseif (IOS_PLATFORM STREQUAL "SIMULATOR_WATCHOS")
+  set(XCODE_IOS_PLATFORM_VERSION_FLAGS
+    "-mwatchos-simulator-version-min=${IOS_DEPLOYMENT_TARGET}")
 else()
   # SIMULATOR or SIMULATOR64 both use -mios-simulator-version-min.
   set(XCODE_IOS_PLATFORM_VERSION_FLAGS
@@ -347,15 +405,15 @@ else()
 endif()
 
 set(CMAKE_C_FLAGS
-"${XCODE_IOS_PLATFORM_VERSION_FLAGS} ${BITCODE} -fobjc-abi-version=2 ${FOBJC_ARC} ${C_FLAGS}")
+"${XCODE_IOS_PLATFORM_VERSION_FLAGS} ${BITCODE} -fobjc-abi-version=2 ${FOBJC_ARC} ${CMAKE_C_FLAGS}")
 # Hidden visibilty is required for C++ on iOS.
 set(CMAKE_CXX_FLAGS
-"${XCODE_IOS_PLATFORM_VERSION_FLAGS} ${BITCODE} ${VISIBILITY} -fvisibility-inlines-hidden -fobjc-abi-version=2 ${FOBJC_ARC} ${CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} -DNDEBUG -Os -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_MINSIZEREL}")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DNDEBUG -O2 -g -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_RELWITHDEBINFO}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_RELEASE}")
-set(CMAKE_C_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS} -Wl,-search_paths_first ${C_LINK_FLAGS}")
-set(CMAKE_CXX_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS}  -Wl,-search_paths_first ${CXX_LINK_FLAGS}")
+"${XCODE_IOS_PLATFORM_VERSION_FLAGS} ${BITCODE} ${VISIBILITY} -fvisibility-inlines-hidden -fobjc-abi-version=2 ${FOBJC_ARC} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} -DNDEBUG -Os -ffast-math ${BITCODE} ${CMAKE_CXX_FLAGS_MINSIZEREL}")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DNDEBUG -O2 -g -ffast-math ${BITCODE} ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -ffast-math ${BITCODE} ${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_C_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS} -Wl,-search_paths_first ${CMAKE_C_LINK_FLAGS}")
+set(CMAKE_CXX_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS}  -Wl,-search_paths_first ${CMAKE_CXX_LINK_FLAGS}")
 
 # In order to ensure that the updated compiler flags are used in try_compile()
 # tests, we have to forcibly set them in the CMake cache, not merely set them
@@ -369,7 +427,7 @@ list(APPEND VARS_TO_FORCE_IN_CACHE
   CMAKE_C_LINK_FLAGS
   CMAKE_CXX_LINK_FLAGS)
 foreach(VAR_TO_FORCE ${VARS_TO_FORCE_IN_CACHE})
-  set(${VAR_TO_FORCE} "${${VAR_TO_FORCE}}" CACHE STRING "" FORCE)
+  set(${VAR_TO_FORCE} "${${VAR_TO_FORCE}}" CACHE STRING "")
 endforeach()
 
 set(CMAKE_PLATFORM_HAS_INSTALLNAME 1)
