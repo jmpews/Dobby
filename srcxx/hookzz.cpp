@@ -38,10 +38,12 @@ PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **or
   InterceptRouting *route = InterceptRouting::New(entry);
   route->Dispatch();
   intercepter->AddHookEntry(entry);
-  route->Commit();
-
+  
+  // SET BEFORE `route->Commit()` !!!
   // set origin call with relocated function
   *origin_call = entry->relocated_origin_function;
+  
+  route->Commit();
 
   DLOG("[*] Finalize %p\n", function_address);
   return RS_SUCCESS;
