@@ -84,6 +84,22 @@ cmake .. \
 
 make -j4
 ```
+#### Build for Android/`arm64-v8a`
+
+```
+export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
+
+cmake .. \
+-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release \
+-DANDROID_ABI="arm64-v8a" \
+-DANDROID_STL=c++_static \
+-DANDROID_NATIVE_API_LEVEL=android-14 \
+-DDEBUG=OFF \
+-DSHARED=ON
+
+make -j4
+```
 
 ## Usage
 #### 0x0. ARM/ARM64 B-xxx Branch
