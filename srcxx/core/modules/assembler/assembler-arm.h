@@ -114,11 +114,9 @@ private:
   int shift_imm_;
   int32_t immediate_;
 
-  // ===
   uint32_t type_; // Encodes the type field (bits 27-25) in the instruction.
   uint32_t encoding_;
 
-  // ===
   friend class OpEncode;
 };
 

@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCH_ARM64_CONSTANTS_H_
-#define ZZ_ARCH_ARM64_CONSTANTS_H_
+#ifndef ARCH_ARM64_CONSTANTS_H_
+#define ARCH_ARM64_CONSTANTS_H_
 
 #include "vm_core/macros.h"
 
