@@ -1,0 +1,4 @@
+#ifndef ARCH_X64_CONSTANTS_H_
+#define ARCH_X64_CONSTANTS_H_
+
+#endif

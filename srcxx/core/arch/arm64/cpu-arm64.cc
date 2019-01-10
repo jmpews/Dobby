@@ -1,5 +1,5 @@
-#ifndef ZZ_ARCH_ARM64_CPU_H_
-#define ZZ_ARCH_ARM64_CPU_H_
+#ifndef ARCH_ARM64_CPU_H_
+#define ARCH_ARM64_CPU_H_
 
 #include "vm_core/arch/cpu.h"
 #include "vm_core/globals.h"
@@ -13,12 +13,8 @@ public:
                          : [ctr] "=r"(cache_type_register_));
   }
 
-  uint32_t icache_line_size() const {
-    return ExtractCacheLineSize(0);
-  }
-  uint32_t dcache_line_size() const {
-    return ExtractCacheLineSize(16);
-  }
+  uint32_t icache_line_size() const { return ExtractCacheLineSize(0); }
+  uint32_t dcache_line_size() const { return ExtractCacheLineSize(16); }
 
 private:
   uint32_t ExtractCacheLineSize(int cache_line_size_shift) const {
@@ -31,9 +27,9 @@ private:
 };
 
 void CpuFeatures::FlushICache(void *startp, void *endp) {
-// The code below assumes user space cache operations are allowed. The goal
-// of this routine is to make sure the code generated is visible to the I
-// side of the CPU.
+  // The code below assumes user space cache operations are allowed. The goal
+  // of this routine is to make sure the code generated is visible to the I
+  // side of the CPU.
 
 #if HOST_OS_IOS
   // Precompilation never patches code so there should be no I cache flushes.

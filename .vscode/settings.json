@@ -58,7 +58,8 @@
     "new": "cpp",
     "stdexcept": "cpp",
     "typeinfo": "cpp",
-    "*.tcc": "cpp"
+    "*.tcc": "cpp",
+    "xstring": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }
