@@ -1,5 +1,5 @@
-#ifndef ZZ_BASE_PAGE_ALLOCATOR_H_
-#define ZZ_BASE_PAGE_ALLOCATOR_H_
+#ifndef BASE_PAGE_ALLOCATOR_H_
+#define BASE_PAGE_ALLOCATOR_H_
 
 #include "vm_core/macros.h"
 #include "vm_core/platform/platform.h"

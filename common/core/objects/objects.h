@@ -1,10 +1,3 @@
-#ifndef ZZ_BASE_OBJECTS_H_
-#define ZZ_BASE_OBJECTS_H_
-
-#include "vm_core/macros.h"
-
-namespace zz {
-
 /* ----
 
  - Object
@@ -25,7 +18,3 @@ private:
 class RawObject {};
 
 class HeapObject : public Object {};
-
-} // namespace zz
-
-#endif

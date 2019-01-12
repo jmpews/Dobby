@@ -3,12 +3,12 @@
 
 namespace zz {
 
+class CodeBuffer : LiteMutableBuffer {
+
 #if TARGET_ARCH_ARM64 || TARGET_ARCH_ARM
 
-class CodeBuffer : AutoBufferBase {
-
 public:
-  CodeBuffer(int capacity = 64) : AutoBufferBase(capacity) {}
+  CodeBuffer(int capacity = 64) : LiteMutableBuffer(capacity) {}
 
   int32_t Load32(intptr_t position) { return *reinterpret_cast<int32_t *>(buffer_ + position); }
 
@@ -37,19 +37,13 @@ public:
   }
 
   void EmitObject(const Object *object) {}
-};
 
 #elif TARGET_ARCH_IA32 || TARGET_ARCH_X64
-
-class CodeBuffer : AutoBufferBase {
-
-public:
-  CodeBuffer(int capacity = 64) : AutoBufferBase(capacity) {}
-};
 
 #else
 #error "unsupported architecture"
 #endif
+};
 
 } // namespace zz
 

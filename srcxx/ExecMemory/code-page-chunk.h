@@ -8,7 +8,7 @@
 
 using namespace zz;
 
-class CodeChunk : public zz::MemoryChunk {
+class CodeChunk : public MemoryChunk {
 public:
   typedef enum _MemoryOperationError {
     kMemoryOperationSuccess,
@@ -20,11 +20,11 @@ public:
 
   CodeChunk(void *address, size_t size) : MemoryChunk(address, size){};
 
-  static zz::MemoryRegion *AllocateCode(size_t size);
+  static MemoryRegion *AllocateCodeBlock(size_t size);
 
   static CodeChunk *AllocateCodePage();
 
-  static zz::MemoryRegion *AllocateCodeCave(uword pos, uword range_size, size_t size);
+  static MemoryRegion *AllocateCodeCave(uword pos, uword range_size, size_t size);
 
   static MemoryOperationError Patch(void *address, void *buffer, int size);
 
