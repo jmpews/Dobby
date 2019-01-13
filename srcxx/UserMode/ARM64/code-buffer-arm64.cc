@@ -2,8 +2,18 @@
 
 arm64_inst_t CodeBuffer::LoadInst(int offset) { return *static_cast<int32_t *>(buffer_ + offset); }
 
-void RewriteInst(int offset, arm64_inst_t inst);
+void CodeBuffer::RewriteInst(int offset, arm64_inst_t inst) {
+  *reinterpret_cast<arm64_inst_t *>(buffer_ + offset) = inst;
+  return;
+}
 
-void EmitInst(int offset, arm64_inst_t inst);
+void CodeBuffer::EmitInst(int offset, arm64_inst_t inst) {
+  ensureCapacity(length_ + sizeof(arm64_inst_t inst));
+  *static_cast<thumb_inst_t *>(getCursor()) = inst;
+  return;
+}
 
-void Emit64(int64_t data);
+void CodeBuffer::Emit64(int64_t data) {
+  ensureCapacity(length_ + sizeof(int64_t));
+  *static_cast<int64_t *>(getCursor()) = data;
+}
