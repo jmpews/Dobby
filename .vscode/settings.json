@@ -59,7 +59,9 @@
     "stdexcept": "cpp",
     "typeinfo": "cpp",
     "*.tcc": "cpp",
-    "xstring": "cpp"
+    "xstring": "cpp",
+    "xlocmon": "cpp",
+    "xtr1common": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }
