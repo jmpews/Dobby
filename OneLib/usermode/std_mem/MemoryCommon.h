@@ -20,6 +20,6 @@ struct MemoryRegion {
 struct MemoryPage {
   uinptr_t address;
   MemoryPermission permission;
-}
+};
 
 #endif // MEM_MEMORY_REGION_H

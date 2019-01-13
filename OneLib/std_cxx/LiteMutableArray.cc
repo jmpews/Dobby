@@ -4,7 +4,7 @@ bool LiteMutableArray::initWithCapacity(unsigned int inCapacity) {
   unsigned int size;
 
   size  = inCapacity * sizeof(LiteObject *);
-  array = (LiteObject **)lite_alloc(size);
+  array = (LiteObject **)LiteMemOpt::alloc(size);
   if (!array)
     return false;
 
@@ -29,11 +29,11 @@ unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
 
   newSize = sizeof(LiteObject *) * finalCapacity;
 
-  newArray = (const LiteObject **)lite_alloc(newSize);
+  newArray = (const LiteObject **)LiteMemOpt::alloc(newSize);
 
   if (newArray) {
     bzero(newArray, newSize);
-    lite_free(array, oldSize);
+    LiteMemOpt::free(array, oldSize);
 
     array    = newArray;
     capacity = newCapacity;

@@ -1,7 +1,7 @@
 #ifndef LITE_OBJECT_H_
 #define LITE_OBJECT_H_
 
-#include "stdcxx/LiteLib.h"
+#include "stdcxx/LiteMemOpt.h"
 
 class LiteObject {
 protected:

@@ -4,7 +4,7 @@
 #include "vm_core/objects/code.h"
 #include "vm_core/modules/assembler/assembler.h"
 
-class AssemblerCode : public zz::Code {
+class AssemblerCode : public CodeBuffer {
 public:
   static AssemblerCode *FinalizeTurboAssembler(zz::AssemblerBase *assembler);
 };

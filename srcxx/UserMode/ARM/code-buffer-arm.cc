@@ -1,38 +1,33 @@
-#ifndef ZZ_CODE_BUFFER_H_
-#define ZZ_CODE_BUFFER_H_
+#include "CodeBufferBase.h"
 
-#include "stdcxx/LiteMutableBuffer.h"
+arm_inst_t CodeBuffer::LoadARMInst(int offset) { return *static_cast<int32_t *>(buffer_ + offset); }
 
-class CodeBuffer : LiteMutableBuffer {
+thumb_inst_t CodeBuffer::LoadThumbInst(int offset) { return *static_cast<int16_t *>(buffer_ + offset); };
 
-public:
-  int32_t Load32(int offset) { return *static_cast<int32_t *>(buffer_ + offset); }
-
-  template <typename T> T Load(intptr_t position) { return *reinterpret_cast<T *>(buffer_ + position); }
-
-  void Store32(intptr_t position, int32_t value) { *reinterpret_cast<int32_t *>(buffer_ + position) = value; }
-
-  template <typename T> void Store(intptr_t position, T value) { *reinterpret_cast<T *>(buffer_ + position) = value; }
-
-  void Emit(int32_t inst) {
-    Ensure(sizeof(int32_t));
-    memcpy(cursor_, &inst, sizeof(inst));
-    cursor_ += sizeof(inst);
-  }
-
-  void Emit64(int64_t inst) {
-    Ensure(sizeof(int64_t));
-    memcpy(cursor_, &inst, sizeof(inst));
-    cursor_ += sizeof(inst);
-  }
-
-  template <typename T> void Emit(T value) {
-    Ensure(sizeof(T));
-    *reinterpret_cast<T *>(cursor_) = value;
-    cursor_ += sizeof(T);
-  }
-
-  void EmitObject(const Object *object) {}
+void CodeBuffer::RewriteARMInst(int offset, arm_inst_t inst) {
+  *reinterpret_cast<arm_inst_t *>(buffer_ + offset) = inst;
+  return;
 }
 
-#endif
+void CodeBuffer::RewriteThumbInst(int offset, thumb_inst_t inst) {
+  *reinterpret_cast<thumb_inst_t *>(buffer_ + offset) = inst;
+  return;
+}
+
+void CodeBuffer::EmitARMInst(int offset, arm_inst_t inst) {
+  ensureCapacity(length_ + sizeof(arm_inst_t));
+  *static_cast<arm_inst_t *>(getCursor()) = inst;
+  return;
+}
+
+void CodeBuffer::EmitThumbInst(int offset, thumb_inst_t inst) {
+  ensureCapacity(length_ + sizeof(thumb_inst_t));
+  *static_cast<thumb_inst_t *>(getCursor()) = inst;
+  return;
+}
+
+void CodeBuffer::Emit32(int32_t data) {
+  ensureCapacity(length_ + sizeof(inst32_t));
+  *static_cast<int32_t *>(getCursor()) = data;
+  return;
+}
