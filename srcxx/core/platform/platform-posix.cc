@@ -22,9 +22,10 @@
 #include <android/log.h> // NOLINT
 #endif
 
-#include "platform/platform.h"
 #include "../macros.h"
 #include "check_logging.h"
+#include "platform/platform.h"
+
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
@@ -32,8 +33,6 @@
 #endif
 
 namespace zz {
-
-// =====
 
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
@@ -248,4 +247,4 @@ void OSThread::SetThreadLocal(LocalStorageKey key, void *value) {
   int result                = pthread_setspecific(pthread_key, value);
   DCHECK_EQ(0, result);
 }
-}
+} // namespace zz

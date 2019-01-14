@@ -4,10 +4,11 @@
 #include <cstdarg>
 #include <string>
 
-#include <string.h>
-#include <stdlib.h>
-#include <vector>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
+
 
 #include <iostream>
 
@@ -37,8 +38,6 @@ public:
 
 class OSMemory {
 public:
-  enum class MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
-
   // ===
 
   struct SharedLibraryAddress {

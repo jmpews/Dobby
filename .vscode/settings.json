@@ -61,7 +61,11 @@
     "*.tcc": "cpp",
     "xstring": "cpp",
     "xlocmon": "cpp",
-    "xtr1common": "cpp"
+    "xtr1common": "cpp",
+    "list": "cpp",
+    "xhash": "cpp",
+    "xtree": "cpp",
+    "xutility": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

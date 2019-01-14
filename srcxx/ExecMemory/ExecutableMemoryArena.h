@@ -5,11 +5,21 @@
 
 using namespace zz;
 
+struct AssemblyCodeChunk {
+  void *address;
+  int size;
+};
+
+struct ExecutablePage {
+  void *address;
+  void *cursor;
+  int capacity;
+  LiteMutableArray code_chunks;
+};
+
 class ExecutableMemoryArena {
 public:
-  static void *AllocateCodeChunk(int *actual_size);
-
-  static void *SearchCodeCave(uintptr_t pos, int range_size, int *actual_size);
+  static void *AllocateCodeChunk(AssemblyCodeChunk *codeChunk);
 
 private:
   static LiteMutableArray page_chunks;

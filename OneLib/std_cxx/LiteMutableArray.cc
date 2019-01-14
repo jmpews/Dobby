@@ -13,6 +13,16 @@ bool LiteMutableArray::initWithCapacity(unsigned int inCapacity) {
   return true;
 }
 
+virtual bool pushObject(const LiteObject *object) {
+  unsigned int newCount = count + 1;
+
+  if (newCount > capacity && newCount > ensureCapacity(newCount))
+    return false;
+
+  array[count] = object;
+  count++;
+  return true;
+}
 unsigned int LiteMutableArray::getCount() const { return count; }
 
 unsigned int LiteMutableArray::getCapacity() const { return capacity; }

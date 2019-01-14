@@ -14,6 +14,8 @@ protected:
 
   virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject);
 
+  virtual bool pushObject(const LiteObject *object);
+
   virtual unsigned int getCount();
 
   virtual unsigned int getCapacity();
