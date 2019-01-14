@@ -1,13 +1,26 @@
 #ifndef LITE_ITERATOR_H_
 #define LITE_ITERATOR_H_
 
-#include "stdcxx/LiteObject"
+#include "stdcxx/LiteIterator.h"
 
-class LiteIterator : LiteObject {
-public:
-  virtual void reset() = 0;
+bool LiteCollectionIterator::initWithCollection(const LiteCollection *inCollection) {
+  collection        = inCollection;
+  innerIterator     = NULL;
+  int *iterIndexPtr = (int *)LiteLiteMemOpt::alloc(sizeof(int));
+  innerIterator     = (void *)iterIndexPtr;
+  return true;
+}
 
-  virtual OSObject *getNextObject() = 0;
-};
+LiteObject *LiteCollectionIterator::getNextObject() {
+  LiteObject *reObj;
+  collection->getNextObjectForIterator(innerIterator, &retObj);
+  return 0;
+}
+
+LiteCollectionIterator *LiteCollectionIterator::withCollection(const LiteCollection *inCollection) {
+  LiteCollectionIterator *iter = new LiteCollectionIterator;
+  iter->initWithCollection(inCollection);
+  return iter;
+}
 
 #endif

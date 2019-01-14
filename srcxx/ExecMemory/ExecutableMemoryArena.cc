@@ -13,7 +13,13 @@
 
 using namespace zz;
 
-std::vector<CodeChunk *> CodeChunk::code_pages_;
+LiteMutableArray ExecutableMemoryArena::page_chunks;
+
+void *ExecutableMemoryArena::AllocateCodeChunk(int *actual_size) {
+  void *result = NULL;
+
+  return;
+}
 
 CodeChunk *CodeChunk::AllocateCodePage() {
   void *new_code_page   = PageAllocator::Allocate(OSMemory::MemoryPermission::kReadExecute);
