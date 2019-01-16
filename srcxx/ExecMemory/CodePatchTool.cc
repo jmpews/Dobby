@@ -4,8 +4,6 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
   int page_size = (int)PageAllocator::PageSize();
 
 #ifdef __APPLE__
-  // MemoryRegion *region = PageAllocator::Allocate(OSMemory::MemoryPermission::kReadWrite);
-  // uintptr_t remap_page = (uintptr_t)region->pointer();
 
   uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(OSMemory::MemoryPermission::kReadWrite);
 
@@ -14,7 +12,6 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
   kern_return_t kr;
   mach_port_t task_self = mach_task_self();
 
-  // ===
   vm_address_t region   = (vm_address_t)page_address;
   vm_size_t region_size = 0;
   struct vm_region_submap_short_info_64 info;

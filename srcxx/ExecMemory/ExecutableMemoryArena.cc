@@ -1,4 +1,3 @@
-
 #include "stdcxx/LiteIterator.h"
 
 #ifdef __APPLE__
