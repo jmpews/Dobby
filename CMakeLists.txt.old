@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 project(HookZz)
 
 include(cmake/Util.cmake)
-include(cmake/Globals.cmake)
 include(cmake/Macros.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -30,8 +29,6 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-set(SYSTEM.Windows 1)
-set(PROCESSOR.X86_64 1)
 # Platform
 if(PLATFORM STREQUAL "iOS")
     set(SYSTEM.iOS 1)
@@ -39,8 +36,6 @@ if(PLATFORM STREQUAL "iOS")
 elseif(PLATFORM STREQUAL "Android")
     set(SYSTEM.Android 1)
     MESSAGE(STATUS "[*] Compile for Android")
-elseif(SYSTEM.Windows)
-    MESSAGE(STATUS "[*] Compile for Windows")
 else()
     if(SYSTEM.Android OR SYSTEM.Linux)
         set(SYSTEM.Android 1)
@@ -68,8 +63,6 @@ elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8"
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(PROCESSOR.aarch64 1)
     MESSAGE(STATUS "[*] Compile for aarch64")
-elseif(PROCESSOR.X86_64)
-    MESSAGE(STATUS "[*] Compile for X86_64")
 else()
     if(PROCESSOR.arm)
         set(CMAKE_SYSTEM_PROCESSOR arm)
@@ -86,32 +79,50 @@ if(PROCESSOR.arm)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
 elseif(PROCESSOR.aarch64)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
-elseif(PROCESSOR.X86_64)
 endif()
 
 set(Target.path .)
+if(PROCESSOR.arm)
+    set(Target.arch arm)
+    set(Target.cpp_prefix ARM)
+    set(Target.cc_suffix arm)
+elseif(PROCESSOR.aarch64)
+    set(Target.arch arm64)
+    set(Target.cpp_prefix ARM64)
+    set(Target.cc_suffix arm64)
+endif()
 
 set(Target.SOURCE_DIR
-    ${Target.path}/OneLib
+    ${Target.path}
     ${Target.path}/srcxx
-    ${Target.path}/srcxx/core
-    ${Target.path}/srcxx/core/arch
-    ${Target.path}/srcxx/core/modules
-    ${Target.path}/srcxx/ExecMemory
-    ${Target.path}/srcxx/UserMode
+    ${Target.path}/srcxx/arch
 )
 
+# vm_core
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/arch/x64
-    ${Target.path}/srcxx/core/arch/x64
-    ${Target.path}/srcxx/core/platform/platform-windows
-    ${Target.path}/srcxx/UserMode/X86_64
+    ${Target.path}/srcxx/vm_core
+    ${Target.path}/srcxx/vm_core/arch
+    ${Target.path}/srcxx/vm_core/base
+    ${Target.path}/srcxx/vm_core/objects
 )
 
-
-set(Target.SOURCE_FILE
-    ${Target.path}/srcxx/core/platform/platform-windows.cc
+# vm_core_extra
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/vm_core_extra
 )
+
+if(PROCESSOR.arm)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/arch/arm
+    ${Target.path}/srcxx/vm_core/arch/arm
+)
+elseif(PROCESSOR.aarch64)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${Target.path}/srcxx/arch/arm64
+    ${Target.path}/srcxx/vm_core/arch/arm64
+)
+endif()
+# =====
 
 # *.cc
 search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)
@@ -131,7 +142,38 @@ search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
 set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE_CPP} ${Target.SOURCE_C} ${Target.SOURCE_ASSEMBLY})
 set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
 
+# =====
+# vm_core modules
+# vm_core with specific architecture
+set(MODULES.path ${Target.path}/srcxx/vm_core/modules)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${MODULES.path}
+    ${MODULES.path}/assembler
+    ${MODULES.path}/codegen
+)
+# modules/assembler
+set(ASSEMBLER.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/assembler/assembler.h
+)
+# modules/codegen
+set(CODEGEN.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/codegen/codegen.h
+)
 
+# assembler
+set(ASSEMBLER.SOURCE_FILE ${ASSEMBLER.SOURCE_FILE}
+    ${MODULES.path}/assembler/assembler-${Target.cc_suffix}.cc
+)
+set(ASSEMBLER.HEADER_FILE ${ASSEMBLER.HEADER_FILE}
+    ${MODULES.path}/assembler/assembler-${Target.cc_suffix}.h
+)
+# codegen
+set(CODEGEN.SOURCE_FILE ${CODEGEN.SOURCE_FILE}
+    ${MODULES.path}/codegen/codegen-${Target.cc_suffix}.cc
+)
+set(CODEGEN.HEADER_FILE ${CODEGEN.HEADER_FILE}
+    ${MODULES.path}/codegen/codegen-${Target.cc_suffix}.h
+)
 
 set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
     ${ASSEMBLER.SOURCE_FILE}
@@ -144,6 +186,34 @@ set(Target.HEADER_FILE ${Target.HEADER_FILE}
 )
 
 # =====
+
+# vm_core platforms
+# vm_core with specific platform
+set(PLATFORM.path ${Target.path}/srcxx/vm_core/platform)
+set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+    ${PLATFORM.path}
+)
+set(Target.HEADER_FILE ${Target.HEADER_FILE}
+    ${PLATFORM.path}/platform.h
+)
+if(SYSTEM.iOS)
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${PLATFORM.path}/platform-posix.cc
+        ${PLATFORM.path}/platform-darwin.cc
+    )
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${PLATFORM.path}/platform-darwin
+    )
+elseif(SYSTEM.Android)
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${PLATFORM.path}/platform-posix.cc
+        ${PLATFORM.path}/platform-linux.cc
+    )
+endif()
+
+# =====
+
+# message(STATUS "Target.HEADER_FILE = ${Target.HEADER_FILE}\n")
 
 include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 
