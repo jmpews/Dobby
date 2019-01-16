@@ -1,7 +1,9 @@
-#ifndef HOOKZZ_ASSEMBLY_CODE_H_
-#define HOOKZZ_ASSEMBLY_CODE_H_
+#ifndef ZZ_ASSEMBLY_CODE_H_
+#define ZZ_ASSEMBLY_CODE_H_
 
-#include "srcxx/LiteObject.h"
+#include "stdcxx/LiteObject.h"
+
+class CodeBuffer;
 
 namespace zz {
 
@@ -12,23 +14,23 @@ public:
   void initWithCodeBuffer(CodeBuffer *codeBuffer);
 
   // dummy
-  void initWithAddressRange(void *address, int length);
-
-  // dummy
-  static Code *FinalizeCode(uintptr_t address, int size);
+  void initWithAddressRange(void *address, int size);
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
-  static Code *FinalizeFromAddress(uintptr_t address, int size);
+  static AssemblyCode *FinalizeFromAddress(uintptr_t address, int size);
+
+  // realize the buffer address to runtime code, and create a corresponding Code Object
+  static AssemblyCode *FinalizeFromTruboAssember(AssemblerBase *assember);
 
   // dummy method
-  inline uintptr_t raw_instruction_start() { return (uintptr_t)instructions_; };
+  inline uintptr_t raw_instruction_start() { return address_; };
 
   // dummy method
-  inline int raw_instruction_size() { return instruction_size_; };
+  inline int raw_instruction_size() { return size_; };
 
 private:
   uintptr_t address_;
-  int length_;
+  int size_;
 };
 
 } // namespace zz

@@ -3,7 +3,7 @@
 
 #include "vm_core/arch/arm64/constants-arm64.h"
 #include "vm_core_extra/custom-code.h"
-#include "srcxx/globals.h"
+#include "globals.h"
 
 // PC relative addressing.
 enum PCRelAddressingOp {

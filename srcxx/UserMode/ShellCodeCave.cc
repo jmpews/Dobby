@@ -13,7 +13,7 @@ AssemblyCodeChunk *SearchCodeCave(int size, uintptr_t pos, int range_size) {
 
   auto it = memory_layout.begin();
   for (; it != memory_layout.end(); it++) {
-    if ((*it).permission != OSMemory::MemoryPermission::kReadExecute)
+    if ((*it).permission != MemoryPermission::kReadExecute)
       continue;
 
     if (limit_start > (*it).end)

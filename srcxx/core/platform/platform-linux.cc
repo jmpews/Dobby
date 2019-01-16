@@ -124,15 +124,15 @@ std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
       exit(-1);
     }
 
-    OSMemory::MemoryPermission permission;
+    MemoryPermission permission;
     if (permissions[0] == 'r' && permissions[1] == 'w') {
-      permission = OSMemory::MemoryPermission::kReadWrite;
+      permission = MemoryPermission::kReadWrite;
     } else if (permissions[0] == 'r' && permissions[2] == 'x') {
-      permission = OSMemory::MemoryPermission::kReadExecute;
+      permission = MemoryPermission::kReadExecute;
     } else if (permissions[0] == 'r' && permissions[1] == 'w' && permissions[2] == 'x') {
-      permission = OSMemory::MemoryPermission::kReadWriteExecute;
+      permission = MemoryPermission::kReadWriteExecute;
     } else {
-      permission = OSMemory::MemoryPermission::kNoAccess;
+      permission = MemoryPermission::kNoAccess;
     }
 
     result.push_back(OSMemory::MemoryRegion(region_start, region_end, permission));

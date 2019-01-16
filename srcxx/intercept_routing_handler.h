@@ -1,9 +1,9 @@
 #ifndef HOOKZZ_INTERCEPT_ROUTING_HANDLER_H_
 #define HOOKZZ_INTERCEPT_ROUTING_HANDLER_H_
 
-#include "srcxx/AssemblyClosureTrampoline.h"
-#include "srcxx/Interceptor.h"
-#include "srcxx/hookzz_internal.h"
+#include "AssemblyClosureTrampoline.h"
+#include "Interceptor.h"
+#include "hookzz_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -12,6 +12,8 @@
 
 #include <iostream>
 
+#include "UnifiedInterface/StdMemory.h"
+
 namespace zz {
 
 class OSPrint {

@@ -1,4 +1,4 @@
-#include "srcxx/AssemblyClosureTrampoline.h"
+#include "AssemblyClosureTrampoline.h"
 
 #include "vm_core/arch/arm/registers-arm.h"
 #include "vm_core/modules/assembler/assembler-arm.h"
@@ -24,7 +24,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #else
 
 // use assembler and codegen modules instead of template_code
-#include "srcxx/AssemblyClosureTrampoline.h"
+#include "AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_;
 

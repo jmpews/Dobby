@@ -4,15 +4,14 @@
 #include "stdcxx/LiteMemOpt.h"
 
 class LiteObject {
-protected:
+public:
+    LiteObject(){}
+public:
   virtual bool init();
 
   virtual void free();
 
-public:
   virtual void release();
-
-private:
 };
 
 #endif

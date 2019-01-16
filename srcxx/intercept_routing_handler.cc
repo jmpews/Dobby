@@ -1,5 +1,5 @@
-#include "srcxx/intercept_routing_handler.h"
-#include "srcxx/ThreadSupport.h"
+#include "intercept_routing_handler.h"
+#include "ThreadSupport.h"
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   DLOG("%s\n", "[*] catch pre_call_forward_handler");

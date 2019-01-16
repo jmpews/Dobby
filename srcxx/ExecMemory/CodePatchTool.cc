@@ -5,7 +5,7 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
 
 #ifdef __APPLE__
 
-  uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(OSMemory::MemoryPermission::kReadWrite);
+  uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(MemoryPermission::kReadWrite);
 
   vm_prot_t prot;
   vm_inherit_t inherit;
@@ -33,7 +33,7 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
   memcpy((void *)(remap_page + offset), buffer, size);
 
   // ===
-  PageAllocator::SetPermissions((void *)remap_page, page_size, OSMemory::MemoryPermission::kReadExecute);
+  PageAllocator::SetPermissions((void *)remap_page, page_size, MemoryPermission::kReadExecute);
 
   // ===
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
@@ -48,9 +48,9 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
   }
 
 #elif defined(__ANDROID__) || defined(__linux__)
-  PageAllocator::SetPermissions(page_address, page_size, OSMemory::MemoryPermission::kReadWriteExecute);
+  PageAllocator::SetPermissions(page_address, page_size, MemoryPermission::kReadWriteExecute);
   memcpy((void *)((uintptr_t)page_address + offset), buffer, size);
-  PageAllocator::SetPermissions(page_address, page_size, OSMemory::MemoryPermission::kReadExecute);
+  PageAllocator::SetPermissions(page_address, page_size, MemoryPermission::kReadExecute);
 #endif
 
   CpuFeatures::FlushICache((void *)((uintptr_t)page_address + offset), size);

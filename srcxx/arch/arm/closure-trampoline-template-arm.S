@@ -13,7 +13,7 @@
 #if !defined(ENABLE_CLOSURE_TRAMPOLINE_CARRY_OBJECT_PTR)
 
 // closure trampoline carray the object pointer, and fetch required members at the runtime assembly code.
-// #include "srcxx/AssemblyClosureTrampoline.h"
+// #include "AssemblyClosureTrampoline.h"
 // #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 #define OFFSETOF_ClourseTrampolineEntry_carry_data 4
 #define OFFSETOF_ClourseTrampolineEntry_carry_handler 0
