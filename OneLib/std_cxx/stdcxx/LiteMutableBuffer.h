@@ -3,7 +3,7 @@
 
 #include "stdcxx/LiteObject.h"
 
-class LiteMutableBuffer : LiteObject {
+class LiteMutableBuffer : public LiteObject {
 protected:
   // Backing store of the buffer
   byte *buffer_;

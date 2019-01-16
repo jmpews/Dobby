@@ -1,7 +1,7 @@
 #ifndef HOOKZZ_ARCH_ARM64_INSTRUCTION_RELOCATION
 #define HOOKZZ_ARCH_ARM64_INSTRUCTION_RELOCATION
 
-#include "srcxx/globals.h"
+#include "globals.h"
 #include "vm_core/arch/arm/constants-arm.h"
 #include "vm_core_extra/custom-code.h"
 

@@ -27,6 +27,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Linux")
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Darwin")
   set(SYSTEM.Darwin 1)
   message(STATUS "\tSystem:\t\t Darwin")
+else()
+  message(STATUS "\tSystem:\t\t ${CMAKE_SYSTEM_NAME}")
 endif()
 
 
@@ -50,6 +52,8 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)64")
   message(STATUS "NOT SUPPORT ${CMAKE_SYSTEM_PROCESSOR}")
   set(PROCESSOR.PPC64 1)
   message(STATUS "\tPROCESSOR:\t PPC64")
+else()
+  message(STATUS "\tPROCESSOR:\t ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 # The Compilter ID

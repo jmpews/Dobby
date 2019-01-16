@@ -1,4 +1,4 @@
-#include "srcxx/Interceptor.h"
+#include "Interceptor.h"
 
 Interceptor *Interceptor::priv_interceptor_ = nullptr;
 InterceptorOptions Interceptor::options_    = {0};

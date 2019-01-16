@@ -3,7 +3,7 @@
 
 #include "stdcxx/LiteCollection.h"
 
-class LiteMutableArray : LiteCollection {
+class LiteMutableArray : public LiteCollection {
 protected:
   unsigned int count;
   unsigned int capacity;

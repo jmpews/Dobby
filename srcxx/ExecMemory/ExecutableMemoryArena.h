@@ -1,7 +1,7 @@
 #ifndef HOOKZZ_CODE_PAGE_CHUNK_H_
 #define HOOKZZ_CODE_PAGE_CHUNK_H_
 
-#include "srcxx/LiteMutableArray.h"
+#include "LiteMutableArray.h"
 
 using namespace zz;
 

@@ -1,25 +1,29 @@
 #ifndef LITE_ITERATOR_H_
 #define LITE_ITERATOR_H_
 
-#include "stdcxx/LiteObject"
+#include "stdcxx/LiteObject.h"
+#include "stdcxx/LiteCollection.h"
 
-class LiteIterator : LiteObject {
+class LiteIterator : public LiteObject {
 public:
   virtual void reset() = 0;
 
-  virtual OSObject *getNextObject() = 0;
+  virtual LiteObject *getNextObject() = 0;
 };
 
-class LiteCollectionIterator : LiteIterator {
+class LiteCollectionIterator : public LiteIterator {
 protected:
   const LiteCollection *collection;
   void *innerIterator;
 
 public:
+  virtual void reset();
+
   static LiteCollectionIterator *withCollection(const LiteCollection *inCollection);
 
   virtual bool initWithCollection(const LiteCollection *inCollection);
 
   virtual LiteObject *getNextObject();
-}
+};
+
 #endif

@@ -3,7 +3,7 @@
 
 #include "stdcxx/LiteObject.h"
 
-class LiteCollection : LiteObject {
+class LiteCollection : public LiteObject {
 public:
   virtual unsigned int iteratorSize() const = 0;
 

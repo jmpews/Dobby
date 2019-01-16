@@ -30,8 +30,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-# set(SYSTEM.Windows 1)
-# set(PROCESSOR.X86_64 1)
+set(SYSTEM.Windows 1)
+set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
@@ -94,6 +94,8 @@ set(Target.path .)
 
 set(Target.SOURCE_DIR
     ${Target.path}/OneLib
+    ${Target.path}/OneLib/include
+    ${Target.path}/OneLib/std_cxx
     ${Target.path}/srcxx
     ${Target.path}/srcxx/core
     ${Target.path}/srcxx/core/arch

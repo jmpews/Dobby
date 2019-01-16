@@ -85,11 +85,11 @@ std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
       uintptr_t end   = addr;
       MemoryPermission permission;
       if ((info.protection & PROT_READ) && (info.protection & PROT_WRITE)) {
-        permission = OSMemory::MemoryPermission::kReadWrite;
+        permission = MemoryPermission::kReadWrite;
       } else if ((info.protection & PROT_READ) == info.protection) {
-        permission = OSMemory::MemoryPermission::kRead;
+        permission = MemoryPermission::kRead;
       } else if ((info.protection & PROT_READ) && (info.protection & PROT_EXEC)) {
-        permission = OSMemory::MemoryPermission::kReadExecute;
+        permission = MemoryPermission::kReadExecute;
       } else {
         continue;
       }

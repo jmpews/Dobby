@@ -42,30 +42,30 @@ const int kMmapFd = -1;
 
 const int kMmapFdOffset = 0;
 
-int GetProtectionFromMemoryPermission(OSMemory::MemoryPermission access) {
+int GetProtectionFromMemoryPermission(MemoryPermission access) {
   switch (access) {
-  case OSMemory::MemoryPermission::kNoAccess:
+  case MemoryPermission::kNoAccess:
     return PROT_NONE;
-  case OSMemory::MemoryPermission::kRead:
+  case MemoryPermission::kRead:
     return PROT_READ;
-  case OSMemory::MemoryPermission::kReadWrite:
+  case MemoryPermission::kReadWrite:
     return PROT_READ | PROT_WRITE;
-  case OSMemory::MemoryPermission::kReadWriteExecute:
+  case MemoryPermission::kReadWriteExecute:
     return PROT_READ | PROT_WRITE | PROT_EXEC;
-  case OSMemory::MemoryPermission::kReadExecute:
+  case MemoryPermission::kReadExecute:
     return PROT_READ | PROT_EXEC;
   }
   UNREACHABLE();
 }
 
-int GetFlagsForMemoryPermission(OSMemory::MemoryPermission access) {
+int GetFlagsForMemoryPermission(MemoryPermission access) {
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if (access == OSMemory::MemoryPermission::kNoAccess) {
+  if (access == MemoryPermission::kNoAccess) {
   }
   return flags;
 }
 
-void *Allocate(void *address, size_t size, OSMemory::MemoryPermission access) {
+void *Allocate(void *address, size_t size, MemoryPermission access) {
   int prot     = GetProtectionFromMemoryPermission(access);
   int flags    = GetFlagsForMemoryPermission(access);
   void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
@@ -114,7 +114,7 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
 
   int prot = GetProtectionFromMemoryPermission(access);
   int ret  = mprotect(address, size, prot);
-  if (ret == 0 && access == OSMemory::MemoryPermission::kNoAccess) {
+  if (ret == 0 && access == MemoryPermission::kNoAccess) {
     // This is advisory; ignore errors and continue execution.
     // ReclaimInaccessibleMemory(address, size);
   }
@@ -124,13 +124,13 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
   }
 
 // For accounting purposes, we want to call MADV_FREE_REUSE on macOS after
-// changing permissions away from OSMemory::MemoryPermission::kNoAccess. Since this
+// changing permissions away from MemoryPermission::kNoAccess. Since this
 // state is not kept at this layer, we always call this if access != kNoAccess.
 // The cost is a syscall that effectively no-ops.
 // TODO(erikchen): Fix this to only call MADV_FREE_REUSE when necessary.
 // https://crbug.com/823915
 #if defined(OS_MACOSX)
-  if (access != OSMemory::MemoryPermission::kNoAccess)
+  if (access != MemoryPermission::kNoAccess)
     madvise(address, size, MADV_FREE_REUSE);
 #endif
 

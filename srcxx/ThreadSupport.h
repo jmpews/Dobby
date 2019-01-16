@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 
-#include "srcxx/globals.h"
+#include "globals.h"
 
 #include "vm_core/platform/platform.h"
 

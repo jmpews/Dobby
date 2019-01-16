@@ -23,9 +23,10 @@
 #endif
 
 #include "../macros.h"
-#include "check_logging.h"
+#include "logging/check_logging.h"
 #include "platform/platform.h"
 
+#include "UnifiedInterface/StdMemory.h"
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
@@ -42,30 +43,30 @@ const int kMmapFd = -1;
 
 const int kMmapFdOffset = 0;
 
-int GetProtectionFromMemoryPermission(OSMemory::MemoryPermission access) {
+int GetProtectionFromMemoryPermission(MemoryPermission access) {
   switch (access) {
-  case OSMemory::MemoryPermission::kNoAccess:
+  case MemoryPermission::kNoAccess:
     return PROT_NONE;
-  case OSMemory::MemoryPermission::kRead:
+  case MemoryPermission::kRead:
     return PROT_READ;
-  case OSMemory::MemoryPermission::kReadWrite:
+  case MemoryPermission::kReadWrite:
     return PROT_READ | PROT_WRITE;
-  case OSMemory::MemoryPermission::kReadWriteExecute:
+  case MemoryPermission::kReadWriteExecute:
     return PROT_READ | PROT_WRITE | PROT_EXEC;
-  case OSMemory::MemoryPermission::kReadExecute:
+  case MemoryPermission::kReadExecute:
     return PROT_READ | PROT_EXEC;
   }
   UNREACHABLE();
 }
 
-int GetFlagsForMemoryPermission(OSMemory::MemoryPermission access) {
+int GetFlagsForMemoryPermission(MemoryPermission access) {
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if (access == OSMemory::MemoryPermission::kNoAccess) {
+  if (access == MemoryPermission::kNoAccess) {
   }
   return flags;
 }
 
-void *Allocate(void *address, size_t size, OSMemory::MemoryPermission access) {
+void *Allocate(void *address, size_t size, MemoryPermission access) {
   int prot     = GetProtectionFromMemoryPermission(access);
   int flags    = GetFlagsForMemoryPermission(access);
   void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
@@ -114,7 +115,7 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
 
   int prot = GetProtectionFromMemoryPermission(access);
   int ret  = mprotect(address, size, prot);
-  if (ret == 0 && access == OSMemory::MemoryPermission::kNoAccess) {
+  if (ret == 0 && access == MemoryPermission::kNoAccess) {
     // This is advisory; ignore errors and continue execution.
     // ReclaimInaccessibleMemory(address, size);
   }
@@ -124,13 +125,13 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
   }
 
 // For accounting purposes, we want to call MADV_FREE_REUSE on macOS after
-// changing permissions away from OSMemory::MemoryPermission::kNoAccess. Since this
+// changing permissions away from MemoryPermission::kNoAccess. Since this
 // state is not kept at this layer, we always call this if access != kNoAccess.
 // The cost is a syscall that effectively no-ops.
 // TODO(erikchen): Fix this to only call MADV_FREE_REUSE when necessary.
 // https://crbug.com/823915
 #if defined(OS_MACOSX)
-  if (access != OSMemory::MemoryPermission::kNoAccess)
+  if (access != MemoryPermission::kNoAccess)
     madvise(address, size, MADV_FREE_REUSE);
 #endif
 
@@ -200,51 +201,19 @@ int OSThread::GetCurrentThreadId() {
 #endif
 }
 
-static OSThread::LocalStorageKey PthreadKeyToLocalKey(pthread_key_t pthread_key) {
-#if defined(__cygwin__)
-  // We need to cast pthread_key_t to OSThread::LocalStorageKey in two steps
-  // because pthread_key_t is a pointer type on Cygwin. This will probably not
-  // work on 64-bit platforms, but Cygwin doesn't support 64-bit anyway.
-  assert(sizeof(OSThread::LocalStorageKey) == sizeof(pthread_key_t));
-  intptr_t ptr_key = reinterpret_cast<intptr_t>(pthread_key);
-  return static_cast<OSThread::LocalStorageKey>(ptr_key);
-#else
-  return static_cast<OSThread::LocalStorageKey>(pthread_key);
-#endif
-}
-
 static pthread_key_t LocalKeyToPthreadKey(OSThread::LocalStorageKey local_key) {
-#if defined(__cygwin__)
-  assert(sizeof(OSThread::LocalStorageKey) == sizeof(pthread_key_t));
-  intptr_t ptr_key = static_cast<intptr_t>(local_key);
-  return reinterpret_cast<pthread_key_t>(ptr_key);
-#else
-  return static_cast<pthread_key_t>(local_key);
-#endif
+
 }
 
 OSThread::LocalStorageKey OSThread::CreateThreadLocalKey() {
-  pthread_key_t key;
-  int result = pthread_key_create(&key, nullptr);
-  DCHECK_EQ(0, result);
-  LocalStorageKey local_key = PthreadKeyToLocalKey(key);
-  return local_key;
 }
 
 void OSThread::DeleteThreadLocalKey(LocalStorageKey key) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  int result                = pthread_key_delete(pthread_key);
-  DCHECK_EQ(0, result);
 }
 
 void *OSThread::GetThreadLocal(LocalStorageKey key) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  return pthread_getspecific(pthread_key);
 }
 
 void OSThread::SetThreadLocal(LocalStorageKey key, void *value) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  int result                = pthread_setspecific(pthread_key, value);
-  DCHECK_EQ(0, result);
 }
 } // namespace zz

@@ -1,4 +1,4 @@
-#include "srcxx/AssemblyClosureTrampoline.h"
+#include "AssemblyClosureTrampoline.h"
 
 #include "AssemblyBridge.h"
 

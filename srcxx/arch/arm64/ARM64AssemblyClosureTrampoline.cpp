@@ -1,4 +1,4 @@
-#include "srcxx/AssemblyClosureTrampoline.h"
+#include "AssemblyClosureTrampoline.h"
 
 #include "vm_core/arch/arm64/registers-arm64.h"
 #include "vm_core/modules/assembler/assembler-arm64.h"
@@ -25,7 +25,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 // use assembler and codegen modules instead of template_code
 // _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
 // _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_handler));
-#include "srcxx/AssemblyClosureTrampoline.h"
+#include "AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_;
 
