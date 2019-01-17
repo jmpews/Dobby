@@ -1,6 +1,7 @@
 #include "AssemblyCode.h"
-
 #include "ExecutableMemoryArena.h"
+#include "ExecMemory/CodePatchTool.h"
+#include "logging/logging.h"
 
 #if TARGET_ARCH_ARM
 using namespace zz::arm;
@@ -19,22 +20,24 @@ AssemblyCode *AssemblyCode::FinalizeFromAddress(uintptr_t address, int size) {
 }
 
 AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) {
-  TurboAssembler *turbo_assembler = reinterpret_cast<TurboAssembler *>(assembler);
-  int code_size                   = turbo_assembler->CodeSize();
+  TurboAssembler *turboAssembler = reinterpret_cast<TurboAssembler *>(assembler);
+  int buffer_size                   = turboAssembler->GetCodeBuffer()->getSize();
 
 // Allocate the executable memory
 #if TARGET_ARCH_ARM64 || TARGET_ARCH_ARM
   // extra bytes for align needed
-  MemoryRegion *code_region = CodeChunk::AllocateCode(code_size + 4);
-#else
-  MemoryRegion *code_region = ExecutableMemoryArena::AllocateCodeChunk(code_size);
+  buffer_size += 4;
 #endif
+  AssemblyCodeChunk *codeChunk = ExecutableMemoryArena::AllocateCodeChunk(buffer_size);
 
-  void *code_address = code_region->pointer();
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
-  turbo_assembler->CommitRealize(code_address);
-  CodeChunk::PatchCodeBuffer(turbo_assembler->ReleaseAddress(), turbo_assembler->GetCodeBuffer());
-  Code *code = turbo_assembler->GetCode();
+  turboAssembler->CommitRealizeAddress(codeChunk->address);
+  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(), turboAssembler->GetCodeBuffer());
+
+  // Alloc a new AssemblyCode
+  AssemblyCode *code = new AssemblyCode;
+  code->initWithCodeBuffer(turboAssembler->GetCodeBuffer());
+
   DLOG("[*] AssemblyCode finalize assembler at %p\n", code->raw_instruction_start());
   return reinterpret_cast<AssemblyCode *>(code);
 }

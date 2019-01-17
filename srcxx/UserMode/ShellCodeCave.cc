@@ -1,5 +1,7 @@
-
 #include "ShellCodeCave.h"
+#include "core/platform/platform.h"
+
+using  namespace zz;
 
 // Search code cave from MemoryLayout
 AssemblyCodeChunk *SearchCodeCave(int size, uintptr_t pos, int range_size) {
@@ -23,18 +25,17 @@ AssemblyCodeChunk *SearchCodeCave(int size, uintptr_t pos, int range_size) {
 
     search_start = limit_start > (*it).start ? limit_start : (*it).start;
     search_end   = limit_end < (*it).end ? limit_end : (*it).end;
-#if defined(__arm__) || defined(__arm64__) || defined(__aarch64__)
     search_start = ALIGN_CEIL(search_start, 4);
     search_end   = ALIGN_FLOOR(search_end, 4);
     size         = ALIGN_CEIL(size, 4);
     for (uintptr_t i = search_start; i < (search_end - size); i += 4) {
       if (memcmp((void *)i, dummy_0, size) == 0) {
-        return new MemoryRegion((void *)i, size);
+        AssemblyCodeChunk *codeChunk = new AssemblyCodeChunk;
+        codeChunk->address = (void *)i;
+        codeChunk->size = size;
+        return codeChunk;
       }
     }
-#else
-#error "Unsupported x86/x86_64 architecture""
-#endif
   }
   return NULL;
 }

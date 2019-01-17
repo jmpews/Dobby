@@ -17,7 +17,7 @@ struct ExecutablePage {
 
 class ExecutableMemoryArena {
 public:
-  static void *AllocateCodeChunk(AssemblyCodeChunk *codeChunk);
+    static AssemblyCodeChunk *AllocateCodeChunk(int inSize);
 
 private:
   static LiteMutableArray page_chunks;

@@ -68,7 +68,7 @@ public:
 
   static size_t PageSize();
 
-  static void *Allocate(void *address, size_t size, size_t alignment, MemoryPermission access);
+  static void *Allocate(void *address, size_t size, MemoryPermission access);
 
   static bool Free(void *address, const size_t size);
 

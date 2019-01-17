@@ -235,16 +235,15 @@ public:
     uint32_t aligned_address = ALIGN_FLOOR(address, 4);
     released_address_        = (void *)aligned_address;
   }
+
   void *ReleaseAddress() { return released_address_; }
   Code *GetCode() {
     Code *code = new Code(released_address_, CodeSize());
     return code;
   }
 
-  // ===
   void Emit(int32_t value) { buffer_.Emit(value); }
 
-  // ===
   void sub(Register dst, Register src1, const Operand &src2, Condition cond = AL) {
     EmitType01(cond, SUB, 0, dst, src1, src2);
   }
@@ -252,18 +251,13 @@ public:
     EmitType01(cond, ADD, 0, dst, src1, src2);
   }
 
-  // =====
-
   void ldr(Register dst, const MemOperand &src, Condition cond = AL) { EmitMemOp(cond, true, false, dst, src); }
   void str(Register src, const MemOperand &dst, Condition cond = AL) { EmitMemOp(cond, false, false, src, dst); }
 
-  // =====
 
   void mov(Register dst, const Operand &src, Condition cond = AL) { EmitType01(cond, MOV, 0, dst, no_reg, src); }
-
   void mov(Register dst, Register src, Condition cond = AL) { mov(dst, Operand(src), AL); }
 
-  // =====
   // Branch instructions.
   void b(int branch_offset, Condition cond = AL) { EmitType5(cond, branch_offset, false); }
   void bl(int branch_offset, Condition cond = AL) { EmitType5(cond, branch_offset, true); }
