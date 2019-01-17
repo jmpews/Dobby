@@ -1,7 +1,7 @@
 #include "stdcxx/LiteIterator.h"
 
 #ifdef __APPLE__
-#include "vm_core/platform/platform-darwin/mach_vm.h"
+#include "core/platform/platform-darwin/mach_vm.h"
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
 #include <mach/vm_map.h>

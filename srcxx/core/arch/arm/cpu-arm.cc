@@ -1,10 +1,10 @@
 #ifndef ZZ_ARCH_ARM_CPU_H_
 #define ZZ_ARCH_ARM_CPU_H_
 
-#include "vm_core/arch/cpu.h"
-#include "vm_core/macros.h"
+#include "core/arch/Cpu.h"
+#include "core/macros.h"
 
-#include "vm_core/platform/globals.h"
+#include "core/platform/globals.h"
 
 #if !HOST_OS_IOS
 #include <sys/syscall.h> // for cache flushing.

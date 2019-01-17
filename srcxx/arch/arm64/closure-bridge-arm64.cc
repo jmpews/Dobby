@@ -1,5 +1,5 @@
-#include "vm_core/modules/assembler/assembler.h"
-#include "vm_core/arch/arm64/registers-arm64.h"
+#include "core/modules/assembler/assembler.h"
+#include "core/arch/arm64/registers-arm64.h"
 #include "vm_core_extra/custom-code.h"
 
 #include "intercept_routing_handler.h"
@@ -93,7 +93,7 @@ void *get_closure_bridge() {
   // branch to next hop, @modify by `xxx_routing_dispatch`
   _ br(x16);
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
 
   DLOG("[*] Build the closure bridge at %p\n", closure_bridge);

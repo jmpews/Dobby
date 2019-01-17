@@ -22,7 +22,7 @@
 #include <android/log.h> // NOLINT
 #endif
 
-#include "../macros.h"
+#include "macros.h"
 #include "logging/check_logging.h"
 #include "platform/platform.h"
 
@@ -201,19 +201,20 @@ int OSThread::GetCurrentThreadId() {
 #endif
 }
 
-static pthread_key_t LocalKeyToPthreadKey(OSThread::LocalStorageKey local_key) {
-
-}
-
 OSThread::LocalStorageKey OSThread::CreateThreadLocalKey() {
+  return 0;
 }
 
 void OSThread::DeleteThreadLocalKey(LocalStorageKey key) {
+  return;
 }
 
 void *OSThread::GetThreadLocal(LocalStorageKey key) {
+  return NULL;
 }
 
 void OSThread::SetThreadLocal(LocalStorageKey key, void *value) {
+  return;
 }
+
 } // namespace zz

@@ -7,8 +7,6 @@
 
 #include "hookzz_internal.h"
 
-#include "vm_core/objects/code.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus

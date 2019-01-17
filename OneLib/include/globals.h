@@ -1,11 +1,12 @@
-#ifndef ZZ_GLOBALS_H_
-#define ZZ_GLOBALS_H_
-
-#include "vm_core/macros.h"
-#include "vm_core/platform/globals.h"
+#ifndef GLOBALS_H_
+#define GLOBALS_H_
 
 // Types for native machine words. Guaranteed to be able to hold pointers and
 // integers.
+
+#include <stdio.h>
+#include <stdint.h>
+
 typedef intptr_t word;
 typedef uintptr_t uword;
 typedef char byte;

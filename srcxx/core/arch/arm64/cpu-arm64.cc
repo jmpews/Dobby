@@ -1,9 +1,11 @@
 #ifndef ARCH_ARM64_CPU_H_
 #define ARCH_ARM64_CPU_H_
 
-#include "vm_core/arch/cpu.h"
-#include "vm_core/globals.h"
-#include "vm_core/platform/globals.h"
+#include "core/arch/Cpu.h"
+
+#include "core/globals.h"
+
+#include "core/platform/globals.h"
 
 class CacheLineSizes {
 public:

@@ -68,10 +68,18 @@ typedef struct _RegisterContext {
     uint32_t lr;
 } RegisterContext;
 #elif defined(__i386__) || defined(__x86_64__)
-#error "Unsupported x86/x86_64 architecture"
+typedef struct _RegisterContext {
+  uint64_t dummy;
+  union {
+    struct {
+      uint64_t dummy;
+    } regs;
+  } general;
+
+} RegisterContext;
 #endif
 
-#define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
+// #define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
 
 typedef enum _RetStatus {
     kUnknown = -1,

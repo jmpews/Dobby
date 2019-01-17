@@ -34,7 +34,7 @@
 #define DCHECK_OP(name, op, lhs, rhs)                                                                                  \
   do {                                                                                                                 \
     if (!((lhs)op(rhs))) {                                                                                             \
-      FATAL(__FILE__, __LINE__, "");                                                                                   \
+      FATAL("");                                                                                   \
     }                                                                                                                  \
   } while (0)
 

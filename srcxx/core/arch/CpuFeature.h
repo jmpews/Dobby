@@ -1,7 +1,7 @@
-#ifndef ARCH_CPU_H_
-#define ARCH_CPU_H_
+#ifndef CORE_ARCH_CPU_FEATURE_H_
+#define CORE_ARCH_CPU_FEATURE_H_
 
-#include "vm_core/globals.h"
+#include "globals.h"
 
 class CpuFeatures {
 public:

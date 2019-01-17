@@ -6,6 +6,6 @@
 
 #define PUBLIC __attribute__((visibility("default")))
 
-#include "vm_core/logging.h"
+#include "logging/logging.h"
 
 #endif

@@ -4,7 +4,7 @@ bool LiteMutableArray::initWithCapacity(unsigned int inCapacity) {
   unsigned int size;
 
   size  = inCapacity * sizeof(LiteObject *);
-  array = (LiteObject **)LiteMemOpt::alloc(size);
+  array = (const LiteObject **)LiteMemOpt::alloc(size);
   if (!array)
     return false;
 
@@ -13,7 +13,7 @@ bool LiteMutableArray::initWithCapacity(unsigned int inCapacity) {
   return true;
 }
 
-virtual bool pushObject(const LiteObject *object) {
+bool LiteMutableArray::pushObject(const LiteObject *object) {
   unsigned int newCount = count + 1;
 
   if (newCount > capacity && newCount > ensureCapacity(newCount))
@@ -59,12 +59,12 @@ bool LiteMutableArray::initIterator(void *inIterator) const {
   return true;
 }
 
-bool LiteMutableArray::getNextObjectForIterator(void *inIterator, OSObject **ret) const {
+bool LiteMutableArray::getNextObjectForIterator(void *inIterator, LiteObject **ret) const {
   unsigned int *iterator = (unsigned int *)inIterator;
   unsigned int index     = (*iterator)++;
 
   if (index < count) {
-    *ret = (const_cast<OSObject *>(array[index]));
+    *ret = (const_cast<LiteObject *>(array[index]));
     return true;
   } else {
     *ret = 0;

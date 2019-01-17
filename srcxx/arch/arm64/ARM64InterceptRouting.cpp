@@ -3,9 +3,9 @@
 #include "arch/arm64/ARM64InstructionRelocation.h"
 #include "intercept_routing_handler.h"
 
-#include "vm_core/modules/assembler/assembler-arm64.h"
-#include "vm_core/modules/codegen/codegen-arm64.h"
-#include "vm_core/objects/code.h"
+#include "core/modules/assembler/assembler-arm64.h"
+#include "core/modules/codegen/codegen-arm64.h"
+#include "core/objects/code.h"
 
 using namespace zz::arm64;
 

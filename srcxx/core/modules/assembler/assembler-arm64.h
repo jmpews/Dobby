@@ -1,15 +1,15 @@
 #ifndef ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
 #define ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
 
-#include "vm_core/arch/arm64/constants-arm64.h"
-#include "vm_core/arch/arm64/instructions-arm64.h"
-#include "vm_core/arch/arm64/registers-arm64.h"
+#include "core/arch/arm64/constants-arm64.h"
+#include "core/arch/arm64/instructions-arm64.h"
+#include "core/arch/arm64/registers-arm64.h"
 
-#include "vm_core/modules/assembler/assembler.h"
+#include "core/modules/assembler/assembler.h"
 
-#include "vm_core/macros.h"
-#include "vm_core/base/code-buffer.h"
-#include "vm_core/utils.h"
+#include "core/macros.h"
+#include "core/base/code-buffer.h"
+#include "core/utils.h"
 
 #include <assert.h>
 
@@ -72,8 +72,6 @@ private:
   std::vector<PseudoLabelInstruction> instructions_;
 };
 
-// =====
-
 class Operand {
 public:
   inline explicit Operand(int64_t imm)
@@ -114,7 +112,6 @@ private:
   int32_t shift_extent_imm_;
 };
 
-// =====
 
 class MemOperand {
 public:

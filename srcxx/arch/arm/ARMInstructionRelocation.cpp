@@ -2,9 +2,9 @@
 #include "arch/arm/ARMInterceptRouting.h"
 #include "globals.h"
 
-#include "vm_core/arch/arm/registers-arm.h"
-#include "vm_core/modules/assembler/assembler-arm.h"
-#include "vm_core/modules/codegen/codegen-arm.h"
+#include "core/arch/arm/registers-arm.h"
+#include "core/modules/assembler/assembler-arm.h"
+#include "core/modules/codegen/codegen-arm.h"
 
 #define TEMP_REG r12
 
@@ -478,7 +478,7 @@ void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t cur_pc,
 
 // =====
 
-AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_address, int *relocate_size) {
+AssemblyCode *gen_arm_relocate_code(uintptr_t aligned_src_address, int *relocate_size) {
   uintptr_t cur_addr = aligned_src_address;
   uintptr_t cur_pc   = aligned_src_address + ARM_PC_OFFSET;
   uint32_t inst      = *(uint32_t *)cur_addr;
@@ -505,11 +505,11 @@ AssemblerCode *gen_arm_relocate_code(uintptr_t aligned_src_address, int *relocat
     _ PseudoBind(&(it.label));
     _ Emit(it.address);
   }
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
   return code;
 }
 
-AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *relocate_size) {
+AssemblyCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *relocate_size) {
   uintptr_t cur_addr       = aligned_src_address;
   uintptr_t cur_pc         = aligned_src_address + Thumb_PC_OFFSET;
   uint32_t inst            = *(uint32_t *)cur_addr;
@@ -561,7 +561,7 @@ AssemblerCode *gen_thumb_relocate_code(uintptr_t aligned_src_address, int *reloc
     _ Emit(it.address);
   }
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
   return code;
 }
 
@@ -570,7 +570,7 @@ Code *GenRelocateCode(uintptr_t src_address, int *relocate_size) {
 
   bool is_thumb = src_address % 2;
 
-  AssemblerCode *code = NULL;
+  AssemblyCode *code = NULL;
 
   // Clear labels cache, Not-Thread-Safe
   labels.clear();

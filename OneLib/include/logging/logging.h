@@ -15,7 +15,7 @@ void log_init(const char *log_file_path);
 }
 #endif //__cplusplus
 
-#ifdef __OBJC__ && 0
+#if (defined(__OBJC__) && 0)
 
 #import <Foundation/Foundation.h>
 

@@ -1,5 +1,5 @@
-#include "vm_core/arch/arm/registers-arm.h"
-#include "vm_core/modules/assembler/assembler.h"
+#include "core/arch/arm/registers-arm.h"
+#include "core/modules/assembler/assembler.h"
 #include "vm_core_extra/custom-code.h"
 
 #include "intercept_routing_handler.h"
@@ -69,7 +69,7 @@ void *get_closure_bridge() {
   // auto switch A32 & T32 with `least significant bit`, refer `docs/A32_T32_states_switch.md`
   _ mov(pc, r12);
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
   closure_bridge      = (void *)code->raw_instruction_start();
 
   DLOG("[*] Build the closure bridge at %p\n", closure_bridge);

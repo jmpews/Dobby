@@ -1,7 +1,7 @@
 #ifndef ZZ_ARCHITECTURE_ARCH_ARM64_INSTRUCTIONS
 #define ZZ_ARCHITECTURE_ARCH_ARM64_INSTRUCTIONS
 
-#include "vm_core/macros.h"
+#include "core/macros.h"
 
 namespace zz {
 namespace arm64 {

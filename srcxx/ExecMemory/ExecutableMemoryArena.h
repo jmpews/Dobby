@@ -1,9 +1,7 @@
 #ifndef HOOKZZ_CODE_PAGE_CHUNK_H_
 #define HOOKZZ_CODE_PAGE_CHUNK_H_
 
-#include "LiteMutableArray.h"
-
-using namespace zz;
+#include "stdcxx/LiteMutableArray.h"
 
 struct AssemblyCodeChunk {
   void *address;

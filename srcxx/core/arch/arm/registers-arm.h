@@ -1,9 +1,9 @@
 #ifndef ARCH_ARM_REGISTERS
 #define ARCH_ARM_REGISTERS
 
-#include "vm_core/arch/arm/constants-arm.h"
-#include "vm_core/arch/register.h"
-#include "vm_core/macros.h"
+#include "core/arch/arm/constants-arm.h"
+#include "core/arch/Cpu.h"
+#include "macros.h"
 
 namespace zz {
 namespace arm {
@@ -18,26 +18,24 @@ enum RegisterCode {
       kRegAfterLast
 };
 
-class Register : public RegisterBase<Register> {
+class Register : public RegisterBase {
 public:
   explicit constexpr Register(int code) : RegisterBase(code) {
   }
+
   static constexpr Register Create(int code) {
     return Register(code);
   }
+
   static constexpr Register R(int code) {
     return Register(code);
   }
-
-  // =====
 
   bool Is(const Register &reg) const {
     return (reg.reg_code_ == this->reg_code_);
   }
 
-  // =====
-
-  int32_t code() const {
+  int code() const {
     return reg_code_;
   }
 
@@ -46,11 +44,11 @@ private:
 
 typedef Register CPURegister;
 
-#define DECLARE_REGISTER(R) constexpr Register R = Register::from_code<kRegCode_##R>();
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R);
 GENERAL_REGISTERS(DECLARE_REGISTER)
 #undef DECLARE_REGISTER
 
-constexpr Register no_reg = Register::no_reg();
+constexpr Register no_reg = Register::Create(0);
 
 } // namespace arm
 } // namespace zz

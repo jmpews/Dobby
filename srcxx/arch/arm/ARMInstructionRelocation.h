@@ -2,7 +2,7 @@
 #define HOOKZZ_ARCH_ARM64_INSTRUCTION_RELOCATION
 
 #include "globals.h"
-#include "vm_core/arch/arm/constants-arm.h"
+#include "core/arch/arm/constants-arm.h"
 #include "vm_core_extra/custom-code.h"
 
 namespace zz {

@@ -1,14 +1,14 @@
-#ifndef ZZ_ARCH_ARM_ASSEMBLER_H_
-#define ZZ_ARCH_ARM_ASSEMBLER_H_
+#ifndef CORE_MODULES_ASSEMBLER_ARM_ASSEMBLER_H_
+#define CORE_MODULES_ASSEMBLER_ARM_ASSEMBLER_H_
 
-#include "vm_core/arch/arm/constants-arm.h"
-#include "vm_core/arch/arm/registers-arm.h"
+#include "core/arch/arm/constants-arm.h"
+#include "core/arch/arm/registers-arm.h"
 
-#include "vm_core/modules/assembler/assembler.h"
+#include "core/modules/assembler/assembler.h"
 
-#include "vm_core/base/code-buffer.h"
-#include "vm_core/macros.h"
-#include "vm_core/utils.h"
+#include "core/base/code-buffer.h"
+#include "core/macros.h"
+#include "core/utils.h"
 
 #include <assert.h>
 
