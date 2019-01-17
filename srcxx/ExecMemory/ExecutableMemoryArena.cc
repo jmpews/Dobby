@@ -9,6 +9,8 @@
 #endif
 
 #include "ExecMemory/ExecutableMemoryArena.h"
+#include "ExecMemory/PageAllocator.h"
+#include "core/platform/platform.h"
 
 using namespace zz;
 
@@ -20,8 +22,8 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
   AssemblyCodeChunk *codeChunk = NULL;
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&page_chunks);
-  while (page = static_cast<MemoryPage *>(iter->getNextObject())) {
-    if (page->cursor + inSize < page->capacity) {
+  while (page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) {
+    if ((uintptr_t)page->cursor + inSize < page->capacity) {
       break;
     }
   }
@@ -32,21 +34,22 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     void *page_address      = PageAllocator::Allocate(MemoryPermission::kReadExecute);
     ExecutablePage *newPage = new ExecutablePage;
     newPage->address        = page_address;
-    newpage->cursor         = NULL;
+    newPage->cursor         = NULL;
     newPage->capacity       = page_size;
-    page_chunks->pushObject(static_cast<LiteObject *>(newPage));
+    ExecutableMemoryArena::page_chunks.pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
 
   if (page) {
-    codeChunk          = new CodeChunk;
+    codeChunk          = new AssemblyCodeChunk;
     codeChunk->address = page->cursor;
     codeChunk->size    = inSize;
-    page->code_chunks->pushObject(static_cast<LiteObject *>(codeChunk));
+    page->code_chunks.pushObject(reinterpret_cast<LiteObject *>(codeChunk));
   }
 
   return codeChunk;
 }
 
+// UserMode
 // Search code cave from MemoryLayout
-MemoryRegion *CodeChunk::SearchCodeCave(uword pos, uword range_size, size_t size) {}
+// MemoryRegion *CodeChunk::SearchCodeCave(uword pos, uword range_size, size_t size) {}

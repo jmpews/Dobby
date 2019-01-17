@@ -64,13 +64,11 @@ public:
 
   int pc_offset() const;
 
-  size_t CodeSize();
-
   CodeBuffer *GetCodeBuffer();
 
-  // DEL virtual Code *GetCode() = 0;
+  virtual void CommitRealizeAddress(void *address);
 
-  virtual void CommitRealize(void *address) = 0;
+  virtual void *GetRealizeAddress();
 
   static void FlushICache(void *start, size_t size);
 
@@ -78,6 +76,7 @@ public:
 
 protected:
   CodeBuffer *buffer_;
+  void *realized_address_;
   // DEL ObjectPool *object_pool_;
 };
 
@@ -90,6 +89,7 @@ protected:
 #include "core/modules/assembler/assembler-arm64.h"
 #elif TARGET_ARCH_X64
 #include "core/modules/assembler/assembler-x64.h"
+#include "UserMode/X86_64/code-buffer-x64.h"
 #else
 #error "unsupported architecture"
 #endif

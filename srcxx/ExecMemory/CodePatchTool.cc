@@ -1,7 +1,12 @@
-#include "CodePatchTool.h"
+#include <core/arch/Cpu.h>
 
-CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buffer, int size) {
-  int page_size = (int)PageAllocator::PageSize();
+#include "CodePatchTool.h"
+#include "platform/platform.h"
+
+using namespace zz;
+
+_MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void *buffer, int size) {
+  int page_size = (int)OSMemory::PageSize();
 
 #ifdef __APPLE__
 
@@ -57,17 +62,17 @@ CodeChunk::_MemoryOperationError Patch(void *page_address, int offset, void *buf
   return kMemoryOperationSuccess;
 }
 
-CodeChunk::MemoryOperationError Patch(void *address, void *buffer, int size) {
-  size_t page_size             = PageAllocator::PageSize();
+MemoryOperationError CodePatchTool::Patch(void *address, void *buffer, int size) {
+  size_t page_size             = OSMemory::PageSize();
   uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);
   int offset                   = (uintptr_t)address - page_align_address;
 
-  return CodeChunk::Patch((void *)page_align_address, offset, buffer, size);
+  return CodePatchTool::Patch((void *)page_align_address, offset, buffer, size);
 }
 
-CodeChunk::MemoryOperationError PatchCodeBuffer(void *address, CodeBuffer *buffer) {
-  void *code_buffer = buffer->RawBuffer();
-  int code_size     = buffer->Size();
-  CodeChunk::Patch(address, code_buffer, code_size);
+MemoryOperationError CodePatchTool::PatchCodeBuffer(void *address, CodeBufferBase *buffer) {
+  void *buffer_address = buffer->getRawBuffer();
+  int buffer_size     = (int)buffer->getSize();
+  CodePatchTool::Patch(address, buffer_address, buffer_size);
   return kMemoryOperationSuccess;
 }

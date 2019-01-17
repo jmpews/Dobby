@@ -4,6 +4,8 @@
 
 namespace zz {
 
+// ===== Label =====
+
 bool Label::is_bound() const {
   return pos_ < 0;
 }
@@ -31,9 +33,13 @@ void Label::link_to(int pos) {
   pos_ = pos + 1;
 }
 
+// ===== ExternalReferencej =====
+
 const inline void *ExternalReference::address() {
   return address_;
 }
+
+// ===== AssemblerBase =====
 
 AssemblerBase::AssemblerBase() {
   DLOG("[*] Assembler buffer at %p\n", buffer_.RawBuffer());
@@ -43,12 +49,16 @@ int AssemblerBase::pc_offset() const {
   return buffer_.Size();
 }
 
-size_t AssemblerBase::CodeSize() {
-  return buffer_.Size();
-}
-
 CodeBuffer *AssemblerBase::GetCodeBuffer() {
   return &buffer_;
+}
+
+void AssemblerBase::CommitRealizeAddress(void *address) {
+  realized_address_ = address;
+}
+
+void *AssemblerBase::GetRealizeAddress() {
+  return realized_address;
 }
 
 static void AssemblerBase::FlushICache(void *start, size_t size);

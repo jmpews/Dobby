@@ -3,7 +3,7 @@
 
 #include "stdcxx/LiteMutableBuffer.h"
 
-class CodeBuffer : LiteMutableBuffer {
+class CodeBufferBase : public LiteMutableBuffer {
 
 public:
   template <typename T> T Load(int offset);
