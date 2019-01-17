@@ -1,7 +1,7 @@
 #include "AssemblyClosureTrampoline.h"
 
-#include "vm_core/arch/arm64/registers-arm64.h"
-#include "vm_core/modules/assembler/assembler-arm64.h"
+#include "core/arch/arm64/registers-arm64.h"
+#include "core/modules/assembler/assembler-arm64.h"
 #include "vm_core_extra/code-page-chunk.h"
 #include "vm_core_extra/custom-code.h"
 
@@ -42,7 +42,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ EmitInt64((uword)get_closure_bridge());
   // ===
 
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
   entry->address       = (void *)code->raw_instruction_start();
   entry->carry_data    = carry_data;

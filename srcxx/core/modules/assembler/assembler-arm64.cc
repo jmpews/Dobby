@@ -1,4 +1,4 @@
-#include "vm_core/modules/assembler/assembler-arm64.h"
+#include "core/modules/assembler/assembler-arm64.h"
 
 namespace zz {
 namespace arm64 {

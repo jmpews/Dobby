@@ -3,7 +3,6 @@
 bool LiteMutableBuffer::initWithCapacity(size_t in_capacity) {
   buffer_ = (byte *)LiteMemOpt::alloc(in_capacity);
   if (!buffer_) {
-    FAFAL_CHECK(buffer_);
     return false;
   }
 
@@ -22,7 +21,7 @@ size_t LiteMutableBuffer::ensureCapacity(size_t new_capacity) {
   unsigned int final_capacity;
 
   if (new_capacity <= capacity_)
-    return capacity;
+    return capacity_;
   final_capacity = ALIGN(new_capacity, 8);
 
   new_buffer = (byte *)LiteMemOpt::alloc(final_capacity);

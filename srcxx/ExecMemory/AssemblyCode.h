@@ -2,6 +2,7 @@
 #define ZZ_ASSEMBLY_CODE_H_
 
 #include "stdcxx/LiteObject.h"
+#include "core/modules/assembler/assembler.h"
 
 class CodeBuffer;
 

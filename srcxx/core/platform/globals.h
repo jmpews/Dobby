@@ -47,8 +47,6 @@
 #include <unistd.h>
 #endif // !defined(_WIN32)
 
-// =====
-
 // Target OS detection.
 // for more information on predefined macros:
 //   - http://msdn.microsoft.com/en-us/library/b0084kay.aspx

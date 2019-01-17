@@ -1,9 +1,9 @@
 #ifndef ZZ_ARCH_ARM64_REGISTERS
 #define ZZ_ARCH_ARM64_REGISTERS
 
-#include "vm_core/arch/arm64/constants-arm64.h"
-#include "vm_core/macros.h"
-#include "vm_core/arch/register.h"
+#include "core/arch/arm64/constants-arm64.h"
+#include "core/macros.h"
+#include "core/arch/Cpu.h"
 
 namespace zz {
 namespace arm64 {

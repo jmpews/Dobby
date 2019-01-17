@@ -1,9 +1,9 @@
 #include "arch/arm64/ARM64InstructionRelocation.h"
 #include "globals.h"
 
-#include "vm_core/arch/arm64/registers-arm64.h"
-#include "vm_core/modules/assembler/assembler-arm64.h"
-#include "vm_core/modules/codegen/codegen-arm64.h"
+#include "core/arch/arm64/registers-arm64.h"
+#include "core/modules/assembler/assembler-arm64.h"
+#include "core/modules/codegen/codegen-arm64.h"
 
 // Compare and branch.
 enum CompareBranchOp {
@@ -127,7 +127,7 @@ Code *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   }
 
   // Generate executable code
-  AssemblerCode *code = AssemblerCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
   return code;
 }
 

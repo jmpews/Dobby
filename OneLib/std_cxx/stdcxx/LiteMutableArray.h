@@ -8,17 +8,17 @@ protected:
   unsigned int count;
   unsigned int capacity;
 
-  LiteObject **array;
+  const LiteObject **array;
 
-  virtual bool initIterator(void *iterationContext);
+  virtual bool initIterator(void *iterationContext) const;
 
-  virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject);
+  virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
 
   virtual bool pushObject(const LiteObject *object);
 
-  virtual unsigned int getCount();
+  virtual unsigned int getCount() const;
 
-  virtual unsigned int getCapacity();
+  virtual unsigned int getCapacity() const;
 
   virtual unsigned int ensureCapacity(unsigned int newCapacity);
 

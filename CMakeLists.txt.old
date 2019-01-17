@@ -101,9 +101,9 @@ set(Target.SOURCE_DIR
 # vm_core
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/vm_core
-    ${Target.path}/srcxx/vm_core/arch
-    ${Target.path}/srcxx/vm_core/base
-    ${Target.path}/srcxx/vm_core/objects
+    ${Target.path}/srcxx/core/arch
+    ${Target.path}/srcxx/core/base
+    ${Target.path}/srcxx/core/objects
 )
 
 # vm_core_extra
@@ -114,12 +114,12 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
 if(PROCESSOR.arm)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/arch/arm
-    ${Target.path}/srcxx/vm_core/arch/arm
+    ${Target.path}/srcxx/core/arch/arm
 )
 elseif(PROCESSOR.aarch64)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/arch/arm64
-    ${Target.path}/srcxx/vm_core/arch/arm64
+    ${Target.path}/srcxx/core/arch/arm64
 )
 endif()
 # =====
@@ -145,7 +145,7 @@ set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h
 # =====
 # vm_core modules
 # vm_core with specific architecture
-set(MODULES.path ${Target.path}/srcxx/vm_core/modules)
+set(MODULES.path ${Target.path}/srcxx/core/modules)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${MODULES.path}
     ${MODULES.path}/assembler
@@ -189,7 +189,7 @@ set(Target.HEADER_FILE ${Target.HEADER_FILE}
 
 # vm_core platforms
 # vm_core with specific platform
-set(PLATFORM.path ${Target.path}/srcxx/vm_core/platform)
+set(PLATFORM.path ${Target.path}/srcxx/core/platform)
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${PLATFORM.path}
 )

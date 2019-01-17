@@ -1,9 +1,8 @@
 
-#include "vm_core/arch/cpu.h"
+#include "core/arch/CpuFeature.h"
 
 #include <assert.h>
 #include <stddef.h>
-#include <stdint.h>
 
 #if __APPLE__
 #include <libkern/OSCacheControl.h>

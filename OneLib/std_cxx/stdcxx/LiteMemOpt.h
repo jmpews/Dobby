@@ -32,6 +32,10 @@ public:
     void *result = malloc(size);
     return result;
   }
+
+  static inline void free(void *address, int size) {
+    return ::free(address);
+  }
 #endif
 };
 

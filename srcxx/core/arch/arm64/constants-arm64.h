@@ -1,7 +1,7 @@
 #ifndef ARCH_ARM64_CONSTANTS_H_
 #define ARCH_ARM64_CONSTANTS_H_
 
-#include "vm_core/macros.h"
+#include "core/macros.h"
 
 enum Shift { NO_SHIFT = -1, LSL = 0x0, LSR = 0x1, ASR = 0x2, ROR = 0x3, MSL = 0x4 };
 

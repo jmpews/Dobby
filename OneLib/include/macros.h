@@ -15,6 +15,9 @@
 #define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
 
 // align
+#ifndef ALIGN
+#define ALIGN ALIGN_FLOOR
+#endif
 #define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
 #define ALIGN_CEIL(address, range) (((uintptr_t)address + (uintptr_t)range - 1) & ~((uintptr_t)range - 1))
 
@@ -36,6 +39,8 @@
 #define PTR_PREFIX "l"
 #elif defined(__arm__)
 #define PTR_PREFIX ""
+#elif defined(__x86_64__)
+#define PTR_PREFIX "l"
 #else
 #error "unsupported architecture"
 #endif

@@ -1,9 +1,9 @@
 #include "arch/arm/ARMInterceptRouting.h"
 #include "arch/arm/ARMInstructionRelocation.h"
 
-#include "vm_core/modules/assembler/assembler-arm.h"
-#include "vm_core/modules/codegen/codegen-arm.h"
-#include "vm_core/objects/code.h"
+#include "core/modules/assembler/assembler-arm.h"
+#include "core/modules/codegen/codegen-arm.h"
+#include "core/objects/code.h"
 
 using namespace zz::arm;
 
