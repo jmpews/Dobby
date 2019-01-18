@@ -5,8 +5,6 @@
 
 class LiteCollection : public LiteObject {
 public:
-  virtual unsigned int iteratorSize() const = 0;
-
   virtual bool initIterator(void *iterationContext) const = 0;
 
   virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const = 0;

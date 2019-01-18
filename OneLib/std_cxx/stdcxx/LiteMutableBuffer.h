@@ -15,18 +15,20 @@ protected:
   size_t capacity_;
 
   // Length of already bytes
-  size_t length_;
+  size_t size_;
 
 public:
-  virtual size_t getLength();
-
-  virtual size_t getCapacity();
-
   virtual size_t ensureCapacity(size_t newCapacity);
 
   virtual bool initWithCapacity(size_t capacity);
 
-  virtual void *getCursor();
+  virtual inline size_t getSize() { return size_; }
+
+  virtual inline size_t getCapacity() { return capacity_; }
+
+  virtual inline void *getCursor() { return cursor_; }
+
+  virtual inline void *getRawBuffer() { return buffer_; }
 };
 
 #endif

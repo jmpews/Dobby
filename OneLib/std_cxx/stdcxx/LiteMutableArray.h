@@ -4,12 +4,14 @@
 #include "stdcxx/LiteCollection.h"
 
 class LiteMutableArray : public LiteCollection {
-protected:
+public:
   unsigned int count;
+
   unsigned int capacity;
 
   const LiteObject **array;
 
+public:
   virtual bool initIterator(void *iterationContext) const;
 
   virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
