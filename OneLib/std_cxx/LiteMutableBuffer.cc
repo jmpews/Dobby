@@ -6,15 +6,11 @@ bool LiteMutableBuffer::initWithCapacity(size_t in_capacity) {
     return false;
   }
 
-  length_   = 0;
+  size_   = 0;
   cursor_   = buffer_;
   capacity_ = in_capacity;
   return true;
 }
-
-size_t LiteMutableBuffer::getLength() { return length_; }
-
-size_t LiteMutableBuffer::getCapacity() { return capacity_; }
 
 size_t LiteMutableBuffer::ensureCapacity(size_t new_capacity) {
   byte *new_buffer;
@@ -29,7 +25,7 @@ size_t LiteMutableBuffer::ensureCapacity(size_t new_capacity) {
   if (new_buffer) {
     buffer_   = new_buffer;
     capacity_ = new_capacity;
-    cursor_   = buffer_ + length_;
+    cursor_   = buffer_ + size_;
   }
 
   return capacity_;
