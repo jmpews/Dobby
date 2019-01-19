@@ -5,7 +5,7 @@
 
 #include "core/globals.h"
 
-#include "core/platform/globals.h"
+#include "PlatformInterface/globals.h"
 
 class CacheLineSizes {
 public:

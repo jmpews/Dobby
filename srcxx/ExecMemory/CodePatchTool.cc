@@ -1,7 +1,7 @@
 #include <core/arch/Cpu.h>
 
 #include "ExecMemory/CodePatchTool.h"
-#include "platform/platform.h"
+#include "PlatformInterface/platform.h"
 #include "ExecMemory/PageAllocator.h"
 
 #ifdef __APPLE__
@@ -9,7 +9,7 @@
 #include <mach/mach.h>
 #include <mach/vm_map.h>
 #include <sys/mman.h>
-#include "platform/platform-darwin/mach_vm.h"
+#include "PlatformInterface/platform-darwin/mach_vm.h"
 #endif
 
 using namespace zz;

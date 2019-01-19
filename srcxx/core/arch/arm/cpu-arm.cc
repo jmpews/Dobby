@@ -4,7 +4,7 @@
 #include "core/arch/Cpu.h"
 #include "core/macros.h"
 
-#include "core/platform/globals.h"
+#include "PlatformInterface/globals.h"
 
 #if !HOST_OS_IOS
 #include <sys/syscall.h> // for cache flushing.

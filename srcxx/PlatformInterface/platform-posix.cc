@@ -24,7 +24,7 @@
 
 #include "../macros.h"
 #include "check_logging.h"
-#include "platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 
 #if defined(__APPLE__)

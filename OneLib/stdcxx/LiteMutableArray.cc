@@ -42,7 +42,7 @@ unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
   newArray = (const LiteObject **)LiteMemOpt::alloc(newSize);
 
   if (newArray) {
-    bzero(newArray, newSize);
+    memset(newArray, 0, newSize);
     LiteMemOpt::free(array, oldSize);
 
     array    = newArray;

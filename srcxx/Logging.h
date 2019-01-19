@@ -1,7 +1,7 @@
 #ifndef HOOKZZ_LOGGING_H_
 #define HOOKZZ_LOGGING_H_
 
-#include "platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 #if ENABLE_COLOR_LOG
 #define RED "\x1B[31m"
