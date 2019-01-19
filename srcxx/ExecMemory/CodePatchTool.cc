@@ -1,7 +1,16 @@
 #include <core/arch/Cpu.h>
 
-#include "CodePatchTool.h"
+#include "ExecMemory/CodePatchTool.h"
 #include "platform/platform.h"
+#include "ExecMemory/PageAllocator.h"
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <mach/mach.h>
+#include <mach/vm_map.h>
+#include <sys/mman.h>
+#include "platform/platform-darwin/mach_vm.h"
+#endif
 
 using namespace zz;
 
@@ -29,7 +38,6 @@ _MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void 
   prot    = info.protection;
   inherit = info.inheritance;
 
-  // ===
   kr = vm_copy(task_self, (vm_address_t)page_address, page_size, (vm_address_t)remap_page);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
@@ -37,16 +45,13 @@ _MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void 
 
   memcpy((void *)(remap_page + offset), buffer, size);
 
-  // ===
-  PageAllocator::SetPermissions((void *)remap_page, page_size, MemoryPermission::kReadExecute);
+  PageAllocator::SetPermissions((void *)remap_page, MemoryPermission::kReadExecute);
 
-  // ===
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
   vm_prot_t cur_protection, max_protection;
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
                      (mach_vm_address_t)remap_page, TRUE, &cur_protection, &max_protection, inherit);
 
-  CHECK_EQ(kr, KERN_SUCCESS);
   if (kr != KERN_SUCCESS) {
     // perror((const char *)strerror(errno));
     return kMemoryOperationError;
@@ -72,7 +77,7 @@ MemoryOperationError CodePatchTool::Patch(void *address, void *buffer, int size)
 
 MemoryOperationError CodePatchTool::PatchCodeBuffer(void *address, CodeBufferBase *buffer) {
   void *buffer_address = buffer->getRawBuffer();
-  int buffer_size     = (int)buffer->getSize();
+  int buffer_size      = (int)buffer->getSize();
   CodePatchTool::Patch(address, buffer_address, buffer_size);
   return kMemoryOperationSuccess;
 }

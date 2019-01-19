@@ -1,5 +1,5 @@
-#ifndef HOOKZZ_THREADSTACK_H_
-#define HOOKZZ_THREADSTACK_H_
+#ifndef ZZ_MULTI_THREAD_SUPPORT_H_
+#define ZZ_MULTI_THREAD_SUPPORT_H_
 
 #include <iostream>
 #include <map>
