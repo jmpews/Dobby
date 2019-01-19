@@ -7,7 +7,7 @@
 
 #include "globals.h"
 
-#include "platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 // StackFrame base in CallStack
 typedef struct _StackFrame {

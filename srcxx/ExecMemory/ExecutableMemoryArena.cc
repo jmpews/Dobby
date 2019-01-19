@@ -1,7 +1,7 @@
 #include "stdcxx/LiteIterator.h"
 
 #ifdef __APPLE__
-#include "core/platform/platform-darwin/mach_vm.h"
+#include "PlatformInterface/platform-darwin/mach_vm.h"
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
 #include <mach/vm_map.h>
@@ -10,7 +10,7 @@
 
 #include "ExecMemory/ExecutableMemoryArena.h"
 #include "ExecMemory/PageAllocator.h"
-#include "core/platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 using namespace zz;
 

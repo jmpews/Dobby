@@ -67,7 +67,7 @@ typedef struct _RegisterContext {
 
     uint32_t lr;
 } RegisterContext;
-#elif defined(__i386__) || defined(__x86_64__)
+#elif defined(_M_X64) || defined(__x86_64__)
 typedef struct _RegisterContext {
   uint64_t dummy;
   union {

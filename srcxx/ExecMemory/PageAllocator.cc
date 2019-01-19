@@ -1,7 +1,7 @@
 
 #include "ExecMemory/PageAllocator.h"
 
-#include "core/platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 using namespace zz;
 

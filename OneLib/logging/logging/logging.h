@@ -29,29 +29,25 @@ void log_init(const char *log_file_path);
 
 #else
 
-#include <syslog.h>
-
-#define LOG(str, args...)                                                                                              \
+#define LOG(str, ...)                                                                                              \
   do {                                                                                                                 \
     if (logfile == NULL)                                                                                               \
-      syslog(LOG_WARNING, str, ##args);                                                                                \
+      printf(str, __VA_ARGS__);                                                                                \
     else                                                                                                               \
-      fprintf(logfile, str, ##args);                                                                                   \
+      fprintf(logfile, str, __VA_ARGS__);                                                                                   \
   } while (0)
 
 #endif // __OBJC__
 
-// =====
-
 #if 1
-#define DLOG(fmt, args...) LOG(fmt, ##args)
+#define DLOG(fmt, ...) LOG(fmt, __VA_ARGS__)
 #else
 #define DLOG(fmt, ...)
 #endif
 
-#define FATAL(str, args...)                                                                                            \
+#define FATAL(str, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG("[!] " str " [%s:%d:%s]", ##args, __FILE__, __LINE__, __func__);                                               \
+    LOG("[!] " str " [%s:%d:%s]", __VA_ARGS__, __FILE__, __LINE__, __func__);                                               \
     /* exit(-1); */                                                                                                    \
   } while (0)
 

@@ -4,7 +4,11 @@
 
 #include <stdint.h>
 
+#if defined(_WIN32)
+#define PUBLIC
+#else
 #define PUBLIC __attribute__((visibility("default")))
+#endif
 
 #include "logging/logging.h"
 

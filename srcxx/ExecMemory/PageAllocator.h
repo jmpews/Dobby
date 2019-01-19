@@ -1,7 +1,7 @@
 #ifndef BASE_PAGE_ALLOCATOR_H_
 #define BASE_PAGE_ALLOCATOR_H_
 
-#include "core/platform/platform.h"
+#include "PlatformInterface/platform.h"
 
 namespace zz {
 

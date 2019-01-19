@@ -30,8 +30,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-#set(SYSTEM.Windows 1)
-#set(PROCESSOR.X86_64 1)
+set(SYSTEM.Windows 1)
+set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
@@ -95,13 +95,15 @@ set(Target.path .)
 set(Target.SOURCE_DIR
     ${Target.path}/OneLib
     ${Target.path}/OneLib/include
-    ${Target.path}/OneLib/std_cxx
+    ${Target.path}/OneLib/stdcxx
+    ${Target.path}/OneLib/logging
     ${Target.path}/srcxx
+    ${Target.path}/srcxx/MultiThreadSupport
+    ${Target.path}/srcxx/ExecMemory
+    ${Target.path}/srcxx/UserMode
     ${Target.path}/srcxx/core
     ${Target.path}/srcxx/core/arch
     ${Target.path}/srcxx/core/modules
-    ${Target.path}/srcxx/ExecMemory
-    ${Target.path}/srcxx/UserMode
 )
 
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
@@ -109,13 +111,12 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/InstructionRelocation/x64
     ${Target.path}/srcxx/InterceptRouting/x64
     ${Target.path}/srcxx/core/arch/x64
-    ${Target.path}/srcxx/core/platform/platform-windows
+    ${Target.path}/srcxx/PlatformInterface/platform-windows
     ${Target.path}/srcxx/UserMode/X86_64
 )
 
-
 set(Target.SOURCE_FILE
-    ${Target.path}/srcxx/core/platform/platform-windows.cc
+    ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
 )
 
 # *.cc
