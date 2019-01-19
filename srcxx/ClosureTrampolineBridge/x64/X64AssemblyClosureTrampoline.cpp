@@ -9,4 +9,5 @@ using namespace zz;
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
 
   ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
+  return NULL;
 }

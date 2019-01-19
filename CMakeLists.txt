@@ -30,8 +30,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-set(SYSTEM.Windows 1)
-set(PROCESSOR.X86_64 1)
+#set(SYSTEM.Windows 1)
+#set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
@@ -105,7 +105,9 @@ set(Target.SOURCE_DIR
 )
 
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/arch/x64
+    ${Target.path}/srcxx/ClosureTrampolineBridge/x64
+    ${Target.path}/srcxx/InstructionRelocation/x64
+    ${Target.path}/srcxx/InterceptRouting/x64
     ${Target.path}/srcxx/core/arch/x64
     ${Target.path}/srcxx/core/platform/platform-windows
     ${Target.path}/srcxx/UserMode/X86_64
