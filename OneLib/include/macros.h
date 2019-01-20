@@ -55,4 +55,11 @@
 #define DEPRECATED
 #endif
 
+// export method
+#if defined(_WIN32)
+#define PUBLIC
+#else
+#define PUBLIC __attribute__((visibility("default")))
+#endif
+
 #endif

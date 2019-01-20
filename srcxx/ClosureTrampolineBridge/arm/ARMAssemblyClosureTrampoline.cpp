@@ -31,14 +31,12 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   PseudoLabel ClosureTrampolineEntry;
   PseudoLabel ForwardCode_ClosureBridge;
 
-  // =====
   _ Ldr(r12, &ClosureTrampolineEntry);
   _ Ldr(pc, &ForwardCode_ClosureBridge);
   _ PseudoBind(&ClosureTrampolineEntry);
   _ Emit((uword)entry);
   _ PseudoBind(&ForwardCode_ClosureBridge);
   _ Emit((uword)get_closure_bridge());
-  // =====
 
   AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 

@@ -2,8 +2,16 @@
 #define HOOKZZ_INTERNAL_H_
 
 #include "hookzz.h"
-#include "globals.h"
-#include "Logging.h"
+
+#include "PlatformInterface/platform.h"
+#include "macros.h"
+#ifndef DLOG
+#if defined(DEBUG)
+#define DLOG(fmt, ...) zz::OSPrint::Print(fmt, __VA_ARGS__)
+#else
+#define DLOG(fmt, ...)
+#endif
+#endif
 
 typedef struct _InstructionBackupArray {
   void *address;

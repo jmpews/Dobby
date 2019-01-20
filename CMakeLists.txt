@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(HookZz)
 
+set(CMAKE_C_COMPILER "D:/TechnicalProgramFiles/LLVM/bin/clang.exe")
+set(CMAKE_CXX_COMPILER "D:/TechnicalProgramFiles/LLVM/bin/clang++.exe")
+
 include(cmake/Util.cmake)
 include(cmake/Globals.cmake)
 include(cmake/Macros.cmake)
@@ -11,7 +14,7 @@ set(CMAKE_C_STANDARD 11)
 enable_language(ASM)
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -stdlib=libc++ -fvisibility=hidden")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -arch arm64")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
@@ -30,8 +33,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-#set(SYSTEM.Windows 1)
-#set(PROCESSOR.X86_64 1)
+set(SYSTEM.Windows 1)
+set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
