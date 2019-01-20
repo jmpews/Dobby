@@ -1,10 +1,6 @@
 #ifndef ZZ_MULTI_THREAD_SUPPORT_H_
 #define ZZ_MULTI_THREAD_SUPPORT_H_
 
-#include <iostream>
-#include <map>
-#include <vector>
-
 #include "globals.h"
 
 #include "PlatformInterface/platform.h"

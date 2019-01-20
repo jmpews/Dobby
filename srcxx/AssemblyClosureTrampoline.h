@@ -1,9 +1,7 @@
 #ifndef ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 #define ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 
-#include <iostream>
 #include <stdint.h>
-#include <vector>
 
 #include "hookzz_internal.h"
 
@@ -23,6 +21,8 @@ typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry 
 void closure_trampoline_template();
 
 void closure_bridge_template();
+
+void *get_closure_bridge();
 
 #ifdef __cplusplus
 }

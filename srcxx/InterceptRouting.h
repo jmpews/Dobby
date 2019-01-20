@@ -12,7 +12,6 @@ public:
 
   static InterceptRouting *New(HookEntry *entry);
 
-  // ===
   void Dispatch();
 
   virtual void Commit(){};
