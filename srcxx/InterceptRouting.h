@@ -7,7 +7,8 @@ typedef int RoutingType;
 
 class InterceptRouting {
 public:
-  InterceptRouting(HookEntry *entry) : entry_(entry) {}
+  InterceptRouting(HookEntry *entry) : entry_(entry) {
+  }
 
   static InterceptRouting *New(HookEntry *entry);
 
@@ -16,8 +17,9 @@ public:
 
   virtual void Commit(){};
 
-  // ===
-  int length() { return routing_length_; }
+  int length() {
+    return routing_length_;
+  }
 
 private:
   virtual void Prepare(){};

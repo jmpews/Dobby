@@ -22,7 +22,7 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
   AssemblyCodeChunk *codeChunk = NULL;
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&page_chunks);
-  while (page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) {
+  while ((page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
     if ((uintptr_t)page->cursor + inSize < page->capacity) {
       break;
     }
