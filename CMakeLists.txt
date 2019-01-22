@@ -104,6 +104,7 @@ set(Target.SOURCE_DIR
     ${Target.path}/srcxx/core
     ${Target.path}/srcxx/core/arch
     ${Target.path}/srcxx/core/modules
+    ${Target.path}/srcxx/ExtraInternalPlugin
 )
 
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
@@ -112,6 +113,7 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${Target.path}/srcxx/core/arch/arm64
     ${Target.path}/srcxx/InterceptRouting/arm64
     ${Target.path}/srcxx/UserMode/arm64
+    ${Target.path}/srcxx/ExtraInternalPlugin/ARM64
     ${Target.path}/srcxx/PlatformInterface/platform-posix
     ${Target.path}/srcxx/PlatformInterface/platform-darwin
 )

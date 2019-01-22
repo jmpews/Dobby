@@ -18,8 +18,6 @@ public:
 private:
   virtual void Active();
 
-  virtual void ActiveAt(uintptr_t branch_address);
-
   virtual void BuildDynamicBinaryInstrumentationRouting();
 private:
   void *prologue_dispatch_bridge;

@@ -4,6 +4,7 @@
 #include "hookzz_internal.h"
 
 #include "AssemblyClosureTrampoline.h"
+
 #include "InterceptRouting.h"
 #include "Interceptor.h"
 #include "intercept_routing_handler.h"
@@ -18,14 +19,12 @@ public:
 
   ARM64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {}
 
-  virtual void Commit();
+  virtual void Active(){};
+
+  void ActiveAt(uint64_t branch_address);
 
 private:
-  virtual void Prepare();
-
-  virtual void Active();
-
-  virtual void ActiveAt(uint64_t branch_address);
+  void Prepare();
 
 private:
   RoutingType branch_type_;

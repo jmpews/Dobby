@@ -9,6 +9,10 @@ void InterceptRouting::Commit() {
   Active();
 }
 
+HookEntry *InterceptRouting::GetHookEntry() {
+  return entry_;
+};
+
 void InterceptRouting::Dispatch() {
   // Prepare();
   // if (entry_->type == kFunctionWrapper) {

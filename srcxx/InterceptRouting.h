@@ -14,15 +14,16 @@ public:
 
   void Dispatch();
 
-  virtual void Commit();
+  void Commit();
+
+  HookEntry *GetHookEntry();
+
+  virtual void Active() = 0;
 
 private:
-  virtual void Prepare(){};
-
-  virtual void Active(){};
+  virtual void Prepare() = 0;
 
 private:
-
 protected:
   HookEntry *entry_;
 };

@@ -12,13 +12,10 @@
 
 class FunctionInlineReplaceRouting : public ARM64InterceptRouting {
 public:
-
   FunctionInlineReplaceRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {}
 
 private:
-  virtual void Active();
-
-  virtual void ActiveAt(uintptr_t branch_address);
+  void Active();
 
   virtual void BuildReplaceRouting();
 };

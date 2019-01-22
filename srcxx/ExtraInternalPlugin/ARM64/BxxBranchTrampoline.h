@@ -3,6 +3,6 @@
 
 #include "hookzz_internal.h"
 
-PUBLIC zz_enable_arm64_bxx_branch_trampoline();
+PUBLIC void zz_enable_arm64_bxx_branch_trampoline();
 
 #endif //HOOKZZ_BXXBRANCHTRAMPOLINE_H

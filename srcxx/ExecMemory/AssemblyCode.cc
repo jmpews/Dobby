@@ -42,4 +42,11 @@ AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) 
   return reinterpret_cast<AssemblyCode *>(code);
 }
 
+void AssemblyCode::initWithCodeBuffer(CodeBuffer *codeBuffer) {
+
+}
+void AssemblyCode::initWithAddressRange(void *address, int size) {
+
+}
+
 } // namespace zz
