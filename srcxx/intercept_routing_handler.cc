@@ -1,3 +1,8 @@
+
+#include "hookzz_internal.h"
+
+#include "logging/logging.h"
+
 #include "intercept_routing_handler.h"
 #include "MultiThreadSupport/ThreadSupport.h"
 

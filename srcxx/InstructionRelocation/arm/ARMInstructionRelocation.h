@@ -1,9 +1,9 @@
-#ifndef HOOKZZ_ARCH_ARM64_INSTRUCTION_RELOCATION
-#define HOOKZZ_ARCH_ARM64_INSTRUCTION_RELOCATION
+#ifndef ZZ_INSTRUCTION_RELOCATION_ARM_
+#define ZZ_INSTRUCTION_RELOCATION_ARM_
 
 #include "globals.h"
 #include "core/arch/arm/constants-arm.h"
-#include "vm_core_extra/custom-code.h"
+#include "ExecMemory/AssemblyCode.h"
 
 namespace zz {
 namespace arm {
@@ -200,7 +200,7 @@ private:
 };
 
 // Generate the relocated instruction
-Code *GenRelocateCode(uintptr_t src_pc, int *relocate_size);
+AssemblyCode *GenRelocateCode(uintptr_t src_pc, int *relocate_size);
 
 } // namespace arm
 } // namespace zz

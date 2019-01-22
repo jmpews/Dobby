@@ -2,7 +2,7 @@
 #define ZZ_ARCH_ARM_CPU_H_
 
 #include "core/arch/Cpu.h"
-#include "core/macros.h"
+#include "macros.h"
 
 #include "PlatformInterface/globals.h"
 

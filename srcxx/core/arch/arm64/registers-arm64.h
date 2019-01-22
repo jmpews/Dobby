@@ -1,14 +1,14 @@
-#ifndef ZZ_ARCH_ARM64_REGISTERS
-#define ZZ_ARCH_ARM64_REGISTERS
+#ifndef ARCH_ARM64_REGISTERS
+#define ARCH_ARM64_REGISTERS
 
 #include "core/arch/arm64/constants-arm64.h"
-#include "core/macros.h"
+#include "macros.h"
 #include "core/arch/Cpu.h"
 
 namespace zz {
 namespace arm64 {
 
-class CPURegister : RegisterBase<CPURegister> {
+class CPURegister : RegisterBase {
 public:
   enum RegisterType {
     kRegister_32,

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
-#include "core/modules/assembler.h"
+
+#include "core/modules/assembler/assembler.h"
+#include "logging/logging.h"
 
 namespace zz {
 
@@ -35,22 +37,22 @@ void Label::link_to(int pos) {
 
 // ===== ExternalReferencej =====
 
-const inline void *ExternalReference::address() {
+const void *ExternalReference::address() {
   return address_;
 }
 
 // ===== AssemblerBase =====
 
 AssemblerBase::AssemblerBase() {
-  DLOG("[*] Assembler buffer at %p\n", buffer_.RawBuffer());
+  DLOG("[*] Assembler buffer at %p\n", buffer_->getRawBuffer());
 }
 
 int AssemblerBase::pc_offset() const {
-  return buffer_.Size();
+  return buffer_->getSize();
 }
 
 CodeBuffer *AssemblerBase::GetCodeBuffer() {
-  return &buffer_;
+  return buffer_;
 }
 
 void AssemblerBase::CommitRealizeAddress(void *address) {
@@ -58,13 +60,14 @@ void AssemblerBase::CommitRealizeAddress(void *address) {
 }
 
 void *AssemblerBase::GetRealizeAddress() {
-  return realized_address;
+  return realized_address_;
 }
 
-static void AssemblerBase::FlushICache(void *start, size_t size);
+void AssemblerBase::FlushICache(void *start, size_t size) {
 
-static void AssemblerBase::FlushICache(uintptr_t start, size_t size) {
-  return FlushICache(reinterpret_cast<void *>(start), size);
+}
+
+void AssemblerBase::FlushICache(uintptr_t start, uintptr_t end) {
 }
 
 } // namespace zz

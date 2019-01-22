@@ -51,7 +51,7 @@ class ExternalReference {
 public:
   explicit ExternalReference(void *address) : address_(address) {}
 
-  const inline void *address();
+  const void *address();
 
 private:
   const void *address_;
@@ -72,7 +72,7 @@ public:
 
   static void FlushICache(void *start, size_t size);
 
-  static void FlushICache(uintptr_t start, size_t size);
+  static void FlushICache(uintptr_t start, uintptr_t end);
 
 protected:
   CodeBuffer *buffer_;

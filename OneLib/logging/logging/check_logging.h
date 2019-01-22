@@ -17,7 +17,7 @@
 #define DCHECK_WITH_MSG(condition, message)                                                                            \
   do {                                                                                                                 \
     if (!(condition)) {                                                                                                \
-      FATAL(__FILE__, __LINE__, message);                                                                              \
+      FATAL("%s", message);                                                                              \
     }                                                                                                                  \
   } while (0)
 #define DCHECK(condition) DCHECK_WITH_MSG(condition, #condition)

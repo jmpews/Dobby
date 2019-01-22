@@ -1,4 +1,7 @@
 #include "hookzz_internal.h"
+
+#include "logging/logging.h"
+
 #include "Interceptor.h"
 #include "InterceptRouting.h"
 
@@ -8,7 +11,7 @@ PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_
   Interceptor *intercepter = Interceptor::SharedInstance();
 
   HookEntry *entry        = new HookEntry();
-  entry->id               = intercepter->entries.size();
+  entry->id               = intercepter->entries->getCount();
   entry->pre_call         = pre_call;
   entry->post_call        = post_call;
   entry->type             = kFunctionWrapper;
@@ -29,7 +32,7 @@ PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **or
   Interceptor *intercepter = Interceptor::SharedInstance();
 
   HookEntry *entry        = new HookEntry();
-  entry->id               = intercepter->entries.size();
+  entry->id               = intercepter->entries->getCount();
   entry->replace_call     = replace_call;
   entry->type             = kFunctionInlineHook;
   entry->function_address = function_address;
@@ -54,7 +57,7 @@ PUBLIC RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_
   Interceptor *intercepter = Interceptor::SharedInstance();
 
   HookEntry *entry           = new HookEntry();
-  entry->id                  = intercepter->entries.size();
+  entry->id                  = intercepter->entries->getCount();
   entry->dbi_call            = dbi_call;
   entry->type                = kDynamicBinaryInstrumentation;
   entry->instruction_address = inst_address;
@@ -73,7 +76,7 @@ PUBLIC RetStatus zz_enable_arm_arm64_b_branch() {
 
   Interceptor *intercepter = Interceptor::SharedInstance();
   // TODO: replace with getter or setter
-  intercepter->enable_arm_arm64_b_branch();
+  // DEL intercepter->enable_arm_arm64_b_branch();
 
   return RS_SUCCESS;
 }
@@ -83,7 +86,7 @@ PUBLIC RetStatus zz_disable_arm_arm64_b_branch() {
 
   Interceptor *intercepter = Interceptor::SharedInstance();
   // TODO: replace with getter or setter
-  intercepter->disable_arm_arm64_b_branch();
+  // DEL intercepter->disable_arm_arm64_b_branch();
 
   return RS_SUCCESS;
 }

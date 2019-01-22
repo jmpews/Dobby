@@ -22,8 +22,8 @@
 #include <android/log.h> // NOLINT
 #endif
 
-#include "../macros.h"
-#include "check_logging.h"
+#include "macros.h"
+#include "logging/check_logging.h"
 #include "PlatformInterface/platform.h"
 
 
@@ -78,10 +78,9 @@ void *Allocate(void *address, size_t size, MemoryPermission access) {
 size_t OSMemory::PageSize() { return static_cast<size_t>(sysconf(_SC_PAGESIZE)); }
 
 // static
-void *OSMemory::Allocate(void *address, size_t size, size_t alignment, MemoryPermission access) {
+void *OSMemory::Allocate(void *address, size_t size, MemoryPermission access) {
   size_t page_size = OSMemory::PageSize();
   DCHECK_EQ(0, size % page_size);
-  DCHECK_EQ(0, alignment % page_size);
   size_t request_size = size;
   void *result        = zz::Allocate(address, request_size, access);
   if (result == nullptr)

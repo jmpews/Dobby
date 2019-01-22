@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(HookZz)
 
-set(CMAKE_C_COMPILER "D:/TechnicalProgramFiles/LLVM/bin/clang.exe")
-set(CMAKE_CXX_COMPILER "D:/TechnicalProgramFiles/LLVM/bin/clang++.exe")
-
 include(cmake/Util.cmake)
 include(cmake/Globals.cmake)
 include(cmake/Macros.cmake)
@@ -14,7 +11,7 @@ set(CMAKE_C_STANDARD 11)
 enable_language(ASM)
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -stdlib=libc++ -fvisibility=hidden")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -arch arm64")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
@@ -33,8 +30,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-set(SYSTEM.Windows 1)
-set(PROCESSOR.X86_64 1)
+#set(SYSTEM.Windows 1)
+#set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
@@ -110,16 +107,27 @@ set(Target.SOURCE_DIR
 )
 
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/ClosureTrampolineBridge/x64
-    ${Target.path}/srcxx/InstructionRelocation/x64
-    ${Target.path}/srcxx/InterceptRouting/x64
-    ${Target.path}/srcxx/core/arch/x64
-    ${Target.path}/srcxx/PlatformInterface/platform-windows
-    ${Target.path}/srcxx/UserMode/X86_64
+    ${Target.path}/srcxx/ClosureTrampolineBridge/arm64
+    ${Target.path}/srcxx/InstructionRelocation/arm64
+    ${Target.path}/srcxx/core/arch/arm64
+    ${Target.path}/srcxx/InterceptRouting/arm64
+    ${Target.path}/srcxx/UserMode/arm64
+    ${Target.path}/srcxx/PlatformInterface/platform-posix
+    ${Target.path}/srcxx/PlatformInterface/platform-darwin
 )
 
 set(Target.SOURCE_FILE
-    ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
+    ${Target.path}/srcxx/PlatformInterface/platform-posix.cc
+    ${Target.path}/srcxx/PlatformInterface/platform-darwin.cc
+
+    ${Target.path}/srcxx/core/modules/assembler/assembler.cc
+    ${Target.path}/srcxx/core/modules/assembler/assembler-arm64.cc
+
+    ${Target.path}/srcxx/core/modules/codegen/codegen-arm64.cc
+
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-arm64.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-arm64.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-arm64.cc
 )
 
 # *.cc
@@ -152,7 +160,6 @@ set(Target.HEADER_FILE ${Target.HEADER_FILE}
     ${CODEGEN.HEADER_FILE}
 )
 
-# =====
 
 include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 

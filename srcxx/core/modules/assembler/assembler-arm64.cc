@@ -7,18 +7,18 @@ Assembler::Assembler() {
 }
 
 void Assembler::Emit(int32_t value) {
-  buffer_.Emit(value);
+  buffer_->EmitInst(value);
 }
 
 void Assembler::EmitInt64(uint64_t value) {
-  buffer_.Emit64(value);
+  buffer_->Emit64(value);
 }
 
 void Assembler::bind(Label *label) {
   const intptr_t bound_pc = pc_offset();
   while (label->is_linked()) {
     int linkpos  = label->pos();
-    int32_t inst = buffer_.Load32(linkpos);
+    int32_t inst = buffer_->LoadInst(linkpos);
 
     int prevlinkpos = 0;
     if ((inst & UnconditionalBranchMask) == UnconditionalBranchFixed) {
@@ -28,7 +28,7 @@ void Assembler::bind(Label *label) {
       int offset           = bound_pc - linkpos;
       imm26                = bits(offset >> 2, 0, 25);
       int32_t rewrite_inst = (inst & 0xfc000000) | LFT(imm26, 26, 0);
-      buffer_.Store32(linkpos, rewrite_inst);
+      buffer_->RewriteInst(linkpos, rewrite_inst);
 
       // caculate next label
       imm26                 = bits(inst, 0, 25);

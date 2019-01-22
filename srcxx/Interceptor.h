@@ -22,10 +22,6 @@ public:
 
   const InterceptorOptions &options() const { return options_; }
 
-  void enable_arm_arm64_b_branch() {options_.enable_arm_arm64_b_branch = true;}
-
-  void disable_arm_arm64_b_branch() {options_.enable_arm_arm64_b_branch = false;}
-
   HookEntry *FindHookEntry(void *address);
 
   void AddHookEntry(HookEntry *hook_entry);

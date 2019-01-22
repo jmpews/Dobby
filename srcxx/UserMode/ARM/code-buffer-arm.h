@@ -1,12 +1,12 @@
-#ifndef ZZ_CODE_BUFFER_H_
-#define ZZ_CODE_BUFFER_H_
+#ifndef ARM_CODE_BUFFER_H_
+#define ARM_CODE_BUFFER_H_
 
 #include "CodeBuffer.h"
 
-typedef arm_inst_t int32_t;
-typedef thumb_inst_t int32_t;
+typedef int32_t arm_inst_t;
+typedef int32_t thumb_inst_t;
 
-class CodeBufferARM : CodeBuffer {
+class CodeBufferARM : public CodeBuffer {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
 public:

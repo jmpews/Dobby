@@ -1,8 +1,10 @@
 #ifndef ZZ_MULTI_THREAD_SUPPORT_H_
 #define ZZ_MULTI_THREAD_SUPPORT_H_
 
-#include "globals.h"
+#include <vector>
+#include <map>
 
+#include "globals.h"
 #include "PlatformInterface/platform.h"
 
 // StackFrame base in CallStack

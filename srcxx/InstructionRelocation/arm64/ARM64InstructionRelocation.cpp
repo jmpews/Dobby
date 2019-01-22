@@ -1,5 +1,6 @@
-#include "arch/arm64/ARM64InstructionRelocation.h"
 #include "globals.h"
+
+#include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
 
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/modules/assembler/assembler-arm64.h"
@@ -27,7 +28,7 @@ typedef struct _PseudoLabelData {
   uintptr_t address;
 } PseudoLabelData;
 
-Code *GenRelocateCode(uint64_t src_address, int *relocate_size) {
+AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   uint64_t src_pc = src_address;
   uint64_t cur_pc = src_pc;
   uint32_t inst   = *(uint32_t *)src_pc;
@@ -127,7 +128,7 @@ Code *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   }
 
   // Generate executable code
-  AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeFromTruboAssember(&turbo_assembler_);
   return code;
 }
 
