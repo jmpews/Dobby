@@ -3,7 +3,7 @@
 
 class ExtraInternalPlugin {
 public:
-    registerPlugin(const char *name, void *handler);
+    void registerPlugin(const char *name, void *handler);
 };
 
 #endif
