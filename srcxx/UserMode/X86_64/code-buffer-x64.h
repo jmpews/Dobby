@@ -1,5 +1,5 @@
-#ifndef USERMODE_ARM64_CODE_BUFFER_H_
-#define USERMODE_ARM64_CODE_BUFFER_H_
+#ifndef X64_CODE_BUFFER_H_
+#define X64_CODE_BUFFER_H_
 
 #include "CodeBufferBase.h"
 

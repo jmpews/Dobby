@@ -7,7 +7,7 @@
 #include "core/modules/assembler/assembler.h"
 
 #include "core/base/code-buffer.h"
-#include "core/macros.h"
+#include "macros.h"
 #include "core/utils.h"
 
 #include <assert.h>

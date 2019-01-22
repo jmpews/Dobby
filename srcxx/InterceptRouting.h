@@ -14,29 +14,14 @@ public:
 
   void Dispatch();
 
-  virtual void Commit(){};
-
-  int length() {
-    return routing_length_;
-  }
+  virtual void Commit();
 
 private:
   virtual void Prepare(){};
 
   virtual void Active(){};
 
-  virtual void BuildFastForwardTrampoline(){};
-
-  virtual void BuildReplaceRouting(){};
-
-  virtual void BuildPreCallRouting(){};
-
-  virtual void BuildDynamicBinaryInstrumentationRouting(){};
-
-  virtual void BuildPostCallRouting(){};
-
 private:
-  int routing_length_;
 
 protected:
   HookEntry *entry_;

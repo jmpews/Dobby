@@ -32,7 +32,7 @@ AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) 
 
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
   turboAssembler->CommitRealizeAddress(codeChunk->address);
-  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(), turboAssembler->GetCodeBuffer());
+  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(), reinterpret_cast<CodeBufferBase *>(turboAssembler->GetCodeBuffer()));
 
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;

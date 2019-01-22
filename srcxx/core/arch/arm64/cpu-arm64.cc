@@ -3,8 +3,6 @@
 
 #include "core/arch/Cpu.h"
 
-#include "core/globals.h"
-
 #include "PlatformInterface/globals.h"
 
 class CacheLineSizes {
