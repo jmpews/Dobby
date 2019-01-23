@@ -5,6 +5,9 @@
 
 #include "PlatformInterface/platform.h"
 #include "macros.h"
+
+#include "logging/logging.h"
+#include "logging/check_logging.h"
 // #ifndef DLOG
 // #if defined(DEBUG)
 // #define DLOG(fmt, ...) zz::OSPrint::Print(fmt, __VA_ARGS__)

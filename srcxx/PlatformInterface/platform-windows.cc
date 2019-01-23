@@ -64,6 +64,11 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
   return 0;
 }
 
+std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
+  std::vector<OSMemory::MemoryRegion> result;
+  return result;
+}
+
 void OSPrint::Print(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -108,8 +113,6 @@ void OSPrint::VPrintError(const char *format, va_list args) {
   vfprintf(stderr, format, args);
 #endif
 }
-
-// =====
 
 int OSThread::GetCurrentProcessId() {
   return 0;

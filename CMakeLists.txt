@@ -30,8 +30,8 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-#set(SYSTEM.Windows 1)
-#set(PROCESSOR.X86_64 1)
+set(SYSTEM.Windows 1)
+set(PROCESSOR.X86_64 1)
 
 # Platform
 if(PLATFORM STREQUAL "iOS")
@@ -107,31 +107,46 @@ set(Target.SOURCE_DIR
     ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave
 )
 
+set(arch x64)
+set(ARCH X64)
+
 set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/ClosureTrampolineBridge/arm64
-    ${Target.path}/srcxx/InstructionRelocation/arm64
-    ${Target.path}/srcxx/core/arch/arm64
-    ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ARM64
-    ${Target.path}/srcxx/InterceptRouting/arm64
-    ${Target.path}/srcxx/UserMode/arm64
-    ${Target.path}/srcxx/ExtraInternalPlugin/ARM64
-    ${Target.path}/srcxx/PlatformInterface/platform-posix
-    ${Target.path}/srcxx/PlatformInterface/platform-darwin
+    ${Target.path}/srcxx/ClosureTrampolineBridge/${arch}
+    ${Target.path}/srcxx/InstructionRelocation/${arch}
+    ${Target.path}/srcxx/core/arch/${arch}
+    ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/${ARCH}
+    ${Target.path}/srcxx/InterceptRouting/${arch}
+    ${Target.path}/srcxx/UserMode/${arch}
+    ${Target.path}/srcxx/ExtraInternalPlugin/${ARCH}
+
 )
 
-set(Target.SOURCE_FILE
-    ${Target.path}/srcxx/PlatformInterface/platform-posix.cc
-    ${Target.path}/srcxx/PlatformInterface/platform-darwin.cc
-
+set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
     ${Target.path}/srcxx/core/modules/assembler/assembler.cc
-    ${Target.path}/srcxx/core/modules/assembler/assembler-arm64.cc
+    ${Target.path}/srcxx/core/modules/assembler/assembler-${arch}.cc
 
-    ${Target.path}/srcxx/core/modules/codegen/codegen-arm64.cc
+    ${Target.path}/srcxx/core/modules/codegen/codegen-${arch}.cc
 
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-arm64.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-arm64.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-arm64.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-${arch}.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch}.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-${arch}.cc
 )
+
+if(SYSTEM.Windows)
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
+    )
+else()
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/PlatformInterface/platform-posix
+        ${Target.path}/srcxx/PlatformInterface/platform-darwin
+    )
+    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+        ${Target.path}/srcxx/PlatformInterface/platform-posix.cc
+        ${Target.path}/srcxx/PlatformInterface/platform-darwin.cc
+    )
+endif()
+
 
 # *.cc
 search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)

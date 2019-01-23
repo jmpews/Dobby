@@ -136,8 +136,6 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
   return ret == 0;
 }
 
-// ======
-
 void OSPrint::Print(const char *format, ...) {
   va_list args;
   va_start(args, format);
