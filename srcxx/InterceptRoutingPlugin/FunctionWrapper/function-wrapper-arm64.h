@@ -12,15 +12,16 @@
 
 class FunctionWrapperRouting : public ARM64InterceptRouting {
 public:
+  FunctionWrapperRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {
+  }
 
-  FunctionWrapperRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {}
+  void *GetTrampolineTarget();
 
 private:
-  virtual void Active();
-
   void BuildPreCallRouting();
 
   void BuildPostCallRouting();
+
 private:
   void *prologue_dispatch_bridge;
 

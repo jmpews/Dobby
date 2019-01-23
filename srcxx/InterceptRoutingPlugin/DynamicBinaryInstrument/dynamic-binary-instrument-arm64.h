@@ -12,13 +12,14 @@
 
 class DynamicBinaryInstrumentRouting : public ARM64InterceptRouting {
 public:
+  DynamicBinaryInstrumentRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {
+  }
 
-  DynamicBinaryInstrumentRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {}
+  void *GetTrampolineTarget();
 
 private:
-  virtual void Active();
-
   virtual void BuildDynamicBinaryInstrumentationRouting();
+
 private:
   void *prologue_dispatch_bridge;
 };

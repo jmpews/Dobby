@@ -14,10 +14,9 @@
 
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-arm64.h"
 
-// Active routing, will patch the origin insturctions, and forward to our custom routing.
-void FunctionInlineReplaceRouting::Active() {
-  ActiveAt(0);
+void FunctionInlineReplaceRouting::BuildReplaceRouting() {
 }
 
-void FunctionInlineReplaceRouting::BuildReplaceRouting() {
+void *FunctionInlineReplaceRouting::GetTrampolineTarget() {
+  return entry_->replace_call;
 }
