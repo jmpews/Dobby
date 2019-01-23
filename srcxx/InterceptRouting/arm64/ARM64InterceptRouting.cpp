@@ -22,7 +22,8 @@ using namespace zz::arm64;
 #define ARM64_FULL_REDIRECT_SIZE 16
 
 InterceptRouting *InterceptRouting::New(HookEntry *entry) {
-  return reinterpret_cast<InterceptRouting *>(new ARM64InterceptRouting(entry));
+  // DEL return reinterpret_cast<InterceptRouting *>(new ARM64InterceptRouting(entry));
+  return NULL;
 }
 
 // Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
@@ -47,10 +48,13 @@ void ARM64InterceptRouting::Prepare() {
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
-void ARM64InterceptRouting::ActiveAt(uint64_t branch_address) {
+void ARM64InterceptRouting::Active() {
   uint64_t target_address = (uint64_t)entry_->target_address;
+  uint64_t branch_address = (uint64_t)GetTrampolineTarget();
+
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
+
 
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(branch_address);

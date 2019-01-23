@@ -14,9 +14,9 @@ class FunctionInlineReplaceRouting : public ARM64InterceptRouting {
 public:
   FunctionInlineReplaceRouting(HookEntry *entry) : ARM64InterceptRouting(entry) {}
 
-private:
-  void Active();
+  void *GetTrampolineTarget();
 
+private:
   virtual void BuildReplaceRouting();
 };
 

@@ -11,23 +11,24 @@
 
 class ARM64InterceptRouting : public InterceptRouting {
 public:
+  RoutingType branch_type_;
+
+public:
   // trampoline branch type
   enum RoutingType {
     ARM64_B_Branch,
     ARM64_LDR_Branch,
   };
 
-  ARM64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {}
+  ARM64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
+  }
 
-  virtual void Active(){};
+  void Active();
 
-  void ActiveAt(uint64_t branch_address);
+  virtual void *GetTrampolineTarget() = 0;
 
 private:
   void Prepare();
-
-private:
-  RoutingType branch_type_;
 };
 
 #endif

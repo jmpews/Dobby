@@ -18,6 +18,8 @@ public:
 
   HookEntry *GetHookEntry();
 
+  virtual void *GetTrampolineTarget() = 0;
+
   virtual void Active() = 0;
 
 private:
