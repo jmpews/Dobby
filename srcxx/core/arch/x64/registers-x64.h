@@ -32,7 +32,7 @@ enum RegisterCode {
       kRegAfterLast
 };
 
-class CPURegister : RegisterBase {
+class CPURegister : public RegisterBase {
 public:
   enum RegisterType {
     kDefault,
@@ -154,14 +154,6 @@ public:
   static constexpr XMMRegister InvalidRegister() {
     return XMMRegister(0);
   }
-
-  bool Is(const CPURegister &reg) const {
-    return (reg.reg_code_ == this->reg_code_);
-  }
-
-  int32_t code() const {
-    return reg_code_;
-  };
 
 public:
   // Return the high bit of the register code as a 0 or 1.  Used often
