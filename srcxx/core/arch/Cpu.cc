@@ -2,6 +2,9 @@
 #include "core/arch/Cpu.h"
 #include "core/arch/CpuUtils.h"
 
+#include "stdcxx/LiteMemOpt.h"
+#define memcpy LiteMemOpt::copy
+
 CpuInfo::CpuInfo() {
   icache_line_size_ = 0;
   dcache_line_size_ = 0;
@@ -25,7 +28,7 @@ CpuInfo::CpuInfo() {
   has_popcnt_  = false;
   is_atom_     = false;
 
-  memcpy(vendor_, "Unknown", 8);
+  memcpy(vendor_, (void *)"Unknown", 8);
 #if V8_HOST_ARCH_IA32 || V8_HOST_ARCH_X64
   int cpu_info[4];
   __cpuid(cpu_info, 0);
