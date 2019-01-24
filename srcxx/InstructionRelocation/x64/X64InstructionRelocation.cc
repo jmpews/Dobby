@@ -15,6 +15,7 @@ namespace zz {
         } PseudoLabelData;
 
         AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
+          return NULL;
         }
     }
 }
