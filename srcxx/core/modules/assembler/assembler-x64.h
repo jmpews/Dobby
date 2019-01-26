@@ -11,6 +11,8 @@
 namespace zz {
 namespace x64 {
 
+#define IsInt8(imm) (2^8 > imm)
+
 class PseudoLabel : public Label {
 public:
 };
@@ -129,7 +131,7 @@ protected:
 
   void SetDisp32(int32_t disp) {
     ASSERT(length_ == 1 || length_ == 2);
-    memmove(&encoding_[length_], &disp, sizeof(disp));
+    *(int32_t *)&encoding_[length_] = disp;
     length_ += sizeof(disp);
   }
 
@@ -151,21 +153,24 @@ private:
 class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
-    if ((disp == 0) && ((base & 7) != RBP)) {
+    int base_ = base.code();
+    int rbp_ = rbp.code();
+    int rsp_ = rsp.code();
+    if ((disp == 0) && ((base_ & 7) != rbp_)) {
       SetModRM(0, base);
-      if ((base & 7) == RSP) {
-        SetSIB(TIMES_1, RSP, base);
+      if ((base_ & 7) == rsp_) {
+        SetSIB(TIMES_1, rsp, base);
       }
-    } else if (Utils::IsInt(8, disp)) {
+    } else if (IsInt8(disp)) {
       SetModRM(1, base);
-      if ((base & 7) == RSP) {
-        SetSIB(TIMES_1, RSP, base);
+      if ((base_ & 7) == rsp_) {
+        SetSIB(TIMES_1, rsp, base);
       }
       SetDisp8(disp);
     } else {
       SetModRM(2, base);
-      if ((base & 7) == RSP) {
-        SetSIB(TIMES_1, RSP, base);
+      if ((base_ & 7) == rsp_) {
+        SetSIB(TIMES_1, rsp, base);
       }
       SetDisp32(disp);
     }
@@ -175,9 +180,9 @@ public:
   Address(Register base, Register r);
 
   Address(Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index != RSP); // Illegal addressing mode.
-    SetModRM(0, RSP);
-    SetSIB(scale, index, RBP);
+    ASSERT(index != rsp); // Illegal addressing mode.
+    SetModRM(0, rsp);
+    SetSIB(scale, index, rbp);
     SetDisp32(disp);
   }
 
@@ -185,11 +190,12 @@ public:
   Address(Register index, ScaleFactor scale, Register r);
 
   Address(Register base, Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index != RSP); // Illegal addressing mode.
-    if ((disp == 0) && ((base.code() & 7) != rbp)) {
+    ASSERT(index != rsp); // Illegal addressing mode.
+    int rbp_ = rbp.code();
+    if ((disp == 0) && ((base.code() & 7) != rbp_)) {
       SetModRM(0, rsp);
       SetSIB(scale, index, base);
-    } else if (Utils::IsInt(8, disp)) {
+    } else if (IsInt8(disp)) {
       SetModRM(1, rsp);
       SetSIB(scale, index, base);
       SetDisp8(disp);
@@ -216,6 +222,12 @@ private:
 
 class Assembler : public AssemblerBase {
 public:
+    void Emit1(byte val) {
+
+    }
+    void pushfq() {
+      Emit1(0x9C);
+    }
 
 };
 
