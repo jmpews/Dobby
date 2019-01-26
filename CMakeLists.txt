@@ -30,7 +30,7 @@ if(DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-#set(SYSTEM.Windows 1)
+set(SYSTEM.Windows 1)
 #set(PROCESSOR.X86_64 1)
 
 # Platform
