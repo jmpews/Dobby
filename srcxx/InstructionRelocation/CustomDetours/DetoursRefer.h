@@ -27,13 +27,6 @@ enum OperandType {
   OperandOnly
 };
 
-struct InstrMnemonic {
-  uint8_t prefix;
-  uint8_t opcode[3];
-  uint8_t ModRM;
-  uint8_t Displacement[4];
-  uint8_t Immediate[4];
-};
 
 struct OpcodeItem {
   // Many of these fields are often ignored. See _DataIgnored.
@@ -53,6 +46,32 @@ struct DecodeOffset {
   uint8_t disp;
   uint8_t imm;
 };
+
+struct InstrMnemonic {
+  uint8_t prefix;
+  uint8_t opcode[3];
+  uint8_t ModRM;
+  uint8_t Displacement[4];
+  uint8_t Immediate[4];
+};
+
+
+void _DecodePrefix(InstrMnemonic *instr, addr_t p) {
+  instr->prefix = *(byte *)p;
+}
+
+void _DecodeOperand(InstrMnemonic *instr, addr_t p) {
+  byte *i = (byte *)p;
+  instr->opcode = *i++;
+  instr->ModRM = *i++;
+  if(instr->prefix) {
+    OperandSize = 32Bit.
+  }
+}
+
+{0x03, _DecodeOperand}
+{0x03, _DecodeImmedite}
+{0x66, _DecodePrefix}
 
 // clang-format off
 // These macros define common uses of nFixedSize, nFixedSize16, nModOffset, nRelOffset, nFlagBits, pfCopy.
