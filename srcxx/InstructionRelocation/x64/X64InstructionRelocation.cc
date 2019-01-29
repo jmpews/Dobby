@@ -6,7 +6,7 @@
 #include "core/modules/assembler/assembler-x64.h"
 #include "core/modules/codegen/codegen-x64.h"
 
-#include "InstructionRelocation/x64/X64IPRelativeOpcodeTable.h"
+#include "InstructionRelocation/x64/X64IPRelativeOpcodeTable..h"
 
 namespace zz {
 namespace x64 {
@@ -28,8 +28,8 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler.
   while ((cur_ip < (src_ip + *relocate_size))) {
+
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
-    decodeItem->DecodeHandler(instr, demoItem, cur_ip);
 
   }
 }
