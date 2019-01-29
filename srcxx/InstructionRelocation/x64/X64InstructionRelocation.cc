@@ -6,6 +6,8 @@
 #include "core/modules/assembler/assembler-x64.h"
 #include "core/modules/codegen/codegen-x64.h"
 
+#include "InstructionRelocation/x64/X64IPRelativeOpcodeTable.h"
+
 namespace zz {
 namespace x64 {
 
@@ -21,11 +23,14 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
 
   std::vector<PseudoLabelData> labels;
 
+  InstrMnemonic *instr;
+
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler.
-  while ((cur_pc < (src_pc + *relocate_size))) {
-    if (opcode1 == relo_call) {
-    }
+  while ((cur_ip < (src_ip + *relocate_size))) {
+    OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
+    decodeItem->DecodeHandler(instr, demoItem, cur_ip);
+
   }
 }
 } // namespace x64
