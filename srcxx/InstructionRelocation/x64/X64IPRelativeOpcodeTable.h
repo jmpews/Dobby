@@ -105,9 +105,9 @@ enum OperandEncodingType {
 
 enum OpcodeFlag { OPCODE, PREFIX };
 
-enum OpSize { OpSz_0 = 0, OpSz_8 = 1, OpSz_16 = 2, OpSz_32 = 4, OpSz_16or32 = OpSz_16 | OpSz_32 };
+enum OpSize { OpSz_0 = 0, OpSz_8 = 1, OpSz_16 = 2, OpSz_32 = 4, OpSz_16or32 = OpSz_16 | OpSz_32 , OpSz_64};
 
-enum ImmSize { ImmSz_0 = 0, ImmSz_8 = 8, ImmSz_16 = 16, ImmSz_32 = 32, ImmSz_16or32 = ImmSz_16 | ImmSz_32 };
+enum ImmSize { ImmSz_0 = 0, ImmSz_8 = 8, ImmSz_16 = 16, ImmSz_32 = 32, ImmSz_16or32 = ImmSz_16 | ImmSz_32 , ImmSz64};
 
 #define OpSz_NONE (OpSz_0 | ImmSz_0)
 
