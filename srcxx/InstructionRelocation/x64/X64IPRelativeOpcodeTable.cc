@@ -76,18 +76,18 @@ void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
 
 // ===== Decode ModRM Operand =====
 
-#define REX_W(byte) ((byte & 0b00001000) >>   3)
-#define REX_R(byte) ((byte & 0b00000100) >>   2)
-#define REX_X(byte) ((byte & 0b00000010) >>   1)
-#define REX_B(byte) ((byte & 0b00000001) >>   0)
+#define REX_W(byte) ((byte & 0b00001000) >> 3)
+#define REX_R(byte) ((byte & 0b00000100) >> 2)
+#define REX_X(byte) ((byte & 0b00000010) >> 1)
+#define REX_B(byte) ((byte & 0b00000001) >> 0)
 
 #define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
 #define ModRM_RM(byte) (byte & 0b00000111)
 
-#define SIB_Scale(sib) ((sib & 0b11000000)>>6)
-#define SIB_Index(sib) ((sib & 0b00111000)>>3)
-#define SIB_Base(sib) ((sib & 0b00000111)>>0)
+#define SIB_Scale(sib) ((sib & 0b11000000) >> 6)
+#define SIB_Index(sib) ((sib & 0b00111000) >> 3)
+#define SIB_Base(sib) ((sib & 0b00000111) >> 0)
 
 #define REX_SIB_Base(rex, sib) ((REX_B(rex) << 3) | SIB_Base(sib))
 
@@ -97,15 +97,17 @@ void _DecodeSIB(InstrMnemonic *instr, addr_t p) {
 }
 
 void _DecodeModRM(InstrMnemonic *instr, addr_t p) {
-  instr->instr.ModRM =  *(byte *)p;
+  instr->instr.ModRM = *(byte *)p;
   instr->len++;
 
   if (instr->instr.REX) {
     // Special Cases of REX Encodings
-    byte modrm = *(byte *)p;
     if (ModRM_RM(instr->instr.ModRM) == 0b100) {
       _DecodeSIB(instr, p + 1);
-    }
+      if (REX_SIB_Base(instr->instr.REX, instr->instr.SIB) == 0b0100) {
+        // Index Register is ESP
+      }
+    } else if (ModRM_RM(instr->instr.ModRM) == 0b100)
   }
 }
 
