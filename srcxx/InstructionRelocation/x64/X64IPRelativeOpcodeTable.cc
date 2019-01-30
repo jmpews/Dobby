@@ -3,108 +3,160 @@
 
 // clang-format on
 
-static void _DecodeOp(InstrMnemonic *instr, addr_t p, OpcodeType OpTy) {
-  instr->OpTy          = OpTy;
+#define _xUnknownOpHanlder -1, -1, -1, _UnknownOpHanlder
+void _UnknownOpHanlder(InstrMnemonic *instr, addr_t p) {
+}
+
+#define _xInvalidOpHanlder -1, -1, -1, _InValidOpHanlder
+void _InValidOpHanlder(InstrMnemonic *instr, addr_t p) {
+}
+
+inline void _ContinueDispatch(InstrMnemonic *instr, addr_t p) {
+  OpcodeDecodeItem *item = &OpcodeDecodeTable[*(unsigned char *)p];
+  item->DecodeHandler(instr, p);
+}
+
+// ===== Decode LegacyPrefix and REXPrefix =====
+
+// clang-format off
+#define _xDecodePrefix_0F 1, OpEn_NONE, OpSz_NONE, _DecodeLegacyPrefix
+#define _xDecodePrefix_66 1, OpEn_NONE, OpSz_NONE, _DecodePrefix_66
+#define _xDecodePrefix_67 1, OpEn_NONE, OpSz_NONE, _DecodeLegacyPrefix
+#define _xDecodeREXPrefix 1, OpEn_NONE, OpSz_NONE, _DecodeREXPrefix
+#define _xDecodePrefix    1, OpEn_NONE, OpSz_NONE, _DecodeLegacyPrefix
+#define _xDecodeSegPrefix 1, OpEn_NONE, OpSz_NONE, _DecodeLegacyPrefix
+// clang-format on
+
+void _DecodeREXPrefix(InstrMnemonic *instr, addr_t p) {
+  instr->instr.REX = *(byte *)p;
+  instr->len++;
+
+  _ContinueDispatch(instr, p + 1); // continue decode
+}
+
+void _DecodeLegacyPrefix(InstrMnemonic *instr, addr_t p) {
+  instr->instr.prefix = *(byte *)p;
+  instr->len++;
+
+  _ContinueDispatch(instr, p + 1); // continue decode
+}
+
+void _DecodePrefix_66(InstrMnemonic *instr, addr_t p) {
+  instr->OpSz = OpSz_16;
+  _DecodeLegacyPrefix(instr, p);
+}
+
+// ===== Decode Opcode =====
+
+static void _DecodeOp(InstrMnemonic *instr, addr_t p) {
   instr->instr.opcode1 = *(byte *)p;
   instr->len++;
 }
 
-void _DecodeModM(InstrMnemonic *instr, addr_t p) {
-  instr->instr.ModRM = *(byte *)p;
-  instr->len++;
+static void _DecodeOpExtraOp(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
 }
+
+static void _DecodeOpWithReg(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+}
+
+#define _xDecodeOpEn_ZO 1, OpEn_ZO, OpSz_NONE, _DecodeOpEn_ZO
+void _DecodeOpEn_ZO(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+}
+
+#define _xDecodeOpEn_O 1, OpEn_O, OpSz_NONE, _DecodeOpEn_O
+void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
+  _DecodeOpWithReg(instr, p);
+}
+
+// ===== Decode Operand =====
+
+// ===== Decode ModRM Operand =====
 
 void _DecodeModRM(InstrMnemonic *instr, addr_t p) {
   instr->instr.ModRM = *(byte *)p;
   instr->len++;
 }
 
-void _DecodeSIB(InstrMnemonic *instr, addr_t p) {
-  instr->instr.SIB = *(byte *)p;
-  instr->len++;
-}
-
-void _DecodeImmedite(InstrMnemonic *instr, addr_t p) {
+void _DecodeOpEn_M(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
 }
 
 void _DecodeOpEn_RM(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-  _DecodeModRM(instr, p);
-}
-
-void _DecodeOpEn_I(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-  _DecodeImmedite(instr, p);
-}
-
-void _DecodeOpEn_OI(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_RegInOp1);
-  _DecodeImmedite(instr, p);
-}
-
-void _DecodeOpEn_RMI(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-  _DecodeModRM(instr, p);
-  _DecodeImmedite(instr, p);
-}
-
-void _DecodeOpEn_MI(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1ExtraOp);
-  _DecodeModM(instr, p);
-  _DecodeImmedite(instr, p);
-}
-
-void _DecodeOpEn_M(InstrMnemonic *instr, addr_t p) {
-}
-
-#define _xUnknownOpHanlder 0, 0, 0, _UnknownOpHanlder
-void _UnknownOpHanlder(InstrMnemonic *instr, addr_t p) {
-}
-
-#define _xInvalidOpHanlder 0, 0, 0, _InValidOpHanlder
-void _InValidOpHanlder(InstrMnemonic *instr, addr_t p) {
-}
-
-#define _xDecodeOpEn_ZO 1, OpEn_ZO, 0, _DecodeOpEn_ZO
-void _DecodeOpEn_ZO(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-}
-
-#define _xDecodeOpEn_O 1, OpEn_O, 0, _DecodeOpEn_O
-void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_RegInOp1);
-}
-
-#define _xDecodePrefix_0F 1, 0, 0, _DecodePrefix
-#define _xDecodePrefix_66 1, 0, 0, _DecodePrefix
-#define _xDecodePrefix_67 1, 0, 0, _DecodePrefix
-#define _xDecodeREXPrefix 1, 0, 0, _DecodePrefix
-#define _xDecodePrefix 1, 0, 0, _DecodePrefix
-#define _xDecodeSegPrefix 1, 0, 0, _DecodePrefix
-void _DecodePrefix(InstrMnemonic *instr, addr_t p) {
-  instr->instr.prefix = *(byte *)p;
-  instr->len++;
-}
-
-void _DecodeOpEn_D(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-  _DecodeImmedite(instr, p);
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
 }
 
 void _DecodeOpEn_MR(InstrMnemonic *instr, addr_t p) {
-}
-
-#define _xDecodeOpC8 1, 0, 0, _DecodeOpC8
-void _DecodeOpC8(InstrMnemonic *instr, addr_t p) {
-  _DecodeOp(instr, p, OpTy_Op1);
-
-  instr->len = instr->len + 2 + 1;
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
 }
 
 void _DecodeOpEn_M1(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
 }
 
 void _DecodeOpEn_MC(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
+}
+
+// ===== Decode Immediate Operand =====
+
+void _DecodeImmedite(InstrMnemonic *instr, addr_t p) {
+  OpcodeDecodeItem *item = &OpcodeDecodeTable[*(unsigned char *)p];
+  if (item->OpSz & ImmSz_8) {
+    *(byte *)&instr->instr.Immediate = *(byte *)p;
+    instr->len += 1;
+  } else if (item->OpSz & ImmSz_16) {
+    *(word *)&instr->instr.Immediate = *(dword *)p;
+    instr->len += 2;
+  } else if (item->OpSz & ImmSz_32) {
+    *(dword *)&instr->instr.Immediate = *(dword *)p;
+    instr->len += 4;
+  }
+}
+
+void _DecodeOpEn_I(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeImmedite(instr, p + 1);
+}
+
+void _DecodeOpEn_OI(InstrMnemonic *instr, addr_t p) {
+  _DecodeOpWithReg(instr, p);
+  _DecodeImmedite(instr, p + 1);
+}
+
+void _DecodeOpEn_D(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeImmedite(instr, p + 1);
+}
+
+// ===== Decode ModRM Immediate Operand =====
+
+void _DecodeOpEn_RMI(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+  _DecodeModRM(instr, p + 1);
+  _DecodeImmedite(instr, p + 2);
+}
+
+void _DecodeOpEn_MI(InstrMnemonic *instr, addr_t p) {
+  _DecodeOpExtraOp(instr, p);
+  _DecodeModRM(instr, p + 1);
+  _DecodeImmedite(instr, p + 2);
+}
+
+// ===== Decode Specific Opcode =====
+
+#define _xDecodeOpC8 1, 0, 0, _DecodeOpC8
+void _DecodeOpC8(InstrMnemonic *instr, addr_t p) {
+  _DecodeOp(instr, p);
+
+  instr->len = instr->len + 2 + 1;
 }
 
 // http://ref.x86asm.net/coder.html#x04
@@ -114,7 +166,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x03, 2, OpEn_RM, OpSz_16or32, _DecodeOpEn_RM},
                                            {0x04, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x05, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x06, _xInvalidOpHanlder},
                                            {0x07, _xInvalidOpHanlder},
 #else
@@ -127,7 +179,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x0B, 2, OpEn_RM, OpSz_16or32, _DecodeOpEn_RM},
                                            {0x0C, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x0D, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x0E, _xInvalidOpHanlder},
 #else
                                            {0x0E, _xDecodeOpEn_ZO},
@@ -139,7 +191,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x13, 2, OpEn_RM, OpSz_16or32, _DecodeOpEn_RM},
                                            {0x14, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x15, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x16, _xInvalidOpHanlder},
                                            {0x17, _xInvalidOpHanlder},
 #else
@@ -152,7 +204,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x1B, 2, OpEn_RM, OpSz_16or32, _DecodeOpEn_RM},
                                            {0x1C, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x1D, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x1E, _xInvalidOpHanlder},
                                            {0x1F, _xInvalidOpHanlder},
 #else
@@ -166,7 +218,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x24, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x25, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
                                            {0x26, _xDecodeSegPrefix},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x27, _xInvalidOpHanlder},
 #else
                                            {0x27, _xDecodeOpEn_ZO},
@@ -178,7 +230,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x2C, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x2D, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
                                            {0x2E, _xDecodeSegPrefix},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x2F, _xInvalidOpHanlder},
 #else
                                            {0x2F, _xDecodeOpEn_ZO},
@@ -190,7 +242,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x34, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x35, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
                                            {0x36, _xDecodeSegPrefix},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x37, _xInvalidOpHanlder},
 #else
                                            {0x37, _xDecodeOpEn_ZO},
@@ -202,12 +254,12 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x3C, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0x3D, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
                                            {0x3E, _xDecodeSegPrefix},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x3F, _xInvalidOpHanlder},
 #else
                                            {0x3F, _xDecodeOpEn_ZO},
 #endif
-#ifdef DETOURS_X64 // For REX Prefix
+#if defined(_M_X64) || defined(__x86_64__) // For REX Prefix
                                            {0x40, _xDecodeREXPrefix},
                                            {0x41, _xDecodeREXPrefix},
                                            {0x42, _xDecodeREXPrefix},
@@ -258,7 +310,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x5D, _xInvalidOpHanlder},
                                            {0x5E, _xInvalidOpHanlder},
                                            {0x5F, _xInvalidOpHanlder},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x60, _xInvalidOpHanlder},
                                            {0x61, _xInvalidOpHanlder},
                                            {0x62, _xInvalidOpHanlder},
@@ -298,7 +350,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x7F, 1, OpEn_D, ImmSz_8, _DecodeOpEn_D},
                                            {0x80, 2, OpEn_MI, OpSz_8 | ImmSz_8, _DecodeOpEn_MI},
                                            {0x81, 2, OpEn_MI, ImmSz_16or32, _DecodeOpEn_MI},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x82, _xInvalidOpHanlder},
 #else
                                            {0x82, _xUnknownOpHanlder},
@@ -326,7 +378,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0x97, _xInvalidOpHanlder},
                                            {0x98, _xDecodeOpEn_ZO},
                                            {0x99, _xDecodeOpEn_ZO},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0x9A, _xInvalidOpHanlder},
 #else
                                            {0x9A, _xDecodeOpEn_ZO},
@@ -382,7 +434,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0xCB, _xDecodeOpEn_ZO},
                                            {0xCC, _xDecodeOpEn_ZO},
                                            {0xCD, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0xCE, _xInvalidOpHanlder},
 #else
                                            {0xCE, _xDecodeOpEn_ZO},
@@ -392,7 +444,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0xD1, 1, OpEn_M1, OpSz_16or32, _DecodeOpEn_M1},
                                            {0xD2, 1, OpEn_MC, OpSz_8, _DecodeOpEn_MC},
                                            {0xD3, 1, OpEn_MC, OpSz_16or32, _DecodeOpEn_MC},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0xD4, _xInvalidOpHanlder},
                                            {0xD5, _xInvalidOpHanlder},
 #else
@@ -419,7 +471,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, &_DecodeOp
                                            {0xE7, 1, OpEn_I, ImmSz_8, _DecodeOpEn_I},
                                            {0xE8, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
                                            {0xE9, 1, OpEn_I, ImmSz_16or32, _DecodeOpEn_I},
-#ifdef DETOURS_X64
+#if defined(_M_X64) || defined(__x86_64__)
                                            {0xEA, _xInvalidOpHanlder},
 #else
                                            {0xEA, _xUnknownOpHanlder},

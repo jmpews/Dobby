@@ -8,7 +8,7 @@ typedef char *addr_t;
 
 #ifndef __byte_defined
 #define __byte_defined
-typedef char byte;
+typedef unsigned char byte;
 #endif
 
 #ifndef __uint_defined
@@ -16,11 +16,22 @@ typedef char byte;
 typedef unsigned int uint;
 #endif
 
+#ifndef __word_defined
+#define __word_defined
+typedef short word;
+#endif
+
+#ifndef __dword_defined
+#define __dword_defined
+typedef int dword;
+#endif
+
 enum OpcodeType { OpTy_Op1, OpTy_RegInOp1, OpTy_Op1ExtraOp };
 
 struct Instr {
-
   byte prefix;
+
+  byte REX;
 
   union {
     byte opcode[3];
@@ -57,22 +68,26 @@ struct Instr {
 struct InstrMnemonic {
   uint len;
 
-  OpcodeType OpTy;
+  // OpcodeType OpTy;
+
+  int OpSz;
 
   struct Instr instr;
 };
 
 struct OpcodeDecodeItem {
   unsigned char opcode;
-  uint FixedSize;
-  uint OpEn;
-  uint OpSz;
+  int FixedSize;
+  int OpEn;
+  int OpSz;
+  // int flag;
   void (*DecodeHandler)(InstrMnemonic *, addr_t);
 };
 
 // clang-format off
 enum OperandEncodingType {
-  OpEn_ZO = 0,
+  OpEn_NONE =0,
+  OpEn_ZO,
   OpEn_M,
   OpEn_I,
   OpEn_D,
@@ -81,16 +96,23 @@ enum OperandEncodingType {
   OpEn_MR,
   OpEn_MI,
   OpEn_OI,
+  OpEn_M1,
+  OpEn_MC,
   OpEn_RMI
 };
+
 // clang-format on
 
-enum UnsuppordOperandEncodingType { OpEn_M1, OpEn_MC };
+enum OpcodeFlag { OPCODE, PREFIX };
 
-enum OpSize { OpSz_8 = 1, OpSz_16 = 2, OpSz_16or32 = 4 };
+enum OpSize { OpSz_0 = 0, OpSz_8 = 1, OpSz_16 = 2, OpSz_32 = 4, OpSz_16or32 = OpSz_16 | OpSz_32 };
 
-enum ImmSize { ImmSz_8 = 8, ImmSz_16 = 16, ImmSz_16or32 = 32 };
+enum ImmSize { ImmSz_0 = 0, ImmSz_8 = 8, ImmSz_16 = 16, ImmSz_32 = 32, ImmSz_16or32 = ImmSz_16 | ImmSz_32 };
+
+#define OpSz_NONE (OpSz_0 | ImmSz_0)
 
 extern OpcodeDecodeItem OpcodeDecodeTable[257];
+
+void _DecodePrefix(InstrMnemonic *instr, addr_t p);
 
 #endif
