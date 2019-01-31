@@ -2,6 +2,8 @@
 
 #include "catch.hpp"
 
+#include <string.h>
+
 #include "InstructionRelocation/x64/X64IPRelativeOpcodeTable.h"
 
 /*
@@ -65,13 +67,49 @@ unsigned char hexData[145] = {
     0x00, 0x48, 0x8B, 0x4F, 0x08, 0x89, 0xB7, 0xB0, 0x02, 0x00, 0x00, 0x48, 0x8B, 0x5C, 0x24, 0x50, 0x48, 0x8B, 0x74,
     0x24, 0x58, 0x48, 0x83, 0xC4, 0x40, 0x5F, 0xE9, 0x2F, 0xBC, 0xFF, 0xFF};
 
+// clang-format off
+int instrLenArray[] = {
+  5,
+  5,
+  1,
+  4,
+  3,
+  7,
+  2,
+  2,
+  5,
+  3,
+  7,
+  5,
+  6,
+  5,
+  6,
+  7,
+  5,
+  5,
+  8,
+  2,
+  5,
+  7,
+  4,
+  6,
+  4,
+  6,
+  5,
+  5,
+  4,
+  1,
+  5
+};
+// clang-format on
+
 TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
   void *TargetFunction = hexData;
   uintptr_t srcIP      = (uintptr_t)TargetFunction;
   uintptr_t currIP     = srcIP;
   int funcLen          = sizeof(hexData);
   unsigned char opcode1         = 0;
-  InstrMnemonic instr;
+  InstrMnemonic instr = {0};
 
   int i   = 0;
   opcode1 = *(byte *)srcIP;
@@ -80,14 +118,14 @@ TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
     decodeItem->DecodeHandler(&instr, (addr_t)currIP);
     
+    assert(instr.len == instrLenArray[i]);
     currIP += instr.len;
-    opcode1 = *(byte *)srcIP;
+    opcode1 = *(byte *)currIP;
     if(instr.instr.opcode) {
-      // clear instr
-      instr.instr.opcode1 = 0;
-      instr.instr.prefix= 0;
-      instr.len = 0;
       printf("ndx %d: %d\n", i, instr.len);
+      // clear instr
+      memset((void *)&instr, 0, sizeof(InstrMnemonic));
     }
+    i++;
   } while (currIP < (srcIP + funcLen));
 }
