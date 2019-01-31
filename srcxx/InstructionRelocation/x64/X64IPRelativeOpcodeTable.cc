@@ -113,19 +113,41 @@ void _DecodeModRM(InstrMnemonic *instr, addr_t p) {
   instr->instr.ModRM = *(byte *)p;
   instr->len++;
 
+#if defined(_M_X64) || defined(__x86_64__)
+  if(ModRM_Mod(instr->instr.ModRM) == 0b00 && ModRM_RM(instr->instr.ModRM) == 0b101) {
+    // RIP-Relative Addressing
+    _DecodeDisplacement32(instr, p + (instr->len - init_len));
+    return;
+  }
+#endif
+
   // Addressing Forms with the SIB Byte
   if (ModRM_Mod(instr->instr.ModRM) != 0b11 && ModRM_RM(instr->instr.ModRM) == 0b100) {
     _DecodeSIB(instr, p + (instr->len - init_len));
   }
 
+  // [REG]
+  if (ModRM_Mod(instr->instr.ModRM) == 0b00) {
+    if(ModRM_RM(instr->instr.ModRM) == 0b101) {
+      _DecodeDisplacement32(instr, p + (instr->len - init_len));
+      return;
+    }
+  }
+
   // [REG+disp8}
   if (ModRM_Mod(instr->instr.ModRM) == 0b01) {
     _DecodeDisplacement8(instr, p + (instr->len - init_len));
+    return;
   }
 
   // [REG+disp32}
   if (ModRM_Mod(instr->instr.ModRM) == 0b10) {
     _DecodeDisplacement32(instr, p + (instr->len - init_len));
+    return;
+  }
+
+  // REG
+  if (ModRM_Mod(instr->instr.ModRM) == 0b11) {
   }
 }
 
@@ -156,7 +178,19 @@ void _DecodeOpEn_MC(InstrMnemonic *instr, addr_t p) {
 
 // ===== Decode Immediate Operand =====
 
-void _DecodeImmedite(InstrMnemonic *instr, addr_t p, ImmediteSize sz) {
+void _DecodeImmedite(InstrMnemonic *instr, addr_t p, int sz) {
+  OpcodeDecodeItem *item = &OpcodeDecodeTable[instr->instr.opcode1];
+  if (sz == ImmSz_0) {
+    sz = item->ImmediteSz;
+    if (sz == (ImmSz_16 | ImmSz_32)) {
+      if (instr->instr.prefix == 0x66) {
+        sz = ImmSz_16;
+      } else {
+        sz = ImmSz_32; // Default Immedite Size
+      }
+    }
+  }
+
   if (sz == ImmSz_8) {
     *(byte *)&instr->instr.Immediate = *(byte *)p;
     instr->len += 1;
@@ -181,7 +215,7 @@ void _DecodeOpEn_OI(InstrMnemonic *instr, addr_t p) {
 
 void _DecodeOpEn_D(InstrMnemonic *instr, addr_t p) {
   _DecodeOp(instr, p);
-  _DecodeImmedite(instr, p + 1,  instr->ImmediteSz);
+  _DecodeImmedite(instr, p + 1, instr->ImmediteSz);
 }
 
 // ===== Decode ModRM Immediate Operand =====
@@ -189,13 +223,13 @@ void _DecodeOpEn_D(InstrMnemonic *instr, addr_t p) {
 void _DecodeOpEn_RMI(InstrMnemonic *instr, addr_t p) {
   _DecodeOp(instr, p);
   _DecodeModRM(instr, p + 1);
-  _DecodeImmedite(instr, p + 2,  instr->ImmediteSz);
+  _DecodeImmedite(instr, p + 2, instr->ImmediteSz);
 }
 
 void _DecodeOpEn_MI(InstrMnemonic *instr, addr_t p) {
   _DecodeOpExtraOp(instr, p);
   _DecodeModRM(instr, p + 1);
-  _DecodeImmedite(instr, p + 2,  instr->ImmediteSz);
+  _DecodeImmedite(instr, p + 2, instr->ImmediteSz);
 }
 
 // ===== Decode Specific Opcode =====
@@ -375,7 +409,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, ImmSz_0, _
                                            {0x68, 1, OpEn_I, OpSz_16 | OpSz_32, ImmSz_16 | ImmSz_32, _DecodeOpEn_I},
                                            {0x69, 2, OpEn_RMI, OpSz_16 | OpSz_32, ImmSz_16 | ImmSz_32, _DecodeOpEn_RMI},
                                            {0x6A, 1, OpEn_I, OpSz_0, ImmSz_8, _DecodeOpEn_I},
-                                           {0x6B, 1, OpEn_RMI, OpSz_16|OpSz_32, ImmSz_8, _DecodeOpEn_RMI},
+                                           {0x6B, 1, OpEn_RMI, OpSz_16 | OpSz_32, ImmSz_8, _DecodeOpEn_RMI},
                                            {0x6C, _xDecodeOpEn_ZO},
                                            {0x6D, _xDecodeOpEn_ZO},
                                            {0x6E, _xDecodeOpEn_ZO},
@@ -403,7 +437,7 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, ImmSz_0, _
 #else
                                            {0x82, _xUnknownOpHanlder},
 #endif
-                                           {0x83, 2, OpEn_MI, OpSz_16|OpSz_32, ImmSz_8, _DecodeOpEn_MI},
+                                           {0x83, 2, OpEn_MI, OpSz_16 | OpSz_32, ImmSz_8, _DecodeOpEn_MI},
                                            {0x84, 2, OpEn_MR, OpSz_8, ImmSz_0, _DecodeOpEn_MR},
                                            {0x85, 2, OpEn_MR, OpSz_16 | OpSz_32, ImmSz_0, _DecodeOpEn_MR},
                                            {0x86, 2, OpEn_RM, OpSz_16 | OpSz_32, ImmSz_0, _DecodeOpEn_RM},
@@ -452,22 +486,26 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, ImmSz_0, _
                                            {0xAD, _xDecodeOpEn_ZO},
                                            {0xAE, _xDecodeOpEn_ZO},
                                            {0xAF, _xDecodeOpEn_ZO},
-                                           {0xB0, 1, OpEn_OI, OpSz_0, ImmSz_8, _DecodeOpEn_OI},
-                                           {0xB1, _xInvalidOpHanlder},
-                                           {0xB2, _xInvalidOpHanlder},
-                                           {0xB3, _xInvalidOpHanlder},
-                                           {0xB4, _xInvalidOpHanlder},
-                                           {0xB5, _xInvalidOpHanlder},
-                                           {0xB6, _xInvalidOpHanlder},
-                                           {0xB7, _xInvalidOpHanlder},
-                                           {0xB8, 1, OpEn_OI, OpSz_16 | OpSz_32, ImmSz_16 | ImmSz_32, _DecodeOpEn_OI},
-                                           {0xB9, _xInvalidOpHanlder},
-                                           {0xBA, _xInvalidOpHanlder},
-                                           {0xBB, _xInvalidOpHanlder},
-                                           {0xBC, _xInvalidOpHanlder},
-                                           {0xBD, _xInvalidOpHanlder},
-                                           {0xBE, _xInvalidOpHanlder},
-                                           {0xBF, _xInvalidOpHanlder},
+#undef SAME_ITEM_LAZY 
+#define SAME_ITEM_LAZY 1, OpEn_OI, OpSz_0, ImmSz_8, _DecodeOpEn_OI
+                                           {0xB0, SAME_ITEM_LAZY},
+                                           {0xB1, SAME_ITEM_LAZY},
+                                           {0xB2, SAME_ITEM_LAZY},
+                                           {0xB3, SAME_ITEM_LAZY},
+                                           {0xB4, SAME_ITEM_LAZY},
+                                           {0xB5, SAME_ITEM_LAZY},
+                                           {0xB6, SAME_ITEM_LAZY},
+                                           {0xB7, SAME_ITEM_LAZY},
+#undef SAME_ITEM_LAZY 
+#define SAME_ITEM_LAZY 1, OpEn_OI, OpSz_16 | OpSz_32, ImmSz_16 | ImmSz_32, _DecodeOpEn_OI
+                                           {0xB8, SAME_ITEM_LAZY},
+                                           {0xB9, SAME_ITEM_LAZY},
+                                           {0xBA, SAME_ITEM_LAZY},
+                                           {0xBB, SAME_ITEM_LAZY},
+                                           {0xBC, SAME_ITEM_LAZY},
+                                           {0xBD, SAME_ITEM_LAZY},
+                                           {0xBE, SAME_ITEM_LAZY},
+                                           {0xBF, SAME_ITEM_LAZY},
                                            {0xC0, 2, OpEn_MI, OpSz_8, ImmSz_8, _DecodeOpEn_MI},
                                            {0xC1, 2, OpEn_MI, OpSz_16 | OpSz_32, ImmSz_16 | ImmSz_32, _DecodeOpEn_MI},
                                            {0xC2, 1, OpEn_I, OpSz_0, ImmSz_16, _DecodeOpEn_I},
