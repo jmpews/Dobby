@@ -91,23 +91,40 @@ void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
 
 #define REX_SIB_Base(rex, sib) ((REX_B(rex) << 3) | SIB_Base(sib))
 
+void _DecodeDisplacement8(InstrMnemonic *instr, addr_t p) {
+  *(byte *)&instr->instr.Displacement = *(byte *)p;
+  instr->len += 1;
+}
+
+void _DecodeDisplacement32(InstrMnemonic *instr, addr_t p) {
+  *(dword *)&instr->instr.Displacement = *(byte *)p;
+  instr->len += 4;
+}
+
 void _DecodeSIB(InstrMnemonic *instr, addr_t p) {
   instr->instr.SIB = *(byte *)p;
   instr->len++;
 }
 
 void _DecodeModRM(InstrMnemonic *instr, addr_t p) {
+  int init_len = instr->len;
+
   instr->instr.ModRM = *(byte *)p;
   instr->len++;
 
-  if (instr->instr.REX) {
-    // Special Cases of REX Encodings
-    if (ModRM_RM(instr->instr.ModRM) == 0b100) {
-      _DecodeSIB(instr, p + 1);
-      if (REX_SIB_Base(instr->instr.REX, instr->instr.SIB) == 0b0100) {
-        // Index Register is ESP
-      }
-    } else if (ModRM_RM(instr->instr.ModRM) == 0b100)
+  // Addressing Forms with the SIB Byte
+  if (ModRM_RM(instr->instr.ModRM) == 0b100) {
+    _DecodeSIB(instr, p + (instr->len - init_len));
+  }
+
+  // [REG+disp8}
+  if (ModRM_Mod(instr->instr.ModRM) == 0b01) {
+    _DecodeDisplacement8(instr, p + (instr->len - init_len));
+  }
+
+  // [REG+disp32}
+  if (ModRM_Mod(instr->instr.ModRM) == 0b10) {
+    _DecodeDisplacement32(instr, p + (instr->len - init_len));
   }
 }
 
