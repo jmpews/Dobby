@@ -128,4 +128,6 @@ TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
     }
     i++;
   } while (currIP < (srcIP + funcLen));
+
+  printf("InstructionRelocation/x64 Done!");
 }
