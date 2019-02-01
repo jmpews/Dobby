@@ -10,8 +10,6 @@ public:
   InterceptRouting(HookEntry *entry) : entry_(entry) {
   }
 
-  static InterceptRouting *New(HookEntry *entry);
-
   void Dispatch();
 
   void Commit();

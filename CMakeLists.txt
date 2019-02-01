@@ -107,6 +107,12 @@ set(Target.SOURCE_DIR
     ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave
 )
 
+set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+)
+
 set(arch x64)
 set(ARCH X64)
 
@@ -189,7 +195,7 @@ include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 
 if(SHARED)
     # build shared library
-    add_library(hookzz SHARED ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
+    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
 else()
     # build static library
     add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
