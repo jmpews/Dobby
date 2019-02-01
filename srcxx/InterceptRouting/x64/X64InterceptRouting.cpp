@@ -17,12 +17,6 @@
 
 using namespace zz::x64;
 
-InterceptRouting *InterceptRouting::New(HookEntry *entry) {
-  // DEL return reinterpret_cast<InterceptRouting *>(new X64InterceptRouting(entry));
-  return NULL;
-}
-
-// Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
 void X64InterceptRouting::Prepare() {
   uint64_t src_address     = (uint64_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
@@ -47,7 +41,6 @@ void X64InterceptRouting::Active() {
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
-
 
   CodeGen codegen(&turbo_assembler_);
 
