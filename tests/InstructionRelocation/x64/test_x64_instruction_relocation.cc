@@ -118,7 +118,7 @@ TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
     decodeItem->DecodeHandler(&instr, (addr_t)currIP);
     
-    assert(instr.len == instrLenArray[i]);
+    REQUIRE(instr.len == instrLenArray[i]);
     currIP += instr.len;
     opcode1 = *(byte *)currIP;
     if(instr.instr.opcode) {

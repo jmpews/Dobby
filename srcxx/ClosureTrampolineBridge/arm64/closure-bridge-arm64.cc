@@ -95,8 +95,8 @@ void *get_closure_bridge() {
   // branch to next hop, @modify by `xxx_routing_dispatch`
   _ br(x16);
 
-  AssemblyCode *code = AssemblyCode::FinalizeFromTruboAssember(&turbo_assembler_);
-  closure_bridge      = (void *)code->raw_instruction_start();
+  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+  closure_bridge     = (void *)code->raw_instruction_start();
 
   DLOG("[*] Build the closure bridge at %p\n", closure_bridge);
 

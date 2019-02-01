@@ -42,7 +42,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ EmitInt64((uword)get_closure_bridge());
   // ===
 
-  AssemblyCode *code = AssemblyCode::FinalizeFromTruboAssember(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
+  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
   entry->address       = (void *)code->raw_instruction_start();
   entry->carry_data    = carry_data;

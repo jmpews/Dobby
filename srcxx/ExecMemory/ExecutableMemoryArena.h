@@ -19,6 +19,8 @@ class ExecutableMemoryArena {
 public:
     static AssemblyCodeChunk *AllocateCodeChunk(int inSize);
 
+    static void Destory(AssemblyCodeChunk *codeChunk);
+
 private:
   static LiteMutableArray page_chunks;
 };

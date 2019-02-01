@@ -128,7 +128,7 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   }
 
   // Generate executable code
-  AssemblyCode *code = AssemblyCode::FinalizeFromTruboAssember(&turbo_assembler_);
+  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   return code;
 }
 

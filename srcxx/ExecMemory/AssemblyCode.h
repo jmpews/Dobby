@@ -21,13 +21,17 @@ public:
   static AssemblyCode *FinalizeFromAddress(uintptr_t address, int size);
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
-  static AssemblyCode *FinalizeFromTruboAssember(AssemblerBase *assember);
+  static AssemblyCode *FinalizeFromTurboAssember(AssemblerBase *assember);
 
   // dummy method
-  inline uintptr_t raw_instruction_start() { return address_; };
+  inline uintptr_t raw_instruction_start() {
+    return address_;
+  };
 
   // dummy method
-  inline int raw_instruction_size() { return size_; };
+  inline int raw_instruction_size() {
+    return size_;
+  };
 
 private:
   uintptr_t address_;
