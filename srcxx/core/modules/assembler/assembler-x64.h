@@ -11,7 +11,7 @@
 namespace zz {
 namespace x64 {
 
-#define IsInt8(imm) (2^8 > imm)
+#define IsInt8(imm) ((2 ^ 8) > imm)
 
 class PseudoLabel : public Label {
 public:
@@ -154,8 +154,8 @@ class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
     int base_ = base.code();
-    int rbp_ = rbp.code();
-    int rsp_ = rsp.code();
+    int rbp_  = rbp.code();
+    int rsp_  = rsp.code();
     if ((disp == 0) && ((base_ & 7) != rbp_)) {
       SetModRM(0, base);
       if ((base_ & 7) == rsp_) {
@@ -222,17 +222,21 @@ private:
 
 class Assembler : public AssemblerBase {
 public:
-    void Emit1(byte val) {
+  void Emit1(byte val) {
+  }
 
-    }
-    void pushfq() {
-      Emit1(0x9C);
-    }
+  void pushfq() {
+    Emit1(0x9C);
+  }
+
 
 };
 
 class TurboAssembler : public Assembler {
 public:
+  addr_t CurrentIP() {
+    return pc_offset() + (addr_t )realized_address_;
+  }
 };
 
 } // namespace x64

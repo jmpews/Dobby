@@ -7,9 +7,30 @@
 #include <stdio.h>
 #include <stdint.h>
 
-typedef intptr_t word;
-typedef uintptr_t uword;
-typedef char byte;
+#ifndef __addr_t_defined
+#define __addr_t_defined
+typedef char *addr_t;
+#endif
+
+#ifndef __byte_defined
+#define __byte_defined
+typedef unsigned char byte;
+#endif
+
+#ifndef __uint_defined
+#define __uint_defined
+typedef unsigned int uint;
+#endif
+
+#ifndef __word_defined
+#define __word_defined
+typedef short word;
+#endif
+
+#ifndef __dword_defined
+#define __dword_defined
+typedef int dword;
+#endif
 
 #if defined(_M_X64) || defined(__x86_64__)
 #define TARGET_ARCH_X64 1

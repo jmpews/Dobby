@@ -121,6 +121,12 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
 
 )
 
+if(PROCESSOR.X86_64)
+    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
+        ${Target.path}/srcxx/InstructionRelocation/x86
+    )
+endif()
+
 set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
     ${Target.path}/srcxx/core/modules/assembler/assembler.cc
     ${Target.path}/srcxx/core/modules/assembler/assembler-${arch}.cc

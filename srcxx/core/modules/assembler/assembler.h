@@ -76,8 +76,8 @@ public:
 
 protected:
   CodeBuffer *buffer_;
+
   void *realized_address_;
-  // DEL ObjectPool *object_pool_;
 };
 
 } // namespace zz

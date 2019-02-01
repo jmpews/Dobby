@@ -19,9 +19,9 @@ AssemblyCode *AssemblyCode::FinalizeFromAddress(uintptr_t address, int size) {
   return code;
 }
 
-AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) {
+AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) {
   TurboAssembler *turboAssembler = reinterpret_cast<TurboAssembler *>(assembler);
-  int buffer_size                   = turboAssembler->GetCodeBuffer()->getSize();
+  int buffer_size                = turboAssembler->GetCodeBuffer()->getSize();
 
 // Allocate the executable memory
 #if TARGET_ARCH_ARM64 || TARGET_ARCH_ARM
@@ -32,7 +32,8 @@ AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) 
 
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
   turboAssembler->CommitRealizeAddress(codeChunk->address);
-  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(), reinterpret_cast<CodeBufferBase *>(turboAssembler->GetCodeBuffer()));
+  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(),
+                                 reinterpret_cast<CodeBufferBase *>(turboAssembler->GetCodeBuffer()));
 
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;
@@ -43,10 +44,8 @@ AssemblyCode *AssemblyCode::FinalizeFromTruboAssember(AssemblerBase *assembler) 
 }
 
 void AssemblyCode::initWithCodeBuffer(CodeBuffer *codeBuffer) {
-
 }
 void AssemblyCode::initWithAddressRange(void *address, int size) {
-
 }
 
 } // namespace zz

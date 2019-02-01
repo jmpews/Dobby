@@ -16,6 +16,10 @@ using namespace zz;
 
 LiteMutableArray ExecutableMemoryArena::page_chunks;
 
+void ExecutableMemoryArena::Destory(AssemblyCodeChunk *codeChunk) {
+  return;
+}
+
 AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
   void *result                 = NULL;
   ExecutablePage *page         = NULL;

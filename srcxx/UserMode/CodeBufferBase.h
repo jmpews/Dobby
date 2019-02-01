@@ -6,6 +6,16 @@
 class CodeBufferBase : public LiteMutableBuffer {
 
 public:
+  void Emit8(uint8_t data);
+
+  void Emit16(uint16_t data);
+
+  void Emit32(uint32_t data);
+
+  void Emit64(uint64_t data);
+
+  void EmitBuffer(void *buffer, int len);
+
   template <typename T> T Load(int offset);
 
   template <typename T> void Store(int offset, T value);
