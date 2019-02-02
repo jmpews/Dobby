@@ -229,14 +229,12 @@ public:
     Emit1(0x9C);
   }
 
-
+  void jmp(Immediate imm);
 };
 
 class TurboAssembler : public Assembler {
 public:
-  addr_t CurrentIP() {
-    return pc_offset() + (addr_t )realized_address_;
-  }
+  addr_t CurrentIP();
 };
 
 } // namespace x64
