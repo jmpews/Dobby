@@ -203,7 +203,7 @@ void ARMInterceptRouting::BuildFastForwardTrampoline() {
   Code *code;
   if (entry_->type == kFunctionInlineHook) {
     forward_address = (uintptr_t)entry_->replace_call;
-  } else if (entry_->type == kDynamicBinaryInstrumentation) {
+  } else if (entry_->type == kDynamicBinaryInstrument) {
     forward_address = (uintptr_t)entry_->prologue_dispatch_bridge;
   } else if (entry_->type == kFunctionWrapper) {
     forward_address = (uintptr_t)entry_->prologue_dispatch_bridge;
@@ -220,7 +220,7 @@ void ARMInterceptRouting::BuildFastForwardTrampoline() {
 }
 
 // Add dbi_call handler before running the origin instructions
-void ARMInterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
+void ARMInterceptRouting::BuildDynamicBinaryInstrumentRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry =
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
@@ -234,7 +234,9 @@ void ARMInterceptRouting::BuildDynamicBinaryInstrumentationRouting() {
 }
 
 // alias Active
-void ARMInterceptRouting::Commit() { Active(); }
+void ARMInterceptRouting::Commit() {
+  Active();
+}
 
 // active arm intercept routing
 void ARMInterceptRouting::active_arm_intercept_routing() {

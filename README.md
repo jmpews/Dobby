@@ -6,7 +6,7 @@ _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 
 ## Features
 
-- Static Binary Instrumentation for Mach-O [doing]
+- Static Binary Instrument for Mach-O [doing]
 
 - **replace function** with `replace_call`
 
@@ -156,7 +156,7 @@ __attribute__((constructor)) void initlializeTemplate() {
     int slide                      = _dyld_get_image_vmaddr_slide(0);
     uintptr_t targetVmAddr         = 0x1001152BC;
     uintptr_t finalAddr            = targetVmAddr + slide;
-    ZzDynamicBinaryInstrumentation((void *)finalAddr, catchDecrypt);
+    ZzDynamicBinaryInstrument((void *)finalAddr, catchDecrypt);
 }
 ```
 

@@ -10,8 +10,8 @@
 
 class DynamicBinaryInstrumentRouting : public InterceptRouting {
 public:
-
-  DynamicBinaryInstrumentRouting(HookEntry *entry) : DynamicBinaryInstrumentRouting(entry) {}
+  DynamicBinaryInstrumentRouting(HookEntry *entry) : DynamicBinaryInstrumentRouting(entry) {
+  }
 
   virtual void Commit();
 
@@ -20,7 +20,7 @@ private:
 
   virtual void Active();
 
-  virtual void BuildDynamicBinaryInstrumentationRouting();
+  virtual void BuildDynamicBinaryInstrumentRouting();
 };
 
 #endif

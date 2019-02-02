@@ -176,14 +176,12 @@ set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPl
 endif()
 
 #srcxx.InterceptRoutingPlugin.FunctionInlineReplace
-if(Plugin.FunctionInlineReplace)
-    set(Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES
-        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch1}.cc
-        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
-    )
-    source_group(srcxx.InterceptRoutingPlugin.FunctionInlineReplace FILES ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
-    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
-endif()
+set(Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch1}.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+)
+source_group(srcxx.InterceptRoutingPlugin.FunctionInlineReplace FILES ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
 
 #srcxx.InterceptRoutingPlugin.FunctionWrapper
 if(Plugin.FunctionWrapper)
@@ -205,10 +203,9 @@ if(Plugin.FunctionWrapper OR Plugin.DynamicBinaryInstrument)
     set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
 endif()
 
-
 #srcxx.MultiThreadSupport
 if(MultiThreadSupport)
-    file(GLOB Target.srcxx.MultiThreadSupport.FILES ${Target.path}/srcxx/MultiThreadSupport/*.cc)
+    file(GLOB Target.srcxx.MultiThreadSupport.FILES ${Target.path}/srcxx/MultiThreadSupport/*.cpp)
     source_group(srcxx.MultiThreadSupport FILES ${Target.srcxx.MultiThreadSupport.FILES})
     set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.MultiThreadSupport.FILES})
 endif()
@@ -247,7 +244,7 @@ source_group(srcxx.UserMode FILES ${Target.srcxx.UserMode.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.FILES})
 
 #srcxx
-file(GLOB Target.srcxx.FILES ${Target.path}/srcxx/*.cc)
+file(GLOB Target.srcxx.FILES ${Target.path}/srcxx/*.cpp)
 source_group(srcxx FILES ${Target.srcxx.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.FILES})
 
@@ -259,7 +256,6 @@ include_directories(
     ${Target.path}/OneLib/stdcxx
     ${Target.path}/OneLib/include
 )
-
 
 if(SHARED)
     # build shared library

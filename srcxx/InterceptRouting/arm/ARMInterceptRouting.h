@@ -19,7 +19,8 @@ public:
   // execute arm instruction or thumb instruction
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
-  ARMInterceptRouting(HookEntry *entry) : InterceptRouting(entry) {}
+  ARMInterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
+  }
 
   virtual void Commit();
 
@@ -34,7 +35,7 @@ private:
 
   virtual void BuildPreCallRouting();
 
-  virtual void BuildDynamicBinaryInstrumentationRouting();
+  virtual void BuildDynamicBinaryInstrumentRouting();
 
   virtual void BuildPostCallRouting();
 

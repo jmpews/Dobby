@@ -15,7 +15,7 @@ PUBLIC RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL dbi_call)
   HookEntry *entry           = new HookEntry();
   entry->id                  = interceptor->entries->getCount();
   entry->dbi_call            = dbi_call;
-  entry->type                = kDynamicBinaryInstrumentation;
+  entry->type                = kDynamicBinaryInstrument;
   entry->instruction_address = inst_address;
 
   DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry);
