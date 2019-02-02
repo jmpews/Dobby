@@ -42,6 +42,8 @@ void X64InterceptRouting::Active() {
 
   CodeGen codegen(&turbo_assembler_);
 
+  codegen.JmpBranch((addr_t)branch_address);
+
   MemoryOperationError err;
   err = CodePatchTool::PatchCodeBuffer((void *)target_address,
                                        reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
