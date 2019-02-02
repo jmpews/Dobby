@@ -18,7 +18,7 @@ public:
   void *GetTrampolineTarget();
 
 private:
-  virtual void BuildDynamicBinaryInstrumentationRouting();
+  virtual void BuildDynamicBinaryInstrumentRouting();
 
 private:
   void *prologue_dispatch_bridge;

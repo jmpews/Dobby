@@ -10,7 +10,7 @@ public:
   InterceptRouting(HookEntry *entry) : entry_(entry) {
   }
 
-  void Dispatch();
+  virtual void Dispatch() = 0;
 
   void Commit();
 

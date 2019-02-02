@@ -6,7 +6,7 @@
 #include "intercept_routing_handler.h"
 #include "MultiThreadSupport/ThreadSupport.h"
 
-#include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_common_handler.h"
+#include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.h"
 
 void instrument_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   // run the `dbi_call`, before the `instruction_address`

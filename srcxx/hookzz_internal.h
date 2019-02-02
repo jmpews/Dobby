@@ -45,7 +45,7 @@ typedef struct _HookEntry {
 
   // `dbi_call` will be execution before the `instruction_address`
   // @access all the register
-  // @use in ZzDynamicBinaryInstrumentation
+  // @use in ZzDynamicBinaryInstrument
   DBICALL dbi_call;
 
   // `replace_call` just normal as inlinehook

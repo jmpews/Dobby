@@ -91,7 +91,7 @@ typedef enum _RetStatus {
 typedef enum _PackageType {
   kFunctionWrapper,
   kFunctionInlineHook,
-  kDynamicBinaryInstrumentation
+  kDynamicBinaryInstrument
 } PackageType, HookEntryType;
 
 typedef struct _HookEntryInfo {
@@ -120,7 +120,7 @@ RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
-RetStatus ZzDynamicBinaryInstrumentation(void *inst_address, DBICALL dbi_call);
+RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL dbi_call);
 
 #ifdef __cplusplus
 }

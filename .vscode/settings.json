@@ -65,7 +65,8 @@
     "list": "cpp",
     "xhash": "cpp",
     "xtree": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "iosfwd": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

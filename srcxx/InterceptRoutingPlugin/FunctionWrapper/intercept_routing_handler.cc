@@ -6,7 +6,7 @@
 #include "intercept_routing_handler.h"
 #include "MultiThreadSupport/ThreadSupport.h"
 
-#include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_common_handler.h"
+#include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.h"
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   DLOG("%s\n", "[*] catch pre_call_forward_handler");
@@ -68,14 +68,5 @@ void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
   DLOG("%s\n", "[*] catch epilogue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   post_call_forward_handler(reg_ctx, entry);
-  return;
-}
-
-// Closure bridge branch here unitily, then  common_bridge_handler will dispatch to other handler.
-void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry) {
-  DLOG("[*] catch common bridge handler, carry data: %p, carry handler: %p\n",
-       ((HookEntry *)entry->carry_data)->target_address, entry->carry_handler);
-  USER_CODE_CALL UserCodeCall = (USER_CODE_CALL)entry->carry_handler;
-  UserCodeCall(reg_ctx, entry);
   return;
 }
