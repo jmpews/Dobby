@@ -10,9 +10,11 @@ namespace zz {
 
 class Label {
 public:
-  Label() : pos_(0), near_link_pos_(0) {}
+  Label() : pos_(0), near_link_pos_(0) {
+  }
 
-  ~Label() {}
+  ~Label() {
+  }
 
 public:
   bool is_bound() const;
@@ -49,14 +51,14 @@ private:
 
 class ExternalReference {
 public:
-  explicit ExternalReference(void *address) : address_(address) {}
+  explicit ExternalReference(void *address) : address_(address) {
+  }
 
   const void *address();
 
 private:
   const void *address_;
 };
-
 
 class AssemblerBase {
 public:
@@ -89,7 +91,7 @@ protected:
 #include "core/modules/assembler/assembler-arm64.h"
 #elif TARGET_ARCH_X64
 #include "core/modules/assembler/assembler-x64.h"
-#include "UserMode/X86_64/code-buffer-x64.h"
+#include "UserMode/X64/code-buffer-x64.h"
 #else
 #error "unsupported architecture"
 #endif
