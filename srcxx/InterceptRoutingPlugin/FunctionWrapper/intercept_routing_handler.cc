@@ -6,6 +6,8 @@
 #include "intercept_routing_handler.h"
 #include "MultiThreadSupport/ThreadSupport.h"
 
+#include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_common_handler.h"
+
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   DLOG("%s\n", "[*] catch pre_call_forward_handler");
   StackFrame *stackframe = new StackFrame();
@@ -27,7 +29,7 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   stackframe->orig_ret = get_func_ret_address(reg_ctx);
 
   // set the prologue bridge next hop address with the patched instructions has been relocated
-  set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_function);
+  set_routing_bridge_next_hop(reg_ctx, entry->relocated_origin_function);
 
   // replace the function ret address with our epilogue_routing_dispatch
   set_func_ret_address(reg_ctx, entry->epilogue_dispatch_bridge);
@@ -50,32 +52,14 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   }
 
   // set epilogue bridge next hop address with origin ret address, restore the call.
-  set_epilogue_routing_next_hop(reg_ctx, stackframe->orig_ret);
-}
-
-void dynamic_binary_instrumentation_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
-  // run the `dbi_call`, before the `instruction_address`
-  if (entry->dbi_call) {
-    DBICALL dbi_call;
-    HookEntryInfo entry_info;
-    entry_info.hook_id             = entry->id;
-    entry_info.instruction_address = entry->instruction_address;
-    dbi_call                       = entry->dbi_call;
-    (*dbi_call)(reg_ctx, (const HookEntryInfo *)&entry_info);
-  }
-
-  // set prologue bridge next hop address with origin instructions that have been relocated(patched)
-  set_prologue_routing_next_hop(reg_ctx, entry->relocated_origin_instructions);
+  set_routing_bridge_next_hop(reg_ctx, stackframe->orig_ret);
 }
 
 // run the user handler **before run the origin-instructions(which have been relocated)**
 void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
   DLOG("%s\n", "[*] catch prologue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
-  if (entry->type == kFunctionWrapper)
-    pre_call_forward_handler(reg_ctx, entry);
-  else if (entry->type == kDynamicBinaryInstrumentation)
-    dynamic_binary_instrumentation_call_forward_handler(reg_ctx, entry);
+  pre_call_forward_handler(reg_ctx, entry);
   return;
 }
 

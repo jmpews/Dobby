@@ -8,47 +8,48 @@ include(cmake/Macros.cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
-enable_language(ASM)
 
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -stdlib=libc++ -fvisibility=hidden")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
-SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
-SET(CMAKE_ASM_FLAGS "${CFLAGS}  -x assembler-with-cpp")
 
+# ===== Handle Option =====
 option(SHARED "Build shared library" ON)
-option(DEBUG "Enable debug log" ON)
+option(DEBUG "Enable debug log" OFF)
+
+option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
+option(Plugin.FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
+
+option(ExtraPlugin.BxxxBranchTrampoline "Use Bxxx Branch Instead of Ldr Branch in the ARM or ARM64 Architecture" OFF)
+
+option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
 option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
+# Use native assembly bridge to replace the runtime codegen
 if(CLOSURE_BRIDGE_TEMPLATE)
+    SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
+    enable_language(ASM)
     add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
 endif()
 
+# Enable debug will log more infomation
 if(DEBUG)
    add_definitions(-DDEBUG)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-set(SYSTEM.Windows 1)
-#set(PROCESSOR.X86_64 1)
-
-# Platform
-if(PLATFORM STREQUAL "iOS")
-    set(SYSTEM.iOS 1)
-    MESSAGE(STATUS "[*] Compile for iOS")
-elseif(PLATFORM STREQUAL "Android")
-    set(SYSTEM.Android 1)
-    MESSAGE(STATUS "[*] Compile for Android")
-elseif(SYSTEM.Windows)
-    MESSAGE(STATUS "[*] Compile for Windows")
-else()
-    if(SYSTEM.Android OR SYSTEM.Linux)
-        set(SYSTEM.Android 1)
-    elseif(SYSTEM.Darwin)
+if(!SYSTEM.Detected)
+    if(PLATFORM STREQUAL "iOS")
         set(SYSTEM.iOS 1)
+        MESSAGE(STATUS "[*] Specific Compile for iOS")
+    elseif(PLATFORM STREQUAL "macOS")
+        set(SYSTEM.macOS 1)
+    elseif(PLATFORM STREQUAL "Android")
+        set(SYSTEM.Android 1)
+    elseif(SYSTEM.Windows)
+        set(SYSTEM.Windows 1)
     else()
-        message(FATAL_ERROR "[!] ONLY SUPPORT [iOS|Android] PLATFORM")
+        message(FATAL_ERROR "[!] UnSupported PLATFORM")
     endif()
 endif()
 
@@ -60,146 +61,216 @@ elseif(SYSTEM.Android)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,--gc-sections")
 endif()
 
-# Architecture
-if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
-    set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(PROCESSOR.arm 1)
-    MESSAGE(STATUS "[*] Compile for arm")
-elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
-    set(CMAKE_SYSTEM_PROCESSOR aarch64)
-    set(PROCESSOR.aarch64 1)
-    MESSAGE(STATUS "[*] Compile for aarch64")
-elseif(PROCESSOR.X86_64)
-    MESSAGE(STATUS "[*] Compile for X86_64")
-else()
-    if(PROCESSOR.arm)
+if(!PROCESSOR.Detected)
+    if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
         set(CMAKE_SYSTEM_PROCESSOR arm)
-        MESSAGE(STATUS "[*] Compile for arm")
-    elseif(PROCESSOR.aarch64)
+        set(PROCESSOR.arm 1)
+    elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
         set(CMAKE_SYSTEM_PROCESSOR aarch64)
-        MESSAGE(STATUS "[*] Compile for aarch64")
-    else()
-        message(FATAL_ERROR "[!] ONLY SUPPORT [[arm|armv7]|[aarch64|arm64|armv8]] ARCH")
+        set(PROCESSOR.aarch64 1)
+    elseif(ARCH STREQUAL "X64" OR ARCH STREQUAL "X86_64" OR ARCH STREQUAL "x64")
+        set(CMAKE_SYSTEM_PROCESSOR X86_64)
+        set(PROCESSOR.X86_64 1)
     endif()
 endif()
 
+if(COMPILER.Clang)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+    if(PROCESSOR.arm)
+        set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
+    elseif(PROCESSOR.aarch64)
+        set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
+    endif()
+endif()
+
+# Set Prefix
 if(PROCESSOR.arm)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
+    set(arch1 arm)
+    set(ARCH1 ARM)
+    set(arch2 arm)
+    set(ARCH2 ARM)
 elseif(PROCESSOR.aarch64)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
+    set(ARCH1 ARM64)
+    set(arch1 arm64)
+    set(arch2 arm)
+    set(ARCH2 ARM)
+elseif(PROCESSOR.X86)
+    set(ARCH1 IA32)
+    set(arch1 ia32)
+    set(arch2 x86)
+    set(ARCH2 X86)
 elseif(PROCESSOR.X86_64)
+    set(ARCH1 X64)
+    set(arch1 x64)
+    set(arch2 x86)
+    set(ARCH2 X86)
 endif()
 
 set(Target.path .)
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES})
 
-set(Target.SOURCE_DIR
-    ${Target.path}/OneLib
-    ${Target.path}/OneLib/include
-    ${Target.path}/OneLib/stdcxx
-    ${Target.path}/OneLib/logging
-    ${Target.path}/srcxx
-    ${Target.path}/srcxx/MultiThreadSupport
-    ${Target.path}/srcxx/ExecMemory
-    ${Target.path}/srcxx/UserMode
-    ${Target.path}/srcxx/core
-    ${Target.path}/srcxx/core/arch
-    ${Target.path}/srcxx/core/modules
-    ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave
+file(GLOB Target.srcxx.core.arch.FILES ${Target.path}/srcxx/core/arch/*.cc)
+source_group(srcxx.core.arch FILES ${Target.srcxx.core.arch.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.arch.FILES})
+
+file(GLOB Target.srcxx.core.arch.${arch1}.FILES ${Target.path}/srcxx/core/arch/${arch1}/*.cc)
+source_group(srcxx.core.arch.${arch1} FILES ${Target.srcxx.core.arch.${arch1}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.arch.${arch1}.FILES})
+
+set(Target.srcxx.core.modules.assembler.FILES
+    ${Target.path}/srcxx/core/modules/assembler/assembler.cc
+    ${Target.path}/srcxx/core/modules/assembler/assembler-${arch1}.cc
 )
+source_group(srcxx.core.modules.assembler FILES ${Target.srcxx.core.modules.assembler.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.modules.assembler.FILES})
 
-set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+# srcxx.core.modules.codegen
+set(Target.srcxx.core.modules.codegen.FILES
+    ${Target.path}/srcxx/core/modules/codegen/codegen-${arch1}.cc
 )
+source_group(srcxx.core.modules.codegen FILES ${Target.srcxx.core.modules.codegen.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.modules.codegen.FILES})
 
-set(arch x64)
-set(ARCH X64)
+# srcxx.ClosureTrampolineBridge
+file(GLOB Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/${arch1}/*.cc)
+source_group(srcxx.ClosureTrampolineBridge.${arch1} FILES ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
 
-set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-    ${Target.path}/srcxx/ClosureTrampolineBridge/${arch}
-    ${Target.path}/srcxx/InstructionRelocation/${arch}
-    ${Target.path}/srcxx/core/arch/${arch}
-    ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/${ARCH}
-    ${Target.path}/srcxx/InterceptRouting/${arch}
-    ${Target.path}/srcxx/UserMode/${arch}
-    ${Target.path}/srcxx/ExtraInternalPlugin/${ARCH}
+#srcxx.ExecMemory
+file(GLOB Target.srcxx.ExecMemory.FILES ${Target.path}/srcxx/ExecMemory/*.cc)
+source_group(srcxx.ExecMemory FILES ${Target.srcxx.ExecMemory.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExecMemory.FILES})
 
-)
-
-if(PROCESSOR.X86_64)
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/InstructionRelocation/x86
+#srcxx.ExtraInternalPlugin
+if(ExtraPlugin.BxxxBranchTrampoline AND (PROCESSOR.arm OR PROCESSOR.aarch64))
+    set(Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES
+        ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/${ARCH1}/BxxxBranchTrampoline.cc
+        ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave/ShellCodeCave.cc
     )
 endif()
+source_group(ExtraPlugin.BxxxBranchTrampoline FILES ${Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES})
 
-set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
-    ${Target.path}/srcxx/core/modules/assembler/assembler.cc
-    ${Target.path}/srcxx/core/modules/assembler/assembler-${arch}.cc
+#srcxx.InstructionRelocation
+file(GLOB Target.srcxx.InstructionRelocation.${arch1}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch1}/*.cc)
+source_group(srcxx.InstructionRelocation.${arch1} FILES ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
+file(GLOB Target.srcxx.InstructionRelocation.${arch2}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch2}/*.cc)
+source_group(srcxx.InstructionRelocation.${arch2} FILES ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
 
-    ${Target.path}/srcxx/core/modules/codegen/codegen-${arch}.cc
+#srcxx.InterceptRouting
+file(GLOB Target.srcxx.InterceptRouting.${arch1}.FILES ${Target.path}/srcxx/InterceptRouting/${arch1}/*.cc)
+source_group(srcxx.InterceptRouting.${arch1} FILES ${Target.srcxx.InterceptRouting.${arch1}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRouting.${arch1}.FILES})
 
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-${arch}.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch}.cc
-    ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-${arch}.cc
-)
-
-if(SYSTEM.Windows)
-    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
-        ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
+#srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument
+if(Plugin.DynamicBinaryInstrument)
+    set(Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES
+        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-${arch1}.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
     )
-else()
-    set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
-        ${Target.path}/srcxx/PlatformInterface/platform-posix
-        ${Target.path}/srcxx/PlatformInterface/platform-darwin
+source_group(srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument FILES ${Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES})
+endif()
+
+#srcxx.InterceptRoutingPlugin.FunctionInlineReplace
+if(Plugin.FunctionInlineReplace)
+    set(Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES
+        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch1}.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
     )
-    set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
+    source_group(srcxx.InterceptRoutingPlugin.FunctionInlineReplace FILES ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
+endif()
+
+#srcxx.InterceptRoutingPlugin.FunctionWrapper
+if(Plugin.FunctionWrapper)
+    set(Target.srcxx.InterceptRoutingPlugin.FunctionWrapper.FILES
+        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-${arch1}.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/intercept_routing_handler.cc
+    )
+    source_group(srcxx.InterceptRoutingPlugin.FunctionWrapper FILES ${Target.srcxx.InterceptRoutingPlugin.FunctionWrapper.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionWrapper.FILES})
+endif()
+
+#srcxx.InterceptRoutingPlugin.intercept-routing-handler
+if(Plugin.FunctionWrapper OR Plugin.DynamicBinaryInstrument)
+    set(Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES
+    ${Target.path}/srcxx/InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.cc
+    )
+    source_group(srcxx.InterceptRoutingPlugin.intercept-routing-handler FILES ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
+endif()
+
+
+#srcxx.MultiThreadSupport
+if(MultiThreadSupport)
+    file(GLOB Target.srcxx.MultiThreadSupport.FILES ${Target.path}/srcxx/MultiThreadSupport/*.cc)
+    source_group(srcxx.MultiThreadSupport FILES ${Target.srcxx.MultiThreadSupport.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.MultiThreadSupport.FILES})
+endif()
+
+#srcxx.PlatformInterface
+if(SYSTEM.Darwin OR SYSTEM.Android OR SYSTEM.Linux)
+    set(Target.srcxx.PlatformInterface.FILES
         ${Target.path}/srcxx/PlatformInterface/platform-posix.cc
+        ${Target.path}/srcxx/PlatformInterface/platform-posix/extensions-posix.cc
+    ) 
+endif()
+if(SYSTEM.Android OR SYSTEM.Linux)
+    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
+        ${Target.path}/srcxx/PlatformInterface/platform-linux.cc
+    )
+endif()
+if(SYSTEM.iOS OR SYSTEM.macOS)
+    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
         ${Target.path}/srcxx/PlatformInterface/platform-darwin.cc
     )
 endif()
+if(SYSTEM.Windows)
+    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
+        ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
+    )
+endif()
+source_group(srcxx.PlatformInterface FILES ${Target.srcxx.PlatformInterface.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.FILES})
 
+#srcxx.UserMode
+set(Target.srcxx.UserMode.FILES
+    ${Target.path}/srcxx/UserMode/${ARCH1}/code-buffer-${arch1}.cc
+    ${Target.path}/srcxx/UserMode/CodeBufferBase.cc
+)
+source_group(srcxx.UserMode FILES ${Target.srcxx.UserMode.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.FILES})
 
-# *.cc
-search_suffix_files("cc" Target.SOURCE_DIR Target.SOURCE_CC)
+#srcxx
+file(GLOB Target.srcxx.FILES ${Target.path}/srcxx/*.cc)
+source_group(srcxx FILES ${Target.srcxx.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.FILES})
 
-# *.cpp
-search_suffix_files("cpp" Target.SOURCE_DIR Target.SOURCE_CPP)
-
-# *.c
-search_suffix_files("c" Target.SOURCE_DIR Target.SOURCE_C)
-
-# *.S
-search_suffix_files("S" Target.SOURCE_DIR Target.SOURCE_ASSEMBLY)
-
-# *.h
-search_suffix_files("h" Target.SOURCE_DIR Target.HEADER_H)
-
-set(Target.SOURCE_FILE ${Target.SOURCE_FILE} ${Target.SOURCE_CC} ${Target.SOURCE_CPP} ${Target.SOURCE_C} ${Target.SOURCE_ASSEMBLY})
-set(Target.HEADER_FILE ${Target.HEADER_FILE} ${Target.HEADER_H} include/hookzz.h)
-
-
-
-set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
-    ${ASSEMBLER.SOURCE_FILE}
-    ${CODEGEN.SOURCE_FILE}
+include_directories(
+    ${Target.path}
+    ${Target.path}/include
+    ${Target.path}/srcxx
+    ${Target.path}/OneLib/logging
+    ${Target.path}/OneLib/stdcxx
+    ${Target.path}/OneLib/include
 )
 
-set(Target.HEADER_FILE ${Target.HEADER_FILE}
-    ${ASSEMBLER.HEADER_FILE}
-    ${CODEGEN.HEADER_FILE}
-)
-
-
-include_directories(${Target.HEADER_DIR} ${Target.SOURCE_DIR})
 
 if(SHARED)
     # build shared library
-    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
+    add_library(hookzz SHARED ${Target.SOURCE_FILES})
 else()
     # build static library
-    add_library(hookzz STATIC ${Target.SOURCE_FILE} ${Target.HEADER_FILE} include/hookzz.h)
+    add_library(hookzz STATIC ${Target.SOURCE_FILES})
 endif()
+
+add_subdirectory(${Target.path}/OneLib)
+target_link_libraries(hookzz logging stdcxx)
 
 target_include_directories(hookzz PUBLIC ./include)
 
