@@ -1,6 +1,6 @@
 #include "macros.h"
 #include "logging/check_logging.h"
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
 
 #include "UnifiedInterface/StdMemory.h"
 
@@ -16,8 +16,8 @@ int GetFlagsForMemoryPermission(MemoryPermission access) {
 }
 
 void *Allocate(void *address, size_t size, MemoryPermission access) {
-  int prot     = GetProtectionFromMemoryPermission(access);
-  int flags    = GetFlagsForMemoryPermission(access);
+  int prot  = GetProtectionFromMemoryPermission(access);
+  int flags = GetFlagsForMemoryPermission(access);
   return nullptr;
 }
 
@@ -28,7 +28,7 @@ size_t OSMemory::PageSize() {
 
 // static
 void *OSMemory::Allocate(void *address, size_t size, MemoryPermission access) {
-  size_t page_size = OSMemory::PageSize();
+  size_t page_size    = OSMemory::PageSize();
   size_t request_size = size;
   void *result        = zz::Allocate(address, request_size, access);
   if (result == nullptr)
@@ -64,8 +64,8 @@ bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission acces
   return 0;
 }
 
-std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
-  std::vector<OSMemory::MemoryRegion> result;
+std::vector<MemoryRegion> GetProcessMemoryLayout() {
+  std::vector<MemoryRegion> result;
   return result;
 }
 

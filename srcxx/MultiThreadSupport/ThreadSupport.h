@@ -5,7 +5,8 @@
 #include <map>
 
 #include "globals.h"
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
+#include "PlatformInterface/PlatformThread/PlatformThread.h"
 
 // StackFrame base in CallStack
 typedef struct _StackFrame {
@@ -53,7 +54,6 @@ public:
     return NULL;
   };
 
-  // =====
   static CallStack *CurrentThreadCallStack();
 
 private:

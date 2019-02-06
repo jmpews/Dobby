@@ -9,7 +9,7 @@
 
 #ifndef __addr_t_defined
 #define __addr_t_defined
-typedef char *addr_t;
+typedef unsigned long addr_t;
 #endif
 
 #ifndef __byte_defined

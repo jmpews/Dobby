@@ -15,6 +15,8 @@ public:
   FunctionWrapperRouting(HookEntry *entry) : X64InterceptRouting(entry) {
   }
 
+  void Dispatch();
+
   void *GetTrampolineTarget();
 
 private:

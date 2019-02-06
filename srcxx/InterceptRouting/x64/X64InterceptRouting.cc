@@ -15,10 +15,12 @@
 
 using namespace zz::x64;
 
+#define X64_JMP_IMM_SIZE 5
+
 void X64InterceptRouting::Prepare() {
   uint64_t src_address     = (uint64_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
-  int relocate_size        = 0;
+  int relocate_size        = X64_JMP_IMM_SIZE;
 
   // Gen the relocated code
   AssemblyCode *code;
@@ -41,6 +43,7 @@ void X64InterceptRouting::Active() {
 #define _ turbo_assembler_.
 
   CodeGen codegen(&turbo_assembler_);
+  turbo_assembler_.CommitRealizeAddress((void *)target_address);
 
   codegen.JmpBranch((addr_t)branch_address);
 

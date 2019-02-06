@@ -12,7 +12,7 @@ struct ExecutablePage {
   void *address;
   void *cursor;
   int capacity;
-  LiteMutableArray code_chunks;
+  LiteMutableArray *code_chunks;
 };
 
 class ExecutableMemoryArena {
@@ -22,7 +22,7 @@ public:
     static void Destory(AssemblyCodeChunk *codeChunk);
 
 private:
-  static LiteMutableArray page_chunks;
+  static LiteMutableArray *page_chunks;
 };
 
 #endif

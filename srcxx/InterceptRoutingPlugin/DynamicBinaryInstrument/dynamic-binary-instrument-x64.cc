@@ -14,6 +14,11 @@
 
 #include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-x64.h"
 
+void DynamicBinaryInstrumentRouting::Dispatch() {
+  Prepare();
+  BuildDynamicBinaryInstrumentRouting();
+}
+
 // Add dbi_call handler before running the origin instructions
 void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data

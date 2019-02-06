@@ -30,22 +30,27 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
 #endif
   AssemblyCodeChunk *codeChunk = ExecutableMemoryArena::AllocateCodeChunk(buffer_size);
 
-  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
+  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
+  // instructions
   turboAssembler->CommitRealizeAddress(codeChunk->address);
   CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(),
                                  reinterpret_cast<CodeBufferBase *>(turboAssembler->GetCodeBuffer()));
 
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;
-  code->initWithCodeBuffer(turboAssembler->GetCodeBuffer());
+  code->initWithAddressRange(turboAssembler->GetRealizeAddress(), turboAssembler->GetCodeBuffer()->getSize());
 
   DLOG("[*] AssemblyCode finalize assembler at %p\n", (void *)code->raw_instruction_start());
   return reinterpret_cast<AssemblyCode *>(code);
 }
 
 void AssemblyCode::initWithCodeBuffer(CodeBuffer *codeBuffer) {
+  initWithAddressRange(codeBuffer->getRawBuffer(), codeBuffer->getSize());
 }
+
 void AssemblyCode::initWithAddressRange(void *address, int size) {
+  address_ = (addr_t)address;
+  size_    = size;
 }
 
 } // namespace zz

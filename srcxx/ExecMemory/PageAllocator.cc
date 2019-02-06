@@ -1,7 +1,7 @@
 
 #include "ExecMemory/PageAllocator.h"
 
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
 
 using namespace zz;
 
@@ -11,8 +11,10 @@ void *PageAllocator::Allocate(MemoryPermission permission) {
   return page;
 }
 
- size_t PageAllocator::PageSize() { return OSMemory::PageSize(); }
+size_t PageAllocator::PageSize() {
+  return OSMemory::PageSize();
+}
 
- bool PageAllocator::SetPermissions(void *address, MemoryPermission access) {
+bool PageAllocator::SetPermissions(void *address, MemoryPermission access) {
   return OSMemory::SetPermissions(address, OSMemory::PageSize(), access);
 }

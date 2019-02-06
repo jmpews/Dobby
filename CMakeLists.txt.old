@@ -194,7 +194,7 @@ set(Target.SOURCE_DIR ${Target.SOURCE_DIR}
     ${PLATFORM.path}
 )
 set(Target.HEADER_FILE ${Target.HEADER_FILE}
-    ${PLATFORM.path}/platform.h
+    ${PLATFORM.path}/Common/Platform.h
 )
 if(SYSTEM.iOS)
     set(Target.SOURCE_FILE ${Target.SOURCE_FILE}
