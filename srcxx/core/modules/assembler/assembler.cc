@@ -44,6 +44,8 @@ const void *ExternalReference::address() {
 // ===== AssemblerBase =====
 
 AssemblerBase::AssemblerBase() {
+  buffer_ = new CodeBuffer;
+  buffer_->initWithCapacity(32);
   DLOG("[*] Assembler buffer at %p\n", buffer_->getRawBuffer());
 }
 
@@ -64,7 +66,6 @@ void *AssemblerBase::GetRealizeAddress() {
 }
 
 void AssemblerBase::FlushICache(void *start, size_t size) {
-
 }
 
 void AssemblerBase::FlushICache(uintptr_t start, uintptr_t end) {

@@ -23,7 +23,7 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
   addr_t cur_ip = src_ip;
   byte opcode1  = *(byte *)src_ip;
 
-  InstrMnemonic instr;
+  InstrMnemonic instr = {0};
   TurboAssembler turbo_assembler_;
   // Set fixed executable code chunk address
   turbo_assembler_.CommitRealizeAddress(codeChunk->address);
@@ -71,16 +71,20 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
       _ Emit(InstrArray, instr.len);
 
 #else
-      __ EmitBuffer(cur_ip, instr.instr.DisplacementOffset);
+      __ EmitBuffer((void *)cur_ip, instr.instr.DisplacementOffset);
       __ Emit32(disp);
 #endif
     } else {
-      UNREACHABLE();
+      // Emit the origin instrution
+      __ EmitBuffer((void *)cur_ip, instr.len);
     }
 
     // go next
     cur_ip += instr.len;
     opcode1 = *(byte *)cur_ip;
+
+    // clear instr structure
+    memset((void *)&instr, 0, sizeof(InstrMnemonic));
   }
 
   // Generate executable code
@@ -88,7 +92,7 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
                                  reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;
-  code->initWithCodeBuffer(turbo_assembler_.GetCodeBuffer());
+  code->initWithAddressRange(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getSize());
   return code;
 }
 

@@ -107,12 +107,6 @@ typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 
-// use `b xxx` as trampoline 
-RetStatus zz_enable_arm_arm64_b_branch();
-
-// disable
-RetStatus zz_disable_arm_arm64_b_branch();
-
 // wrap function with pre_call and post_call
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 

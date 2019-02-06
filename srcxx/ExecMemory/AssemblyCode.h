@@ -24,7 +24,7 @@ public:
   static AssemblyCode *FinalizeFromTurboAssember(AssemblerBase *assember);
 
   // dummy method
-  inline uintptr_t raw_instruction_start() {
+  inline addr_t raw_instruction_start() {
     return address_;
   };
 
@@ -34,7 +34,7 @@ public:
   };
 
 private:
-  uintptr_t address_;
+  addr_t address_;
   int size_;
 };
 

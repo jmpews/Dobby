@@ -1,11 +1,20 @@
-#include "ShellCodeCave.h"
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
 
-using  namespace zz;
+#include "ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
 
+#include "ExecMemory/ExecutableMemoryArena.h"
+
+using namespace zz;
+
+AssemblyCodeChunk *SearchCodeChunk(addr_t start, addr_t end, int inSize) {
+  std::vector<MemoryRegion> memory_layout = GetProcessMemoryLayout();
+  return NULL;
+}
+
+#if 0
 // Search code cave from MemoryLayout
 AssemblyCodeChunk *SearchCodeCave(int size, uintptr_t pos, int range_size) {
-  std::vector<OSMemory::MemoryRegion> memory_layout = OSMemory::GetMemoryLayout();
+  std::vector<MemoryRegion> memory_layout = GetProcessMemoryLayout();
   // initialize needed variable
   char *dummy_0 = (char *)malloc(size);
   memset(dummy_0, 0, size);
@@ -31,11 +40,12 @@ AssemblyCodeChunk *SearchCodeCave(int size, uintptr_t pos, int range_size) {
     for (uintptr_t i = search_start; i < (search_end - size); i += 4) {
       if (memcmp((void *)i, dummy_0, size) == 0) {
         AssemblyCodeChunk *codeChunk = new AssemblyCodeChunk;
-        codeChunk->address = (void *)i;
-        codeChunk->size = size;
+        codeChunk->address           = (void *)i;
+        codeChunk->size              = size;
         return codeChunk;
       }
     }
   }
   return NULL;
 }
+#endif

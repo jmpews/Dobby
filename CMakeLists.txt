@@ -16,13 +16,25 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 option(SHARED "Build shared library" ON)
 option(DEBUG "Enable debug log" OFF)
 
-option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
-option(Plugin.FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
+option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
-option(ExtraPlugin.BxxxBranchTrampoline "Use Bxxx Branch Instead of Ldr Branch in the ARM or ARM64 Architecture" OFF)
+option(Plugin.FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" ON)
 
-option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
+option(ExtraPlugin.NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" ON)
+
+option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" ON)
+
 option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
+
+if(CMAKE_GENERATOR STREQUAL Xcode)
+    message(STATUS ">>> detected Xcode Project")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
+endif()
 
 # Use native assembly bridge to replace the runtime codegen
 if(CLOSURE_BRIDGE_TEMPLATE)
@@ -142,14 +154,34 @@ source_group(srcxx.ExecMemory FILES ${Target.srcxx.ExecMemory.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExecMemory.FILES})
 
 #srcxx.ExtraInternalPlugin
-if(ExtraPlugin.BxxxBranchTrampoline AND (PROCESSOR.arm OR PROCESSOR.aarch64))
-    set(Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES
-        ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/${ARCH1}/BxxxBranchTrampoline.cc
-        ${Target.path}/srcxx/ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave/ShellCodeCave.cc
-    )
+if(ExtraPlugin.NearBranchTrampoline)
+    if(SYSTEM.Linux OR SYSTEM.Android)
+        set(Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.PlatformUtil.FILES
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc
+        )
+    elseif(SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
+        set(Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.PlatformUtil.FILES
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc
+        )
+    endif()
+
+    if(PROCESSOR.arm OR PROCESSOR.aarch64)
+        set(Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.FILES
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/BxxxBranch/${ARCH1}/BxxxBranchTrampoline.cc
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/SearchCodeChunk.cc
+        )
+    elseif(PROCESSOR.X86_64)
+        set(Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.FILES
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/JmpImmediate32/${ARCH1}/JmpImm32Trampoline.cc
+            ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/SearchCodeChunk.cc
+        )
+    endif()
 endif()
-source_group(ExtraPlugin.BxxxBranchTrampoline FILES ${Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugin.BxxxBranchTrampoline.FILES})
+source_group(ExtraPlugin.NearBranchTrampoline FILES ${Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.FILES})
+source_group(ExtraPlugin.NearBranchTrampoline.PlatformUtil FILES ${Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.PlatformUtil.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.PlatformUtil.FILES})
+
 
 #srcxx.InstructionRelocation
 file(GLOB Target.srcxx.InstructionRelocation.${arch1}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch1}/*.cc)
@@ -212,28 +244,31 @@ endif()
 
 #srcxx.PlatformInterface
 if(SYSTEM.Darwin OR SYSTEM.Android OR SYSTEM.Linux)
-    set(Target.srcxx.PlatformInterface.FILES
-        ${Target.path}/srcxx/PlatformInterface/platform-posix.cc
-        ${Target.path}/srcxx/PlatformInterface/platform-posix/extensions-posix.cc
+    set(Target.srcxx.PlatformInterface.Common.FILES
+        ${Target.path}/srcxx/PlatformInterface/Common/PlatformPosix.cc
+        ${Target.path}/srcxx/PlatformInterface/Common/PlatformPosix/extensions-posix.cc
     ) 
+    if(MultiThreadSupport)
+        set(Target.srcxx.PlatformInterface.Thread.FILES
+            ${Target.path}/srcxx/PlatformInterface/PlatformThread/PlatformThreadPosix.cc
+        )
+    endif()
 endif()
-if(SYSTEM.Android OR SYSTEM.Linux)
-    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
-        ${Target.path}/srcxx/PlatformInterface/platform-linux.cc
-    )
-endif()
-if(SYSTEM.iOS OR SYSTEM.macOS)
-    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
-        ${Target.path}/srcxx/PlatformInterface/platform-darwin.cc
-    )
-endif()
+
 if(SYSTEM.Windows)
-    set(Target.srcxx.PlatformInterface.FILES ${Target.srcxx.PlatformInterface.FILES}
-        ${Target.path}/srcxx/PlatformInterface/platform-windows.cc
+    set(Target.srcxx.PlatformInterface.Common.FILES ${Target.srcxx.PlatformInterface.FILES}
+        ${Target.path}/srcxx/PlatformInterface/Common/PlatformWindows.cc
     )
+    if(MultiThreadSupport)
+        set(Target.srcxx.PlatformInterface.Thread.FILES
+            ${Target.path}/srcxx/PlatformInterface/PlatformThread/PlatformThreadWindows.cc
+        )
+    endif()
 endif()
-source_group(srcxx.PlatformInterface FILES ${Target.srcxx.PlatformInterface.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.FILES})
+source_group(srcxx.PlatformInterface.Common FILES ${Target.srcxx.PlatformInterface.Common.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.Common.FILES})
+source_group(srcxx.PlatformInterface.Thread FILES ${Target.srcxx.PlatformInterface.Thread.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.Thread.FILES})
 
 #srcxx.UserMode
 set(Target.srcxx.UserMode.FILES

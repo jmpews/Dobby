@@ -10,5 +10,5 @@ void CodeGen::JmpBranch(addr_t address) {
   _ jmp(Immediate(offset));
 }
 
-} // namespace arm64
+} // namespace x64
 } // namespace zz

@@ -1,7 +1,7 @@
 #include "stdcxx/LiteIterator.h"
 
 #ifdef __APPLE__
-#include "PlatformInterface/platform-darwin/mach_vm.h"
+#include "PlatformInterface/Common/PlatformDarwin/mach_vm.h"
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
 #include <mach/vm_map.h>
@@ -10,11 +10,13 @@
 
 #include "ExecMemory/ExecutableMemoryArena.h"
 #include "ExecMemory/PageAllocator.h"
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
+
+#include "logging/check_logging.h"
 
 using namespace zz;
 
-LiteMutableArray ExecutableMemoryArena::page_chunks;
+LiteMutableArray *ExecutableMemoryArena::page_chunks = NULL;
 
 void ExecutableMemoryArena::Destory(AssemblyCodeChunk *codeChunk) {
   return;
@@ -25,22 +27,31 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
   ExecutablePage *page         = NULL;
   AssemblyCodeChunk *codeChunk = NULL;
 
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&page_chunks);
+  if (!ExecutableMemoryArena::page_chunks) {
+    ExecutableMemoryArena::page_chunks = new LiteMutableArray;
+    ExecutableMemoryArena::page_chunks->initWithCapacity(1);
+  }
+
+  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
   while ((page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
-    if ((uintptr_t)page->cursor + inSize < page->capacity) {
+    if ((addr_t)page->cursor + inSize < ((addr_t)page->address + page->capacity)) {
       break;
     }
   }
 
   // alloc a new executable page.
   if (!page) {
-    int page_size           = OSMemory::PageSize();
-    void *page_address      = PageAllocator::Allocate(MemoryPermission::kReadExecute);
+    int page_size      = OSMemory::PageSize();
+    void *page_address = PageAllocator::Allocate(MemoryPermission::kReadExecute);
+    CHECK_NOT_NULL(page_address);
+
     ExecutablePage *newPage = new ExecutablePage;
     newPage->address        = page_address;
-    newPage->cursor         = NULL;
+    newPage->cursor         = newPage->address;
     newPage->capacity       = page_size;
-    ExecutableMemoryArena::page_chunks.pushObject(reinterpret_cast<LiteObject *>(newPage));
+    newPage->code_chunks    = new LiteMutableArray;
+    newPage->code_chunks->initWithCapacity(1);
+    ExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
 
@@ -48,7 +59,7 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     codeChunk          = new AssemblyCodeChunk;
     codeChunk->address = page->cursor;
     codeChunk->size    = inSize;
-    page->code_chunks.pushObject(reinterpret_cast<LiteObject *>(codeChunk));
+    page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
   }
 
   return codeChunk;

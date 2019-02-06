@@ -15,14 +15,14 @@ protected:
   size_t capacity_;
 
   // Length of already bytes
-  size_t size_;
+  // size_t size_;
 
 public:
   virtual size_t ensureCapacity(size_t newCapacity);
 
-  virtual bool initWithCapacity(size_t capacity);
+  virtual bool initWithCapacity(size_t capacity = 8);
 
-  virtual inline size_t getSize() { return size_; }
+  virtual inline size_t getSize() { return cursor_ - buffer_; }
 
   virtual inline size_t getCapacity() { return capacity_; }
 

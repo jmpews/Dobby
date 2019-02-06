@@ -24,38 +24,13 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include <cmath>
+#include "ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
 
-#include "platform.h"
+#include "ExecMemory/ExecutableMemoryArena.h"
 
-void platform_darwin_test() { int dummy; }
+#include <vector>
 
-namespace zz {
-std::vector<OSMemory::SharedLibraryAddress> OSMemory::GetSharedLibraryAddresses() {
-  std::vector<SharedLibraryAddress> result;
-  unsigned int images_count = _dyld_image_count();
-  for (unsigned int i = 0; i < images_count; ++i) {
-    const mach_header *header = _dyld_get_image_header(i);
-    if (header == nullptr)
-      continue;
-#if HOST_ARCH_X64
-    uint64_t size;
-    char *code_ptr =
-        getsectdatafromheader_64(reinterpret_cast<const mach_header_64 *>(header), SEG_TEXT, SECT_TEXT, &size);
-#else
-    unsigned int size;
-    char *code_ptr = getsectdatafromheader(header, SEG_TEXT, SECT_TEXT, &size);
-#endif
-    if (code_ptr == nullptr)
-      continue;
-    const intptr_t slide  = _dyld_get_image_vmaddr_slide(i);
-    const uintptr_t start = reinterpret_cast<uintptr_t>(code_ptr) + slide;
-    result.push_back(SharedLibraryAddress(_dyld_get_image_name(i), start, start + size, slide));
-  }
-  return result;
-}
-
-std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
+std::vector<MemoryRegion> GetProcessMemoryLayout() {
   std::vector<MemoryRegion> result;
 
   mach_msg_type_number_t count;
@@ -93,10 +68,9 @@ std::vector<OSMemory::MemoryRegion> OSMemory::GetMemoryLayout() {
       } else {
         continue;
       }
-      result.push_back(OSMemory::MemoryRegion(start, end, permission));
+      MemoryRegion region = {start, end, permission};
+      result.push_back(region);
     }
   }
   return result;
 }
-
-} // namespace zz

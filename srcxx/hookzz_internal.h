@@ -3,7 +3,7 @@
 
 #include "hookzz.h"
 
-#include "PlatformInterface/platform.h"
+#include "PlatformInterface/Common/Platform.h"
 #include "macros.h"
 
 #include "logging/logging.h"
