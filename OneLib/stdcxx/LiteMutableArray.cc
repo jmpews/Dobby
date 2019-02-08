@@ -23,19 +23,23 @@ bool LiteMutableArray::pushObject(const LiteObject *object) {
   count++;
   return true;
 }
-unsigned int LiteMutableArray::getCount() const { return count; }
+unsigned int LiteMutableArray::getCount() const {
+  return count;
+}
 
-unsigned int LiteMutableArray::getCapacity() const { return capacity; }
+unsigned int LiteMutableArray::getCapacity() const {
+  return capacity;
+}
 
 unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
   const LiteObject **newArray;
   unsigned int finalCapacity;
-  size_t oldSize, newSize;
+  int oldSize = 0, newSize = 0;
 
   if (newCapacity <= capacity)
     return capacity;
 
-  finalCapacity = ALIGN(newCapacity, 8);
+  finalCapacity = (int)ALIGN(newCapacity, 8);
 
   newSize = sizeof(LiteObject *) * finalCapacity;
 

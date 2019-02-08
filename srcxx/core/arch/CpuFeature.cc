@@ -1,10 +1,7 @@
 
 #include "core/arch/CpuFeature.h"
 
-#include <assert.h>
-#include <stddef.h>
-
-#if __APPLE__
+#if defined(__APPLE__) && 0
 #include <libkern/OSCacheControl.h>
 #endif
 

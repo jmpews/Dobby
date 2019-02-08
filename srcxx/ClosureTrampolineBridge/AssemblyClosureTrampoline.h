@@ -1,9 +1,9 @@
 #ifndef ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 #define ZZ_ASSEMBLY_CLOSURE_TRAMPOLINE_H_
 
-#include <stdint.h>
-
 #include "hookzz_internal.h"
+
+#include "stdcxx/LiteMutableArray.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ void *get_closure_bridge();
 
 class ClosureTrampoline {
 private:
-  static std::vector<ClosureTrampolineEntry *> trampolines_;
+  static LiteMutableArray *trampolines_;
 
 public:
   static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_handler);

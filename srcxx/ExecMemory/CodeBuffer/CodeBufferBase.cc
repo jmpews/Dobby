@@ -42,6 +42,7 @@ void CodeBufferBase::EmitBuffer(void *buffer, int buffer_size) {
   cursor_ += buffer_size;
 }
 
+#ifndef KERNELMODE
 template <typename T> T CodeBufferBase::Load(int offset) {
   return *reinterpret_cast<T *>(buffer_ + offset);
 }
@@ -57,3 +58,4 @@ template <typename T> void CodeBufferBase::Emit(T value) {
   *reinterpret_cast<T *>(cursor_) = value;
   cursor_ += sizeof(T);
 }
+#endif

@@ -1,6 +1,3 @@
-#include <iostream>
-#include <vector>
-
 #include "core/modules/assembler/assembler.h"
 #include "logging/logging.h"
 

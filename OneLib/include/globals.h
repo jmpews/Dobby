@@ -4,8 +4,7 @@
 // Types for native machine words. Guaranteed to be able to hold pointers and
 // integers.
 
-#include <stdio.h>
-#include <stdint.h>
+#include "kernel_or_user.h"
 
 #ifndef __addr_t_defined
 #define __addr_t_defined

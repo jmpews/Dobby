@@ -38,7 +38,7 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
     // Convert to 32bit AKA rel32
     if (instr.instr.opcode1 >= 0x70 && instr.instr.opcode1 <= 0x7F) {
       int orig_offset = *(byte *)&instr.instr.Immediate;
-      int offset      = cur_ip + orig_offset - turbo_assembler_.CurrentIP();
+      int offset      = (int)(cur_ip + orig_offset - turbo_assembler_.CurrentIP());
       __ Emit8(0x0F);
       __ Emit8(opcode1);
       __ Emit32(offset);
@@ -57,13 +57,13 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
     } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
       // JMP/CALL rel32
       dword orig_offset = *(dword *)&instr.instr.Immediate;
-      dword offset      = cur_ip + orig_offset - turbo_assembler_.CurrentIP();
+      dword offset      = (dword)(cur_ip + orig_offset - turbo_assembler_.CurrentIP());
       __ Emit8(instr.instr.opcode1);
       __ Emit32(offset);
     } else if (instr.flag & kIPRelativeAddress) {
       // IP-Relative Address
       dword orig_disp = *(dword *)(cur_ip + instr.instr.DisplacementOffset);
-      dword disp      = cur_ip + orig_disp - turbo_assembler_.CurrentIP();
+      dword disp      = (dword)(cur_ip + orig_disp - turbo_assembler_.CurrentIP());
 #if 0
       byte InstrArray[15];
       LiteMemOpt::copy(InstrArray, cur_ip, instr.len);

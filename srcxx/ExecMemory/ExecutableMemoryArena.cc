@@ -1,13 +1,5 @@
 #include "stdcxx/LiteIterator.h"
 
-#ifdef __APPLE__
-#include "PlatformInterface/Common/PlatformDarwin/mach_vm.h"
-#include <mach-o/dyld.h>
-#include <mach/mach.h>
-#include <mach/vm_map.h>
-#include <sys/mman.h>
-#endif
-
 #include "ExecMemory/ExecutableMemoryArena.h"
 #include "ExecMemory/PageAllocator.h"
 #include "PlatformInterface/Common/Platform.h"

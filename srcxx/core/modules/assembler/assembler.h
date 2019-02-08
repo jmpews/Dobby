@@ -1,8 +1,7 @@
 #ifndef CORE_MODULES_ASSEMBLER_ASSEMBLER_H_
 #define CORE_MODULES_ASSEMBLER_ASSEMBLER_H_
 
-#include <iostream>
-#include <vector>
+#include "globals.h"
 
 class CodeBuffer;
 

@@ -6,7 +6,7 @@ void LiteCollectionIterator::reset() {
 
 bool LiteCollectionIterator::initWithCollection(const LiteCollection *inCollection) {
   collection        = inCollection;
-  innerIterator     = NULL;
+  innerIterator     = 0;
   int *iterIndexPtr = (int *)LiteMemOpt::alloc(sizeof(int));
   innerIterator     = (void *)iterIndexPtr;
   return true;

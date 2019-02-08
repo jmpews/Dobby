@@ -33,7 +33,8 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   uint64_t cur_pc = src_pc;
   uint32_t inst   = *(uint32_t *)src_pc;
 
-  std::vector<PseudoLabelData> labels;
+  // std::vector<PseudoLabelData> labels;
+  LiteMutableArray *labels;
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.
