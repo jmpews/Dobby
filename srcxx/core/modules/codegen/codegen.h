@@ -3,8 +3,6 @@
 
 #include "core/modules/assembler/assembler.h"
 
-#include <iostream>
-
 using namespace zz;
 
 class CodeGenBase {

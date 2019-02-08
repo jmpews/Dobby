@@ -3,4 +3,12 @@
 
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
+typedef enum _MemoryOperationError {
+  kMemoryOperationSuccess,
+  kMemoryOperationError,
+  kNotSupportAllocateExecutableMemory,
+  kNotEnough,
+  kNone
+} MemoryOperationError;
+
 #endif

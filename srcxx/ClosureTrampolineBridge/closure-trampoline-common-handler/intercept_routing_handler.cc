@@ -6,14 +6,6 @@
 #include "intercept_routing_handler.h"
 #include "MultiThreadSupport/ThreadSupport.h"
 
-// get the origin function ret address, such as ARM64, will return the LR register
-void *get_func_ret_address(RegisterContext *reg_ctx) {
-}
-
-// set the origin function ret address, such as ARM64, will repace the LR register
-void set_func_ret_address(RegisterContext *reg_ctx, void *address) {
-}
-
 void get_routing_bridge_next_hop(RegisterContext *reg_ctx, void *address) {
 }
 

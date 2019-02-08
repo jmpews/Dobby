@@ -86,7 +86,8 @@
     "istream": "cpp",
     "mutex": "cpp",
     "ostream": "cpp",
-    "streambuf": "cpp"
+    "streambuf": "cpp",
+    "cmath": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

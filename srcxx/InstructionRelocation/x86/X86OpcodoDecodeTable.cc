@@ -4,12 +4,14 @@
 
 #define _xUnknownOpHanlder -1, -1, OpSz_0, ImmSz_0, _UnknownOpHanlder
 void _UnknownOpHanlder(InstrMnemonic *instr, addr_t p) {
-  printf("Unknown Operand\n");
+  // printf("Unknown Operand\n");
+  return;
 }
 
 #define _xInvalidOpHanlder -1, -1, OpSz_0, ImmSz_0, _InValidOpHanlder
 void _InValidOpHanlder(InstrMnemonic *instr, addr_t p) {
-  printf("Invalid Operand\n");
+  // printf("Invalid Operand\n");
+  return;
 }
 
 inline void _ContinueDispatch(InstrMnemonic *instr, addr_t p) {

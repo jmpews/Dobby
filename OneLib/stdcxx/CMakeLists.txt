@@ -6,6 +6,7 @@ if(KERNELMODE)
 endif()
 
 add_library(stdcxx STATIC
+  LiteMemOpt.cc
   LiteObject.cc
   LiteIterator.cc
   LiteCollection.cc

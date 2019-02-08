@@ -11,7 +11,7 @@ void *PageAllocator::Allocate(MemoryPermission permission) {
   return page;
 }
 
-size_t PageAllocator::PageSize() {
+int PageAllocator::PageSize() {
   return OSMemory::PageSize();
 }
 

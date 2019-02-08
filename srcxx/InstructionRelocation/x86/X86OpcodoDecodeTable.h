@@ -1,8 +1,6 @@
 #ifndef HOOKZZ_X86_OPCODE_DECODE_TABLE_H_
 #define HOOKZZ_X86_OPCODE_DECODE_TABLE_H_
 
-#include <stdio.h>
-
 #ifndef __addr_t_defined
 #define __addr_t_defined
 typedef unsigned long addr_t;

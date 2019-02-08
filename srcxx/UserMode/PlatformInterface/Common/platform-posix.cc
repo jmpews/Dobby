@@ -64,7 +64,7 @@ int GetFlagsForMemoryPermission(MemoryPermission access) {
   return flags;
 }
 
-void *Allocate(void *address, size_t size, MemoryPermission access) {
+void *Allocate(void *address, int size, MemoryPermission access) {
   int prot     = GetProtectionFromMemoryPermission(access);
   int flags    = GetFlagsForMemoryPermission(access);
   void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
@@ -73,17 +73,15 @@ void *Allocate(void *address, size_t size, MemoryPermission access) {
   return result;
 }
 
-// static
-size_t OSMemory::PageSize() {
-  return static_cast<size_t>(sysconf(_SC_PAGESIZE));
+int OSMemory::PageSize() {
+  return static_cast<int>(sysconf(_SC_PAGESIZE));
 }
 
-// static
-void *OSMemory::Allocate(void *address, size_t size, MemoryPermission access) {
-  size_t page_size = OSMemory::PageSize();
+void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
+  int page_size = OSMemory::PageSize();
   DCHECK_EQ(0, size % page_size);
-  size_t request_size = size;
-  void *result        = zz::Allocate(address, request_size, access);
+  int request_size = size;
+  void *result     = zz::Allocate(address, request_size, access);
   if (result == nullptr)
     return nullptr;
 
@@ -93,22 +91,20 @@ void *OSMemory::Allocate(void *address, size_t size, MemoryPermission access) {
   return static_cast<void *>(aligned_base);
 }
 
-// static
-bool OSMemory::Free(void *address, const size_t size) {
+bool OSMemory::Free(void *address, const int size) {
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, size % PageSize());
+  return munmap(address, size) == 0;
+}
+
+bool OSMemory::Release(void *address, int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
   return munmap(address, size) == 0;
 }
 
 // static
-bool OSMemory::Release(void *address, size_t size) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
-  DCHECK_EQ(0, size % PageSize());
-  return munmap(address, size) == 0;
-}
-
-// static
-bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission access) {
+bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
@@ -152,21 +148,6 @@ void OSPrint::VPrint(const char *format, va_list args) {
 #endif
 }
 
-void OSPrint::FPrint(FILE *out, const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  VFPrint(out, format, args);
-  va_end(args);
-}
-
-void OSPrint::VFPrint(FILE *out, const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
-#else
-  vfprintf(out, format, args);
-#endif
-}
-
 void OSPrint::PrintError(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -181,7 +162,5 @@ void OSPrint::VPrintError(const char *format, va_list args) {
   vfprintf(stderr, format, args);
 #endif
 }
-
-// =====
 
 } // namespace zz

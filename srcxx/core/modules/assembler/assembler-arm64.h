@@ -77,7 +77,8 @@ private:
   };
 #endif
 private:
-  std::vector<PseudoLabelInstruction> instructions_;
+  // std::vector<PseudoLabelInstruction> instructions_;
+  LiteMutableArray *instructions_;
 };
 
 class Operand {

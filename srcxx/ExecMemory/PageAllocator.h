@@ -9,7 +9,7 @@ class PageAllocator {
 public:
   static void *Allocate(MemoryPermission permission);
 
-  static size_t PageSize();
+  static int PageSize();
 
   static bool SetPermissions(void *address, MemoryPermission access);
 };

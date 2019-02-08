@@ -3,7 +3,6 @@
 #include "core/arch/CpuUtils.h"
 
 #include "stdcxx/LiteMemOpt.h"
-#define memcpy LiteMemOpt::copy
 
 CpuInfo::CpuInfo() {
   icache_line_size_ = 0;

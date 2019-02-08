@@ -16,13 +16,15 @@ public:
 
   void EmitBuffer(void *buffer, int len);
 
+  void EmitObject(LiteObject *object);
+
+#ifndef KERNELMOD
   template <typename T> T Load(int offset);
 
   template <typename T> void Store(int offset, T value);
 
   template <typename T> void Emit(T value);
-
-  void EmitObject(LiteObject *object);
+#endif
 };
 
 #endif

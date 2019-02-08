@@ -15,59 +15,52 @@ int GetFlagsForMemoryPermission(MemoryPermission access) {
   return flags;
 }
 
-void *Allocate(void *address, size_t size, MemoryPermission access) {
+void *Allocate(void *address, int size, MemoryPermission access) {
   int prot  = GetProtectionFromMemoryPermission(access);
   int flags = GetFlagsForMemoryPermission(access);
   return nullptr;
 }
 
-// static
-size_t OSMemory::PageSize() {
+int OSMemory::PageSize() {
   return 0;
 }
 
-// static
-void *OSMemory::Allocate(void *address, size_t size, MemoryPermission access) {
-  size_t page_size    = OSMemory::PageSize();
-  size_t request_size = size;
-  void *result        = zz::Allocate(address, request_size, access);
+void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
+  int page_size    = OSMemory::PageSize();
+  int request_size = size;
+  void *result     = zz::Allocate(address, request_size, access);
   if (result == nullptr)
     return nullptr;
 
   // TODO: if need align
-
   void *aligned_base = result;
   return static_cast<void *>(aligned_base);
 }
 
 // static
-bool OSMemory::Free(void *address, const size_t size) {
+bool OSMemory::Free(void *address, const int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
   DCHECK_EQ(0, 0);
+
   return 0;
 }
 
-// static
-bool OSMemory::Release(void *address, size_t size) {
+bool OSMemory::Release(void *address, int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
+
   return 0;
 }
 
-// static
-bool OSMemory::SetPermissions(void *address, size_t size, MemoryPermission access) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
   return 0;
 }
 
-std::vector<MemoryRegion> GetProcessMemoryLayout() {
-  std::vector<MemoryRegion> result;
-  return result;
-}
+// =====
 
 void OSPrint::Print(const char *format, ...) {
   va_list args;
@@ -112,30 +105,6 @@ void OSPrint::VPrintError(const char *format, va_list args) {
 #else
   vfprintf(stderr, format, args);
 #endif
-}
-
-int OSThread::GetCurrentProcessId() {
-  return 0;
-}
-
-int OSThread::GetCurrentThreadId() {
-  return 0;
-}
-
-OSThread::LocalStorageKey OSThread::CreateThreadLocalKey() {
-  return 0;
-}
-
-void OSThread::DeleteThreadLocalKey(LocalStorageKey key) {
-  return;
-}
-
-void *OSThread::GetThreadLocal(LocalStorageKey key) {
-  return NULL;
-}
-
-void OSThread::SetThreadLocal(LocalStorageKey key, void *value) {
-  return;
 }
 
 } // namespace zz

@@ -6,7 +6,7 @@
 
 #include "core/modules/assembler/assembler.h"
 
-#include <assert.h>
+#include "macros.h"
 
 namespace zz {
 namespace x64 {

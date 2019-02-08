@@ -1,8 +1,6 @@
 #include <core/arch/Cpu.h>
 
-#include "ExecMemory/CodePatchTool.h"
 #include "PlatformInterface/Common/Platform.h"
-#include "ExecMemory/PageAllocator.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -14,12 +12,20 @@
 
 using namespace zz;
 
-_MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void *buffer, int size) {
-  int page_size = (int)OSMemory::PageSize();
+_MemoryOperationError CodePatch(void *address, void *buffer, int size) {
+
+  int page_size = (int)sysconf(_SC_PAGESIZE);
+
+  int page_size                = OSMemory::PageSize();
+  uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);
+  int offset                   = (uintptr_t)address - page_align_address;
 
 #ifdef __APPLE__
 
-  uintptr_t remap_page = (uintptr_t)PageAllocator::Allocate(MemoryPermission::kReadWrite);
+  uintptr_t remap_page =
+      (uintptr_t)mmap(0, page_size, PROT_READ | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS;, VM_MAKE_TAG(255), 0);
+  if (remap_page == MAP_FAILED)
+    return nullptr;
 
   vm_prot_t prot;
   vm_inherit_t inherit;
@@ -45,7 +51,7 @@ _MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void 
 
   memcpy((void *)(remap_page + offset), buffer, size);
 
-  PageAllocator::SetPermissions((void *)remap_page, MemoryPermission::kReadExecute);
+  mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
 
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_address;
   vm_prot_t cur_protection, max_protection;
@@ -57,27 +63,8 @@ _MemoryOperationError CodePatchTool::Patch(void *page_address, int offset, void 
     return kMemoryOperationError;
   }
 
-#elif defined(__ANDROID__) || defined(__linux__)
-  PageAllocator::SetPermissions(page_address, page_size, MemoryPermission::kReadWriteExecute);
-  memcpy((void *)((uintptr_t)page_address + offset), buffer, size);
-  PageAllocator::SetPermissions(page_address, page_size, MemoryPermission::kReadExecute);
 #endif
 
   CpuFeatures::FlushICache((void *)((uintptr_t)page_address + offset), size);
-  return kMemoryOperationSuccess;
-}
-
-MemoryOperationError CodePatchTool::Patch(void *address, void *buffer, int size) {
-  size_t page_size             = OSMemory::PageSize();
-  uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);
-  int offset                   = (uintptr_t)address - page_align_address;
-
-  return CodePatchTool::Patch((void *)page_align_address, offset, buffer, size);
-}
-
-MemoryOperationError CodePatchTool::PatchCodeBuffer(void *address, CodeBufferBase *buffer) {
-  void *buffer_address = buffer->getRawBuffer();
-  int buffer_size      = (int)buffer->getSize();
-  CodePatchTool::Patch(address, buffer_address, buffer_size);
   return kMemoryOperationSuccess;
 }

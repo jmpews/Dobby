@@ -12,23 +12,31 @@ protected:
   byte *cursor_;
 
   // Capacity in bytes of the backing store
-  size_t capacity_;
+  int capacity_;
 
   // Length of already bytes
-  // size_t size_;
+  // int size_;
 
 public:
-  virtual size_t ensureCapacity(size_t newCapacity);
+  virtual int ensureCapacity(int newCapacity);
 
-  virtual bool initWithCapacity(size_t capacity = 8);
+  virtual bool initWithCapacity(int capacity = 8);
 
-  virtual inline size_t getSize() { return cursor_ - buffer_; }
+  virtual inline int getSize() {
+    return (int)(cursor_ - buffer_);
+  }
 
-  virtual inline size_t getCapacity() { return capacity_; }
+  virtual inline int getCapacity() {
+    return capacity_;
+  }
 
-  virtual inline void *getCursor() { return cursor_; }
+  virtual inline void *getCursor() {
+    return cursor_;
+  }
 
-  virtual inline void *getRawBuffer() { return buffer_; }
+  virtual inline void *getRawBuffer() {
+    return buffer_;
+  }
 };
 
 #endif
