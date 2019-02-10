@@ -47,8 +47,8 @@ void X64InterceptRouting::Active() {
 
   codegen.JmpBranch((addr_t)branch_address);
 
-  MemoryOperationError err;
-  CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
+  MemoryOperationError err = kMemoryOperationSuccess;
+  err = CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
             turbo_assembler_.GetCodeBuffer()->getSize());
 
   CHECK_EQ(err, kMemoryOperationSuccess);

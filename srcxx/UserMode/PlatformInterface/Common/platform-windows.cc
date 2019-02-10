@@ -4,6 +4,8 @@
 
 #include "UnifiedInterface/StdMemory.h"
 
+#include <stdio.h>
+
 namespace zz {
 
 int GetProtectionFromMemoryPermission(MemoryPermission access) {
@@ -76,35 +78,4 @@ void OSPrint::VPrint(const char *format, va_list args) {
   vprintf(format, args);
 #endif
 }
-
-void OSPrint::FPrint(FILE *out, const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  VFPrint(out, format, args);
-  va_end(args);
-}
-
-void OSPrint::VFPrint(FILE *out, const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
-#else
-  vfprintf(out, format, args);
-#endif
-}
-
-void OSPrint::PrintError(const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  VPrintError(format, args);
-  va_end(args);
-}
-
-void OSPrint::VPrintError(const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
-#else
-  vfprintf(stderr, format, args);
-#endif
-}
-
 } // namespace zz
