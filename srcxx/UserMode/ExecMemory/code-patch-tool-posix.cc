@@ -1,6 +1,6 @@
 #include <core/arch/Cpu.h>
 
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "PlatformInterface/Common/Platform.h"
 
 using namespace zz;

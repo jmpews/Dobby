@@ -3,8 +3,8 @@
 
 #include "hookzz_internal.h"
 
-#include "AssemblyClosureTrampoline.h"
-#include "InterceptRouting.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 
 #include "InterceptRouting/x64/X64InterceptRouting.h"
@@ -15,7 +15,7 @@ public:
   }
 
   void *GetTrampolineTarget();
-  
+
   void Dispatch();
 
 private:

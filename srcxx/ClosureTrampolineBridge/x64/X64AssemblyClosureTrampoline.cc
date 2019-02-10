@@ -1,4 +1,4 @@
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 extern void closure_trampoline_template();
 

@@ -9,8 +9,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=204 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fcolor-diagnostics -nostdinc -std=gnu11 -fmodules -gmodules -fmodules-prune-interval=86400 -fmodules-prune-after=345600 -Wnon-modular-include-in-framework-module -Werror=non-modular-include-in-framework-module -fno-builtin -Wno-trigraphs -msoft-float -Os -fno-common -mkernel -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Wdocumentation -Wunreachable-code -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wno-float-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -g -Wno-sign-conversion -Winfinite-recursion -Wcomma -Wblock-capture-autoreleasing -Wstrict-prototypes -Wno-semicolon-before-method-body -Wunguarded-availability")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/PrivateHeaders -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/Headers")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=204 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fcolor-diagnostics -nostdinc -std=gnu11 -fmodules -gmodules -fmodules-prune-interval=86400 -fmodules-prune-after=345600 -Wnon-modular-include-in-framework-module -Werror=non-modular-include-in-framework-module -fno-builtin -Wno-trigraphs -msoft-float -Os -fno-common -mkernel -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Wdocumentation -Wunreachable-code -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wno-float-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -g -Wno-sign-conversion -Winfinite-recursion -Wcomma -Wblock-capture-autoreleasing -Wstrict-prototypes -Wno-semicolon-before-method-body -Wunguarded-availability")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/PrivateHeaders -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/Headers")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
@@ -128,14 +128,17 @@ endif()
 set(Target.path .)
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES})
 
+# srcxx.core
 file(GLOB Target.srcxx.core.arch.FILES ${Target.path}/srcxx/core/arch/*.cc)
 source_group(srcxx.core.arch FILES ${Target.srcxx.core.arch.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.arch.FILES})
 
+# srcxx.core.arch
 file(GLOB Target.srcxx.core.arch.${arch1}.FILES ${Target.path}/srcxx/core/arch/${arch1}/*.cc)
 source_group(srcxx.core.arch.${arch1} FILES ${Target.srcxx.core.arch.${arch1}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.arch.${arch1}.FILES})
 
+# srcxx.core.modules.assembler
 set(Target.srcxx.core.modules.assembler.FILES
     ${Target.path}/srcxx/core/modules/assembler/assembler.cc
     ${Target.path}/srcxx/core/modules/assembler/assembler-${arch1}.cc
@@ -150,15 +153,28 @@ set(Target.srcxx.core.modules.codegen.FILES
 source_group(srcxx.core.modules.codegen FILES ${Target.srcxx.core.modules.codegen.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.modules.codegen.FILES})
 
-# srcxx.ClosureTrampolineBridge
+# srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler
+file(GLOB Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/closure-trampoline-common-handler/*.cc)
+source_group(srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler FILES ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
+
+# srcxx.ClosureTrampolineBridge.arch
 file(GLOB Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/${arch1}/*.cc)
 source_group(srcxx.ClosureTrampolineBridge.${arch1} FILES ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
 
-#srcxx.ExecMemory
+# srcxx.ExecMemory
 file(GLOB Target.srcxx.ExecMemory.FILES ${Target.path}/srcxx/ExecMemory/*.cc)
 source_group(srcxx.ExecMemory FILES ${Target.srcxx.ExecMemory.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExecMemory.FILES})
+
+# srcxx.ExecMemory.CodeBuffer
+set(Target.srcxx.ExecMemory.CodeBuffer.FILES
+    ${Target.path}/srcxx/ExecMemory/CodeBuffer/CodeBufferBase.cc
+    ${Target.path}/srcxx/ExecMemory/CodeBuffer/code-buffer-${arch1}.cc
+)
+source_group(srcxx.ExecMemory.CodeBuffer FILES ${Target.srcxx.ExecMemory.CodeBuffer.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExecMemory.CodeBuffer.FILES})
 
 #srcxx.ExtraInternalPlugin
 if(ExtraPlugin.NearBranchTrampoline)
@@ -190,7 +206,7 @@ source_group(ExtraPlugin.NearBranchTrampoline.PlatformUtil FILES ${Target.srcxx.
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.PlatformUtil.FILES})
 
 
-#srcxx.InstructionRelocation
+# srcxx.InstructionRelocation
 file(GLOB Target.srcxx.InstructionRelocation.${arch1}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch1}/*.cc)
 source_group(srcxx.InstructionRelocation.${arch1} FILES ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
@@ -198,12 +214,17 @@ file(GLOB Target.srcxx.InstructionRelocation.${arch2}.FILES ${Target.path}/srcxx
 source_group(srcxx.InstructionRelocation.${arch2} FILES ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
 
-#srcxx.InterceptRouting
+# srcxx.InterceptRouting
+file(GLOB Target.srcxx.InterceptRouting.FILES ${Target.path}/srcxx/InterceptRouting/*.cpp)
+source_group(srcxx.InterceptRouting FILES ${Target.srcxx.InterceptRouting.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRouting.FILES})
+
+# srcxx.InterceptRouting.arch
 file(GLOB Target.srcxx.InterceptRouting.${arch1}.FILES ${Target.path}/srcxx/InterceptRouting/${arch1}/*.cc)
 source_group(srcxx.InterceptRouting.${arch1} FILES ${Target.srcxx.InterceptRouting.${arch1}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRouting.${arch1}.FILES})
 
-#srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument
+# srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument
 if(Plugin.DynamicBinaryInstrument)
     set(Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES
         ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-${arch1}.cc
@@ -214,15 +235,15 @@ source_group(srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument FILES ${Target
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES})
 endif()
 
-#srcxx.InterceptRoutingPlugin.FunctionInlineReplace
+# srcxx.InterceptRoutingPlugin.FunctionInlineReplace
 set(Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES
-    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-${arch1}.cc
+    ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
     ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 )
 source_group(srcxx.InterceptRoutingPlugin.FunctionInlineReplace FILES ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionInlineReplace.FILES})
 
-#srcxx.InterceptRoutingPlugin.FunctionWrapper
+# srcxx.InterceptRoutingPlugin.FunctionWrapper
 if(Plugin.FunctionWrapper)
     set(Target.srcxx.InterceptRoutingPlugin.FunctionWrapper.FILES
         ${Target.path}/srcxx/InterceptRoutingPlugin/FunctionWrapper/function-wrapper-${arch1}.cc
@@ -233,7 +254,7 @@ if(Plugin.FunctionWrapper)
     set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.FunctionWrapper.FILES})
 endif()
 
-#srcxx.InterceptRoutingPlugin.intercept-routing-handler
+# srcxx.InterceptRoutingPlugin.intercept-routing-handler
 if(Plugin.FunctionWrapper OR Plugin.DynamicBinaryInstrument)
     set(Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES
     ${Target.path}/srcxx/InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.cc
@@ -242,48 +263,58 @@ if(Plugin.FunctionWrapper OR Plugin.DynamicBinaryInstrument)
     set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
 endif()
 
-#srcxx.MultiThreadSupport
-if(MultiThreadSupport)
-    file(GLOB Target.srcxx.MultiThreadSupport.FILES ${Target.path}/srcxx/MultiThreadSupport/*.cpp)
-    source_group(srcxx.MultiThreadSupport FILES ${Target.srcxx.MultiThreadSupport.FILES})
-    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.MultiThreadSupport.FILES})
-endif()
-
-#srcxx.PlatformInterface
-if(SYSTEM.Darwin OR SYSTEM.Android OR SYSTEM.Linux)
-    set(Target.srcxx.PlatformInterface.Common.FILES
-        ${Target.path}/srcxx/PlatformInterface/Common/PlatformPosix.cc
-        ${Target.path}/srcxx/PlatformInterface/Common/PlatformPosix/extensions-posix.cc
+# srcxx.UserMode.PlatformInterface.Common
+if(SYSTEM.Android OR SYSTEM.Linux)
+    set(Target.srcxx.UserMode.PlatformInterface.Common.FILES
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix.cc
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix/extensions-posix.cc
+    ) 
+    set(Target.srcxx.UserMode.ExecMemory.FILES
+        ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-posix.cc
     ) 
     if(MultiThreadSupport)
-        set(Target.srcxx.PlatformInterface.Thread.FILES
-            ${Target.path}/srcxx/PlatformInterface/PlatformThread/PlatformThreadPosix.cc
+        set(Target.srcxx.UserMode.PlatformInterface.Thread.FILES
+            ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/platform-thread-posix.cc
+            ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/PlaformThread.cc
+        )
+    endif()
+endif()
+
+if(SYSTEM.Darwin)
+    set(Target.srcxx.UserMode.PlatformInterface.Common.FILES
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix.cc
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix/extensions-posix.cc
+    ) 
+    set(Target.srcxx.UserMode.ExecMemory.FILES
+        ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-darwin.cc
+    ) 
+    if(MultiThreadSupport)
+        set(Target.srcxx.UserMode.PlatformInterface.Thread.FILES
+            ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/platform-thread-posix.cc
+            ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/PlaformThread.cc
         )
     endif()
 endif()
 
 if(SYSTEM.Windows)
-    set(Target.srcxx.PlatformInterface.Common.FILES ${Target.srcxx.PlatformInterface.FILES}
-        ${Target.path}/srcxx/PlatformInterface/Common/PlatformWindows.cc
+    set(Target.srcxx.UserMode.PlatformInterface.Common.FILES ${Target.srcxx.UserMode.PlatformInterface.FILES}
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/PlatformWindows.cc
+    )
+    set(Target.srcxx.UserMode.ExecMemory.FILES
+        ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-windows.cc
     )
     if(MultiThreadSupport)
-        set(Target.srcxx.PlatformInterface.Thread.FILES
-            ${Target.path}/srcxx/PlatformInterface/PlatformThread/PlatformThreadWindows.cc
+        set(Target.srcxx.UserMode.PlatformInterface.Thread.FILES
+            ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/platform-thread-windows.cc
         )
     endif()
 endif()
-source_group(srcxx.PlatformInterface.Common FILES ${Target.srcxx.PlatformInterface.Common.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.Common.FILES})
-source_group(srcxx.PlatformInterface.Thread FILES ${Target.srcxx.PlatformInterface.Thread.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.PlatformInterface.Thread.FILES})
-
-#srcxx.UserMode
-set(Target.srcxx.UserMode.FILES
-    ${Target.path}/srcxx/UserMode/${ARCH1}/code-buffer-${arch1}.cc
-    ${Target.path}/srcxx/UserMode/CodeBufferBase.cc
-)
-source_group(srcxx.UserMode FILES ${Target.srcxx.UserMode.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.FILES})
+source_group(srcxx.UserMode.ExecMemory FILES ${Target.srcxx.UserMode.ExecMemory.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.ExecMemory.FILES})
+source_group(srcxx.UserMode.PlatformInterface.Common FILES ${Target.srcxx.UserMode.PlatformInterface.Common.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.PlatformInterface.Common.FILES})
+source_group(srcxx.UserMode.PlatformInterface.Thread FILES ${Target.srcxx.UserMode.PlatformInterface.Thread.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.PlatformInterface.Thread.FILES})
 
 #srcxx
 file(GLOB Target.srcxx.FILES ${Target.path}/srcxx/*.cpp)
@@ -294,6 +325,7 @@ include_directories(
     ${Target.path}
     ${Target.path}/include
     ${Target.path}/srcxx
+    ${Target.path}/srcxx/UserMode
     ${Target.path}/OneLib/logging
     ${Target.path}/OneLib/stdcxx
     ${Target.path}/OneLib/include

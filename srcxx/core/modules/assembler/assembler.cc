@@ -62,10 +62,10 @@ void *AssemblerBase::GetRealizeAddress() {
   return realized_address_;
 }
 
-void AssemblerBase::FlushICache(void *start, size_t size) {
+void AssemblerBase::FlushICache(void *start, int size) {
 }
 
-void AssemblerBase::FlushICache(uintptr_t start, uintptr_t end) {
+void AssemblerBase::FlushICache(addr_t start, addr_t end) {
 }
 
 } // namespace zz

@@ -3,15 +3,15 @@
 
 #include "hookzz_internal.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "InterceptRouting.h"
 #include "Interceptor.h"
 #include "intercept_routing_handler.h"
 
 class FunctionWrapperRouting : public InterceptRouting {
 public:
-
-  FunctionWrapperRouting(HookEntry *entry) : FunctionWrapperRouting(entry) {}
+  FunctionWrapperRouting(HookEntry *entry) : FunctionWrapperRouting(entry) {
+  }
 
   virtual void Commit();
 

@@ -1,7 +1,7 @@
 #ifndef ZZ_PLATFORM_PLATFORM_H_
 #define ZZ_PLATFORM_PLATFORM_H_
 
-#include "KernelOrUser.h"
+#include <stdarg.h>
 
 #include "UnifiedInterface/StdMemory.h"
 

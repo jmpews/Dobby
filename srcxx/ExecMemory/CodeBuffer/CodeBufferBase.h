@@ -18,7 +18,7 @@ public:
 
   void EmitObject(LiteObject *object);
 
-#ifndef KERNELMOD
+#if 0 // Template Advanced won't enable even in userspace
   template <typename T> T Load(int offset);
 
   template <typename T> void Store(int offset, T value);

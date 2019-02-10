@@ -1,6 +1,6 @@
 #include "AssemblyCode.h"
 #include "ExecutableMemoryArena.h"
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "logging/logging.h"
 
 #if TARGET_ARCH_ARM
@@ -33,8 +33,8 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
   // instructions
   turboAssembler->CommitRealizeAddress(codeChunk->address);
-  CodePatchTool::PatchCodeBuffer(turboAssembler->GetRealizeAddress(),
-                                 reinterpret_cast<CodeBufferBase *>(turboAssembler->GetCodeBuffer()));
+  CodePatch(turboAssembler->GetRealizeAddress(), turboAssembler->GetCodeBuffer()->getRawBuffer(),
+            turboAssembler->GetCodeBuffer()->getSize());
 
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;

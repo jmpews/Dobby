@@ -1,7 +1,7 @@
 #ifndef HOOKZZ_ARCH_ARM_INTERCEPT_ROUTING_H_
 #define HOOKZZ_ARCH_ARM_INTERCEPT_ROUTING_H_
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "InterceptRouting.h"
 #include "Interceptor.h"
 #include "Logging.h"

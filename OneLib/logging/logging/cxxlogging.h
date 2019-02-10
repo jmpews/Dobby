@@ -7,7 +7,8 @@ namespace zz {
 
 class Logger {
 public:
-  static void initialize(const char *log_tag, const char *log_file, int log_level) {}
+  static void initialize(const char *log_tag, const char *log_file, int log_level) {
+  }
 
   static void Log(int level, const char *file, int line, const char *fmt, ...){};
 

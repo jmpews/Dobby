@@ -357,7 +357,7 @@ public:
   }
 
   void PseudoBind(PseudoLabel *label) {
-    const uintptr_t bound_pc = buffer_.Size();
+    const addr_t bound_pc = buffer_.Size();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {

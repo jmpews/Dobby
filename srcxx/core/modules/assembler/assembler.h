@@ -71,9 +71,9 @@ public:
 
   virtual void *GetRealizeAddress();
 
-  static void FlushICache(void *start, size_t size);
+  static void FlushICache(void *start, int size);
 
-  static void FlushICache(uintptr_t start, uintptr_t end);
+  static void FlushICache(addr_t start, addr_t end);
 
 protected:
   CodeBuffer *buffer_;
@@ -90,7 +90,7 @@ protected:
 #include "core/modules/assembler/assembler-arm64.h"
 #elif TARGET_ARCH_X64
 #include "core/modules/assembler/assembler-x64.h"
-#include "UserMode/X64/code-buffer-x64.h"
+#include "ExecMemory/CodeBuffer/code-buffer-x64.h"
 #else
 #error "unsupported architecture"
 #endif

@@ -1,10 +1,10 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
+#include <stdint.h>
+
 // Types for native machine words. Guaranteed to be able to hold pointers and
 // integers.
-
-#include "kernel_or_user.h"
 
 #ifndef __addr_t_defined
 #define __addr_t_defined
@@ -29,6 +29,10 @@ typedef short word;
 #ifndef __dword_defined
 #define __dword_defined
 typedef int dword;
+#endif
+
+#ifndef NULL
+#define NULL 0
 #endif
 
 #if defined(_M_X64) || defined(__x86_64__)
