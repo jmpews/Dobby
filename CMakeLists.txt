@@ -18,13 +18,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 option(SHARED "Build shared library" ON)
 option(DEBUG "Enable debug log" OFF)
 
-option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
+option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(Plugin.FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" ON)
+option(Plugin.FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
-option(ExtraPlugin.NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" ON)
+option(ExtraPlugin.NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
 
-option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" ON)
+option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
 
 option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
@@ -298,7 +298,7 @@ endif()
 
 if(SYSTEM.Windows)
     set(Target.srcxx.UserMode.PlatformInterface.Common.FILES ${Target.srcxx.UserMode.PlatformInterface.FILES}
-        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/PlatformWindows.cc
+        ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-windows.cc
     )
     set(Target.srcxx.UserMode.ExecMemory.FILES
         ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-windows.cc
