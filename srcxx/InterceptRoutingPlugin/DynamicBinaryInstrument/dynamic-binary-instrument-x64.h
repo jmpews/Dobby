@@ -3,7 +3,7 @@
 
 #include "hookzz_internal.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "InterceptRouting.h"
 #include "Interceptor.h"
 #include "intercept_routing_handler.h"

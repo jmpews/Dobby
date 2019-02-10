@@ -7,7 +7,7 @@
 #include "core/modules/codegen/codegen-x64.h"
 
 #include "ExecMemory/ExecutableMemoryArena.h"
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 
 #include "InstructionRelocation/x86/X86OpcodoDecodeTable.h"
 
@@ -88,8 +88,8 @@ AssemblyCode *GenRelocateCodeTo(addr_t src_address, int *relocate_size, Assembly
   }
 
   // Generate executable code
-  CodePatchTool::PatchCodeBuffer(turbo_assembler_.GetRealizeAddress(),
-                                 reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
+  CodePatch(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
+            turbo_assembler_.GetCodeBuffer()->getSize());
   // Alloc a new AssemblyCode
   AssemblyCode *code = new AssemblyCode;
   code->initWithAddressRange(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getSize());

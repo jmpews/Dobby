@@ -3,9 +3,9 @@
 #include "logging/logging.h"
 
 #include "Interceptor.h"
-#include "InterceptRouting.h"
+#include "InterceptRouting/InterceptRouting.h"
 
-#include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace-x64.h"
+#include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
 PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call) {
   DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);

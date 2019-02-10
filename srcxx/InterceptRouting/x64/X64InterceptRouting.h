@@ -3,9 +3,9 @@
 
 #include "hookzz_internal.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "InterceptRouting.h"
+#include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 
 class X64InterceptRouting : public InterceptRouting {
@@ -15,13 +15,13 @@ public:
 public:
   X64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
   }
-  
+
   virtual void Dispatch() = 0;
 
   void Active();
 
   virtual void *GetTrampolineTarget() = 0;
-  
+
   void Prepare();
 
 private:

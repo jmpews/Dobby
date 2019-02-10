@@ -1,9 +1,9 @@
 #include "hookzz_internal.h"
 
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "ExecMemory/ExecutableMemoryArena.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 #include "intercept_routing_handler.h"
 
@@ -18,10 +18,8 @@
 #include "ExtraInternalPlugin/BxxxBranchTrampoline/ShellCodeCave/ShellCodeCave.h"
 #include "ExtraInternalPlugin/RegisterPlugin.h"
 
-
 #define ARM64_TINY_REDIRECT_SIZE 4
 #define ARM64_B_XXX_RANGE (1 << 25) // signed
-
 
 using namespace zz::arm64;
 
@@ -36,28 +34,31 @@ static AssemblyCode *BuildFastForwardTrampoline(uintptr_t forward_address) {
 
   // Patch
   MemoryOperationError err;
-  err = CodePatchTool::PatchCodeBuffer(codeChunk->address, reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
+  err = CodePatchTool::PatchCodeBuffer(codeChunk->address,
+                                       reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
   CHECK_EQ(err, kMemoryOperationSuccess);
-  AssemblyCode*code = AssemblyCode::FinalizeFromAddress((uintptr_t)codeChunk->address, turbo_assembler_.GetCodeBuffer()->getSize());
+  AssemblyCode *code =
+      AssemblyCode::FinalizeFromAddress((uintptr_t)codeChunk->address, turbo_assembler_.GetCodeBuffer()->getSize());
 
   return code;
 }
 
 bool BxxxRouting::Prepare(InterceptRouting *routing) {
   ARM64InterceptRouting *routing_arm64 = reinterpret_cast<ARM64InterceptRouting *>(routing);
-  HookEntry *entry = routing->GetHookEntry();
+  HookEntry *entry                     = routing->GetHookEntry();
 
-  AssemblyCodeChunk *codeChunk = SearchCodeCave(ARM64_TINY_REDIRECT_SIZE, (uintptr_t)entry->target_address, ARM64_B_XXX_RANGE);
-  if(codeChunk) {
-    routing_arm64->branch_type_  = ARM64InterceptRouting::ARM64_B_Branch;
+  AssemblyCodeChunk *codeChunk =
+      SearchCodeCave(ARM64_TINY_REDIRECT_SIZE, (uintptr_t)entry->target_address, ARM64_B_XXX_RANGE);
+  if (codeChunk) {
+    routing_arm64->branch_type_ = ARM64InterceptRouting::ARM64_B_Branch;
   }
   return true;
 }
 
 bool BxxxRouting::Active(InterceptRouting *routing) {
-    ARM64InterceptRouting *routing_arm64 = reinterpret_cast<ARM64InterceptRouting *>(routing);
-  HookEntry *entry = routing->GetHookEntry();
-  uint64_t target_address = (uint64_t)entry->target_address;
+  ARM64InterceptRouting *routing_arm64 = reinterpret_cast<ARM64InterceptRouting *>(routing);
+  HookEntry *entry                     = routing->GetHookEntry();
+  uint64_t target_address              = (uint64_t)entry->target_address;
 
   AssemblyCode *fast_forward_trampoline;
 

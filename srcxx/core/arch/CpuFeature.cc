@@ -77,18 +77,18 @@ void CpuFeatures::ClearCache(void *start, void *end) {
    * dc & ic instructions must use 64bit registers so we don't use
    * uintptr_t in case this runs in an IPL32 environment.
    */
-  const size_t dcache_line_size = 4 << ((ctr_el0 >> 16) & 15);
+  const int dcache_line_size = 4 << ((ctr_el0 >> 16) & 15);
   for (addr = xstart & ~(dcache_line_size - 1); addr < xend; addr += dcache_line_size)
     __asm __volatile("dc cvau, %0" ::"r"(addr));
   __asm __volatile("dsb ish");
 
-  const size_t icache_line_size = 4 << ((ctr_el0 >> 0) & 15);
+  const int icache_line_size = 4 << ((ctr_el0 >> 0) & 15);
   for (addr = xstart & ~(icache_line_size - 1); addr < xend; addr += icache_line_size)
     __asm __volatile("ic ivau, %0" ::"r"(addr));
   __asm __volatile("isb sy");
 #elif defined(__powerpc64__)
-  const size_t line_size = 32;
-  const size_t len       = (uintptr_t)end - (uintptr_t)start;
+  const int line_size = 32;
+  const int len       = (uintptr_t)end - (uintptr_t)start;
 
   const uintptr_t mask       = ~(line_size - 1);
   const uintptr_t start_line = ((uintptr_t)start) & mask;

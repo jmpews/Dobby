@@ -1,16 +1,6 @@
 #ifndef LOGGING_H_
 #define LOGGING_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif //__cplusplus
-
-void log_init(const char *log_file_path);
-
-#ifdef __cplusplus
-}
-#endif //__cplusplus
-
 #define LOG(str, ...)                                                                                                  \
   do {                                                                                                                 \
     /* printf(str, __VA_ARGS__); */                                                                                    \

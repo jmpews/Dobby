@@ -2,8 +2,8 @@
 #ifndef ZZ_CODE_PATCH_TOOL_H_
 #define ZZ_CODE_PATCH_TOOL_H_
 
-#include "UserMode/CodeBufferBase.h"
+#include "UnifiedInterface/StdMemory.h"
 
-static MemoryOperationError CodePatch(oid *address, void *buffer, int size);
+MemoryOperationError CodePatch(void *address, void *buffer, int size);
 
 #endif

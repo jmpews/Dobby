@@ -1,10 +1,7 @@
 
-#include "hookzz_internal.h"
-
 #include "logging/logging.h"
 
-#include "intercept_routing_handler.h"
-#include "MultiThreadSupport/ThreadSupport.h"
+#include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
 void get_routing_bridge_next_hop(RegisterContext *reg_ctx, void *address) {
 }

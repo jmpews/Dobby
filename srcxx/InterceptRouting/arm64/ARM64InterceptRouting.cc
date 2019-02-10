@@ -1,10 +1,10 @@
 
 #include "hookzz_internal.h"
 
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "ExecMemory/ExecutableMemoryArena.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 #include "intercept_routing_handler.h"
 

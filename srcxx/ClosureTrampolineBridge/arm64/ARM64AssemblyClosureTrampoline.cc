@@ -1,6 +1,6 @@
 #include "hookzz_internal.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 #include "ExecMemory/AssemblyCode.h"
 
@@ -25,7 +25,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 // use assembler and codegen modules instead of template_code
 // _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
 // _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_handler));
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_;
 

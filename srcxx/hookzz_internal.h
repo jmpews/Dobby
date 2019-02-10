@@ -9,6 +9,11 @@
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
+#include <string.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdarg.h>
+
 typedef struct _InstructionBackupArray {
   void *address;
   int size;

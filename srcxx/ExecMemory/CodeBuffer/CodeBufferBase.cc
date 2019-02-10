@@ -1,5 +1,5 @@
 
-#include "UserMode/CodeBufferBase.h"
+#include "ExecMemory/CodeBuffer/CodeBufferBase.h"
 
 void CodeBufferBase::Emit8(uint8_t value) {
   // Ensure the free space enough for the template T value
@@ -37,12 +37,12 @@ void CodeBufferBase::EmitBuffer(void *buffer, int buffer_size) {
   // Ensure the free space enough for the template T value
   ensureCapacity(buffer_size + getSize());
 
-  LiteMemOpt::copy(cursor_, buffer, buffer_size);
+  memcpy(cursor_, buffer, buffer_size);
 
   cursor_ += buffer_size;
 }
 
-#ifndef KERNELMODE
+#if 0 // Template Advanced won't enable even in userspace
 template <typename T> T CodeBufferBase::Load(int offset) {
   return *reinterpret_cast<T *>(buffer_ + offset);
 }

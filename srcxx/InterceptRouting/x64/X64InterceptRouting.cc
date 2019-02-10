@@ -1,10 +1,10 @@
 
 #include "hookzz_internal.h"
 
-#include "ExecMemory/CodePatchTool.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "ExecMemory/ExecutableMemoryArena.h"
 
-#include "AssemblyClosureTrampoline.h"
+#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 #include "InterceptRouting/x64/X64InterceptRouting.h"
 
@@ -48,8 +48,9 @@ void X64InterceptRouting::Active() {
   codegen.JmpBranch((addr_t)branch_address);
 
   MemoryOperationError err;
-  err = CodePatchTool::PatchCodeBuffer((void *)target_address,
-                                       reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
+  CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
+            turbo_assembler_.GetCodeBuffer()->getSize());
+
   CHECK_EQ(err, kMemoryOperationSuccess);
   AssemblyCode::FinalizeFromAddress(target_address, turbo_assembler_.GetCodeBuffer()->getSize());
 
