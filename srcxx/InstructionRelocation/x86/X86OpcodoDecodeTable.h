@@ -45,18 +45,18 @@ struct Instr {
   union {
     byte ModRM;
     struct {
-      byte Mod;
-      byte RegOpcode;
-      byte RM;
+      byte Mod : 2;
+      byte RegOpcode : 3;
+      byte RM : 3;
     };
   };
 
   union {
     byte SIB;
     struct {
-      byte base;
-      byte index;
-      byte scale;
+      byte base : 2;
+      byte index : 3;
+      byte scale : 3;
     };
   };
 
