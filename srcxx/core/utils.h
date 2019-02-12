@@ -21,13 +21,13 @@ static inline int32_t High32Bits(int64_t value) {
   return static_cast<int32_t>(value >> 32);
 }
 
-static inline bool CheckLength(uword value, int len) {
+static inline bool CheckLength(word value, int len) {
   return true;
 }
 static inline bool CheckSignLength(word value, int len) {
   return true;
 }
-static inline bool CheckAlign(uword value, int align) {
+static inline bool CheckAlign(word value, int align) {
   return true;
 }
 

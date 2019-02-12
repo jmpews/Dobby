@@ -1,4 +1,4 @@
-#include "arch/arm/ARMInstructionRelocation.h"
+#include "InstructionRelocation/arm/ARMInstructionRelocation.h"
 #include "arch/arm/ARMInterceptRouting.h"
 #include "globals.h"
 
@@ -157,8 +157,8 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t cur_pc, TurboAssembler &turbo_
 
         // ===
         // just modify orin instruction label bits, and keep the link and cond bits, the next instruction `b_imm` will do the rest work.
-        label = 0x4;ig
-        imm24 = label >> 2;
+        label    = 0x4;
+        ig imm24 = label >> 2;
         _ Emit((inst & 0xff000000) | imm24);
         if (flag_link) {
           _ bl(0);

@@ -5,11 +5,10 @@
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "InterceptRouting.h"
+#include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
-#include "intercept_routing_handler.h"
 
-class ARM64InterceptRouting : public InterceptRouting {
+class InterceptRouting : public InterceptRoutingBase {
 public:
   RoutingType branch_type_;
 
@@ -20,15 +19,16 @@ public:
     ARM64_LDR_Branch,
   };
 
-  ARM64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
+  InterceptRouting(HookEntry *entry) : InterceptRoutingBase(entry) {
   }
 
   void Active();
 
   virtual void *GetTrampolineTarget() = 0;
 
-private:
   void Prepare();
+
+private:
 };
 
 #endif

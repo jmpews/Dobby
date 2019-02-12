@@ -1,5 +1,5 @@
-#ifndef FUNCTION_WRAPPER_X64_H_
-#define FUNCTION_WRAPPER_X64_H_
+#ifndef FUNCTION_WRAPPER_H_
+#define FUNCTION_WRAPPER_H_
 
 #include "hookzz_internal.h"
 
@@ -7,11 +7,19 @@
 #include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 
+#if TARGET_ARCH_IA32
+#elif TARGET_ARCH_X64
 #include "InterceptRouting/x64/X64InterceptRouting.h"
+#elif TARGET_ARCH_ARM64
+#include "InterceptRouting/arm64/ARM64InterceptRouting.h"
+#elif TARGET_ARCH_ARM
+#else
+#error "unsupported architecture"
+#endif
 
-class FunctionInlineReplaceRouting : public X64InterceptRouting {
+class FunctionInlineReplaceRouting : public InterceptRouting {
 public:
-  FunctionInlineReplaceRouting(HookEntry *entry) : X64InterceptRouting(entry) {
+  FunctionInlineReplaceRouting(HookEntry *entry) : InterceptRouting(entry) {
   }
 
   void *GetTrampolineTarget();

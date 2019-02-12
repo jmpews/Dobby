@@ -10,12 +10,12 @@ void CodeBuffer::RewriteInst(int offset, arm64_inst_t inst) {
 }
 
 void CodeBuffer::EmitInst(arm64_inst_t inst) {
-  ensureCapacity(size_ + sizeof(arm64_inst_t));
+  ensureCapacity(getSize() + sizeof(arm64_inst_t));
   *reinterpret_cast<arm64_inst_t *>(getCursor()) = inst;
   return;
 }
 
 void CodeBuffer::Emit64(int64_t data) {
-  ensureCapacity(size_ + sizeof(int64_t));
+  ensureCapacity(getSize() + sizeof(int64_t));
   *reinterpret_cast<int64_t *>(getCursor()) = data;
 }

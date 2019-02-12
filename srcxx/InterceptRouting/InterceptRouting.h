@@ -5,9 +5,9 @@
 
 typedef int RoutingType;
 
-class InterceptRouting {
+class InterceptRoutingBase {
 public:
-  InterceptRouting(HookEntry *entry) : entry_(entry) {
+  InterceptRoutingBase(HookEntry *entry) : entry_(entry) {
   }
 
   virtual void Dispatch() = 0;

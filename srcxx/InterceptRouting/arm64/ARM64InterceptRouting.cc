@@ -6,8 +6,6 @@
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "intercept_routing_handler.h"
-
 #include "InterceptRouting/arm64/ARM64InterceptRouting.h"
 
 #include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
@@ -21,13 +19,15 @@ using namespace zz::arm64;
 #define ARM64_B_XXX_RANGE (1 << 25) // signed
 #define ARM64_FULL_REDIRECT_SIZE 16
 
+#if 0
 InterceptRouting *InterceptRouting::New(HookEntry *entry) {
   // DEL return reinterpret_cast<InterceptRouting *>(new ARM64InterceptRouting(entry));
   return NULL;
 }
+#endif
 
 // Determined if use B_Branch or LDR_Branch, and backup the origin instrutions
-void ARM64InterceptRouting::Prepare() {
+void InterceptRouting::Prepare() {
   uint64_t src_address     = (uint64_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
   int relocate_size        = 0;
@@ -48,7 +48,7 @@ void ARM64InterceptRouting::Prepare() {
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
-void ARM64InterceptRouting::Active() {
+void InterceptRouting::Active() {
   uint64_t target_address = (uint64_t)entry_->target_address;
   uint64_t branch_address = (uint64_t)GetTrampolineTarget();
 
@@ -59,8 +59,8 @@ void ARM64InterceptRouting::Active() {
   codegen.LiteralLdrBranch(branch_address);
 
   MemoryOperationError err;
-  err = CodePatchTool::PatchCodeBuffer((void *)target_address,
-                                       reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer()));
+  err = CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
+                  turbo_assembler_.GetCodeBuffer()->getSize());
   CHECK_EQ(err, kMemoryOperationSuccess);
   AssemblyCode::FinalizeFromAddress(target_address, turbo_assembler_.GetCodeBuffer()->getSize());
 

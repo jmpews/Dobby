@@ -17,7 +17,7 @@ using namespace zz::x64;
 
 #define X64_JMP_IMM_SIZE 5
 
-void X64InterceptRouting::Prepare() {
+void InterceptRouting::Prepare() {
   uint64_t src_address     = (uint64_t)entry_->target_address;
   Interceptor *interceptor = Interceptor::SharedInstance();
   int relocate_size        = X64_JMP_IMM_SIZE;
@@ -35,7 +35,7 @@ void X64InterceptRouting::Prepare() {
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
-void X64InterceptRouting::Active() {
+void InterceptRouting::Active() {
   uint64_t target_address = (uint64_t)entry_->target_address;
   uint64_t branch_address = (uint64_t)GetTrampolineTarget();
 
@@ -48,8 +48,8 @@ void X64InterceptRouting::Active() {
   codegen.JmpBranch((addr_t)branch_address);
 
   MemoryOperationError err = kMemoryOperationSuccess;
-  err = CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
-            turbo_assembler_.GetCodeBuffer()->getSize());
+  err                      = CodePatch((void *)target_address, turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
+                  turbo_assembler_.GetCodeBuffer()->getSize());
 
   CHECK_EQ(err, kMemoryOperationSuccess);
   AssemblyCode::FinalizeFromAddress(target_address, turbo_assembler_.GetCodeBuffer()->getSize());

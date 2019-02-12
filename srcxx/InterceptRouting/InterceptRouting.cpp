@@ -5,10 +5,10 @@
 #include "InterceptRouting.h"
 
 // Alias Active
-void InterceptRouting::Commit() {
+void InterceptRoutingBase::Commit() {
   Active();
 }
 
-HookEntry *InterceptRouting::GetHookEntry() {
+HookEntry *InterceptRoutingBase::GetHookEntry() {
   return entry_;
 };
