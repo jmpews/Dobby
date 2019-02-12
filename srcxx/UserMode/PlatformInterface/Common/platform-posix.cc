@@ -57,31 +57,15 @@ int GetProtectionFromMemoryPermission(MemoryPermission access) {
   UNREACHABLE();
 }
 
-int GetFlagsForMemoryPermission(MemoryPermission access) {
-  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if (access == MemoryPermission::kNoAccess) {
-  }
-  return flags;
-}
-
-void *Allocate(void *address, int size, MemoryPermission access) {
-  int prot     = GetProtectionFromMemoryPermission(access);
-  int flags    = GetFlagsForMemoryPermission(access);
-  void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
-  if (result == MAP_FAILED)
-    return nullptr;
-  return result;
-}
-
 int OSMemory::PageSize() {
   return static_cast<int>(sysconf(_SC_PAGESIZE));
 }
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
-  int page_size = OSMemory::PageSize();
-  DCHECK_EQ(0, size % page_size);
-  int request_size = size;
-  void *result     = zz::Allocate(address, request_size, access);
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, size % PageSize())
+
+  void *result     = mmap(address, size, prot, MAP_PRIVATE | MAP_ANONYMOUS, kMmapFd, kMmapFdOffset);
   if (result == nullptr)
     return nullptr;
 
@@ -94,19 +78,21 @@ void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
 bool OSMemory::Free(void *address, const int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
+
   return munmap(address, size) == 0;
 }
 
 bool OSMemory::Release(void *address, int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
+
   return munmap(address, size) == 0;
 }
 
 // static
 bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
-  DCHECK_EQ(0, size % PageSize());
+  DCHECK_EQ(0, size % PageSize())
 
   int prot = GetProtectionFromMemoryPermission(access);
   int ret  = mprotect(address, size, prot);

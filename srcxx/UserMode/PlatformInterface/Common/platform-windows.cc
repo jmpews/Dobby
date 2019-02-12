@@ -1,36 +1,34 @@
-#include "macros.h"
-#include "logging/check_logging.h"
 #include "PlatformInterface/Common/Platform.h"
+#include "logging/check_logging.h"
+#include "macros.h"
 
 #include "UnifiedInterface/StdMemory.h"
 
 #include <stdio.h>
 
+#include <windows.h>
+
 namespace zz {
 
 int GetProtectionFromMemoryPermission(MemoryPermission access) {
-  return 0;
-}
-
-int GetFlagsForMemoryPermission(MemoryPermission access) {
-  int flags = 0;
-  return flags;
-}
-
-void *Allocate(void *address, int size, MemoryPermission access) {
-  int prot  = GetProtectionFromMemoryPermission(access);
-  int flags = GetFlagsForMemoryPermission(access);
-  return nullptr;
+  if (kReadWriteExecute == access)
+    return PAGE_EXECUTE_READWRITE;
+  else if (kReadExecute == access)
+    return PAGE_EXECUTE_READ;
 }
 
 int OSMemory::PageSize() {
-  return 0;
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  return si.dwPageSize;
 }
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
-  int page_size    = OSMemory::PageSize();
-  int request_size = size;
-  void *result     = zz::Allocate(address, request_size, access);
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, size % PageSize());
+
+  void *result = VirtualAlloc(address, size, MEM_COMMIT | MEM_RESERVE, PAGE_NOACCESS);
+  OSMemory::SetPermissions(result, size, kReadWriteExecute);
   if (result == nullptr)
     return nullptr;
 
@@ -43,23 +41,25 @@ void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
 bool OSMemory::Free(void *address, const int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
-  DCHECK_EQ(0, 0);
 
-  return 0;
+  return VirtualFree(address, size, MEM_RELEASE);
 }
 
 bool OSMemory::Release(void *address, int size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
-  return 0;
+  return OSMemory::Free(address, size);
 }
 
 bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
-  return 0;
+  
+  DWORD oldProtect;
+  return VirtualProtect(address, size, prot, &oldProtect);
 }
 
 // =====
@@ -72,10 +72,6 @@ void OSPrint::Print(const char *format, ...) {
 }
 
 void OSPrint::VPrint(const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
-#else
   vprintf(format, args);
-#endif
 }
 } // namespace zz

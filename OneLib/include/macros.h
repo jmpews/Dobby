@@ -1,6 +1,8 @@
 #ifndef MACROS_H_
 #define MACROS_H_
 
+#include "globals.h"
+
 // offset of struct member
 #define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
 
