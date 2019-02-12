@@ -1,6 +1,7 @@
 #include <core/arch/Cpu.h>
 
 #include "PlatformInterface/Common/Platform.h"
+#include "PlatformInterface/ExecMemory/ClearCacheTool.h"
 #include "macros.h"
 
 #include <unistd.h>
@@ -71,6 +72,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
 #endif
 
-  CpuFeatures::FlushICache((void *)((addr_t)page_align_address + offset), size);
+  addr_t clear_start_ = (addr_t)page_align_address + offset;
+  ClearCache((void *)clear_start_, (void *)(clear_start_ + size));
   return kMemoryOperationSuccess;
 }

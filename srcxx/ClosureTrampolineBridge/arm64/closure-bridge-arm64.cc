@@ -4,7 +4,7 @@
 #include "core/modules/assembler/assembler.h"
 #include "core/arch/arm64/registers-arm64.h"
 
-#include "intercept_routing_handler.h"
+#include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
 using namespace zz;
 using namespace zz::arm64;

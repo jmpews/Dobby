@@ -8,12 +8,12 @@
 #include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 
-class X64InterceptRouting : public InterceptRouting {
+class InterceptRouting : public InterceptRoutingBase {
 public:
   RoutingType branch_type_;
 
 public:
-  X64InterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
+  InterceptRouting(HookEntry *entry) : InterceptRoutingBase(entry) {
   }
 
   virtual void Dispatch() = 0;

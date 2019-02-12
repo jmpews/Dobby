@@ -5,11 +5,6 @@
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
-
-#include "core/modules/assembler/assembler-x64.h"
-#include "core/modules/codegen/codegen-x64.h"
-
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
 void FunctionInlineReplaceRouting::Dispatch() {

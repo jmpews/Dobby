@@ -11,6 +11,7 @@ set(CMAKE_C_STANDARD 11)
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=204 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fcolor-diagnostics -nostdinc -std=gnu11 -fmodules -gmodules -fmodules-prune-interval=86400 -fmodules-prune-after=345600 -Wnon-modular-include-in-framework-module -Werror=non-modular-include-in-framework-module -fno-builtin -Wno-trigraphs -msoft-float -Os -fno-common -mkernel -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Wdocumentation -Wunreachable-code -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wno-float-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -g -Wno-sign-conversion -Winfinite-recursion -Wcomma -Wblock-capture-autoreleasing -Wstrict-prototypes -Wno-semicolon-before-method-body -Wunguarded-availability")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/PrivateHeaders -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Kernel.framework/Headers")
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
@@ -28,26 +29,13 @@ option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing
 
 option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
-if(CMAKE_GENERATOR STREQUAL Xcode)
-    message(STATUS ">>> detected Xcode Project")
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/Debug)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/Release)
-endif()
+include(cmake/XcodeGenerator.cmake)
 
 # Use native assembly bridge to replace the runtime codegen
 if(CLOSURE_BRIDGE_TEMPLATE)
     SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
     enable_language(ASM)
     add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
-endif()
-
-# Enable KERNELMODE
-if(KERNELMODE)
-   add_definitions(-DKERNELMODE)
 endif()
 
 # Enable debug will log more infomation
@@ -58,6 +46,7 @@ if(DEBUG)
 endif()
 
 if(!SYSTEM.Detected)
+    MESSAGE(STATUS "[*] Specific Compile for iOS")
     if(PLATFORM STREQUAL "iOS")
         set(SYSTEM.iOS 1)
         MESSAGE(STATUS "[*] Specific Compile for iOS")
@@ -83,10 +72,10 @@ endif()
 if(!PROCESSOR.Detected)
     if(ARCH STREQUAL "arm" OR ARCH STREQUAL "armv7")
         set(CMAKE_SYSTEM_PROCESSOR arm)
-        set(PROCESSOR.arm 1)
+        set(PROCESSOR.ARM 1)
     elseif(ARCH STREQUAL "aarch64" OR ARCH STREQUAL "arm64" OR ARCH STREQUAL "armv8")
         set(CMAKE_SYSTEM_PROCESSOR aarch64)
-        set(PROCESSOR.aarch64 1)
+        set(PROCESSOR.AARCH64 1)
     elseif(ARCH STREQUAL "X64" OR ARCH STREQUAL "X86_64" OR ARCH STREQUAL "x64")
         set(CMAKE_SYSTEM_PROCESSOR X86_64)
         set(PROCESSOR.X86_64 1)
@@ -95,20 +84,20 @@ endif()
 
 if(COMPILER.Clang)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
-    if(PROCESSOR.arm)
+    if(PROCESSOR.ARM)
         set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
-    elseif(PROCESSOR.aarch64)
+    elseif(PROCESSOR.AARCH64)
         set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
     endif()
 endif()
 
 # Set Prefix
-if(PROCESSOR.arm)
+if(PROCESSOR.ARM)
     set(arch1 arm)
     set(ARCH1 ARM)
     set(arch2 arm)
     set(ARCH2 ARM)
-elseif(PROCESSOR.aarch64)
+elseif(PROCESSOR.AARCH64)
     set(ARCH1 ARM64)
     set(arch1 arm64)
     set(arch2 arm)
@@ -153,15 +142,6 @@ set(Target.srcxx.core.modules.codegen.FILES
 source_group(srcxx.core.modules.codegen FILES ${Target.srcxx.core.modules.codegen.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.core.modules.codegen.FILES})
 
-# srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler
-file(GLOB Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/closure-trampoline-common-handler/*.cc)
-source_group(srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler FILES ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
-
-# srcxx.ClosureTrampolineBridge.arch
-file(GLOB Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/${arch1}/*.cc)
-source_group(srcxx.ClosureTrampolineBridge.${arch1} FILES ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
 
 # srcxx.ExecMemory
 file(GLOB Target.srcxx.ExecMemory.FILES ${Target.path}/srcxx/ExecMemory/*.cc)
@@ -188,7 +168,7 @@ if(ExtraPlugin.NearBranchTrampoline)
         )
     endif()
 
-    if(PROCESSOR.arm OR PROCESSOR.aarch64)
+    if(PROCESSOR.ARM OR PROCESSOR.AARCH64)
         set(Target.srcxx.ExtraInternalPlugin.NearBranchTrampoline.FILES
             ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/BxxxBranch/${ARCH1}/BxxxBranchTrampoline.cc
             ${Target.path}/srcxx/ExtraInternalPlugin/NearBranchTrampoline/SearchCodeChunk.cc
@@ -210,9 +190,12 @@ set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ExtraInternalPlugi
 file(GLOB Target.srcxx.InstructionRelocation.${arch1}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch1}/*.cc)
 source_group(srcxx.InstructionRelocation.${arch1} FILES ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch1}.FILES})
-file(GLOB Target.srcxx.InstructionRelocation.${arch2}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch2}/*.cc)
-source_group(srcxx.InstructionRelocation.${arch2} FILES ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
+
+if(PROCESSOR.X86 OR PROCESSOR.X86_64)
+    file(GLOB Target.srcxx.InstructionRelocation.${arch2}.FILES ${Target.path}/srcxx/InstructionRelocation/${arch2}/*.cc)
+    source_group(srcxx.InstructionRelocation.${arch2} FILES ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InstructionRelocation.${arch2}.FILES})
+endif()
 
 # srcxx.InterceptRouting
 file(GLOB Target.srcxx.InterceptRouting.FILES ${Target.path}/srcxx/InterceptRouting/*.cpp)
@@ -256,11 +239,15 @@ endif()
 
 # srcxx.InterceptRoutingPlugin.intercept-routing-handler
 if(Plugin.FunctionWrapper OR Plugin.DynamicBinaryInstrument)
-    set(Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES
-    ${Target.path}/srcxx/InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.cc
-    )
-    source_group(srcxx.InterceptRoutingPlugin.intercept-routing-handler FILES ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
-    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingPlugin.intercept-routing-handler.FILES})
+    # srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler
+    file(GLOB Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/closure-trampoline-common-handler/*.cc)
+    source_group(srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler FILES ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.closure-trampoline-common-handler.FILES})
+
+    # srcxx.ClosureTrampolineBridge.arch
+    file(GLOB Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES ${Target.path}/srcxx/ClosureTrampolineBridge/${arch1}/*.cc)
+    source_group(srcxx.ClosureTrampolineBridge.${arch1} FILES ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
+    set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.ClosureTrampolineBridge.${arch1}.FILES})
 endif()
 
 # srcxx.UserMode.PlatformInterface.Common
@@ -309,6 +296,11 @@ if(SYSTEM.Windows)
         )
     endif()
 endif()
+
+set(Target.srcxx.UserMode.ExecMemory.FILES ${Target.srcxx.UserMode.ExecMemory.FILES}
+    ${Target.path}/srcxx/UserMode/ExecMemory/clear-cache-tool-all.cc
+)
+
 source_group(srcxx.UserMode.ExecMemory FILES ${Target.srcxx.UserMode.ExecMemory.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.UserMode.ExecMemory.FILES})
 source_group(srcxx.UserMode.PlatformInterface.Common FILES ${Target.srcxx.UserMode.PlatformInterface.Common.FILES})

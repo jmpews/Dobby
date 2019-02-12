@@ -1,21 +1,21 @@
-#ifndef ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
-#define ZZ_ARCHITECTURE_ARCH_ARM64_ASSEMBLER_H_
+#ifndef ASSEMBLER_ARM64_H_
+#define ASSEMBLER_ARM64_H_
 
 #include "core/arch/arm64/constants-arm64.h"
-#include "core/arch/arm64/instructions-arm64.h"
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/modules/assembler/assembler.h"
 
 #include "macros.h"
 
-#include "UserMode/ARM64/code-buffer-arm64.h"
+#include "ExecMemory/CodeBuffer/code-buffer-arm64.h"
 
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
 #include "core/utils.h"
 
-#include <assert.h>
+#include "stdcxx/LiteMutableArray.h"
+#include "stdcxx/LiteIterator.h"
 
 namespace zz {
 namespace arm64 {
@@ -39,7 +39,7 @@ public:
   } PseudoLabelInstruction;
 
   bool has_confused_instructions() {
-    return instructions_.size() > 0;
+    return instructions_->getCount() > 0;
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
@@ -47,6 +47,26 @@ public:
     if (buffer)
       _buffer = buffer;
 
+    PseudoLabelInstruction *instruction;
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+      int32_t offset       = pos() - instruction->position_;
+      const int32_t inst32 = _buffer->LoadInst(instruction->position_);
+      int32_t encoded      = 0;
+
+      switch (instruction->type_) {
+      case kLdrLiteral: {
+        encoded = inst32 & 0xFF00001F;
+        encoded = encoded | LFT((offset >> 2), 19, 5);
+      } break;
+      default:
+        UNREACHABLE();
+        break;
+      }
+      _buffer->RewriteInst(instruction->position_, encoded);
+    }
+
+#if 0
     for (auto instruction : instructions_) {
       int32_t offset       = pos() - instruction.position_;
       const int32_t inst32 = _buffer->LoadInst(instruction.position_);
@@ -63,10 +83,17 @@ public:
       }
       _buffer->RewriteInst(instruction.position_, encoded);
     }
+#endif
   };
 
   void link_to(int pos, PseudoLabelType type) {
+    PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
+    instruction->position_              = pos;
+    instruction->type_                  = type;
+    instructions_->pushObject((LiteObject *)instruction);
+#if 0
     instructions_.push_back({pos, type});
+#endif
   }
 
 private:
@@ -77,7 +104,9 @@ private:
   };
 #endif
 private:
-  // std::vector<PseudoLabelInstruction> instructions_;
+#if 0
+  std::vector<PseudoLabelInstruction> instructions_;
+#endif
   LiteMutableArray *instructions_;
 };
 

@@ -4,7 +4,7 @@
 #include "globals.h"
 
 class CpuFeatures {
-public:
+private:
   static void FlushICache(void *start, int size) {
     ClearCache(start, (void *)((addr_t)start + size));
   }
