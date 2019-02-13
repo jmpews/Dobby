@@ -2,16 +2,11 @@
 #define HOOKZZ_ARCH_ARM_INTERCEPT_ROUTING_H_
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
-#include "InterceptRouting.h"
+#include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
-#include "Logging.h"
 #include "hookzz_internal.h"
-#include "intercept_routing_handler.h"
 
-#include "vm_core_extra/code-page-chunk.h"
-#include "vm_core_extra/custom-code.h"
-
-class ARMInterceptRouting : public InterceptRouting {
+class InterceptRouting : public InterceptRoutingBase {
 public:
   // trampoline branch type
   enum RoutingType { ARM_B_Branch, ARM_LDR_Branch, Thumb1_B_Branch, Thumb2_B_Branch, Thumb2_LDR_Branch };
@@ -19,27 +14,15 @@ public:
   // execute arm instruction or thumb instruction
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
-  ARMInterceptRouting(HookEntry *entry) : InterceptRouting(entry) {
+  InterceptRouting(HookEntry *entry) : InterceptRoutingBase(entry) {
   }
 
-  virtual void Commit();
+  void Active();
 
-private:
-  virtual void Prepare();
+  virtual void *GetTrampolineTarget() = 0;
 
-  virtual void Active();
+  void Prepare();
 
-  virtual void BuildFastForwardTrampoline();
-
-  virtual void BuildReplaceRouting();
-
-  virtual void BuildPreCallRouting();
-
-  virtual void BuildDynamicBinaryInstrumentRouting();
-
-  virtual void BuildPostCallRouting();
-
-  // private for thumb & arm
 private:
   void prepare_arm();
 
@@ -57,8 +40,6 @@ private:
   RoutingType branch_type_;
 
   ExecuteState execute_state_;
-
-  MemoryRegion *fast_forward_region;
 };
 
 #endif

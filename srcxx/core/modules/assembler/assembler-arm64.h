@@ -343,10 +343,6 @@ public:
     return released_address_;
   }
 
-  void FlushICache();
-
-  // =====
-
   void Emit(int32_t value);
 
   void EmitInt64(uint64_t value);

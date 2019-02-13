@@ -6,16 +6,19 @@
 
 #include "core/modules/assembler/assembler.h"
 
-#include "core/base/code-buffer.h"
+#include "ExecMemory/CodeBuffer/code-buffer-arm.h"
+
 #include "macros.h"
 #include "core/utils.h"
+#include "logging/logging.h"
 
-#include <assert.h>
+#include "stdcxx/LiteMutableArray.h"
+#include "stdcxx/LiteIterator.h"
 
 namespace zz {
 namespace arm {
 
-#define ThumbAlign(x) (((uword)-2) & x)
+#define ThumbAlign(x) (((uint32_t)-2) & x)
 
 // ARM design had a 3-stage pipeline (fetch-decode-execute)
 #define ARM_PC_OFFSET 8
@@ -37,11 +40,11 @@ public:
 
   typedef struct _PseudoLabelInstruction {
     int position_;
-    uword type_;
+    int type_;
   } PseudoLabelInstruction;
 
   bool has_confused_instructions() {
-    return instructions_.size() > 0;
+    return instructions_->getCount() > 0;
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
@@ -49,12 +52,14 @@ public:
     if (buffer)
       _buffer = buffer;
 
-    for (auto instruction : instructions_) {
-      int32_t offset       = pos() - instruction.position_;
-      const int32_t inst32 = _buffer->Load32(instruction.position_);
+    PseudoLabelInstruction *instruction;
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+      int32_t offset       = pos() - instruction->position_;
+      const int32_t inst32 = _buffer->LoadARMInst(instruction->position_);
       int32_t encoded      = 0;
 
-      switch (instruction.type_) {
+      switch (instruction->type_) {
       case kLdrLiteral: {
         encoded        = inst32 & 0xfffff000;
         uint32_t imm12 = offset - ARM_PC_OFFSET;
@@ -65,12 +70,15 @@ public:
         UNREACHABLE();
         break;
       }
-      _buffer->Store32(instruction.position_, encoded);
+      _buffer->RewriteARMInst(instruction->position_, encoded);
     }
   };
 
-  void link_to(int pos, uword type) {
-    instructions_.push_back({pos, type});
+  void link_to(int pos, int type) {
+    PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
+    instruction->position_              = pos;
+    instruction->type_                  = type;
+    instructions_->pushObject((LiteObject *)instruction);
   }
 
 protected:
@@ -85,7 +93,7 @@ public:
   explicit Operand(int immediate) : immediate_(immediate), rm_(no_reg), rs_(no_reg) {
 
     // ===
-    assert(immediate < (1 << kImmed8Bits));
+    ASSERT(immediate < (1 << kImmed8Bits));
     type_     = 1;
     encoding_ = immediate;
   }
@@ -99,7 +107,7 @@ public:
       : immediate_(-1), rm_(rm), rs_(no_reg), shift_(shift), shift_imm_(shift & 31) {
     UNREACHABLE();
 
-    assert(shift_imm < (1 << kShiftImmBits));
+    ASSERT(shift_imm < (1 << kShiftImmBits));
     type_ = 0;
     encoding_ =
         shift_imm << kShiftImmShift | static_cast<uint32_t>(shift) << kShiftShift | static_cast<uint32_t>(rm.code());
@@ -143,7 +151,6 @@ public:
     UNREACHABLE();
   }
 
-  // =====
   const Register &rn() const {
     return rn_;
   }
@@ -154,7 +161,6 @@ public:
     return offset_;
   }
 
-  // =====
   bool IsImmediateOffset() const {
     return (am_ == Offset);
   }
@@ -221,7 +227,6 @@ public:
     return encoding;
   }
 
-  // ===
   static inline uint32_t Operand(const Operand o) {
     uint32_t encoding = 0;
 
@@ -237,7 +242,6 @@ public:
     return encoding;
   }
 
-  // =====
   static uint32_t ImmeidateChecked(uint32_t imm, uint len) {
     // TODO: uint32_t 0xffffffff = -1
     if (imm > (1 << len)) {
@@ -251,7 +255,8 @@ public:
 
 class Assembler : public AssemblerBase {
 public:
-  void CommitRealize(void *address) {
+  Assembler();
+  void CommitRealizeAddress(void *address) {
     uint32_t aligned_address = ALIGN_FLOOR(address, 4);
     released_address_        = (void *)aligned_address;
   }
@@ -259,14 +264,10 @@ public:
   void *ReleaseAddress() {
     return released_address_;
   }
-  Code *GetCode() {
-    Code *code = new Code(released_address_, CodeSize());
-    return code;
-  }
 
-  void Emit(int32_t value) {
-    buffer_.Emit(value);
-  }
+  void EmitARMInst(arm_inst_t inst);
+
+  void EmitAddress(uint32_t value);
 
   void sub(Register dst, Register src1, const Operand &src2, Condition cond = AL) {
     EmitType01(cond, SUB, 0, dst, src1, src2);
@@ -314,14 +315,14 @@ private:
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) |
                        (static_cast<int32_t>(opcode) << kOpcodeShift) | (set_cc << kSShift);
     encoding = encoding | (rn.Is(no_reg) ? 0 : OpEncode::Rn(rn)) | OpEncode::Rd(rd) | OpEncode::Operand(o);
-    Emit(encoding);
+    buffer_->EmitARMInst(encoding);
   }
   void EmitType5(Condition cond, int32_t offset, bool link) {
     ASSERT(cond != kNoCondition);
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | LFT(5, 3, 25) | ((link ? 1 : 0) << kLinkShift);
     int32_t imm24    = bits(offset >> 2, 0, 23);
     ASSERT(CheckSignLength(imm24, 24));
-    Emit(imm24 | encoding);
+    buffer_->EmitARMInst(imm24 | encoding);
   }
 
   // =====
@@ -332,7 +333,7 @@ private:
 
     int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | B26 | (load ? L : 0) | (byte ? B : 0);
     encoding         = encoding | OpEncode::Rd(rd) | OpEncode::MemOperand(x);
-    Emit(encoding);
+    buffer_->EmitARMInst(encoding);
   }
 
 private:
@@ -344,20 +345,19 @@ public:
   TurboAssembler() {
   }
 
-  // ===
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
-      const int64_t dest = label->pos() - buffer_.Size();
+      const int64_t dest = label->pos() - buffer_->getSize();
       ldr(rt, MemOperand(pc, dest));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_.Size(), PseudoLabel::kLdrLiteral);
+      label->link_to(buffer_->getSize(), PseudoLabel::kLdrLiteral);
       ldr(rt, MemOperand(pc, 0));
     }
   }
 
   void PseudoBind(PseudoLabel *label) {
-    const addr_t bound_pc = buffer_.Size();
+    const addr_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
@@ -365,17 +365,13 @@ public:
     }
   }
 
-  // =====
-
   void CallFunction(ExternalReference function) {
     // trick: use bl to replace lr register
     bl(0);
     b(4);
     ldr(pc, MemOperand(pc, -4));
-    Emit((uword)function.address());
+    buffer_->Emit32((addr_t)function.address());
   }
-
-  // =====
 
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
   }

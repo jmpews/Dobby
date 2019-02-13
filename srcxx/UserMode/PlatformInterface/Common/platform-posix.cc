@@ -63,9 +63,11 @@ int OSMemory::PageSize() {
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
-  DCHECK_EQ(0, size % PageSize())
+  DCHECK_EQ(0, size % PageSize());
 
-  void *result     = mmap(address, size, prot, MAP_PRIVATE | MAP_ANONYMOUS, kMmapFd, kMmapFdOffset);
+  int prot = GetProtectionFromMemoryPermission(access);
+
+  void *result = mmap(address, size, prot, MAP_PRIVATE | MAP_ANONYMOUS, kMmapFd, kMmapFdOffset);
   if (result == nullptr)
     return nullptr;
 
@@ -92,7 +94,7 @@ bool OSMemory::Release(void *address, int size) {
 // static
 bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
-  DCHECK_EQ(0, size % PageSize())
+  DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
   int ret  = mprotect(address, size, prot);
