@@ -7,12 +7,7 @@
 
 #include "intercept_routing_handler.h"
 
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
-
-#include "core/modules/assembler/assembler-x64.h"
-#include "core/modules/codegen/codegen-x64.h"
-
-#include "InterceptRoutingPlugin/FunctionWrapper/function-wrapper-x64.h"
+#include "InterceptRoutingPlugin/FunctionWrapper/function-wrapper.h"
 
 void FunctionWrapperRouting::Dispatch() {
   Prepare();

@@ -13,6 +13,7 @@
 #elif TARGET_ARCH_ARM64
 #include "InterceptRouting/arm64/ARM64InterceptRouting.h"
 #elif TARGET_ARCH_ARM
+#include "InterceptRouting/arm/ARMInterceptRouting.h"
 #else
 #error "unsupported architecture"
 #endif

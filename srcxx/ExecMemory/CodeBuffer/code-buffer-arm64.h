@@ -1,11 +1,11 @@
-#ifndef ARM64_CODE_BUFFER_H_
-#define ARM64_CODE_BUFFER_H_
+#ifndef CODE_BUFFER_ARM64_H_
+#define CODE_BUFFER_ARM64_H_
 
 #include "CodeBufferBase.h"
 
 typedef int32_t arm64_inst_t;
 
-class CodeBuffer : public LiteMutableBuffer {
+class CodeBuffer : public CodeBufferBase {
 
 public:
   arm64_inst_t LoadInst(int offset);

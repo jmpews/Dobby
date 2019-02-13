@@ -5,6 +5,8 @@
 #include "core/arch/arm/constants-arm.h"
 #include "ExecMemory/AssemblyCode.h"
 
+#include "logging/check_logging.h"
+
 namespace zz {
 namespace arm {
 
@@ -20,6 +22,34 @@ public:
     if (buffer)
       _buffer = buffer;
 
+    PseudoLabelInstruction *instruction;
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+      // instruction offset to label
+      int32_t offset            = pos() - instruction->position_ - Thumb_PC_OFFSET;
+      const thumb2_inst_t inst  = _buffer->LoadThumb2Inst(instruction->position_);
+      const thumb1_inst_t inst1 = _buffer->LoadThumb1Inst(instruction->position_);
+      const thumb1_inst_t inst2 = _buffer->LoadThumb1Inst(instruction->position_ + sizeof(thumb1_inst_t));
+
+      switch (instruction->type_) {
+      case kThumb1Ldr: {
+        UNREACHABLE();
+      } break;
+      case kThumb2Ldr: {
+        uint32_t imm12 = offset;
+        CHECK(imm12 < (1 << 12));
+        uint16_t encoding = inst2 & 0xf000;
+        encoding          = encoding | imm12;
+        _buffer->RewriteThumb1Inst(instruction->position_, inst1 | B7); // add = (U == '1');
+        _buffer->RewriteThumb1Inst(instruction->position_ + Thumb1_INST_LEN, encoding);
+      } break;
+      default:
+        UNREACHABLE();
+        break;
+      }
+    }
+
+#if 0
     for (auto instruction : instructions_) {
       // instruction offset to label
       int32_t offset      = pos() - instruction.position_ - Thumb_PC_OFFSET;
@@ -44,20 +74,29 @@ public:
         break;
       }
     }
+#endif
   }
 };
 
 class CustomThumbAssembler : public Assembler {
 public:
-  // =====
-  void EmitInt16(int16_t val) { GetCodeBuffer()->Emit<int16_t>(val); }
+  void EmitInt16(int16_t val) {
+    buffer_->Emit16(val);
+  }
+
   void Emit2Int16(int16_t val1, int16_t val2) {
     EmitInt16(val1);
     EmitInt16(val2);
   }
 
+  void EmitAddress(uint32_t value) {
+    buffer_->Emit32(value);
+  }
+
   // =====
-  void t1_nop() { EmitInt16(0xbf00); }
+  void t1_nop() {
+    EmitInt16(0xbf00);
+  }
   void t1_b(int32_t imm) {
     ASSERT(CheckSignLength(imm, 12));
     ASSERT(CheckAlign(imm, 2));
@@ -67,12 +106,20 @@ public:
   }
 
   // =====
-  void t2_b(uint32_t imm) { EmitThumb2Branch(AL, imm, false); }
-  void t2_bl(uint32_t imm) { EmitThumb2Branch(AL, imm, true); }
-  void t2_blx(uint32_t imm) { UNIMPLEMENTED(); }
+  void t2_b(uint32_t imm) {
+    EmitThumb2Branch(AL, imm, false);
+  }
+  void t2_bl(uint32_t imm) {
+    EmitThumb2Branch(AL, imm, true);
+  }
+  void t2_blx(uint32_t imm) {
+    UNIMPLEMENTED();
+  }
 
   // =====
-  void t2_ldr(Register dst, const MemOperand &src) { EmitThumb2LoadStore(true, dst, src); }
+  void t2_ldr(Register dst, const MemOperand &src) {
+    EmitThumb2LoadStore(true, dst, src);
+  }
 
 private:
   void EmitThumb2LoadLiteral(Register rt, const MemOperand x) {
@@ -166,28 +213,25 @@ public:
 #endif
   }
 
-  // ===
   void T2_Ldr(Register rt, CustomThumbPseudoLabel *label) {
     if (label->is_bound()) {
-      const int64_t dest = label->pos() - buffer_.Size();
+      const int64_t dest = label->pos() - buffer_->getSize();
       t2_ldr(rt, MemOperand(pc, dest));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_.Size(), CustomThumbPseudoLabel::kThumb2Ldr);
+      label->link_to(buffer_->getSize(), CustomThumbPseudoLabel::kThumb2Ldr);
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
 
-  // ===
   void AlignThumbNop() {
-    if (CodeSize() % Thumb2_INST_LEN) {
+    if (GetCodeBuffer()->getSize() % Thumb2_INST_LEN) {
       t1_nop();
     }
   }
 
-  // ===
   void CustomThumbPseudoBind(CustomThumbPseudoLabel *label) {
-    const uintptr_t bound_pc = buffer_.Size();
+    const uintptr_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
