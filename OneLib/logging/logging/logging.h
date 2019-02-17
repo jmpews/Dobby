@@ -1,7 +1,16 @@
 #ifndef LOGGING_H_
 #define LOGGING_H_
 
-extern int (*LOGFUNC)(const char * __restrict, ...);
+
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+
+extern int (*LOGFUNC)(const char *, ...);
+
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 #define LOG(str, ...)                                                                                                  \
   do {                                                                                                                 \

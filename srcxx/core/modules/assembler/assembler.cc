@@ -42,9 +42,7 @@ const void *ExternalReference::address() {
 
 AssemblerBase::AssemblerBase(void *address) {
   realized_address_ = address;
-
-  reinterpret_cast<CodeBufferBase *>(buffer_)->initWithCapacity(32);
-  DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
+  buffer_ = NULL;
 }
 
 int AssemblerBase::pc_offset() const {

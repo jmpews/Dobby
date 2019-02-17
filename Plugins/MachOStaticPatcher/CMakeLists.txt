@@ -92,3 +92,11 @@ target_link_libraries(MachOStaticPatcher logging stdcxx)
 target_link_libraries(MachOStaticPatcher
     LIB_LIEF
 )
+
+if (MSVC)
+    # Used for the 'and', 'or' ... keywords - See: http://www.cplusplus.com/reference/ciso646/
+    set_property(TARGET MachOStaticPatcher PROPERTY LINK_FLAGS /NODEFAULTLIB:MSVCRT)
+endif()
+
+set_property(TARGET MachOStaticPatcher PROPERTY CXX_STANDARD           11)
+set_property(TARGET MachOStaticPatcher PROPERTY CXX_STANDARD_REQUIRED  ON)
