@@ -1,9 +1,11 @@
 #ifndef LOGGING_H_
 #define LOGGING_H_
 
+extern int (*LOGFUNC)(const char * __restrict, ...);
+
 #define LOG(str, ...)                                                                                                  \
   do {                                                                                                                 \
-    /* printf(str, __VA_ARGS__); */                                                                                    \
+LOGFUNC(str, ##__VA_ARGS__);                                                                                    \
   } while (0)
 
 #if defined(DEBUG)
@@ -14,7 +16,7 @@
 
 #define FATAL(str, ...)                                                                                                \
   do {                                                                                                                 \
-    LOG("[!] " str " [%s:%d:%s]", __VA_ARGS__, __FILE__, __LINE__, __func__);                                          \
+LOG("[!] " " [%s:%d:%s]" str, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                                          \
     /* exit(-1); */                                                                                                    \
   } while (0)
 

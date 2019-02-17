@@ -15,6 +15,8 @@
 
 using namespace LIEF;
 
+extern int (*LOGFUNC)(const char * __restrict, ...);
+
 void ZzStaticHookInitialize(addr_t va) {
   HookEntry *entry                    = new HookEntry();
   FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry);
@@ -66,16 +68,18 @@ void *GetSegmentContent(MachO::Binary *binary, const char *segment_name) {
 int main(int argc, char **argv) {
   LIEF::Logger::set_level(LIEF::LOGGING_LEVEL::LOG_DEBUG);
   std::cout << "MachO Reader" << std::endl;
-  if (argc != 2) {
+  if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <MachO binary>" << std::endl;
     return -1;
   }
-
+  
   std::unique_ptr<MachO::FatBinary> binaries{MachO::Parser::parse(argv[1])};
   MachO::Binary *binaryARM64 = (MachO::Binary *)getARM64Binary(binaries);
   if (!binaryARM64) {
     std::cout << "No ARM64 Architecture in the File!!!\n";
   }
+  
+  LOGFUNC = printf;
 
   if (CheckORInsertSegment(binaryARM64)) {
     LOG("[*] Already Insert __zTEXT, __zDATA segment.\n");
