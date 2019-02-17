@@ -234,6 +234,8 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer;
+    reinterpret_cast<CodeBufferBase *>(buffer_)->initWithCapacity(32);
+    DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   void Emit1(byte val) {

@@ -96,11 +96,11 @@ int main(int argc, char **argv) {
   } else {
     LOG("[*] Found %d static hooked recoreds\n", interceptor->count);
 
-    addr_t zDATA_vm_addr = zDATA->virtual_address();
+    addr_t zDATA_vm_addr = (addr_t)zDATA->virtual_address();
     addr_t zDATA_content = (addr_t)GetSegmentContent(binaryARM64, "__zDATA");
     for (int i = 0; i < interceptor->count; i++) {
-      addr_t offset          = interceptor->entry[i] - zDATA_vm_addr;
-      HookEntryStatic *entry = reinterpret_cast<HookEntryStatic *>((addr_t)zDATA_content + offset);
+      uintptr_t offset          = (uintptr_t)interceptor->entry[i] - (uintptr_t)zDATA_vm_addr;
+      HookEntryStatic *entry = reinterpret_cast<HookEntryStatic *>((uintptr_t)zDATA_content + offset);
       LOG("[-] Function VirtualAddress %p, trampoline target(stub) virtual address %p.\n", entry->function_address,
           entry->trampoline_target_stub);
     }

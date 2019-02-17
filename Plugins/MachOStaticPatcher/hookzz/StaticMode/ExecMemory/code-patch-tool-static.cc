@@ -6,7 +6,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if 0
 #include <sys/mman.h>
+#endif
 
 #include <LIEF/MachO.hpp>
 
@@ -21,7 +23,12 @@ _MemoryOperationError CodePatch(void *virtualAddress, void *buffer, int size) {
   
   // map the segment data -> mmap page
   std::vector<uint8_t> content = zTEXT->content();
+#if 0
   addr_t zTEXTPage = (addr_t)mmap(0, 0x4000, PROT_READ|PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 255, 0);
+#else
+  addr_t zTEXTPage = (addr_t)malloc(0x4000);
+#endif
+
   memcpy((void *)zTEXTPage, &content[0], content.size());
 
   // patch the buffer
