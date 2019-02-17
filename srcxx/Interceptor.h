@@ -5,7 +5,7 @@
 #include "stdcxx/LiteMutableArray.h"
 
 typedef struct _InterceptorOptions {
-    // Enable B Branch in the arm and aarch64
+  // Enable B Branch in the arm and aarch64
   bool enable_arm_arm64_b_branch;
 
   // Enable dynamic closure which is use remap on the iOS
@@ -14,23 +14,27 @@ typedef struct _InterceptorOptions {
 
 class Interceptor {
 public:
-    LiteMutableArray *entries;
+  LiteMutableArray *entries;
   // DEL std::vector<HookEntry *> entries;
 
 public:
   static Interceptor *SharedInstance();
 
-  const InterceptorOptions &options() const { return options_; }
+  const InterceptorOptions &options() const {
+    return options_;
+  }
 
   HookEntry *FindHookEntry(void *address);
 
   void AddHookEntry(HookEntry *hook_entry);
 
 private:
-  Interceptor() {}
+  Interceptor() {
+  }
 
 private:
   static Interceptor *priv_interceptor_;
+
   static InterceptorOptions options_;
 };
 

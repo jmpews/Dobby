@@ -11,14 +11,12 @@ namespace zz {
 class AssemblyCode : public LiteObject {
 
 public:
-  // dummy
-  void initWithCodeBuffer(CodeBuffer *codeBuffer);
+  void initWithAddressRange(addr_t address, int size);
 
-  // dummy
-  void initWithAddressRange(void *address, int size);
+  static AssemblyCode *FinalizeFromCodeBuffer(void *address, CodeBufferBase *codeBuffer);
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
-  static AssemblyCode *FinalizeFromAddress(uintptr_t address, int size);
+  static AssemblyCode *FinalizeFromAddress(addr_t address, int size);
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static AssemblyCode *FinalizeFromTurboAssember(AssemblerBase *assember);

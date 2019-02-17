@@ -8,6 +8,8 @@
 
 #include "ExecMemory/CodeBuffer/code-buffer-arm.h"
 
+#include "logging/check_logging.h"
+
 #include "macros.h"
 #include "core/utils.h"
 #include "logging/logging.h"
@@ -33,6 +35,8 @@ namespace arm {
 #define THUMB_ADDRESS_FLAG 1
 
 constexpr Register TMP0 = r12;
+
+// ===== PseudoLabel =====
 
 class PseudoLabel : public Label {
 public:
@@ -86,20 +90,16 @@ protected:
   LiteMutableArray *instructions_;
 };
 
-// =====
+// ===== Operand =====
 
 class Operand {
 public:
   explicit Operand(int immediate) : immediate_(immediate), rm_(no_reg), rs_(no_reg) {
-
-    // ===
     ASSERT(immediate < (1 << kImmed8Bits));
     type_     = 1;
     encoding_ = immediate;
   }
   explicit Operand(Register rm) : immediate_(-1), rm_(rm), rs_(no_reg) {
-
-    // ===
     type_     = 0;
     encoding_ = static_cast<uint32_t>(rm.code());
   }
@@ -133,7 +133,7 @@ private:
   friend class OpEncode;
 };
 
-// =====
+// ===== MemOperand =====
 
 class MemOperand {
 public:
@@ -182,11 +182,10 @@ private:
   int shift_imm_; // valid if rm_ != no_reg && rs_ == no_reg
   AddrMode am_;   // bits P, U, and W
 
-  // =====
   friend class OpEncode;
 };
 
-// =====
+// ===== OpEncode =====
 
 class OpEncode {
 public:
@@ -251,18 +250,17 @@ public:
   }
 };
 
-// =====
+// ===== Assembler =====
 
 class Assembler : public AssemblerBase {
 public:
-  Assembler();
-  void CommitRealizeAddress(void *address) {
-    uint32_t aligned_address = ALIGN_FLOOR(address, 4);
-    released_address_        = (void *)aligned_address;
+  Assembler(void *address) : AssemblerBase(address) {
+    buffer_ = new CodeBuffer;
   }
 
-  void *ReleaseAddress() {
-    return released_address_;
+  void CommitRealizeAddress(void *address) {
+    DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
+    released_address_ = (void *)address;
   }
 
   void EmitARMInst(arm_inst_t inst);
@@ -325,7 +323,6 @@ private:
     buffer_->EmitARMInst(imm24 | encoding);
   }
 
-  // =====
   // load store operation
   void EmitMemOp(Condition cond, bool load, bool byte, Register rd, const MemOperand x) {
     ASSERT(rd != no_reg);
@@ -340,9 +337,11 @@ private:
   void *released_address_;
 };
 
+// ===== TurboAssembler =====
+
 class TurboAssembler : public Assembler {
 public:
-  TurboAssembler() {
+  TurboAssembler(void *address) : Assembler(address) {
   }
 
   void Ldr(Register rt, PseudoLabel *label) {
@@ -357,7 +356,7 @@ public:
   }
 
   void PseudoBind(PseudoLabel *label) {
-    const addr_t bound_pc = buffer_->getSize();
+    const uint32_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
@@ -370,7 +369,7 @@ public:
     bl(0);
     b(4);
     ldr(pc, MemOperand(pc, -4));
-    buffer_->Emit32((addr_t)function.address());
+    buffer_->Emit32((uint32_t)function.address());
   }
 
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {

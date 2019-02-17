@@ -6,6 +6,12 @@
 
 #include <stdio.h>
 
+#include <LIEF/MachO.hpp>
+
+using namespace LIEF;
+
+MachO::Binary *binary;
+
 namespace zz {
 
 int OSMemory::PageSize() {
@@ -13,18 +19,19 @@ int OSMemory::PageSize() {
 }
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
-  void *result;
-  if (access = kReadExecute) {
-    return Segment(HookZz, section(execMemoryPool));
-  } else if (access = kReadWrite) {
-    return Segment(HookZz, section(objectMemoryPool));
+  void *result = NULL;
+  if (access == kReadExecute) {
+    MachO::SegmentCommand *zTEXT = binary->get_segment("__zTEXT");
+    return (void *)zTEXT->virtual_address();
+  } else if (access == kReadWrite) {
+    MachO::SegmentCommand *zDATA = binary->get_segment("__zDATA");
+    return (void *)zDATA->virtual_address();
   } else {
     FATAL("Not Support the specific MemoryPermission!!!");
   }
-  return 0
+  return 0;
 }
 
-// static
 bool OSMemory::Free(void *address, const int size) {
   return true;
 }
@@ -49,4 +56,5 @@ void OSPrint::Print(const char *format, ...) {
 void OSPrint::VPrint(const char *format, va_list args) {
   vprintf(format, args);
 }
+
 } // namespace zz

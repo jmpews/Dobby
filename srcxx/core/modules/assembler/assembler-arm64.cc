@@ -3,14 +3,11 @@
 namespace zz {
 namespace arm64 {
 
-Assembler::Assembler() {
-}
-
 void Assembler::Emit(int32_t value) {
   buffer_->EmitInst(value);
 }
 
-void Assembler::EmitInt64(uint64_t value) {
+void Assembler::EmitInt64(int64_t value) {
   buffer_->Emit64(value);
 }
 

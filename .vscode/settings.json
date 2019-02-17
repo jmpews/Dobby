@@ -87,7 +87,8 @@
     "mutex": "cpp",
     "ostream": "cpp",
     "streambuf": "cpp",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "array": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

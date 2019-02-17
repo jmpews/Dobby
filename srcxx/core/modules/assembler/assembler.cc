@@ -32,7 +32,7 @@ void Label::link_to(int pos) {
   pos_ = pos + 1;
 }
 
-// ===== ExternalReferencej =====
+// ===== ExternalReference =====
 
 const void *ExternalReference::address() {
   return address_;
@@ -40,18 +40,19 @@ const void *ExternalReference::address() {
 
 // ===== AssemblerBase =====
 
-AssemblerBase::AssemblerBase() {
-  buffer_ = new CodeBuffer;
-  buffer_->initWithCapacity(32);
-  DLOG("[*] Assembler buffer at %p\n", buffer_->getRawBuffer());
+AssemblerBase::AssemblerBase(void *address) {
+  realized_address_ = address;
+
+  reinterpret_cast<CodeBufferBase *>(buffer_)->initWithCapacity(32);
+  DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
 }
 
 int AssemblerBase::pc_offset() const {
-  return buffer_->getSize();
+  return reinterpret_cast<CodeBufferBase *>(buffer_)->getSize();
 }
 
 CodeBuffer *AssemblerBase::GetCodeBuffer() {
-  return buffer_;
+  return (buffer_);
 }
 
 void AssemblerBase::CommitRealizeAddress(void *address) {
@@ -62,7 +63,7 @@ void *AssemblerBase::GetRealizeAddress() {
   return realized_address_;
 }
 
-void AssemblerBase::FlushICache(void *start, int size) {
+void AssemblerBase::FlushICache(addr_t start, int size) {
 }
 
 void AssemblerBase::FlushICache(addr_t start, addr_t end) {

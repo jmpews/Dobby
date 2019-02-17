@@ -1,9 +1,10 @@
 #ifndef ZZ_INSTRUCTION_RELOCATION_ARM_
 #define ZZ_INSTRUCTION_RELOCATION_ARM_
 
-#include "globals.h"
 #include "core/arch/arm/constants-arm.h"
 #include "ExecMemory/AssemblyCode.h"
+
+#include "core/modules/assembler/assembler-arm.h"
 
 #include "logging/check_logging.h"
 
@@ -80,6 +81,9 @@ public:
 
 class CustomThumbAssembler : public Assembler {
 public:
+  CustomThumbAssembler(void *address) : Assembler(address) {
+  }
+
   void EmitInt16(int16_t val) {
     buffer_->Emit16(val);
   }
@@ -196,6 +200,9 @@ private:
 
 class CustomThumbTurboAssembler : public CustomThumbAssembler {
 public:
+  CustomThumbTurboAssembler(void *address) : CustomThumbAssembler(address) {
+  }
+
   void T1_Ldr(Register rt, CustomThumbPseudoLabel *label) {
     UNREACHABLE();
 
@@ -244,7 +251,7 @@ private:
 };
 
 // Generate the relocated instruction
-AssemblyCode *GenRelocateCode(uintptr_t src_pc, int *relocate_size);
+AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 
 } // namespace arm
 } // namespace zz

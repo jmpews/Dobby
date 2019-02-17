@@ -26,7 +26,7 @@ void FunctionWrapperRouting::Prepare() {
 
   // Gen the relocated code
   AssemblyCode *code;
-  code                              = GenRelocateCode(src_address, &relocate_size);
+  code = GenRelocateCode((void *)src_address, (uint32_t)(ALIGN(src_address, 2)), 0, &relocate_size);
   entry_->relocated_origin_function = (void *)code->raw_instruction_start();
   DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)code->raw_instruction_start());
 

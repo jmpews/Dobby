@@ -29,6 +29,8 @@ constexpr Register TMP1 = x16;
 #define Rn(rn) (rn.code() << kRnShift)
 #define Rm(rm) (rm.code() << kRmShift)
 
+// ===== PseudoLabel =====
+
 class PseudoLabel : public Label {
 public:
   enum PseudoLabelType { kLdrLiteral };
@@ -110,6 +112,8 @@ private:
   LiteMutableArray *instructions_;
 };
 
+// ===== Operand =====
+
 class Operand {
 public:
   inline explicit Operand(int64_t imm)
@@ -162,6 +166,8 @@ private:
   Extend extend_;
   int32_t shift_extent_imm_;
 };
+
+// ===== MemOperand =====
 
 class MemOperand {
 public:
@@ -248,7 +254,7 @@ private:
   int32_t shift_extend_imm_;
 };
 
-// =====
+// ===== OpEncode =====
 
 class OpEncode {
 public:
@@ -330,27 +336,30 @@ public:
   }
 };
 
-// =====
+// ===== Assembler =====
 
 class Assembler : public AssemblerBase {
 public:
-  Assembler();
-  void CommitRealizeAddress(void *address) {
-    uint64_t aligned_address = ALIGN_FLOOR(address, 4);
-    released_address_        = (void *)aligned_address;
+  Assembler(void *address) : AssemblerBase(address) {
+    buffer_ = new CodeBuffer;
   }
-  void *ReleaseAddress() {
-    return released_address_;
+
+  void CommitRealizeAddress(void *address) {
+    DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
+    released_address_ = (void *)address;
   }
 
   void Emit(int32_t value);
 
-  void EmitInt64(uint64_t value);
+  void EmitInt64(int64_t value);
 
   void bind(Label *label);
 
   void brk(int code) {
     Emit(BRK | LFT(code, 16, 5));
+  }
+
+  void adrp(const Register &rd, ) {
   }
 
   void add(const Register &rd, const Register &rn, int64_t imm) {
@@ -359,6 +368,7 @@ public:
     else
       AddSubImmediate(rd, rn, Operand(imm), OPT_W(ADD, imm));
   }
+
   void adds(const Register &rd, const Register &rn, int64_t imm) {
     UNREACHABLE();
   }
@@ -372,25 +382,24 @@ public:
     UNREACHABLE();
   }
 
-  // =====
-
   void b(int64_t imm) {
     int32_t imm26 = bits(imm >> 2, 0, 25);
 
     Emit(B | imm26);
   }
+
   void b(Label *label) {
     int offset = LinkAndGetByteOffsetTo(label);
     b(offset);
   }
+
   void br(Register rn) {
     Emit(BR | Rn(rn));
   }
+
   void blr(Register rn) {
     Emit(BLR | Rn(rn));
   }
-
-  // =====
 
   void ldr(Register rt, int64_t imm) {
     LoadRegLiteralOp op;
@@ -416,12 +425,15 @@ public:
     }
     EmitLoadRegLiteral(op, rt, imm);
   }
+
   void ldr(const CPURegister &rt, const MemOperand &src) {
     LoadStore(OP_X(LDR), rt, src);
   }
+
   void str(const CPURegister &rt, const MemOperand &src) {
     LoadStore(OP_X(STR), rt, src);
   }
+
   void ldp(const Register &rt, const Register &rt2, const MemOperand &src) {
     if (rt.type() == Register::kSIMD_FP_Register_128) {
       LoadStorePair(OP_Q(LDP), rt, rt2, src);
@@ -431,6 +443,7 @@ public:
       UNREACHABLE();
     }
   }
+
   void stp(const Register &rt, const Register &rt2, const MemOperand &dst) {
     if (rt.type() == Register::kSIMD_FP_Register_128) {
       LoadStorePair(OP_Q(STP), rt, rt2, dst);
@@ -440,8 +453,6 @@ public:
       UNREACHABLE();
     }
   }
-
-  // =====
 
   void mov(const Register &rd, const Register &rn) {
     if ((rd.Is(SP)) || (rn.Is(SP))) {
@@ -466,8 +477,6 @@ public:
     MoveWide(rd, imm, shift, MOVZ);
   }
 
-  // =====
-
   void orr(const Register &rd, const Register &rn, const Operand &operand) {
     Logical(rd, rn, operand, ORR);
   }
@@ -483,8 +492,6 @@ private:
     Emit(encoding);
   }
 
-  // =====
-
   void LoadStore(LoadStoreOp op, CPURegister rt, const MemOperand &addr) {
     int64_t imm12 = addr.offset();
     if (addr.IsImmediateOffset()) {
@@ -498,8 +505,6 @@ private:
       UNREACHABLE();
     }
   }
-
-  // =====
 
   void LoadStorePair(LoadStorePairOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
     int32_t combine_fields_op = OpEncode::LoadStorePair(op, rt, rt2, addr) | Rt2(rt2) | Rn(addr.base()) | Rt(rt);
@@ -517,8 +522,6 @@ private:
     Emit(op | addrmodeop | combine_fields_op);
   }
 
-  // =====
-
   void MoveWide(Register rd, uint64_t imm, int shift, MoveWideImmediateOp op) {
     if (shift > 0)
       shift /= 16;
@@ -529,8 +532,6 @@ private:
     Emit(MoveWideImmediateFixed | op | OpEncode::sf(rd) | LFT(shift, 2, 21) | imm16 | Rd(rd));
   }
 
-  // =====
-
   void AddSubImmediate(const Register &rd, const Register &rn, const Operand &operand, AddSubImmediateOp op) {
     if (operand.IsImmediate()) {
       int64_t immediate = operand.Immediate();
@@ -540,8 +541,6 @@ private:
       UNREACHABLE();
     }
   }
-
-  // =====
 
   void Logical(const Register &rd, const Register &rn, const Operand &operand, LogicalOp op) {
     if (operand.IsImmediate()) {
@@ -561,21 +560,20 @@ private:
 
 private:
   void *released_address_;
+};
 
-}; // namespace arm64
+// ===== TurboAssembler =====
 
 class TurboAssembler : public Assembler {
 public:
-  TurboAssembler() {
+  TurboAssembler(void *address) : Assembler(address) {
   }
 
-  // ===
   void CallFunction(ExternalReference function) {
     Mov(TMP0, (uint64_t)function.address());
     blr(TMP0);
   }
 
-  // ===
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
       const int64_t dest = label->pos() - buffer_->getSize();
@@ -587,17 +585,15 @@ public:
     }
   }
 
-  // ===
   void PseudoBind(PseudoLabel *label) {
     const addr_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
-      label->link_confused_instructions(this->GetCodeBuffer());
+      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
     }
   }
 
-  // ===
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Low32Bits(imm);
     const uint32_t w1 = High32Bits(imm);
@@ -612,7 +608,6 @@ public:
   }
 
 private:
-  Assembler assembler_;
 };
 
 } // namespace arm64

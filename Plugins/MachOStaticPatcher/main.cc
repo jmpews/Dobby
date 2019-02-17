@@ -33,13 +33,17 @@ int main(int argc, char **argv) {
     std::cout << "No ARM64 Architecture in the File!!!\n";
   }
 
-  MachO::SegmentCommand hookzzSegment = MachO::SegmentCommand("HookZz");
-  MachO::Section execMemoryPool       = MachO::Section("execMemoryPool");
-  MachO::Section objectMemoryPool     = MachO::Section("objectMemoryPool");
-  hookzzSegment.add_section(memoryPool);
+  MachO::SegmentCommand zTEXT = MachO::SegmentCommand("__zTEXT");
+  zTEXT.file_size(0x4000);
+  zTEXT.max_protection(5);
+  
+  MachO::SegmentCommand zDATA = MachO::SegmentCommand("__zDATA");
+  zDATA.file_size(0x4000);
+  zDATA.max_protection(3);
 
-  binaryARM64->add(hookzzSegment);
-
+  binaryARM64->add(zTEXT);
+  binaryARM64->add(zDATA);
+  
   std::string output = std::string(argv[1]) + "_hooked";
   binaryARM64->write(output);
   return 0;
