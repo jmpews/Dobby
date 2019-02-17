@@ -359,7 +359,13 @@ public:
     Emit(BRK | LFT(code, 16, 5));
   }
 
-  void adrp(const Register &rd, ) {
+  void adrp(const Register &rd, int64_t imm) {
+    DCHECK(rd.Is64Bits());
+    DCHECK(ABS(imm) < (1 << 21));
+
+    int64_t immlo = LFT(bits(imm >> 12, 0, 1), 2, 29);
+    int64_t immhi = LFT(bits(imm >> 12, 2, 20), 19, 5);
+    Emit(ADRP | Rd(rd) | immlo | immhi);
   }
 
   void add(const Register &rd, const Register &rn, int64_t imm) {

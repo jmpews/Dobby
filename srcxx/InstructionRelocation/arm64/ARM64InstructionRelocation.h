@@ -7,6 +7,7 @@
 
 #include "core/arch/arm64/constants-arm64.h"
 
+#if 0
 // PC relative addressing.
 enum PCRelAddressingOp {
   PCRelAddressingFixed     = 0x10000000,
@@ -16,6 +17,7 @@ enum PCRelAddressingOp {
   ADR  = PCRelAddressingFixed | 0x00000000,
   ADRP = PCRelAddressingFixed | 0x80000000
 };
+#endif
 
 namespace zz {
 namespace arm64 {
