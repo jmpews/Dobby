@@ -6,6 +6,8 @@
 
 #include "core/modules/assembler/assembler.h"
 
+#include "ExecMemory/CodeBuffer/code-buffer-x64.h"
+
 #include "macros.h"
 
 namespace zz {
@@ -16,6 +18,8 @@ namespace x64 {
 class PseudoLabel : public Label {
 public:
 };
+
+// ===== Immediate =====
 
 class Immediate {
 public:
@@ -29,6 +33,8 @@ public:
 private:
   const int64_t value_;
 };
+
+// ===== Operand =====
 
 class Operand {
 public:
@@ -150,6 +156,8 @@ private:
   uint8_t encoding_[6];
 };
 
+// ===== Address =====
+
 class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
@@ -220,8 +228,14 @@ private:
   }
 };
 
+// ===== Assembler =====
+
 class Assembler : public AssemblerBase {
 public:
+  Assembler(void *address) : AssemblerBase(address) {
+    buffer_ = new CodeBuffer;
+  }
+
   void Emit1(byte val) {
   }
 
@@ -232,9 +246,14 @@ public:
   void jmp(Immediate imm);
 };
 
+// ===== TurboAssembler =====
+
 class TurboAssembler : public Assembler {
 public:
-  addr_t CurrentIP();
+  TurboAssembler(void *address) : Assembler(address) {
+  }
+
+  uint64_t CurrentIP();
 };
 
 } // namespace x64

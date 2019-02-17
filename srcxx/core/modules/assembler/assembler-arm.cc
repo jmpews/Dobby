@@ -3,9 +3,6 @@
 namespace zz {
 namespace arm {
 
-Assembler::Assembler() {
-}
-
 void Assembler::EmitARMInst(arm_inst_t inst) {
   buffer_->EmitARMInst(inst);
 }

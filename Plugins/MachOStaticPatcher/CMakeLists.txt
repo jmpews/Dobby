@@ -32,43 +32,62 @@ SET_OPTION(BUILD_SHARED_LIBS OFF)
 add_subdirectory(third-party/LIEF)
 
 set(HookZzSource
-    ${PrimaryPath}/core/arch/Cpu.cc
-    ${PrimaryPath}/core/arch/CpuRegister.cc
-    ${PrimaryPath}/core/arch/CpuFeature.cc
+    ${PrimaryPath}/srcxx/core/arch/Cpu.cc
+    ${PrimaryPath}/srcxx/core/arch/CpuRegister.cc
+    ${PrimaryPath}/srcxx/core/arch/CpuFeature.cc
 
-    ${PrimaryPath}/core/modules/assembler/assembler.cc
-    ${PrimaryPath}/core/modules/assembler/assembler-arm64.cc
+    ${PrimaryPath}/srcxx/core/modules/assembler/assembler.cc
+    ${PrimaryPath}/srcxx/core/modules/assembler/assembler-arm64.cc
 
-    ${PrimaryPath}/core/modules/codegen/codegen-arm64.cc
+    ${PrimaryPath}/srcxx/core/modules/codegen/codegen-arm64.cc
 
-    ${PrimaryPath}/ExecMemory/CodeBuffer/CodeBufferBase.cc
-    ${PrimaryPath}/ExecMemory/CodeBuffer/code-buffer-arm64.cc
+    ${PrimaryPath}/srcxx/ExecMemory/CodeBuffer/CodeBufferBase.cc
+    ${PrimaryPath}/srcxx/ExecMemory/CodeBuffer/code-buffer-arm64.cc
 
-    ${PrimaryPath}/ExecMemory/AssemblerCodeBuffer.cc
-    ${PrimaryPath}/ExecMemory/AssemblerCode.cc
-    ${PrimaryPath}/ExecMemory/ExecutableMemoryArena.cc
-    ${PrimaryPath}/ExecMemory/PageAllocator.cc
+    ${PrimaryPath}/srcxx/ExecMemory/AssemblerCodeBuffer.cc
+    ${PrimaryPath}/srcxx/ExecMemory/AssemblyCode.cc
+    ${PrimaryPath}/srcxx/ExecMemory/ExecutableMemoryArena.cc
+    ${PrimaryPath}/srcxx/ExecMemory/PageAllocator.cc
 
-    ${PrimaryPath}/InstructionRelocation/arm64/ARM64InstructionRelocationi.cc
+    ${PrimaryPath}/srcxx/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
 
     # InterceptRouting
-    ${PrimaryPath}/InterceptRouting/InterceptRouting.cpp
+    ${PrimaryPath}/srcxx/InterceptRouting/InterceptRouting.cpp
 
-    # InterceptRoutingPlugin/FunctionInlineReplace
-    ${PrimaryPath}/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-    ${PrimaryPath}/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+    #InterceptRoutingPlugin
+    ${PrimaryPath}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
+    ${PrimaryPath}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
     # srcxx
-    ${PrimaryPath}/hookzz.cpp
-    ${PrimaryPath}/interceptor.cpp
-
+    ${PrimaryPath}/srcxx/hookzz.cpp
+    ${PrimaryPath}/srcxx/interceptor.cpp
 )
 
-add_subdirectory(${PrimaryPath} hookzz.out)
+set(HookZzStaticSource
+    hookzz/StaticMode/ExecMemory/clear-cache-tool-static.cc
+    hookzz/StaticMode/ExecMemory/code-patch-tool-static.cc
+    hookzz/StaticMode/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
+    hookzz/StaticMode/PlatformInterface/Common/platform-static.cc
+)
+
+include_directories(
+    ${Target.path}
+    ${PrimaryPath}/include
+    ${PrimaryPath}/srcxx
+    ${PrimaryPath}/srcxx/UserMode
+    ${PrimaryPath}/OneLib/logging
+    ${PrimaryPath}/OneLib/stdcxx
+    ${PrimaryPath}/OneLib/include
+)
 
 add_executable(MachOStaticPatcher
     main.cc
+    ${HookZzSource}
+    ${HookZzStaticSource}
 )
+
+add_subdirectory(${PrimaryPath}/OneLib onelib.out)
+target_link_libraries(MachOStaticPatcher logging stdcxx)
 
 target_link_libraries(MachOStaticPatcher
     LIB_LIEF

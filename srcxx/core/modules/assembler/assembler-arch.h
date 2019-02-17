@@ -3,6 +3,7 @@
 
 #include "src/assembler.h"
 
+#if 0
 #if TARGET_ARCH_IA32
 #include "src/ia32/assembler-ia32.h"
 #elif TARGET_ARCH_X64
@@ -21,6 +22,7 @@
 #include "src/s390/assembler-s390.h"
 #else
 #error Unknown architecture.
+#endif
 #endif
 
 #endif // ASSEMBLER_ARCH_H_

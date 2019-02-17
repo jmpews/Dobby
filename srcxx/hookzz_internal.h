@@ -31,35 +31,13 @@ typedef struct _HookEntry {
 
   HookEntryType type;
 
-  // `pre_call` will be executed before the function.
-  // @access all the register
-  // @use in `ZzWrap()`
-  PRECALL pre_call;
-
-  // `post_call` will be executed after the function done, in other words, it's will be executed before return to the last function frame, such as the `LR` regisrer has been replaced.
-  // @access all the register
-  // @use in `ZzWrap`
-  POSTCALL post_call;
-
-  // `dbi_call` will be execution before the `instruction_address`
-  // @access all the register
-  // @use in ZzDynamicBinaryInstrument
-  DBICALL dbi_call;
-
-  // `replace_call` just normal as inlinehook
-  void *replace_call;
+  void *trampoline_target;
 
   // fixed-instructions which we relocated(patched).
   union {
     void *relocated_origin_instructions;
     void *relocated_origin_function;
   };
-
-  // prologue_dispatch_bridge
-  void *prologue_dispatch_bridge;
-
-  // epilogue_dispatch_bridge
-  void *epilogue_dispatch_bridge;
 
   // backup origin instructions
   InstructionBackupArray origin_instructions;

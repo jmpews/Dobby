@@ -202,10 +202,10 @@ file(GLOB Target.srcxx.InterceptRouting.FILES ${Target.path}/srcxx/InterceptRout
 source_group(srcxx.InterceptRouting FILES ${Target.srcxx.InterceptRouting.FILES})
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRouting.FILES})
 
-# srcxx.InterceptRouting.arch
-file(GLOB Target.srcxx.InterceptRouting.${arch1}.FILES ${Target.path}/srcxx/InterceptRouting/${arch1}/*.cc)
-source_group(srcxx.InterceptRouting.${arch1} FILES ${Target.srcxx.InterceptRouting.${arch1}.FILES})
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRouting.${arch1}.FILES})
+# srcxx.InterceptRoutingTrampoline.arch
+file(GLOB Target.srcxx.InterceptRoutingTrampoline.${arch1}.FILES ${Target.path}/srcxx/InterceptRoutingTrampoline/${arch1}/*.cc)
+source_group(srcxx.InterceptRoutingTrampoline.${arch1} FILES ${Target.srcxx.InterceptRoutingTrampoline.${arch1}.FILES})
+set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingTrampoline.${arch1}.FILES})
 
 # srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument
 if(Plugin.DynamicBinaryInstrument)

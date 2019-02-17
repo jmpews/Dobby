@@ -1,7 +1,7 @@
 #ifndef CORE_MODULES_ASSEMBLER_ASSEMBLER_H_
 #define CORE_MODULES_ASSEMBLER_ASSEMBLER_H_
 
-#include "globals.h"
+#include "ExecMemory/CodeBuffer/CodeBufferBase.h"
 
 class CodeBuffer;
 
@@ -61,7 +61,7 @@ private:
 
 class AssemblerBase {
 public:
-  AssemblerBase();
+  AssemblerBase(void *address);
 
   int pc_offset() const;
 
@@ -71,9 +71,13 @@ public:
 
   virtual void *GetRealizeAddress();
 
-  static void FlushICache(void *start, int size);
+  static void FlushICache(addr_t start, int size);
 
   static void FlushICache(addr_t start, addr_t end);
+
+private:
+  AssemblerBase() {
+  }
 
 protected:
   CodeBuffer *buffer_;
@@ -83,6 +87,7 @@ protected:
 
 } // namespace zz
 
+#if 0
 #include "globals.h"
 #if TARGET_ARCH_ARM
 #include "core/modules/assembler/assembler-arm.h"
@@ -93,6 +98,7 @@ protected:
 #include "ExecMemory/CodeBuffer/code-buffer-x64.h"
 #else
 #error "unsupported architecture"
+#endif
 #endif
 
 #endif

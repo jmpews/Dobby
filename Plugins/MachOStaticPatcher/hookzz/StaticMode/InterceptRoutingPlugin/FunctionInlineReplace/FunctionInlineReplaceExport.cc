@@ -7,16 +7,16 @@
 
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
-PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call) {
+PUBLIC RetStatus ZzReplaceStatic(void *function_address, void *replace_call, void **origin_call) {
   DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
-  HookEntry *entry         = new HookEntry();
-  entry->id                = interceptor->entries->getCount();
-  entry->trampoline_target = replace_call;
-  entry->type              = kFunctionInlineHook;
-  entry->function_address  = function_address;
+  HookEntry *entry        = new HookEntry();
+  entry->id               = interceptor->entries->getCount();
+  entry->replace_call     = replace_call;
+  entry->type             = kFunctionInlineHook;
+  entry->function_address = function_address;
 
   FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry);
   route->Dispatch();

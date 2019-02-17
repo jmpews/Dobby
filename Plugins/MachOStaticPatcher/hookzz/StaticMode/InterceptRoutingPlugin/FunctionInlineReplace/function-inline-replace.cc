@@ -16,5 +16,5 @@ void FunctionInlineReplaceRouting::BuildReplaceRouting() {
 }
 
 void *FunctionInlineReplaceRouting::GetTrampolineTarget() {
-  return entry_->trampoline_target;
+  return entry_->replace_call;
 }

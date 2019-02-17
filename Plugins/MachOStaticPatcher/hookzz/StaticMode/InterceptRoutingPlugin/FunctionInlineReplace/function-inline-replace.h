@@ -7,7 +7,6 @@
 #include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 
-#if 0
 #if TARGET_ARCH_IA32
 #elif TARGET_ARCH_X64
 #include "InterceptRouting/x64/X64InterceptRouting.h"
@@ -20,7 +19,6 @@ using namespace zz::arm64;
 using namespace zz::arm;
 #else
 #error "unsupported architecture"
-#endif
 #endif
 
 class FunctionInlineReplaceRouting : public InterceptRouting {

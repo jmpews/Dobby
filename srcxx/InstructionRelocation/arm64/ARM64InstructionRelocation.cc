@@ -6,6 +6,8 @@
 #include "core/modules/assembler/assembler-arm64.h"
 #include "core/modules/codegen/codegen-arm64.h"
 
+using namespace zz::arm64;
+
 // Compare and branch.
 enum CompareBranchOp {
   CompareBranchFixed     = 0x34000000,
@@ -20,29 +22,28 @@ enum ConditionalBranchOp {
   ConditionalBranchMask      = 0xFF000010,
 };
 
-namespace zz {
-namespace arm64 {
-
 typedef struct _PseudoLabelData {
   PseudoLabel label;
-  uintptr_t address;
+  uint64_t address;
 } PseudoLabelData;
 
-AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
-  uint64_t src_pc = src_address;
-  uint64_t cur_pc = src_pc;
-  uint32_t inst   = *(uint32_t *)src_pc;
+AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
+
+  uint64_t cur_addr    = (uint64_t)buffer;
+  uint64_t cur_src_pc  = from_pc;
+  uint64_t cur_dest_pc = to_pc;
+  uint32_t inst        = *(uint32_t *)cur_addr;
 
   // std::vector<PseudoLabelData> labels;
   LiteMutableArray *labels;
 
-  TurboAssembler turbo_assembler_;
+  TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
-  while (cur_pc < (src_pc + *relocate_size)) {
+  while (cur_addr < ((uint64_t)buffer + *relocate_size)) {
     if ((inst & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) {
       int rt                  = bits(inst, 0, 4);
       int32_t imm19           = bits(inst, 5, 23);
-      uint64_t target_address = LFT(imm19, 19, 2) + cur_pc;
+      uint64_t target_address = LFT(imm19, 19, 2) + cur_src_pc;
 
       _ Mov(X(rt), target_address);
       _ br(X(rt));
@@ -62,7 +63,7 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
       int32_t imm19;
       uint64_t target_address;
       imm19               = bits(inst, 5, 24);
-      target_address      = (imm19 << 2) + cur_pc;
+      target_address      = (imm19 << 2) + cur_src_pc;
       int32_t cbz_or_cbnz = (inst & 0xff00001f) | (8 >> 2);
       // ===
       PseudoLabelData targetAddressLabel;
@@ -80,7 +81,7 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
       int32_t imm26;
       uint64_t target_address;
       imm26          = bits(inst, 0, 25);
-      target_address = (imm26 << 2) + cur_pc;
+      target_address = (imm26 << 2) + cur_src_pc;
 
       PseudoLabelData targetAddressLabel;
       targetAddressLabel.address = target_address;
@@ -98,7 +99,7 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
       int32_t imm19;
       uint64_t target_address;
       imm19          = bits(inst, 5, 23);
-      target_address = (imm19 << 2) + cur_pc;
+      target_address = (imm19 << 2) + cur_src_pc;
       int32_t b_cond = (inst & 0xff00001f) | LFT((8 >> 2), 19, 5);
 
       PseudoLabelData targetAddressLabel;
@@ -118,13 +119,13 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
     }
 
     // Move to next instruction
-    cur_pc += 4;
-    inst = *(uint32_t *)cur_pc;
+    cur_src_pc += 4;
+    inst = *(uint32_t *)cur_src_pc;
   }
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralLdrBranch(cur_pc);
+  codegen.LiteralLdrBranch(cur_src_pc);
 
 // Realize all the Pseudo-Label-Data
 #if 0
@@ -145,6 +146,3 @@ AssemblyCode *GenRelocateCode(uint64_t src_address, int *relocate_size) {
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   return code;
 }
-
-} // namespace arm64
-} // namespace zz

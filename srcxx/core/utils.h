@@ -1,8 +1,6 @@
 #ifndef ZZ_UTILS_H_
 #define ZZ_UTILS_H_
 
-#include "globals.h"
-
 namespace zz {
 
 static inline int32_t Low16Bits(int32_t value) {
