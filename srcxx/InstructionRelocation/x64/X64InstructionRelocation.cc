@@ -86,8 +86,12 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     opcode1 = *(byte *)cur_addr;
 
     // clear instr structure
-    memset((void *)&instr, 0, sizeof(InstrMnemonic));
+    _memset((void *)&instr, 0, sizeof(InstrMnemonic));
   }
+  
+  // jmp to the origin rest instructions
+  CodeGen codegen(&turbo_assembler_);
+  codegen.JmpBranch((addr_t)cur_src_ip);
 
   // Generate executable code
   CodePatch(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getRawBuffer(),

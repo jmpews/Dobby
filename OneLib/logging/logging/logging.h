@@ -1,7 +1,6 @@
 #ifndef LOGGING_H_
 #define LOGGING_H_
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
@@ -14,7 +13,7 @@ extern int (*LOGFUNC)(const char *, ...);
 
 #define LOG(str, ...)                                                                                                  \
   do {                                                                                                                 \
-LOGFUNC(str, ##__VA_ARGS__);                                                                                    \
+    LOGFUNC(str, ##__VA_ARGS__);                                                                                    \
   } while (0)
 
 #if defined(DEBUG)
@@ -25,7 +24,7 @@ LOGFUNC(str, ##__VA_ARGS__);                                                    
 
 #define FATAL(str, ...)                                                                                                \
   do {                                                                                                                 \
-LOG("[!] " " [%s:%d:%s]" str, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                                          \
+LOG("[!] " " [%s:%d:%s]\n" str, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                                          \
     /* exit(-1); */                                                                                                    \
   } while (0)
 

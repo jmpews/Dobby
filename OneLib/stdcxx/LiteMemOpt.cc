@@ -3,13 +3,17 @@
 
 #include <stdlib.h>
 
-void *memcpy(void *dest, const void *src, int len) {
+#include <string.h>
+
+#if 1
+void *_memcpy(void *dest, const void *src, int len) {
   return memcpy(dest, src, len);
 }
 
-void *memset(void *dest, int ch, int count) {
+void *_memset(void *dest, int ch, int count) {
   return memset(dest, ch, count);
 }
+#endif
 
 void *LiteMemOpt::alloc(int size) {
   void *result = malloc(size);

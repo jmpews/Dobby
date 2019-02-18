@@ -7,7 +7,7 @@
 #define CHECK_WITH_MSG(condition, message)                                                                             \
   do {                                                                                                                 \
     if (!(condition)) {                                                                                                \
-      FATAL("Check failed: %s.", message);                                                                             \
+      FATAL("Check failed: %s.\n", message);                                                                             \
     }                                                                                                                  \
   } while (0)
 #define CHECK(condition) CHECK_WITH_MSG(condition, #condition)
@@ -27,7 +27,7 @@
 #define CHECK_OP(name, op, lhs, rhs)                                                                                   \
   do {                                                                                                                 \
     if (!(lhs op rhs)) {                                                                                               \
-      FATAL("Check failed: %s.", #lhs " " #op " " #rhs);                                                               \
+      FATAL(" Check failed: %s.\n", #lhs " " #op " " #rhs);                                                               \
     }                                                                                                                  \
   } while (0)
 
@@ -45,7 +45,7 @@
 #define CHECK_OP(name, op, lhs, rhs)                                                                                   \
   do {                                                                                                                 \
     bool _cond = lhs op rhs;                                                                                           \
-    CHECK_WITH_MSG(_cond, #lhs " " #op " " #rhs);                                                                      \
+    CHECK_WITH_MSG(_cond, #lhs " " #op " " #rhs "\n");                                                                      \
   } while (0)
 
 #define DCHECK_WITH_MSG(condition, msg) void(0);

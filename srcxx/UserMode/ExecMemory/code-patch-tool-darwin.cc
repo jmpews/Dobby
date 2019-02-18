@@ -19,6 +19,8 @@
 #include <mach/vm_statistics.h>
 #endif
 
+#include "logging/check_logging.h"
+
 using namespace zz;
 
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
@@ -30,7 +32,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 #ifdef __APPLE__
 
   addr_t remap_page =
-      (addr_t)mmap(0, page_size, PROT_READ | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, VM_MAKE_TAG(255), 0);
+      (addr_t)mmap(0, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, VM_MAKE_TAG(255), 0);
   if ((void *)remap_page == MAP_FAILED)
     return kMemoryOperationError;
 
@@ -52,9 +54,8 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   inherit = info.inheritance;
 
   kr = vm_copy(task_self, (vm_address_t)page_align_address, page_size, (vm_address_t)remap_page);
-  if (kr != KERN_SUCCESS) {
-    return kMemoryOperationError;
-  }
+  CHECK_EQ(kr, KERN_SUCCESS);
+
 
   memcpy((void *)(remap_page + offset), buffer, size);
 

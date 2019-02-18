@@ -1,11 +1,11 @@
 #ifndef LITE_MEM_OPT_H_
 #define LITE_MEM_OPT_H_
 
-extern void *memcpy(void *, const void *, int);
+extern void *_memcpy(void *, const void *, int);
 
-extern void bzero(void *, int);
+extern void _bzero(void *, int);
 
-extern void *memset(void *, int, int);
+extern void *_memset(void *, int, int);
 
 class LiteMemOpt {
 public:
@@ -16,10 +16,6 @@ public:
 public:
 #if 0
   static void (*copy_)(void *, void *, int);
-
-  static void *(*alloc_)(int);
-
-  static void (*free_)(void *, int);
 #endif
 };
 

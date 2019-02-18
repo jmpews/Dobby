@@ -37,7 +37,7 @@ void CodeBufferBase::EmitBuffer(void *buffer, int buffer_size) {
   // Ensure the free space enough for the template T value
   ensureCapacity(buffer_size + getSize());
 
-  memcpy(cursor_, buffer, buffer_size);
+  _memcpy(cursor_, buffer, buffer_size);
 
   cursor_ += buffer_size;
 }
