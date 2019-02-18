@@ -26,7 +26,7 @@ void InterceptRouting::Prepare() {
   DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)code->raw_instruction_start());
 
   // save original prologue
-  memcpy(entry_->origin_instructions.data, entry_->target_address, relocate_size);
+  _memcpy(entry_->origin_instructions.data, entry_->target_address, relocate_size);
   entry_->origin_instructions.size    = relocate_size;
   entry_->origin_instructions.address = entry_->target_address;
 }

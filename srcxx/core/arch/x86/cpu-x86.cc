@@ -23,13 +23,13 @@ X86CpuInfo::X86CpuInfo() {
   has_popcnt_  = false;
   is_atom_     = false;
 
-  memcpy(vendor_, (void *)"Unknown", 8);
+  _memcpy(vendor_, (void *)"Unknown", 8);
 #if V8_HOST_ARCH_IA32 || V8_HOST_ARCH_X64
   int cpu_info[4];
   __cpuid(cpu_info, 0);
   unsigned num_ids = cpu_info[0];
   std::swap(cpu_info[2], cpu_info[3]);
-  memcpy(vendor_, cpu_info + 1, 12);
+  _memcpy(vendor_, cpu_info + 1, 12);
   vendor_[12] = '\0';
 
   // Interpret CPU feature information.

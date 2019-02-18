@@ -10,6 +10,8 @@
 
 #include "macros.h"
 
+#include "logging/logging.h"
+
 namespace zz {
 namespace x64 {
 
@@ -246,6 +248,7 @@ public:
   }
 
   void jmp(Immediate imm);
+
 };
 
 // ===== TurboAssembler =====
