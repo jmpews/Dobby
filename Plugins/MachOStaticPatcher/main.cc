@@ -13,14 +13,50 @@
 
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
+#include "ExecMemory/ExecutableMemoryArena.h"
+#include "PlatformInterface/Common/Platform.h"
+
 using namespace LIEF;
 
 extern int (*LOGFUNC)(const char * __restrict, ...);
 
-void ZzStaticHookInitialize(addr_t va) {
+static WritablePage *dataPage = NULL;
+
+void *TranslateVa2Rt(void *va, MachO::SegmentCommand *seg) {
+  int offset = (addr_t)va - seg->virtual_address();
+  void *rt = (void *)((addr_t)&seg->content()[0] + offset);
+  return rt;
+}
+
+WritableDataChunk *AllocateDataChunk(int size) {
+  if(!dataPage) {
+    dataPage = new WritablePage;
+    // return the __zDATA segment vmaddr
+    dataPage->address = zz::OSMemory::Allocate(0, 0, kReadWrite);
+    dataPage->capacity = 0x4000;
+  }
+  WritableDataChunk *dataChunk = new WritableDataChunk;
+  dataChunk->address = dataPage->cursor;
+  dataChunk->size = size;
+  dataPage->cursor = (void *)((addr_t)dataPage->cursor + size);
+  // no need for updating data_chunks
+  dataPage->code_chunks->pushObject((LiteObject *)dataChunk);
+}
+
+void ZzStaticHookInitialize(addr_t va, addr_t rt, HookEntryStatic *entry_staic) {
   HookEntry *entry                    = new HookEntry();
+  
+  // Allocate trampoline target stub
+  WritableDataChunk *stub = AllocateDataChunk(sizeof(void *));
+  
+  entry->function_address = (void *)rt;
+  entry->trampoline_target = stub->address;
   FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry);
   route->Dispatch();
+  
+  entry_staic->function_address = (void *)va;
+  entry_staic->relocated_origin_function = entry->relocated_origin_function;
+  entry_staic->trampoline_target_stub = (uintptr_t *)stub->address;
   return;
 }
 
@@ -118,9 +154,25 @@ int main(int argc, char **argv) {
     funcList.push_back(p);
   }
 
+  // Allocate the InterceptorStatic
+  WritableDataChunk *interceptor_va = AllocateDataChunk(sizeof(InterceptorStatic));
+  interceptor = reinterpret_cast<InterceptorStatic *>(TranslateVa2Rt(interceptor_va->address, zDATA));
+  
   for (auto va : funcList) {
-    ZzStaticHookInitialize(va);
+    MachO::SegmentCommand *TEXT = binaryARM64->get_segment("__TEXT");
+    void *content = GetSegmentContent(binaryARM64, "__TEXT");
+    addr_t funcBuffer = va - TEXT->virtual_size();
+    
+    // allocate HookEntryStatic at the __zDATA segment
+    WritableDataChunk *entry_va = AllocateDataChunk(sizeof(HookEntryStatic));
+    HookEntryStatic *entry = reinterpret_cast<HookEntryStatic *>(TranslateVa2Rt(entry_va->address, zDATA));
+    
+    // add the entry to the interceptor
+    interceptor->entry[interceptor->count++] = (uintptr_t)entry_va->address;
+    ZzStaticHookInitialize(va, funcBuffer, entry);
   }
+  
+  // try to staitc the InterceptorStatic and all HookEntryStatic to binary
 
   std::string output = std::string(argv[1]) + "_hooked";
   binaryARM64->write(output);

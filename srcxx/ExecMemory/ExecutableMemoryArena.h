@@ -3,17 +3,20 @@
 
 #include "stdcxx/LiteMutableArray.h"
 
-struct AssemblyCodeChunk {
+typedef struct {
   void *address;
   int size;
-};
+} AssemblyCodeChunk, WritableDataChunk;
 
-struct ExecutablePage {
+typedef struct {
   void *address;
   void *cursor;
   int capacity;
+  union {
+  LiteMutableArray *data_chunks;
   LiteMutableArray *code_chunks;
-};
+  };
+} ExecutablePage, WritablePage;
 
 class ExecutableMemoryArena {
 public:
