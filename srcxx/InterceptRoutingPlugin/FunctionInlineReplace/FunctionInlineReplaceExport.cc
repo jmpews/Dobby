@@ -7,7 +7,7 @@
 
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
-PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call) {
+PUBLIC int ZzReplace(void *function_address, void *replace_call, void **origin_call) {
   DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
@@ -29,5 +29,5 @@ PUBLIC RetStatus ZzReplace(void *function_address, void *replace_call, void **or
   route->Commit();
 
   DLOG("[*] Finalize %p\n", function_address);
-  return RS_SUCCESS;
+  return (int)RS_SUCCESS;
 }

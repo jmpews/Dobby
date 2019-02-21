@@ -1,0 +1,1 @@
+void *ZzFindSymbol(const char *name);
