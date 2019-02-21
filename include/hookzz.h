@@ -111,7 +111,7 @@ typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
 
 // replace function
-RetStatus ZzReplace(void *function_address, void *replace_call, void **origin_call);
+int ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
 RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL dbi_call);

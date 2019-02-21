@@ -51,7 +51,9 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     codeChunk          = new AssemblyCodeChunk;
     codeChunk->address = page->cursor;
     codeChunk->size    = inSize;
+    
     page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
+    page->cursor = (void *)((addr_t)page->cursor + inSize);
   }
 
   return codeChunk;

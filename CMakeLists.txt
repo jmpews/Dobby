@@ -16,7 +16,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # ===== Handle Option =====
-option(SHARED "Build shared library" ON)
+option(SHARED "Build shared library" OFF)
+
 option(DEBUG "Enable debug log" OFF)
 
 option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
