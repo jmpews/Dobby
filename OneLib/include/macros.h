@@ -7,7 +7,8 @@
 #define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
 
 // assert
-#define ASSERT(X) ((void)0)
+#include <assert.h>
+#define ASSERT(X) assert(X)
 
 // left/right shift
 #define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)

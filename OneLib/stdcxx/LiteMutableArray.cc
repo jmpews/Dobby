@@ -39,14 +39,22 @@ unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
   if (newCapacity <= capacity)
     return capacity;
 
-  finalCapacity = (int)ALIGN(newCapacity, 8);
+#undef CAPACITY_STEP
+#define CAPACITY_STEP 64
+  finalCapacity = (int)ALIGN(newCapacity + CAPACITY_STEP, CAPACITY_STEP);
 
-  newSize = sizeof(LiteObject *) * finalCapacity;
-
+  newSize  = sizeof(LiteObject *) * finalCapacity;
   newArray = (const LiteObject **)LiteMemOpt::alloc(newSize);
+  // clear with mark 'A'
+  _memset(newArray, 0, newSize);
 
   if (newArray) {
-    _memset(newArray, 0, newSize);
+    int offset = count * sizeof(LiteObject *);
+
+    // copy the origin content
+    _memcpy(newArray, array, offset);
+
+    // free the origin
     LiteMemOpt::free(array, oldSize);
 
     array    = newArray;
