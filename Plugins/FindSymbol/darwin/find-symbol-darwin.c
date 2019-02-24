@@ -11,6 +11,8 @@
 #include <mach/vm_map.h>
 #include <mach/mach.h>
 
+#include <string.h>
+
 #if defined(__LP64__)
 typedef struct mach_header_64 mach_header_t;
 typedef struct segment_command_64 segment_command_t;
@@ -27,14 +29,17 @@ typedef struct nlist nlist_t;
 
 void *iterateSymbolTable(struct mach_header *header, const char *name);
 
-void *ZzFindSymbol(const char *name) {
+void *ZzFindSymbol(const char *image_name, const char *symbol_name) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
 
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = _dyld_get_image_header(i);
-
-    result = iterateSymbolTable(header, name);
+    const char *name_                = _dyld_get_image_name(i);
+    name_ = strrchr(name_, '/') + 1;
+    if (image_name != NULL && strcmp(image_name, name_))
+      continue;
+    result = iterateSymbolTable(header, symbol_name);
     if (result)
       break;
   }

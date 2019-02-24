@@ -17,12 +17,26 @@ int LiteMutableBuffer::ensureCapacity(int new_capacity) {
 
   if (new_capacity <= capacity_)
     return capacity_;
-  final_capacity = (int)ALIGN(new_capacity, 8);
+
+#undef CAPACITY_STEP
+#define CAPACITY_STEP 64
+  final_capacity = (int)ALIGN(new_capacity + CAPACITY_STEP, CAPACITY_STEP);
 
   new_buffer = (byte *)LiteMemOpt::alloc(final_capacity);
+  // clear with the mark 'A'
+  _memset(new_buffer, 'A', final_capacity);
 
   if (new_buffer) {
-    cursor_   = new_buffer + getSize();
+    int offset = cursor_ - buffer_;
+    ASSERT(offset == getSize());
+
+    // copy the origin content
+    _memcpy(new_buffer, buffer_, offset);
+
+    // free the origin
+    LiteMemOpt::free(buffer_, capacity_);
+
+    cursor_   = new_buffer + offset;
     buffer_   = new_buffer;
     capacity_ = new_capacity;
   }

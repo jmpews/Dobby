@@ -190,7 +190,7 @@ public:
   Address(Register base, Register r);
 
   Address(Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index != rsp); // Illegal addressing mode.
+    ASSERT(index.code() != rsp.code()); // Illegal addressing mode.
     SetModRM(0, rsp);
     SetSIB(scale, index, rbp);
     SetDisp32(disp);
@@ -200,7 +200,7 @@ public:
   Address(Register index, ScaleFactor scale, Register r);
 
   Address(Register base, Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index != rsp); // Illegal addressing mode.
+    ASSERT(index.code() != rsp.code()); // Illegal addressing mode.
     int rbp_ = rbp.code();
     if ((disp == 0) && ((base.code() & 7) != rbp_)) {
       SetModRM(0, rsp);
