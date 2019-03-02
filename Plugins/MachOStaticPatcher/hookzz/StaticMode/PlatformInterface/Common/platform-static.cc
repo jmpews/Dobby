@@ -10,7 +10,7 @@
 
 using namespace LIEF;
 
-MachO::Binary *binary;
+extern MachO::Binary *binary;
 
 namespace zz {
 

@@ -22,6 +22,8 @@ extern int (*LOGFUNC)(const char * __restrict, ...);
 
 static WritablePage *dataPage = NULL;
 
+MachO::Binary *binary;
+
 void *TranslateVa2Rt(void *va, MachO::SegmentCommand *seg) {
   int offset = (addr_t)va - seg->virtual_address();
   void *rt = (void *)((addr_t)&seg->content()[0] + offset);
@@ -33,6 +35,8 @@ WritableDataChunk *AllocateDataChunk(int size) {
     dataPage = new WritablePage;
     // return the __zDATA segment vmaddr
     dataPage->address = zz::OSMemory::Allocate(0, 0, kReadWrite);
+    dataPage->data_chunks    = new LiteMutableArray;
+    dataPage->data_chunks->initWithCapacity(1);
     dataPage->capacity = 0x4000;
   }
   WritableDataChunk *dataChunk = new WritableDataChunk;
@@ -40,7 +44,8 @@ WritableDataChunk *AllocateDataChunk(int size) {
   dataChunk->size = size;
   dataPage->cursor = (void *)((addr_t)dataPage->cursor + size);
   // no need for updating data_chunks
-  dataPage->code_chunks->pushObject((LiteObject *)dataChunk);
+  dataPage->data_chunks->pushObject((LiteObject *)dataChunk);
+  return dataChunk;
 }
 
 void ZzStaticHookInitialize(addr_t va, addr_t rt, HookEntryStatic *entry_staic) {
@@ -94,16 +99,22 @@ bool CheckORInsertSegment(MachO::Binary *binary) {
   return true;
 }
 
+void *GetSectionContent(MachO::Binary *binary, const char *section_name) {
+  MachO::Section &section = binary->get_section(section_name);
+
+  const void *content = reinterpret_cast<const void *>(&(section.content()[0]));
+  return (void *)content;
+}
+
 void *GetSegmentContent(MachO::Binary *binary, const char *segment_name) {
   MachO::SegmentCommand *segment = binary->get_segment(segment_name);
-
+  
   const void *content = reinterpret_cast<const void *>(&segment->content()[0]);
   return (void *)content;
 }
 
 int main(int argc, char **argv) {
   LIEF::Logger::set_level(LIEF::LOGGING_LEVEL::LOG_DEBUG);
-  std::cout << "MachO Reader" << std::endl;
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <MachO binary>" << std::endl;
     return -1;
@@ -112,25 +123,25 @@ int main(int argc, char **argv) {
   std::unique_ptr<MachO::FatBinary> binaries{MachO::Parser::parse(argv[1])};
   MachO::Binary *binaryARM64 = (MachO::Binary *)getARM64Binary(binaries);
   if (!binaryARM64) {
-    std::cout << "No ARM64 Architecture in the File!!!\n";
+    std::cout << "[!] no ARM64 architecture in the File!!!\n";
   }
   
   LOGFUNC = printf;
 
   if (CheckORInsertSegment(binaryARM64)) {
-    LOG("[*] Already Insert __zTEXT, __zDATA segment.\n");
+    LOG("[*] already Insert __zTEXT, __zDATA segment.\n");
   } else {
-    LOG("[*] Insert __zTEXT, __zDATA segment.\n");
+    LOG("[*] insert __zTEXT, __zDATA segment.\n");
   }
 
-  LOG("[*] Check static hooked status...\n");
+  LOG("[*] check static hooked status.\n");
   MachO::SegmentCommand *zDATA = binaryARM64->get_segment("__zDATA");
 
   InterceptorStatic *interceptor = reinterpret_cast<InterceptorStatic *>(GetSegmentContent(binaryARM64, "__zDATA"));
   if (!interceptor->this_) {
-    LOG("[*] No static hooked recored.\n");
+    LOG("[*] no static hooked recored.\n");
   } else {
-    LOG("[*] Found %d static hooked recoreds\n", interceptor->count);
+    LOG("[*] found %d static hooked recoreds\n", interceptor->count);
 
     addr_t zDATA_vm_addr = (addr_t)zDATA->virtual_address();
     addr_t zDATA_content = (addr_t)GetSegmentContent(binaryARM64, "__zDATA");
@@ -141,6 +152,8 @@ int main(int argc, char **argv) {
           entry->trampoline_target_stub);
     }
   }
+  
+  binary = binaryARM64;
 
   // static hook initialize
   if (argc < 3)
@@ -160,8 +173,9 @@ int main(int argc, char **argv) {
   
   for (auto va : funcList) {
     MachO::SegmentCommand *TEXT = binaryARM64->get_segment("__TEXT");
+    MachO::Section &text = binaryARM64->get_section("__text");
     void *content = GetSegmentContent(binaryARM64, "__TEXT");
-    addr_t funcBuffer = va - TEXT->virtual_size();
+    addr_t funcBuffer = (addr_t)content + va - TEXT->virtual_address();
     
     // allocate HookEntryStatic at the __zDATA segment
     WritableDataChunk *entry_va = AllocateDataChunk(sizeof(HookEntryStatic));

@@ -30,7 +30,7 @@ option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing
 
 option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
-include(cmake/XcodeGenerator.cmake)
+# include(cmake/XcodeGenerator.cmake)
 
 # Use native assembly bridge to replace the runtime codegen
 if(CLOSURE_BRIDGE_TEMPLATE)
