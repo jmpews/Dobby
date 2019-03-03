@@ -53,7 +53,7 @@ void CodeBuffer::EmitThumb2Inst(thumb2_inst_t inst) {
 
 void CodeBuffer::Emit32(int32_t data) {
   ensureCapacity(getSize() + sizeof(int32_t));
-  *static_cast<int32_t *>(cursor_) = data;
+  *reinterpret_cast<int32_t *>(cursor_) = data;
   cursor_ += sizeof(int32_t);
   return;
 }

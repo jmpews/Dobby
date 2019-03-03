@@ -56,7 +56,6 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   kr = vm_copy(task_self, (vm_address_t)page_align_address, page_size, (vm_address_t)remap_page);
   CHECK_EQ(kr, KERN_SUCCESS);
 
-
   memcpy((void *)(remap_page + offset), buffer, size);
 
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);

@@ -5,6 +5,8 @@
 #include <libkern/OSCacheControl.h>
 #endif
 
+#include <assert.h>
+
 /*
  * The compiler generates calls to __clear_cache() when creating 
  * trampoline functions on the stack for use with nested functions.

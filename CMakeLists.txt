@@ -326,7 +326,7 @@ include_directories(
 
 if(SHARED)
     # build shared library
-    add_library(hookzz STATIC ${Target.SOURCE_FILES})
+    add_library(hookzz SHARED ${Target.SOURCE_FILES})
 else()
     # build static library
     add_library(hookzz STATIC ${Target.SOURCE_FILES})
