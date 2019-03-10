@@ -6,6 +6,13 @@
 class CodeBufferBase : public LiteMutableBuffer {
 
 public:
+  CodeBufferBase() : LiteMutableBuffer() {
+  }
+
+  CodeBufferBase(int size) : LiteMutableBuffer(size) {
+  }
+
+public:
   void Emit8(uint8_t data);
 
   void Emit16(uint16_t data);

@@ -27,7 +27,7 @@ int LiteMutableBuffer::ensureCapacity(int new_capacity) {
   _memset(new_buffer, 'A', final_capacity);
 
   if (new_buffer) {
-    int offset = cursor_ - buffer_;
+    int offset =  (int)(cursor_ - buffer_);
     ASSERT(offset == getSize());
 
     // copy the origin content

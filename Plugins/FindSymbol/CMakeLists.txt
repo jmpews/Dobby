@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 set(PrimaryPath ../..)
 
 include(${PrimaryPath}/cmake/Util.cmake)
-include(${PrimaryPath}/cmake/Globals.cmake)
 include(${PrimaryPath}/cmake/Macros.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -17,8 +16,6 @@ set(TargetSource )
 
 include_directories(.)
 
-if(SYSTEM.Darwin)
-  set(TargetSource darwin/find-symbol-darwin.c)
-endif()
+set(TargetSource darwin/find-symbol-darwin.c)
 
 add_library(findsymbol STATIC ${TargetSource})

@@ -21,7 +21,6 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
 
   if (!ExecutableMemoryArena::page_chunks) {
     ExecutableMemoryArena::page_chunks = new LiteMutableArray;
-    ExecutableMemoryArena::page_chunks->initWithCapacity(1);
   }
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
@@ -41,8 +40,7 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     newPage->address        = page_address;
     newPage->cursor         = newPage->address;
     newPage->capacity       = page_size;
-    newPage->code_chunks    = new LiteMutableArray;
-    newPage->code_chunks->initWithCapacity(1);
+    newPage->code_chunks    = new LiteMutableArray(8);
     ExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
@@ -51,7 +49,7 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     codeChunk          = new AssemblyCodeChunk;
     codeChunk->address = page->cursor;
     codeChunk->size    = inSize;
-    
+
     page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
     page->cursor = (void *)((addr_t)page->cursor + inSize);
   }

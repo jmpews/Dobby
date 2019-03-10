@@ -27,7 +27,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
   int page_size             = (int)sysconf(_SC_PAGESIZE);
   addr_t page_align_address = ALIGN_FLOOR(address, page_size);
-  int offset                = (addr_t)address - page_align_address;
+  int offset                =  static_cast<int>((addr_t)address - page_align_address);
 
 #ifdef __APPLE__
 

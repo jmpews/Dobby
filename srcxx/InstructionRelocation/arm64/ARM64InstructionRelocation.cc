@@ -25,6 +25,11 @@ enum ConditionalBranchOp {
 typedef struct _PseudoLabelData {
   PseudoLabel label;
   uint64_t address;
+
+public:
+  _PseudoLabelData(uint64_t address) {
+    address = address;
+  }
 } PseudoLabelData;
 
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
@@ -35,11 +40,13 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
   uint32_t inst        = *(uint32_t *)cur_addr;
 
   // std::vector<PseudoLabelData> labels;
-  LiteMutableArray *labels;
+  LiteMutableArray *labels = new LiteMutableArray;
 
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
   while (cur_addr < ((uint64_t)buffer + *relocate_size)) {
+    int off = turbo_assembler_.GetCodeBuffer()->getSize();
+
     if ((inst & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) {
       int rt                  = bits(inst, 0, 4);
       int32_t imm19           = bits(inst, 5, 23);
@@ -66,8 +73,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
       target_address      = (imm19 << 2) + cur_src_pc;
       int32_t cbz_or_cbnz = (inst & 0xff00001f) | (8 >> 2);
       // ===
-      PseudoLabelData targetAddressLabel;
-      targetAddressLabel.address = target_address;
+      PseudoLabelData targetAddressLabel(target_address);
       Label FalseLabel;
       _ Emit(cbz_or_cbnz);
       _ b(&FalseLabel);
@@ -83,8 +89,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
       imm26          = bits(inst, 0, 25);
       target_address = (imm26 << 2) + cur_src_pc;
 
-      PseudoLabelData targetAddressLabel;
-      targetAddressLabel.address = target_address;
+      PseudoLabelData targetAddressLabel(target_address);
       // ===
       _ Ldr(x17, &targetAddressLabel.label);
       if ((inst & UnconditionalBranchMask) == BL) {
@@ -102,8 +107,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
       target_address = (imm19 << 2) + cur_src_pc;
       int32_t b_cond = (inst & 0xff00001f) | LFT((8 >> 2), 19, 5);
 
-      PseudoLabelData targetAddressLabel;
-      targetAddressLabel.address = target_address;
+      PseudoLabelData targetAddressLabel(target_address);
       Label FalseLabel;
       // ===
       _ Emit(b_cond);
@@ -119,8 +123,10 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
     }
 
     // Move to next instruction
+    cur_dest_pc += turbo_assembler_.GetCodeBuffer()->getSize() - off;
     cur_src_pc += 4;
-    inst = *(uint32_t *)cur_src_pc;
+    cur_addr += 4;
+    inst = *(arm64_inst_t *)cur_addr;
   }
 
   // Branch to the rest of instructions

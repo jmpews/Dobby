@@ -11,6 +11,13 @@ class CodeBuffer : public CodeBufferBase {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
 public:
+  CodeBuffer() : CodeBufferBase() {
+  }
+
+  CodeBuffer(int size) : CodeBufferBase(size) {
+  }
+
+public:
   arm_inst_t LoadARMInst(int offset);
 
   thumb1_inst_t LoadThumb1Inst(int offset);
