@@ -18,6 +18,14 @@ protected:
   // int size_;
 
 public:
+  LiteMutableBuffer() {
+    initWithCapacity(8);
+  }
+
+  LiteMutableBuffer(int size) {
+    initWithCapacity(size);
+  }
+
   virtual int ensureCapacity(int newCapacity);
 
   virtual bool initWithCapacity(int capacity = 8);

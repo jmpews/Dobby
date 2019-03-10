@@ -7,8 +7,7 @@ InterceptorOptions Interceptor::options_    = {0};
 Interceptor *Interceptor::SharedInstance() {
   if (Interceptor::priv_interceptor_ == NULL) {
     Interceptor::priv_interceptor_          = new Interceptor();
-    Interceptor::priv_interceptor_->entries = new LiteMutableArray;
-    Interceptor::priv_interceptor_->entries->initWithCapacity(8);
+    Interceptor::priv_interceptor_->entries = new LiteMutableArray(8);
 
     Interceptor::priv_interceptor_->FindHookEntry(0);
   }

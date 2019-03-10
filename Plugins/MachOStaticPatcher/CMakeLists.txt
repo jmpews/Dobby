@@ -3,7 +3,6 @@ project(MachOStaticPatcher)
 set(PrimaryPath ../..)
 
 include(${PrimaryPath}/cmake/Util.cmake)
-include(${PrimaryPath}/cmake/Globals.cmake)
 include(${PrimaryPath}/cmake/Macros.cmake)
 
 set(CMAKE_CXX_STANDARD 11)

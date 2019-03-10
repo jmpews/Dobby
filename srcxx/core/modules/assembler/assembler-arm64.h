@@ -40,17 +40,22 @@ public:
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
+public:
+  PseudoLabel() {
+  }
   bool has_confused_instructions() {
-    return instructions_->getCount() > 0;
+    return instructions_.getCount() > 0;
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
     CodeBuffer *_buffer;
     if (buffer)
       _buffer = buffer;
+    else
+      UNREACHABLE();
 
     PseudoLabelInstruction *instruction;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
     while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
       int32_t offset       = pos() - instruction->position_;
       const int32_t inst32 = _buffer->LoadInst(instruction->position_);
@@ -92,7 +97,7 @@ public:
     PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
     instruction->position_              = pos;
     instruction->type_                  = type;
-    instructions_->pushObject((LiteObject *)instruction);
+    instructions_.pushObject((LiteObject *)instruction);
 #if 0
     instructions_.push_back({pos, type});
 #endif
@@ -109,7 +114,7 @@ private:
 #if 0
   std::vector<PseudoLabelInstruction> instructions_;
 #endif
-  LiteMutableArray *instructions_;
+  LiteMutableArray instructions_;
 };
 
 // ===== Operand =====
@@ -322,7 +327,7 @@ public:
       scale += opc;
     }
 
-    imm7 = addr.offset() >> scale;
+    imm7 = (int)(addr.offset() >> scale);
     return LFT(imm7, 7, 15);
   }
 
@@ -341,8 +346,7 @@ public:
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
-    buffer_ = new CodeBuffer;
-    reinterpret_cast<CodeBufferBase *>(buffer_)->initWithCapacity(32);
+    buffer_ = new CodeBuffer(32);
     DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 

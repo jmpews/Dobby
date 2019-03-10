@@ -5,6 +5,11 @@
 
 class CodeBuffer : public CodeBufferBase {
 public:
+  CodeBuffer() : CodeBufferBase() {
+  }
+
+  CodeBuffer(int size) : CodeBufferBase(size) {
+  }
 };
 
 #endif

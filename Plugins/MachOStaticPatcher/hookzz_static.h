@@ -7,7 +7,7 @@ typedef struct _InterceptorStatic {
 } InterceptorStatic;
 
 typedef struct _HookEntryStatic {
-  void *function_address;
+  int function_offset;
   void *relocated_origin_function;
   uintptr_t *trampoline_target_stub;
 } HookEntryStatic;
