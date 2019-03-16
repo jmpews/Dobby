@@ -150,9 +150,17 @@ int main(int argc, char **argv) {
     std::cout << "[!] no ARM64 architecture in the File!!!\n";
   }
   
-  LOGFUNC = printf;
+  
+  // insert ZDATA, zTEXT segment
+  InsertHookZzSegment(binaryARM64);
+  std::string output = std::string(argv[1]) + "_hooked";
+  binaryARM64->write(output);
 
   
+  
+  
+  LOGFUNC = printf;
+
   // Check HookZz Static Patcher status
   if (CheckHookZzSegment(binaryARM64)) {
     LOG("[*] already Insert __zTEXT, __zDATA segment.\n");
@@ -211,9 +219,6 @@ int main(int argc, char **argv) {
   InsertHookZzSegment(binaryARM64);
   MachO::SegmentCommand *zDATA = binaryARM64->get_segment("__zDATA");
   
-  std::string output = std::string(argv[1]) + "_hooked";
-  binaryARM64->write(output);
-
   // Allocate the InterceptorStatic
   InterceptorStatic *interceptor = reinterpret_cast<InterceptorStatic *>(GetSegmentContent(binaryARM64, "__zDATA"));
   WritableDataChunk *interceptor_va = AllocateDataChunk(sizeof(InterceptorStatic));

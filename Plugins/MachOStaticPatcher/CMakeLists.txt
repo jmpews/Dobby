@@ -12,6 +12,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
+if(0)
 include_directories(third-party/LIEF/include)
 include_directories(third-party/LIEF/src)
 SET_OPTION(LIEF_DOC OFF)
@@ -29,8 +30,9 @@ SET_OPTION(LIEF_ELF OFF)
 SET_OPTION(LIEF_PE OFF)
 SET_OPTION(BUILD_SHARED_LIBS OFF)
 add_subdirectory(third-party/LIEF)
+endif()
 
-set(HookZzSource
+set(HookZz.SOURCE_FILE
     ${PrimaryPath}/srcxx/core/arch/Cpu.cc
     ${PrimaryPath}/srcxx/core/arch/CpuRegister.cc
     ${PrimaryPath}/srcxx/core/arch/CpuFeature.cc
@@ -62,14 +64,19 @@ set(HookZzSource
     ${PrimaryPath}/srcxx/interceptor.cpp
 )
 
-set(HookZzStaticSource
+set(HookZzStatic.SOURCE_FILE
     hookzz/StaticMode/ExecMemory/clear-cache-tool-static.cc
     hookzz/StaticMode/ExecMemory/code-patch-tool-static.cc
     hookzz/StaticMode/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
     hookzz/StaticMode/PlatformInterface/Common/platform-static.cc
 )
 
+set(MachOManipulator.SOURCE_FILE
+    MachOManipulator/MachOManipulator.cc
+)
+
 include_directories(
+    .
     ${Target.path}
     ${PrimaryPath}/include
     ${PrimaryPath}/srcxx
@@ -81,8 +88,9 @@ include_directories(
 
 add_executable(MachOStaticPatcher
     main.cc
-    ${HookZzSource}
-    ${HookZzStaticSource}
+    ${HookZz.SOURCE_FILE}
+    ${HookZzStatic.SOURCE_FILE}
+    ${MachOManipulator.SOURCE_FILE}
 )
 
 add_subdirectory(${PrimaryPath}/OneLib onelib.out)
