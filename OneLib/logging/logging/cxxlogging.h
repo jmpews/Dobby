@@ -3,8 +3,6 @@
 
 #include "logging.h"
 
-namespace zz {
-
 class Logger {
 public:
   static void initialize(const char *log_tag, const char *log_file, int log_level) {
@@ -19,7 +17,5 @@ private:
   static char *log_file_;
   static int log_level_;
 };
-
-} // namespace zz
 
 #endif

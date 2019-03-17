@@ -3,6 +3,10 @@
 
 using namespace std;
 
+#include <mach-o/loader.h>
+
+#include "macros.h"
+
 #if defined(__LP64__)
 typedef struct mach_header_64 mach_header_t;
 typedef struct segment_command_64 segment_command_t;
@@ -24,7 +28,7 @@ struct MachoInfo {
   segment_command_t *segDATA;
   segment_command_t *segLinkEdit;
 
-  void *binCodeStart;
+  addr_t binCodeStart;
 };
 
 class MachoManipulator {
@@ -38,11 +42,17 @@ private:
   MachoInfo machoInfo;
 
 public:
-  int MapFileToMemory(char *filePath, void **outDataPtr, size_t *outDataLength);
-
   void Load(char *inputFilePath);
 
   void AddSegment(char *segName, int segPermission);
+
+  segment_command_t *getSegment(char *segName);
+
+  section_t *getSection(char *sectName);
+
+  void *getSegmentContent(char *segName);
+
+  void *getSectionContent(char *sectName);
 
   void Dump(char *outputFilePath = NULL);
 };
