@@ -3,6 +3,4 @@
 
 #include "logging/cxxlogging.h"
 
-namespace zz {} // namespace zz
-
 #endif
