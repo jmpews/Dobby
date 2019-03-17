@@ -19,6 +19,8 @@
 
 #include <sys/mman.h>
 
+#include <fstream>
+
 #include "macros.h"
 
 static size_t _GetFileSize(char *filePath) {
@@ -144,7 +146,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   // check LIMIT
   int currentSize = sizeof(mach_header_t) + sizeofcmds;
   if (currentSize + sizeof(segment_command_t) >= machoInfo.binCodeStart) {
-    LOG("[!] ERROR: the cave between header and __text section is not enough for the new segment command.")
+      LOG("[!] ERROR: the cave between header and __text section is not enough for the new segment command.");
   }
 
   // insert the segment command.
@@ -221,34 +223,34 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
 
   addr_t copyPosition;
   int copyLength;
-  copyPosition = newMmapFileData;
+  copyPosition = (addr_t)newMmapFileData;
   copyLength = newSeg.fileoff;
   memcpy((void *) copyPosition, machoInfo.header, newSeg.fileoff);
 
-  copyPosition = newMmapFileData + newSeg.fileoff + newSegSize;
-  assert(copyPosition == ((addr_t)newMmapFileData+machoInfo.segLinkEdit.fileoff);
+  copyPosition = (addr_t)newMmapFileData + newSeg.fileoff + newSegSize;
+  assert(copyPosition == ((addr_t)newMmapFileData+machoInfo.segLinkEdit->fileoff));
   copyLength = mmapFileLength - newSeg.fileoff;
-  memcpy(copyPosition, (addr_t) machoInfo.header + newSeg.fileoff, copyLength);
+  memcpy((void *)copyPosition, (void *)((addr_t)machoInfo.header + newSeg.fileoff), copyLength);
 
   // update all info.
-  int mmapOffset = newMmapFileData;
-  mmapFileData += mmapOffset;
-  mmapFileLength += segSize;
+  addr_t mmapOffset = (addr_t)newMmapFileData - (addr_t)mmapFileData;
+  mmapFileData = (void *)((addr_t)mmapFileData + mmapOffset);
+  mmapFileLength += newSegSize;
 
-  (addr_t) machoInfo.header += mmapOffset;
-  (addr_t) machoInfo.segText += mmapOffset;
-  (addr_t) machoInfo.segDATA += mmapOffset;
-  (addr_t) machoInfo.segLinkEdit += mmapOffset;
+  machoInfo.header = (mach_header_t *)((addr_t)machoInfo.header + mmapOffset);
+  machoInfo.segTEXT = (segment_command_t *)((addr_t)machoInfo.segTEXT + mmapOffset);
+  machoInfo.segDATA = (segment_command_t *)((addr_t)machoInfo.segDATA + mmapOffset);
+  machoInfo.segLinkEdit = (segment_command_t *)((addr_t)machoInfo.segLinkEdit + mmapOffset);
 }
 
 
-void MachoManipulator::Dump(char *outputFilePath = NULL) {
+void MachoManipulator::Dump(char *outputFilePath) {
   string outputPath;
   if (!outputFilePath)
-    output = string(inputFilePath) + string("_modified")
+      outputPath = string(inputFilePath) + string("_modified");
 
   std::ofstream outputStream;
   outputStream.open(outputPath);
 
-  outputSteam.write(mmapFileData, mmapFileLength);
+  outputStream.write((const char *)mmapFileData, mmapFileLength);
 }

@@ -6,11 +6,10 @@
 
 #include <stdio.h>
 
-#include <LIEF/MachO.hpp>
+#include "MachOManipulator/MachOManipulator.h"
 
-using namespace LIEF;
 
-extern MachO::Binary *binary;
+extern MachoManipulator *mm;
 
 namespace zz {
 
@@ -21,11 +20,11 @@ int OSMemory::PageSize() {
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   void *result = NULL;
   if (access == kReadExecute) {
-    MachO::SegmentCommand *zTEXT = binary->get_segment("__zTEXT");
-    return (void *)zTEXT->virtual_address();
+      segment_command_t *zTEXT = mm->getSegment("__zTEXT");
+    return (void *)zTEXT->vmaddr;
   } else if (access == kReadWrite) {
-    MachO::SegmentCommand *zDATA = binary->get_segment("__zDATA");
-    return (void *)zDATA->virtual_address();
+      segment_command_t *zDATA = mm->getSegment("__zDATA");
+    return (void *)zDATA->vmaddr;
   } else {
     FATAL("Not Support the specific MemoryPermission!!!");
   }

@@ -10,33 +10,28 @@
 #include <sys/mman.h>
 #endif
 
-#include <LIEF/MachO.hpp>
+#include "MachOManipulator/MachOManipulator.h"
 
-using namespace LIEF;
 
-extern MachO::Binary *binary;
+extern MachoManipulator *mm;
 
 // the VirtualAddress is Allocate form OSMemory
 _MemoryOperationError CodePatch(void *virtualAddress, void *buffer, int size) {
-  MachO::SegmentCommand *zTEXT = binary->get_segment("__zTEXT");
-  int offset = (addr_t)virtualAddress - (addr_t)zTEXT->virtual_address();
+    segment_command_t *zTEXT = mm->getSegment("__zTEXT");
+  int offset = (addr_t)virtualAddress - (addr_t)zTEXT->vmaddr;
   
   // map the segment data -> mmap page
-  std::vector<uint8_t> content = zTEXT->content();
+  void *content = mm->getSegmentContent("__zTEXT");
 #if 0
-  addr_t zTEXTPage = (addr_t)mmap(0, 0x4000, PROT_READ|PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 255, 0);
+  addr_t zTEXTPage = (addr_t)mmap(0, zTEXT->size, PROT_READ|PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 255, 0);
 #else
-  addr_t zTEXTPage = (addr_t)malloc(0x4000);
+  addr_t zTEXTPage = (addr_t)malloc(zTEXT->vmsize);
 #endif
 
-  memcpy((void *)zTEXTPage, &content[0], content.size());
+  memcpy((void *)zTEXTPage, content, zTEXT->vmsize);
 
   // patch the buffer
   memcpy((void *)(zTEXTPage + offset), buffer, size);
-  
-  // map to the origin segmeng
-  std::vector<uint8_t> rewrite_content((uint8_t *)zTEXTPage, (uint8_t *)(zTEXTPage+0x4000));
-  zTEXT->content(rewrite_content);
   
   return kMemoryOperationSuccess;
 }

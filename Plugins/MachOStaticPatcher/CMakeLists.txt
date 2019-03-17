@@ -96,9 +96,11 @@ add_executable(MachOStaticPatcher
 add_subdirectory(${PrimaryPath}/OneLib onelib.out)
 target_link_libraries(MachOStaticPatcher logging stdcxx)
 
+if(0)
 target_link_libraries(MachOStaticPatcher
     LIB_LIEF
 )
+endif()
 
 if (MSVC)
     # Used for the 'and', 'or' ... keywords - See: http://www.cplusplus.com/reference/ciso646/
