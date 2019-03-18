@@ -20,6 +20,7 @@ _MemoryOperationError CodePatch(void *virtualAddress, void *buffer, int size) {
     segment_command_t *zTEXT = mm->getSegment("__zTEXT");
   int offset = (addr_t)virtualAddress - (addr_t)zTEXT->vmaddr;
   
+#if 0
   // map the segment data -> mmap page
   void *content = mm->getSegmentContent("__zTEXT");
 #if 0
@@ -29,9 +30,9 @@ _MemoryOperationError CodePatch(void *virtualAddress, void *buffer, int size) {
 #endif
 
   memcpy((void *)zTEXTPage, content, zTEXT->vmsize);
-
   // patch the buffer
   memcpy((void *)(zTEXTPage + offset), buffer, size);
+#endif
   
   return kMemoryOperationSuccess;
 }

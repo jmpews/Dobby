@@ -54,8 +54,8 @@ static int _MapFileToMemory(char *filePath, void **outDataPtr, size_t *outDataLe
   int fileSize;
   struct stat statInfo;
 
-  outError = 0;
-  *outDataPtr = NULL;
+  outError       = 0;
+  *outDataPtr    = NULL;
   *outDataLength = 0;
 
   do {
@@ -86,29 +86,35 @@ static int _MapFileToMemory(char *filePath, void **outDataPtr, size_t *outDataLe
 }
 
 void MachoManipulator::Load(char *inputFilePath) {
+#if 0
   size_t mmapFileLength;
   char *mmapFileData = NULL;
-  _MapFileToMemory(inputFilePath, (void **) &mmapFileData, (size_t *) &mmapFileLength);
+#endif
+  
+  this->inputFilePath = inputFilePath;
+  
+  _MapFileToMemory(inputFilePath, (void **)&mmapFileData, (size_t *)&mmapFileLength);
 
   if (!mmapFileData)
     Logger::LogFatal("[!] load %s failed.", inputFilePath);
 
-  machoInfo.header = (mach_header_t *) mmapFileData;
+  machoInfo.header = (mach_header_t *)mmapFileData;
 
   struct load_command *load_cmd;
   segment_command_t *seg_cmd;
   section_t *sect;
   // initialize the segment info
-  load_cmd = (struct load_command *) ((addr_t) machoInfo.header + sizeof(mach_header_t));
+  load_cmd = (struct load_command *)((addr_t)machoInfo.header + sizeof(mach_header_t));
   for (int i = 0; i < machoInfo.header->ncmds;
-       i++, load_cmd = (struct load_command *) ((addr_t) load_cmd + load_cmd->cmdsize)) {
+       i++, load_cmd = (struct load_command *)((addr_t)load_cmd + load_cmd->cmdsize)) {
     if (load_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
-      seg_cmd = (segment_command_t *) load_cmd;
+      seg_cmd = (segment_command_t *)load_cmd;
       if (!strcmp(seg_cmd->segname, "__LINKEDIT"))
         machoInfo.segLinkEdit = seg_cmd;
       else if (!strcmp(seg_cmd->segname, "__TEXT")) {
         machoInfo.segTEXT = seg_cmd;
-        for (int j = 0; j < seg_cmd->nsects; j++, sect = (section_t *) ((addr_t) sect + sizeof(section_t))) {
+        sect              = (section_t *)((addr_t)seg_cmd + sizeof(segment_command_t));
+        for (int j = 0; j < seg_cmd->nsects; j++, sect = (section_t *)((addr_t)sect + sizeof(section_t))) {
           if (!strcmp(sect->sectname, "__text")) {
             machoInfo.binCodeStart = sect->offset;
           }
@@ -120,7 +126,7 @@ void MachoManipulator::Load(char *inputFilePath) {
 }
 
 void MachoManipulator::AddSegment(char *segName, int segPermission) {
-  mach_header_t *fileHeader = (mach_header_t *) mmapFileData;
+  mach_header_t *fileHeader = (mach_header_t *)mmapFileData;
   struct load_command *load_cmd;
   segment_command_t *seg_linkedit;
 
@@ -130,48 +136,55 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   int newSegSize = 0x4000; // default segment size align
 
   // prepare insert the segment before the LinkEdit segment.
-  addr_t new_vmaddr = machoInfo.segLinkEdit->vmaddr;
+  addr_t new_vmaddr  = machoInfo.segLinkEdit->vmaddr;
   addr_t new_fileoff = machoInfo.segLinkEdit->fileoff;
-  addr_t sizeofcmds = machoInfo.header->sizeofcmds;
+  addr_t sizeofcmds  = machoInfo.header->sizeofcmds;
 
   // new segment command
-  memcpy(newSeg.segname, segName, strlen(segName));
-  newSeg.vmsize = newSegSize;
+  int cmdsize = sizeof(segment_command_t);
+  memcpy((void *)&newSeg, (void *)machoInfo.segLinkEdit, cmdsize);
+  memcpy(newSeg.segname, segName, strlen(segName) + 1 );
+  newSeg.vmsize   = newSegSize;
   newSeg.filesize = newSegSize;
-  newSeg.vmaddr = new_vmaddr;
-  newSeg.fileoff = new_fileoff;
-  newSeg.maxprot = segPermission;
+  newSeg.vmaddr   = new_vmaddr;
+  newSeg.fileoff  = new_fileoff;
+  newSeg.maxprot  = segPermission;
   newSeg.initprot = segPermission;
 
   // check LIMIT
   int currentSize = sizeof(mach_header_t) + sizeofcmds;
   if (currentSize + sizeof(segment_command_t) >= machoInfo.binCodeStart) {
-      LOG("[!] ERROR: the cave between header and __text section is not enough for the new segment command.");
+    FATAL("[!] ERROR: the cave between header and __text section is not enough for the new segment command.");
   }
 
   // insert the segment command.
   // dyld ensure/check all the segment_command must before the LinkEdit segment.
-  int shiftOffset = (addr_t) machoInfo.segLinkEdit - (addr_t) machoInfo.header;
-  int shiftSize = machoInfo.binCodeStart - shiftOffset;
-  addr_t shiftAddr = (addr_t) machoInfo.header + shiftOffset;
+  int shiftOffset  = (addr_t)machoInfo.segLinkEdit - (addr_t)machoInfo.header;
+  int shiftSize    = currentSize - shiftOffset;
+  addr_t shiftAddr = (addr_t)machoInfo.header + shiftOffset;
 
   // shift the old linkedit.
-  memmove((void *) (shiftAddr + sizeof(segment_command_t)), (void *) shiftAddr, shiftSize);
+  memmove((void *)(shiftAddr + sizeof(segment_command_t)), (void *)shiftAddr, shiftSize);
   // insert the new seg
-  memcpy((void *) shiftAddr, &newSeg, sizeof(segment_command_t));
+  memcpy((void *)shiftAddr, &newSeg, sizeof(segment_command_t));
 
   // reset the LinkEdit segment
-  machoInfo.segLinkEdit = (segment_command_t *) (shiftAddr + sizeof(segment_command_t));
+  machoInfo.segLinkEdit = (segment_command_t *)(shiftAddr + sizeof(segment_command_t));
   machoInfo.segLinkEdit->vmaddr += newSegSize;
-  machoInfo.segLinkEdit->fileoff = newSegSize;
+  machoInfo.segLinkEdit->fileoff += newSegSize;
   LOG("[-] fix linkedit load_command done\n");
+  
+  // fix header
+  machoInfo.header->ncmds += 1;
+  machoInfo.header->sizeofcmds += newSeg.cmdsize;
+  printf("[-] fix header done\n");
 
   // fix load_command
-  load_cmd = (struct load_command *) ((addr_t) machoInfo.header + sizeof(mach_header_t));
+  load_cmd = (struct load_command *)((addr_t)machoInfo.header + sizeof(mach_header_t));
   for (int i = 0; i < machoInfo.header->ncmds;
-       i++, load_cmd = (struct load_command *) ((addr_t) load_cmd + load_cmd->cmdsize)) {
+       i++, load_cmd = (struct load_command *)((addr_t)load_cmd + load_cmd->cmdsize)) {
     if (load_cmd->cmd == LC_DYLD_INFO_ONLY) {
-      struct dyld_info_command *tmp = (struct dyld_info_command *) load_cmd;
+      struct dyld_info_command *tmp = (struct dyld_info_command *)load_cmd;
       tmp->rebase_off += newSegSize;
       tmp->bind_off += newSegSize;
       if (tmp->weak_bind_off)
@@ -183,7 +196,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
       LOG("[-] fix LC_DYLD_INFO_ONLY done\n");
     }
     if (load_cmd->cmd == LC_SYMTAB) {
-      struct symtab_command *tmp = (struct symtab_command *) load_cmd;
+      struct symtab_command *tmp = (struct symtab_command *)load_cmd;
       if (tmp->symoff)
         tmp->symoff += newSegSize;
       if (tmp->stroff)
@@ -191,7 +204,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
       LOG("[-] fix LC_SYMTAB done\n");
     }
     if (load_cmd->cmd == LC_DYSYMTAB) {
-      struct dysymtab_command *tmp = (struct dysymtab_command *) load_cmd;
+      struct dysymtab_command *tmp = (struct dysymtab_command *)load_cmd;
       if (tmp->tocoff)
         tmp->tocoff += newSegSize;
       if (tmp->modtaboff)
@@ -207,7 +220,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
       LOG("[-] fix LC_DYSYMTAB done\n");
     }
     if (load_cmd->cmd == LC_FUNCTION_STARTS || load_cmd->cmd == LC_DATA_IN_CODE) {
-      struct linkedit_data_command *tmp = (struct linkedit_data_command *) load_cmd;
+      struct linkedit_data_command *tmp = (struct linkedit_data_command *)load_cmd;
       if (tmp->dataoff)
         tmp->dataoff += newSegSize;
       LOG("[-] fix LC_FUNCTION_STARTS/LC_DATA_IN_CODE done\n");
@@ -215,42 +228,93 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   }
 
   //  insert the segment content.
-
-  void *newMmapFileData = mmap(0, mmapFileLength + newSegSize, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1,
-                               0);
+  void *newMmapFileData =
+      mmap(0, mmapFileLength + newSegSize, PROT_WRITE | PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (!newMmapFileData)
     Logger::LogFatal(strerror(errno));
 
   addr_t copyPosition;
   int copyLength;
   copyPosition = (addr_t)newMmapFileData;
-  copyLength = newSeg.fileoff;
-  memcpy((void *) copyPosition, machoInfo.header, newSeg.fileoff);
+  copyLength   = newSeg.fileoff;
+  memcpy((void *)copyPosition, machoInfo.header, newSeg.fileoff);
+  
 
   copyPosition = (addr_t)newMmapFileData + newSeg.fileoff + newSegSize;
-  assert(copyPosition == ((addr_t)newMmapFileData+machoInfo.segLinkEdit->fileoff));
+  assert(copyPosition == ((addr_t)newMmapFileData + machoInfo.segLinkEdit->fileoff));
   copyLength = mmapFileLength - newSeg.fileoff;
   memcpy((void *)copyPosition, (void *)((addr_t)machoInfo.header + newSeg.fileoff), copyLength);
 
   // update all info.
   addr_t mmapOffset = (addr_t)newMmapFileData - (addr_t)mmapFileData;
-  mmapFileData = (void *)((addr_t)mmapFileData + mmapOffset);
+  mmapFileData      = (void *)((addr_t)mmapFileData + mmapOffset);
   mmapFileLength += newSegSize;
 
-  machoInfo.header = (mach_header_t *)((addr_t)machoInfo.header + mmapOffset);
-  machoInfo.segTEXT = (segment_command_t *)((addr_t)machoInfo.segTEXT + mmapOffset);
-  machoInfo.segDATA = (segment_command_t *)((addr_t)machoInfo.segDATA + mmapOffset);
+  machoInfo.header      = (mach_header_t *)((addr_t)machoInfo.header + mmapOffset);
+  machoInfo.segTEXT     = (segment_command_t *)((addr_t)machoInfo.segTEXT + mmapOffset);
+  machoInfo.segDATA     = (segment_command_t *)((addr_t)machoInfo.segDATA + mmapOffset);
   machoInfo.segLinkEdit = (segment_command_t *)((addr_t)machoInfo.segLinkEdit + mmapOffset);
 }
-
 
 void MachoManipulator::Dump(char *outputFilePath) {
   string outputPath;
   if (!outputFilePath)
-      outputPath = string(inputFilePath) + string("_modified");
+    outputPath = string(inputFilePath) + string("_modified");
 
   std::ofstream outputStream;
   outputStream.open(outputPath);
 
   outputStream.write((const char *)mmapFileData, mmapFileLength);
+}
+
+segment_command_t *MachoManipulator::getSegment(char *segName) {
+  struct load_command *load_cmd;
+  segment_command_t *seg_cmd;
+  section_t *sect;
+  // initialize the segment info
+  load_cmd = (struct load_command *)((addr_t)machoInfo.header + sizeof(mach_header_t));
+  for (int i = 0; i < machoInfo.header->ncmds;
+       i++, load_cmd = (struct load_command *)((addr_t)load_cmd + load_cmd->cmdsize)) {
+    if (load_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      seg_cmd = (segment_command_t *)load_cmd;
+      if (!strcmp(seg_cmd->segname, segName))
+        return seg_cmd;
+    }
+  }
+  return NULL;
+}
+
+section_t *MachoManipulator::getSection(char *sectName) {
+  struct load_command *load_cmd;
+  segment_command_t *seg_cmd;
+  section_t *sect;
+  // initialize the segment info
+  load_cmd = (struct load_command *)((addr_t)machoInfo.header + sizeof(mach_header_t));
+  for (int i = 0; i < machoInfo.header->ncmds;
+       i++, load_cmd = (struct load_command *)((addr_t)load_cmd + load_cmd->cmdsize)) {
+    if (load_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      seg_cmd = (segment_command_t *)load_cmd;
+      sect    = (section_t *)((addr_t)seg_cmd + sizeof(segment_command_t));
+      for (int j = 0; j < seg_cmd->nsects; j++, sect = (section_t *)((addr_t)sect + sizeof(section_t))) {
+        if (!strcmp(sect->sectname, sectName)) {
+          return sect;
+        }
+      }
+    }
+  }
+  return NULL;
+}
+
+void *MachoManipulator::getSegmentContent(char *segName) {
+  segment_command_t *seg_cmd = getSegment(segName);
+  size_t fileoff             = seg_cmd->fileoff;
+  void *content              = (void *)((addr_t)machoInfo.header + fileoff);
+  return content;
+}
+
+void *MachoManipulator::getSectionContent(char *sectName) {
+  section_t *sect = getSection(sectName);
+  size_t fileoff  = sect->offset;
+  void *content   = (void *)((addr_t)machoInfo.header + fileoff);
+  return content;
 }
