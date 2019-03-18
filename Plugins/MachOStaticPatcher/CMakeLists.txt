@@ -50,8 +50,6 @@ set(HookZz.SOURCE_FILE
     ${PrimaryPath}/srcxx/ExecMemory/ExecutableMemoryArena.cc
     ${PrimaryPath}/srcxx/ExecMemory/PageAllocator.cc
 
-    ${PrimaryPath}/srcxx/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
-
     # InterceptRouting
     ${PrimaryPath}/srcxx/InterceptRouting/InterceptRouting.cpp
 
@@ -69,6 +67,7 @@ set(HookZzStatic.SOURCE_FILE
     hookzz/StaticMode/ExecMemory/code-patch-tool-static.cc
     hookzz/StaticMode/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
     hookzz/StaticMode/PlatformInterface/Common/platform-static.cc
+    hookzz/StaticMode/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
 )
 
 set(MachOManipulator.SOURCE_FILE

@@ -5,17 +5,18 @@
 
 class Logger {
 public:
-  static void initialize(const char *log_tag, const char *log_file, int log_level) {
+  static void LogFatal(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    printf("[!] FATAL: ");
+    vprintf(fmt, args);
+    va_end(args);
   }
 
-  static void Log(int level, const char *file, int line, const char *fmt, ...){};
-
-  static void LogFatal(const char *fmt, ...);
-
 private:
-  static char *log_tag_;
-  static char *log_file_;
-  static int log_level_;
+  static char *tag_;
+  static char *file_;
+  static int level_;
 };
 
 #endif

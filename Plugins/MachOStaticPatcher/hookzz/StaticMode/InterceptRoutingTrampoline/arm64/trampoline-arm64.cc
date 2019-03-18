@@ -11,8 +11,7 @@ CodeBuffer *GenTrampoline(void *from, void *to) {
   
   uint64_t from_PAGE = ALIGN(from , 0x1000);
   uint64_t to_PAGE = ALIGN(to, 0x1000);
-  
-  uint64_t to_PAGEOFF = (uint64_t)from % 0x1000;
+  uint64_t to_PAGEOFF = (uint64_t)to % 0x1000;
   
   _ adrp(X(17), to_PAGE - from_PAGE);
   _ add(X(17), X(17), to_PAGEOFF);

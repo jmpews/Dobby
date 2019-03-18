@@ -618,6 +618,15 @@ public:
     movk(rd, h2, 32);
     movk(rd, h3, 48);
   }
+  
+  void AdrpAddMov(Register rd, uint64_t from,  uint64_t to) {
+    uint64_t from_PAGE = ALIGN(from , 0x1000);
+    uint64_t to_PAGE = ALIGN(to, 0x1000);
+    uint64_t to_PAGEOFF = (uint64_t)to % 0x1000;
+    
+    adrp(rd, to_PAGE - from_PAGE);
+    add(rd, rd, to_PAGEOFF);
+  }
 
 private:
 };

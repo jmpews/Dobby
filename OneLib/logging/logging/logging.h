@@ -13,7 +13,7 @@ extern int (*LOGFUNC)(const char *, ...);
 
 #define LOG(str, ...)                                                                                                  \
   do {                                                                                                                 \
-    LOGFUNC(str, ##__VA_ARGS__);                                                                                    \
+    LOGFUNC(str, ##__VA_ARGS__);                                                                                       \
   } while (0)
 
 #if defined(DEBUG)
@@ -24,7 +24,9 @@ extern int (*LOGFUNC)(const char *, ...);
 
 #define FATAL(str, ...)                                                                                                \
   do {                                                                                                                 \
-LOG("[!] " " [%s:%d:%s]\n" str, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                                          \
+    LOG("[!] "                                                                                                         \
+        " [%s:%d:%s]\n" str,                                                                                           \
+        __FILE__, __LINE__, __func__, ##__VA_ARGS__);                                                                  \
     /* exit(-1); */                                                                                                    \
   } while (0)
 
