@@ -31,7 +31,7 @@ typedef struct _HookEntry {
 
   HookEntryType type;
 
-  void *trampoline_target;
+  void *route;
 
   // fixed-instructions which we relocated(patched).
   union {

@@ -1,5 +1,5 @@
-#ifndef FUNCTION_WRAPPER_H_
-#define FUNCTION_WRAPPER_H_
+#ifndef FUNCTION_INLINE_REPLACE_H_
+#define FUNCTION_INLINE_REPLACE_H_
 
 #include "hookzz_internal.h"
 
@@ -25,7 +25,8 @@ using namespace zz::arm;
 
 class FunctionInlineReplaceRouting : public InterceptRouting {
 public:
-  FunctionInlineReplaceRouting(HookEntry *entry) : InterceptRouting(entry) {
+  FunctionInlineReplaceRouting(HookEntry *entry, void *replace_call) : InterceptRouting(entry) {
+    this->replace_call = replace_call;
   }
 
   void *GetTrampolineTarget();
@@ -34,6 +35,9 @@ public:
 
 private:
   virtual void BuildReplaceRouting();
+
+private:
+  void *replace_call;
 };
 
 #endif

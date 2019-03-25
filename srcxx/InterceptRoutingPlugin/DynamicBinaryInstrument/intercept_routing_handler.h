@@ -5,14 +5,8 @@
 #include "Interceptor.h"
 #include "hookzz_internal.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif //__cplusplus
-
 void instrument_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
-
-#ifdef __cplusplus
 }
-#endif //__cplusplus
 
 #endif

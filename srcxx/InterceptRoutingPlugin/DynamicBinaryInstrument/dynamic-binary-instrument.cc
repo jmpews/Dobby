@@ -5,14 +5,8 @@
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "intercept_routing_handler.h"
-
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
-
-#include "core/modules/assembler/assembler-x64.h"
-#include "core/modules/codegen/codegen-x64.h"
-
-#include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-x64.h"
+#include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
+#include "InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.h"
 
 void DynamicBinaryInstrumentRouting::Dispatch() {
   Prepare();
@@ -31,5 +25,5 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
 }
 
 void *DynamicBinaryInstrumentRouting::GetTrampolineTarget() {
-  return prologue_dispatch_bridge;
+  return this->prologue_dispatch_bridge;
 }
