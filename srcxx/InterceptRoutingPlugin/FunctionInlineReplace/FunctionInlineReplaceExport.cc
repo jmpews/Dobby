@@ -8,6 +8,10 @@
 #include "InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
 PUBLIC int ZzReplace(void *function_address, void *replace_call, void **origin_call) {
+
+  if (!function_address)
+    FATAL("[!] ERROR: the function address is 0x0.\n");
+
   DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
