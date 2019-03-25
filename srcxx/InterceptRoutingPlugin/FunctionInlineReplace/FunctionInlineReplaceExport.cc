@@ -16,13 +16,12 @@ PUBLIC int ZzReplace(void *function_address, void *replace_call, void **origin_c
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
-  HookEntry *entry         = new HookEntry();
-  entry->id                = interceptor->entries->getCount();
-  entry->trampoline_target = replace_call;
-  entry->type              = kFunctionInlineHook;
-  entry->function_address  = function_address;
+  HookEntry *entry        = new HookEntry();
+  entry->id               = interceptor->entries->getCount();
+  entry->type             = kFunctionInlineHook;
+  entry->function_address = function_address;
 
-  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry);
+  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, replace_call);
   route->Dispatch();
   interceptor->AddHookEntry(entry);
 

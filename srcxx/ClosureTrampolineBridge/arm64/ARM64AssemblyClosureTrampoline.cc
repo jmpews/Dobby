@@ -37,9 +37,9 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ Ldr(x17, &ForwardCode_ClosureBridge);
   _ br(x17);
   _ PseudoBind(&ClosureTrampolineEntry);
-  _ EmitInt64((addr_t)entry);
+  _ EmitInt64((uint64_t)entry);
   _ PseudoBind(&ForwardCode_ClosureBridge);
-  _ EmitInt64((addr_t)get_closure_bridge());
+  _ EmitInt64((uint64_t)get_closure_bridge());
   // ===
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));

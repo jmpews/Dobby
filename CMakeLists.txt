@@ -203,7 +203,8 @@ set(Target.SOURCE_FILES ${Target.SOURCE_FILES} ${Target.srcxx.InterceptRoutingTr
 # srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument
 if(Plugin.DynamicBinaryInstrument)
     set(Target.srcxx.InterceptRoutingPlugin.DynamicBinaryInstrument.FILES
-        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-${arch1}.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
+        ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
         ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
         ${Target.path}/srcxx/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
     )

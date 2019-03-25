@@ -3,22 +3,24 @@
 #include "logging/logging.h"
 
 #include "Interceptor.h"
-#include "InterceptRouting.h"
+#include "InterceptRouting/InterceptRouting.h"
 
-#include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument-x64.h"
+#include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
-PUBLIC RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL dbi_call) {
+PUBLIC RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL handler) {
+  if (!inst_address)
+    FATAL("[!] ERROR: the function address is 0x0.\n");
+
   DLOG("[*] Initialize 'ZzDynamicBinaryInstrument' hook at %p\n", inst_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
   HookEntry *entry           = new HookEntry();
   entry->id                  = interceptor->entries->getCount();
-  entry->dbi_call            = dbi_call;
   entry->type                = kDynamicBinaryInstrument;
   entry->instruction_address = inst_address;
 
-  DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry);
+  DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry, (void *)handler);
   route->Dispatch();
   interceptor->AddHookEntry(entry);
   route->Commit();

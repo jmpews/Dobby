@@ -14,6 +14,7 @@ extern zz::AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_
 class InterceptRouting {
 public:
   InterceptRouting(HookEntry *entry) : entry_(entry) {
+    entry->route = this;
   }
 
   virtual void Dispatch() = 0;
