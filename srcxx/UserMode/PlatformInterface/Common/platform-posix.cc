@@ -31,6 +31,8 @@
 #include <mach/vm_statistics.h>
 #endif
 
+#include <string.h>
+
 namespace zz {
 
 #if defined(__APPLE__)

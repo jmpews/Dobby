@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:HookZzExample.xcodeproj">
+      location = "self:HookExample.xcodeproj">
    </FileRef>
 </Workspace>

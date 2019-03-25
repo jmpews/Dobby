@@ -16,8 +16,8 @@ extern int (*LOGFUNC)(const char *, ...);
     LOGFUNC(str, ##__VA_ARGS__);                                                                                       \
   } while (0)
 
-#if defined(DEBUG)
-#define DLOG(fmt, ...) LOG(fmt, __VA_ARGS__)
+#if defined(Z_DEBUG)
+#define DLOG(fmt, ...) LOG(fmt, ##__VA_ARGS__)
 #else
 #define DLOG(fmt, ...)
 #endif
