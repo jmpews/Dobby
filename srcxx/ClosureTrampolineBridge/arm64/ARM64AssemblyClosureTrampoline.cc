@@ -13,10 +13,11 @@ using namespace zz;
 using namespace zz::arm64;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
-
   ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
 
+// Use the template assembly code.
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
+
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
   // use closure trampoline template code, find the executable memory and patch it.
   Code *code = Code::FinalizeCodeFromAddress(closure_trampoline_template, CLOSURE_TRAMPOLINE_SIZE);
