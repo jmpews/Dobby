@@ -247,6 +247,20 @@ public:
   }
 
   void jmp(Immediate imm);
+
+  void sub(Register reg, Immediate imm);
+
+  void mov(Register dst, Register src);
+
+  void mov(Register reg, Immediate imm);
+
+  void mov(Register dst, Address *src);
+
+  void call(Address *operand);
+
+  void pop(Register reg);
+
+  void ret();
 };
 
 // ===== TurboAssembler =====

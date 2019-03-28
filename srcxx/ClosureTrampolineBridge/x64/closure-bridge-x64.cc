@@ -24,6 +24,13 @@ void *get_closure_bridge() {
 
 // otherwise, use the Assembler build the closure_bridge
 #define _ turbo_assembler_.
+#define __ turbo_assembler_.GetCodeBuffer()->
+
+  char *pushfq = "\x9c";
+  char *popfq = "\x9c";
+
   TurboAssembler turbo_assembler_;
+
+  __ EmitBuffer(pushfd, 1);
 
 }
