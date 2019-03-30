@@ -3,23 +3,27 @@ project(HookZzExample)
 
 set(PrimaryPath ..)
 
-include(${PrimaryPath}/cmake/Globals.cmake)
 include(${PrimaryPath}/cmake/Macros.cmake)
 
-set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_C_STANDARD 11)
-enable_language(ASM)
+
+set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
 
 add_subdirectory(${PrimaryPath} hookzz.out)
 
 add_executable(HookSimpleFunction
     ${PrimaryPath}/examples/HookSimpleFunction/HookSimpleFunction.cc
+    ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
 )
+
+include_directories(${PrimaryPath}/examples/YourHackL1b)
 
 target_link_libraries(HookSimpleFunction
     hookzz
+    stdc++fs
 )
 
 
