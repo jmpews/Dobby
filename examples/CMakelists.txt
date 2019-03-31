@@ -9,11 +9,13 @@ include(${PrimaryPath}/cmake/Macros.cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+SET_OPTION(Plugin.DynamicBinaryInstrument ON)
 add_subdirectory(${PrimaryPath} hookzz.out)
 
 add_executable(HookSimpleFunction
     ${PrimaryPath}/examples/HookSimpleFunction/HookSimpleFunction.cc
     ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
+    ${PrimaryPath}/examples/YourHackL1b/AssemblyDynamicBinaryInstrument.cpp
 )
 
 include_directories(${PrimaryPath}/examples/YourHackL1b)

@@ -69,17 +69,14 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #elif defined(_M_X64) || defined(__x86_64__)
 typedef struct _RegisterContext {
-  uint64_t dummy;
+  uint64_t flags;
   union {
     struct {
-      uint64_t dummy;
+      uint64_t r15, r14, r13, r12, r11, r10, r9, r8, rsi, rdi, rsp, rbp, rdx, rcx, rbx, rax;
     } regs;
   } general;
-
 } RegisterContext;
 #endif
-
-// #define REG_SP(reg_ctx) (void *)((uintptr_t)reg_ctx + sizeof(RegisterContext))
 
 typedef enum _RetStatus {
     kUnknown = -1,
@@ -103,18 +100,19 @@ typedef struct _HookEntryInfo {
   }; 
 }HookEntryInfo;
 
+#if 0
+// wrap function with pre_call and post_call
 typedef void (*PRECALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*POSTCALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-typedef void (*DBICALL)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-
-// wrap function with pre_call and post_call
-RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
+int ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call);
+#endif
 
 // replace function
 int ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
-RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL dbi_call);
+typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
+int ZzDynamicBinaryInstrument(void *inst_address, DBICallTy dbi_call);
 
 #ifdef __cplusplus
 }

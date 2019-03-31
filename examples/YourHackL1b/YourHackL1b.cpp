@@ -67,7 +67,7 @@ __attribute__((constructor)) void __main() {
   ZzReplace((void *)fread, (void *)fake_fread, (void **)&orig_fread);
   
   char *home = getenv("HOME");
-  char *subdir = "/Library/Caches/";
+  char *subdir = (char *)"/Library/Caches/";
 
   std::string filePath = std::string(home) + std::string(subdir) + "temp.log";
   
