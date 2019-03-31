@@ -6,11 +6,8 @@ set(PrimaryPath ..)
 include(${PrimaryPath}/cmake/Macros.cmake)
 
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_REQUIRED_FLAGS -std=c++17)
-
 
 add_subdirectory(${PrimaryPath} hookzz.out)
 
@@ -23,7 +20,6 @@ include_directories(${PrimaryPath}/examples/YourHackL1b)
 
 target_link_libraries(HookSimpleFunction
     hookzz
-    stdc++fs
 )
 
 

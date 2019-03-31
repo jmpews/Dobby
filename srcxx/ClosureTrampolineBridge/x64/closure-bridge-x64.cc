@@ -32,5 +32,6 @@ void *get_closure_bridge() {
   TurboAssembler turbo_assembler_;
 
   __ EmitBuffer(pushfd, 1);
+  _ sub(R(sp), )
 
 }
