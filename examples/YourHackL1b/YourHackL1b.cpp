@@ -16,40 +16,58 @@
 
 #include <iostream>
 
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <set>
 
+#include <unordered_map>
+
+std::unordered_map<FILE *, const char *> *TracedFileList;
 
 FILE *(*orig_fopen)(const char *filename, const char *mode);
 FILE *fake_fopen(const char *filename, const char *mode) {
-  printf("fopen: %s\n", filename);
-  return orig_fopen(filename, mode);
+  std::cout << "[-] trace file: " << filename << std::endl;
+  FILE *result = NULL;
+  result = orig_fopen(filename, mode);
+  TracedFileList->insert(std::make_pair(result, filename));
+  return result;
+}
+
+const char *GetFileDescriptorTraced(FILE *file) {
+  std::unordered_map<FILE *, const char *>::iterator it;
+  it = TracedFileList->find(file);
+  if(it != TracedFileList->end())
+    return it->second;
+  return NULL;
 }
 
 size_t (*orig_fread)(void *ptr, size_t size, size_t count, FILE *stream);
 size_t fake_fread(void *ptr, size_t size, size_t count, FILE *stream) {
-  printf("fread: %p\n", ptr);
+  const char *file_name = GetFileDescriptorTraced(stream);
+  if(file_name) {
+    printf("[-] fread %s\n    to %p\n", file_name, ptr);
+  }
   return orig_fread(ptr, size, count, stream);
 }
 
 size_t (*orig_fwrite)(const void * ptr, size_t size, size_t count, FILE * stream);
 size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
-  printf("fwrite: %p\n", ptr);
-  memset(ptr, 'A', size * count);
+  const char *file_name = GetFileDescriptorTraced(stream);
+  if(file_name) {
+    printf("[-] fwrite %s\n    from %p\n", file_name, ptr);
+  }
   return orig_fwrite(ptr, size, count, stream);
 }
 
 
-__attribute__((constructor)) void _main() {
-  
+__attribute__((constructor)) void __main() {
+
+  TracedFileList = new std::unordered_map<FILE *, const char *>();
+
   ZzReplace((void *)fopen, (void *)fake_fopen, (void **)&orig_fopen);
   ZzReplace((void *)fwrite, (void *)fake_fwrite, (void **)&orig_fwrite);
   ZzReplace((void *)fread, (void *)fake_fread, (void **)&orig_fread);
   
   char *home = getenv("HOME");
   char *subdir = "/Library/Caches/";
-
-  std::cout << "Current path is " << fs::current_path() << '\n';
 
   std::string filePath = std::string(home) + std::string(subdir) + "temp.log";
   

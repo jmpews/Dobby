@@ -13,9 +13,9 @@
 		F39009F02248BEFB00CF0F9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F39009EF2248BEFB00CF0F9B /* Assets.xcassets */; };
 		F39009F32248BEFB00CF0F9B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F39009F12248BEFB00CF0F9B /* LaunchScreen.storyboard */; };
 		F39009F62248BEFB00CF0F9B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F39009F52248BEFB00CF0F9B /* main.m */; };
-		F3900A012248C08A00CF0F9B /* YourHackL1b.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F39009FF2248C08A00CF0F9B /* YourHackL1b.cpp */; };
 		F3900A072248C63100CF0F9B /* libhookzz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F3900A062248C63100CF0F9B /* libhookzz.dylib */; };
 		F3900A082248C63B00CF0F9B /* libhookzz.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = F3900A062248C63100CF0F9B /* libhookzz.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F3AF10FD2250D3C100115B97 /* YourHackL1b.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,9 +43,9 @@
 		F39009F22248BEFB00CF0F9B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F39009F42248BEFB00CF0F9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F39009F52248BEFB00CF0F9B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		F39009FF2248C08A00CF0F9B /* YourHackL1b.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = YourHackL1b.cpp; sourceTree = "<group>"; };
-		F3900A002248C08A00CF0F9B /* YourHackL1b.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = YourHackL1b.hpp; sourceTree = "<group>"; };
 		F3900A062248C63100CF0F9B /* libhookzz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libhookzz.dylib; sourceTree = "<group>"; };
+		F3AF10FB2250D3C100115B97 /* YourHackL1b.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = YourHackL1b.hpp; sourceTree = "<group>"; };
+		F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YourHackL1b.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +63,7 @@
 		F39009DA2248BEF900CF0F9B = {
 			isa = PBXGroup;
 			children = (
+				F3AF10FA2250D3C100115B97 /* YourHackL1b */,
 				F39009FC2248BFFC00CF0F9B /* HookZzL1b */,
 				F39009E52248BEF900CF0F9B /* HookExample */,
 				F39009E42248BEF900CF0F9B /* Products */,
@@ -89,8 +90,6 @@
 				F39009F12248BEFB00CF0F9B /* LaunchScreen.storyboard */,
 				F39009F42248BEFB00CF0F9B /* Info.plist */,
 				F39009F52248BEFB00CF0F9B /* main.m */,
-				F39009FF2248C08A00CF0F9B /* YourHackL1b.cpp */,
-				F3900A002248C08A00CF0F9B /* YourHackL1b.hpp */,
 			);
 			path = HookExample;
 			sourceTree = "<group>";
@@ -101,6 +100,16 @@
 				F3900A062248C63100CF0F9B /* libhookzz.dylib */,
 			);
 			path = HookZzL1b;
+			sourceTree = "<group>";
+		};
+		F3AF10FA2250D3C100115B97 /* YourHackL1b */ = {
+			isa = PBXGroup;
+			children = (
+				F3AF10FB2250D3C100115B97 /* YourHackL1b.hpp */,
+				F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */,
+			);
+			name = YourHackL1b;
+			path = ../../../YourHackL1b;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,6 +123,7 @@
 				F39009E02248BEF900CF0F9B /* Frameworks */,
 				F39009E12248BEF900CF0F9B /* Resources */,
 				F3900A092248C63B00CF0F9B /* Embed Libraries */,
+				F3AF10FE2250D47300115B97 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -169,13 +179,33 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		F3AF10FE2250D47300115B97 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F39009DF2248BEF900CF0F9B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F39009EB2248BEF900CF0F9B /* ViewController.m in Sources */,
-				F3900A012248C08A00CF0F9B /* YourHackL1b.cpp in Sources */,
+				F3AF10FD2250D3C100115B97 /* YourHackL1b.cpp in Sources */,
 				F39009F62248BEFB00CF0F9B /* main.m in Sources */,
 				F39009E82248BEF900CF0F9B /* AppDelegate.m in Sources */,
 			);
