@@ -1,6 +1,8 @@
 #include "ExecMemory/AssemblyCode.h"
 
 #include "core/modules/assembler/assembler.h"
+#include "core/modules/assembler/assembler-x64.h"
+#include "core/arch/x64/registers-x64.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
@@ -29,9 +31,10 @@ void *get_closure_bridge() {
   char *pushfq = "\x9c";
   char *popfq = "\x9c";
 
-  TurboAssembler turbo_assembler_;
+  TurboAssembler turbo_assembler_(0);
 
-  __ EmitBuffer(pushfd, 1);
-  _ sub(R(sp), )
+  __ EmitBuffer(pushfq, 1);
 
+#endif
+  return (void *)closure_bridge;
 }

@@ -7,7 +7,7 @@
 
 #include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
-PUBLIC RetStatus ZzDynamicBinaryInstrument(void *inst_address, DBICALL handler) {
+PUBLIC int ZzDynamicBinaryInstrument(void *inst_address, DBICallTy handler) {
   if (!inst_address)
     FATAL("[!] ERROR: the function address is 0x0.\n");
 

@@ -14,11 +14,11 @@
 void instrument_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   DynamicBinaryInstrumentRouting *route = (DynamicBinaryInstrumentRouting *)entry->route;
   if (route->handler) {
-    DBICALL handler;
+    DBICallTy handler;
     HookEntryInfo entry_info;
     entry_info.hook_id             = entry->id;
     entry_info.instruction_address = entry->instruction_address;
-    handler                        = (DBICALL)route->handler;
+    handler                        = (DBICallTy)route->handler;
     (*handler)(reg_ctx, (const HookEntryInfo *)&entry_info);
   }
 
