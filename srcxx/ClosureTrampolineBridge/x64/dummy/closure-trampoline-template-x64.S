@@ -11,8 +11,8 @@
 ; closure trampoline just carray the required members from the object.
 .globl cdecl(closure_trampoline_template)
 cdecl(closure_trampoline_template):
-    push [rip+8]
-    jmp [rip+8]
+    push [rip+6+6]
+    jmp [rip+6+8]
 carry_data:
     .long 0
     .long 0
