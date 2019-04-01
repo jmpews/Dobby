@@ -336,7 +336,7 @@ public:
     Emit_OperandEn_Register_Register(dst, src);
   }
 
-  void mov(Register dst, Address &src) {
+  void mov(Register dst, Address src) {
     EmitREX(dst);
     Emit1(0x8B);
     Emit_OperandEn_Register_Operand(dst, src);

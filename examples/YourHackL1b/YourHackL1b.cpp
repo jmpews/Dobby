@@ -58,7 +58,8 @@ size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
 }
 
 
-__attribute__((constructor)) void __main() {
+// __attribute__((constructor))
+void __main() {
 
   TracedFileList = new std::unordered_map<FILE *, const char *>();
 

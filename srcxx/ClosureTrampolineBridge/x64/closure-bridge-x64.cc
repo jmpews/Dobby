@@ -33,7 +33,61 @@ void *get_closure_bridge() {
 
   TurboAssembler turbo_assembler_(0);
 
+  // flags register
   __ EmitBuffer(pushfq, 1);
+
+  // general register
+  _ sub(rsp, Immediate(16*8));
+  _ mov(Address(rsp, 8*0),rax);
+  _ mov(Address(rsp, 8*1),rbx);
+  _ mov(Address(rsp, 8*2),rcx);
+  _ mov(Address(rsp, 8*3),rdx);
+  _ mov(Address(rsp, 8*4),rbp);
+  _ mov(Address(rsp, 8*5),rsp);
+  _ mov(Address(rsp, 8*6),rdi);
+  _ mov(Address(rsp, 8*7),rsi);
+  _ mov(Address(rsp, 8*8),r8);
+  _ mov(Address(rsp, 8*9),r9);
+  _ mov(Address(rsp, 8*10),r10);
+  _ mov(Address(rsp, 8*11),r11);
+  _ mov(Address(rsp, 8*12),r12);
+  _ mov(Address(rsp, 8*13),r13);
+  _ mov(Address(rsp, 8*14),r14);
+  _ mov(Address(rsp, 8*15),r15);
+
+
+  // ======= Jump to Common Bridge Handle =======
+
+  // prepare args
+  // @rdi: data_address
+  // @rsi: RegisterContext stack address
+
+  _ mov(rdi, rsp);
+  _ mov(rsi, Address(rsp, -16*8));
+  _ call(IPRelativeAddress(0));
+
+  // ======= RegisterContext Restore =======
+
+  // general register
+
+  _ pop(r15);
+  _ pop(r14);
+  _ pop(r13);
+  _ pop(r12);
+  _ pop(r11);
+  _ pop(r10);
+  _ pop(r9);
+  _ pop(r8);
+  _ pop(rsi);
+  _ pop(rdi);
+  _ pop(rsp);
+  _ pop(rbp);
+  _ pop(rdx);
+  _ pop(rcx);
+  _ pop(rbx);
+  _ pop(rax);
+
+  __ EmitBuffer(popfq, 1);
 
 #endif
   return (void *)closure_bridge;
