@@ -261,6 +261,7 @@ public:
   }
 
   void Emit1(byte val) {
+	  buffer_->Emit8(val);
   }
 
   void pushfq() {
@@ -298,7 +299,7 @@ public:
   void EmitRegisterREX(Register reg) {
     if(reg.size() == 64) {
       EmitREX(true, true, false, false, false);
-    }
+    } else
     UNIMPLEMENTED();
   }
 
