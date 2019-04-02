@@ -64,7 +64,7 @@ void *get_closure_bridge() {
 
   _ mov(rdi, rsp);
   _ mov(rsi, Address(rsp, -16*8));
-  _ call(IPRelativeAddress(0));
+  // _ call(IPRelativeAddress(0));
 
   // ======= RegisterContext Restore =======
 

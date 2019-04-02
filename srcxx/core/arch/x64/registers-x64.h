@@ -25,12 +25,56 @@ namespace x64 {
   V(r13)                                                                                                               \
   V(r14)                                                                                                               \
   V(r15)
+
+#define GENERAL_32_REGISTERS(V)                                                                                        \
+  V(eax)                                                                                                               \
+  V(ecx)                                                                                                               \
+  V(edx)                                                                                                               \
+  V(ebx)                                                                                                               \
+  V(esp)                                                                                                               \
+  V(ebp)                                                                                                               \
+  V(esi)                                                                                                               \
+  V(edi)
+
+#define GENERAL_16_REGISTERS(V)                                                                                        \
+  V(ax)                                                                                                                \
+  V(cx)                                                                                                                \
+  V(dx)                                                                                                                \
+  V(bx)                                                                                                                \
+  V(sp)                                                                                                                \
+  V(bp)                                                                                                                \
+  V(si)                                                                                                                \
+  V(di)
+
+#define GENERAL_8H_REGISTERS(V)                                                                                        \
+  V(ah)                                                                                                                \
+  V(ch)                                                                                                                \
+  V(dh)                                                                                                                \
+  V(bh)
+
+#define GENERAL_8L_REGISTERS(V)                                                                                        \
+  V(al)                                                                                                                \
+  V(cl)                                                                                                                \
+  V(dl)                                                                                                                \
+  V(bl)
+
+// clang-format off
 enum RegisterCode {
 #define REGISTER_CODE(R) kRegCode_##R,
+  kRegisterCodeStart8L = -1,
+  GENERAL_8L_REGISTERS(REGISTER_CODE)
+  kRegisterCodeStart8H = -1,
+  GENERAL_8H_REGISTERS(REGISTER_CODE)
+  kRegisterCodeStart16 = -1,
+  GENERAL_16_REGISTERS(REGISTER_CODE)
+  kRegisterCodeStart32 = -1,
+  GENERAL_32_REGISTERS(REGISTER_CODE)
+  kRegisterCodeStart64 = -1,
   GENERAL_REGISTERS(REGISTER_CODE)
 #undef REGISTER_CODE
-      kRegAfterLast
+  kRegAfterLast
 };
+// clang-format on
 
 class CPURegister : public RegisterBase {
 public:
@@ -78,6 +122,10 @@ public:
     return reg_code_ & 0x7;
   }
 
+  int size() {
+    return reg_size_;
+  }
+
 private:
   RegisterType reg_type_;
   int reg_size_;
@@ -87,8 +135,24 @@ typedef CPURegister Register;
 
 typedef Register CPURegister;
 
-#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 64, CPURegister::kInvalid);
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 64, CPURegister::kDefault);
 GENERAL_REGISTERS(DECLARE_REGISTER)
+#undef DECLARE_REGISTER
+
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 8, CPURegister::kDefault);
+GENERAL_8H_REGISTERS(DECLARE_REGISTER)
+#undef DECLARE_REGISTER
+
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 8, CPURegister::kDefault);
+GENERAL_8L_REGISTERS(DECLARE_REGISTER)
+#undef DECLARE_REGISTER
+
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 16, CPURegister::kDefault);
+GENERAL_16_REGISTERS(DECLARE_REGISTER)
+#undef DECLARE_REGISTER
+
+#define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 32, CPURegister::kDefault);
+GENERAL_32_REGISTERS(DECLARE_REGISTER)
 #undef DECLARE_REGISTER
 
 #ifdef _WIN64

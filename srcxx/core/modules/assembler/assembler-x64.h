@@ -269,8 +269,37 @@ public:
 
   void jmp(Immediate imm);
 
-  void EmitREX(Register reg) {
+  // refer android_art
+ void EmitREX(bool force, bool w, bool r, bool x, bool b) {
+    // REX.WRXB
+    // W - 64-bit operand
+    // R - MODRM.reg
+    // X - SIB.index
+    // B - MODRM.rm/SIB.base
 
+    uint8_t rex = force ? 0x40 : 0;
+    if (w) {
+      rex |= 0x48;  // REX.W000
+    }
+    if (r) {
+      rex |= 0x44;  // REX.0R00
+    }
+    if (x) {
+      rex |= 0x42;  // REX.00X0
+    }
+    if (b) {
+      rex |= 0x41;  // REX.000B
+    }
+    if (rex != 0) {
+      Emit1(rex);
+    }
+  }
+
+  void EmitRegisterREX(Register reg) {
+    if(reg.size() == 64) {
+      EmitREX(true, true, false, false, false);
+    }
+    UNIMPLEMENTED();
   }
 
   void EmitImmediate(Immediate imm) {
@@ -325,19 +354,19 @@ public:
   }
 
   void sub(Register reg, Immediate imm) {
-    EmitREX(reg);
+    EmitRegisterREX(reg);
     Emit1(0x81);
     Emit_OperandEn_Register_Immediate(0x5, reg, imm);
   }
 
   void mov(Register dst, Register src) {
-    EmitREX(dst);
+    EmitRegisterREX(dst);
     Emit1(0x8B);
     Emit_OperandEn_Register_Register(dst, src);
   }
 
   void mov(Register dst, Address src) {
-    EmitREX(dst);
+    EmitRegisterREX(dst);
     Emit1(0x8B);
     Emit_OperandEn_Register_Operand(dst, src);
   }
