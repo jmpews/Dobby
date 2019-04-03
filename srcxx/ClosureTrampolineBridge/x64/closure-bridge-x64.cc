@@ -37,24 +37,23 @@ void *get_closure_bridge() {
   __ EmitBuffer(pushfq, 1);
 
   // general register
-  _ sub(rsp, Immediate(16*8));
-  _ mov(Address(rsp, 8*0),rax);
-  _ mov(Address(rsp, 8*1),rbx);
-  _ mov(Address(rsp, 8*2),rcx);
-  _ mov(Address(rsp, 8*3),rdx);
-  _ mov(Address(rsp, 8*4),rbp);
-  _ mov(Address(rsp, 8*5),rsp);
-  _ mov(Address(rsp, 8*6),rdi);
-  _ mov(Address(rsp, 8*7),rsi);
-  _ mov(Address(rsp, 8*8),r8);
-  _ mov(Address(rsp, 8*9),r9);
-  _ mov(Address(rsp, 8*10),r10);
-  _ mov(Address(rsp, 8*11),r11);
-  _ mov(Address(rsp, 8*12),r12);
-  _ mov(Address(rsp, 8*13),r13);
-  _ mov(Address(rsp, 8*14),r14);
-  _ mov(Address(rsp, 8*15),r15);
-
+  _ sub(rsp, Immediate(16 * 8));
+  _ mov(Address(rsp, 8 * 0), rax);
+  _ mov(Address(rsp, 8 * 1), rbx);
+  _ mov(Address(rsp, 8 * 2), rcx);
+  _ mov(Address(rsp, 8 * 3), rdx);
+  _ mov(Address(rsp, 8 * 4), rbp);
+  _ mov(Address(rsp, 8 * 5), rsp);
+  _ mov(Address(rsp, 8 * 6), rdi);
+  _ mov(Address(rsp, 8 * 7), rsi);
+  _ mov(Address(rsp, 8 * 8), r8);
+  _ mov(Address(rsp, 8 * 9), r9);
+  _ mov(Address(rsp, 8 * 10), r10);
+  _ mov(Address(rsp, 8 * 11), r11);
+  _ mov(Address(rsp, 8 * 12), r12);
+  _ mov(Address(rsp, 8 * 13), r13);
+  _ mov(Address(rsp, 8 * 14), r14);
+  _ mov(Address(rsp, 8 * 15), r15);
 
   // ======= Jump to Common Bridge Handle =======
 
@@ -63,7 +62,7 @@ void *get_closure_bridge() {
   // @rsi: RegisterContext stack address
 
   _ mov(rdi, rsp);
-  _ mov(rsi, Address(rsp, -16*8));
+  _ mov(rsi, Address(rsp, -16 * 8));
   // _ call(IPRelativeAddress(0));
 
   // ======= RegisterContext Restore =======
