@@ -25,12 +25,12 @@ public:
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
 #define ModRM_RM(byte) (byte & 0b00000111)
 
-typedef  union _ModRM {
+typedef union _ModRM {
   byte ModRM;
   struct {
-    byte Mod : 2;
-    byte RegOpcode : 3;
     byte RM : 3;
+    byte RegOpcode : 3;
+    byte Mod : 2;
   };
 } ModRM;
 
@@ -46,7 +46,7 @@ public:
   }
 
   int value_size() const {
-    if(value_ < (2 << 8)) {
+    if (value_ < (2 << 8)) {
       return 8;
     } else if (value_ < (2 << 32)) {
       return 32;
@@ -261,7 +261,7 @@ public:
   }
 
   void Emit1(byte val) {
-	  buffer_->Emit8(val);
+    buffer_->Emit8(val);
   }
 
   void pushfq() {
@@ -271,7 +271,7 @@ public:
   void jmp(Immediate imm);
 
   // refer android_art
- void EmitREX(bool force, bool w, bool r, bool x, bool b) {
+  uint8_t GenREX(bool force, bool w, bool r, bool x, bool b) {
     // REX.WRXB
     // W - 64-bit operand
     // R - MODRM.reg
@@ -280,50 +280,72 @@ public:
 
     uint8_t rex = force ? 0x40 : 0;
     if (w) {
-      rex |= 0x48;  // REX.W000
+      rex |= 0x48; // REX.W000
     }
     if (r) {
-      rex |= 0x44;  // REX.0R00
+      rex |= 0x44; // REX.0R00
     }
     if (x) {
-      rex |= 0x42;  // REX.00X0
+      rex |= 0x42; // REX.00X0
     }
     if (b) {
-      rex |= 0x41;  // REX.000B
+      rex |= 0x41; // REX.000B
     }
+    if (rex != 0) {
+      return rex;
+    }
+    return 0;
+  }
+
+  void EmitRegisterREX(Register reg) {
+    if (reg.size() != 64)
+      UNIMPLEMENTED();
+    uint8_t rex = GenREX(true, reg.size() == 64, false, false, reg.code() > 7);
+    if (!rex)
+      Emit1(rex);
+  }
+
+  void EmitRegisterOperandREX(Register reg, Operand &operand) {
+    if (reg.size() != 64)
+      UNIMPLEMENTED();
+    uint8_t rex = operand.rex();
+    rex |= GenREX(true, reg.size() == 64, false, false, reg.code() > 7);
     if (rex != 0) {
       Emit1(rex);
     }
   }
 
-  void EmitRegisterREX(Register reg) {
-    if(reg.size() == 64) {
-      EmitREX(true, true, false, false, false);
-    } else
-    UNIMPLEMENTED();
+  void EmitOperandREX(Operand &operand) {
+    uint8_t rex = operand.rex();
+    rex |= REX_PREFIX;
+    if (rex != 0) {
+      Emit1(rex);
+    }
   }
 
-  void EmitImmediate(Immediate imm) {
-    if(imm.value_size() == 8) {
+  void EmitImmediate(Immediate imm, int imm_size) {
+    if (imm_size == 8) {
       buffer_->Emit8(imm.value());
-    } else if(imm.value_size() == 32) {
+    } else if (imm_size == 32) {
       buffer_->Emit32(imm.value());
     }
   }
 
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
-
+    uint8_t ModRM = 0;
+    ModRM |= Mod << 6;
+    ModRM |= RegOpcode << 3;
+    ModRM |= RM;
+    Emit1(ModRM);
   }
 
-
-//  inline void Emit_Mod_Reg_Mem(uint8_t mod, uint8_t reg, uint8_t M) {
-//
-//  }
-//
-//  inline void Emit_Mod_Opcode_Reg(uint8_t extra_opcode, uint8_t reg_code) {
-//    EmitModRM(0b11, extra_opcode, reg_code);
-//  }
-
+  //  inline void Emit_Mod_Reg_Mem(uint8_t mod, uint8_t reg, uint8_t M) {
+  //
+  //  }
+  //
+  //  inline void Emit_Mod_Opcode_Reg(uint8_t extra_opcode, uint8_t reg_code) {
+  //    EmitModRM(0b11, extra_opcode, reg_code);
+  //  }
 
   void EmitExtraOpcodeRegister(uint8_t opcode, Register reg) {
     EmitModRM(0b11, opcode, reg.code());
@@ -335,7 +357,10 @@ public:
 
   void Emit_OperandEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitExtraOpcodeRegister(extra_opcode, reg);
-    EmitImmediate(imm);
+    if(reg.size() == 64)
+      EmitImmediate(imm, 32);
+    else
+      EmitImmediate(imm, reg.size());
   }
 
   void Emit_OperandEn_Register_Register(Register reg1, Register reg2) {
@@ -345,13 +370,13 @@ public:
   void Emit_OperandEn_Register_Operand(Register reg, Operand &operand) {
     ModRM modRM = *(ModRM *)&operand.encoding_[0];
     EmitModRM(modRM.Mod, reg.code(), modRM.RM);
-    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_-1);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
   void Emit_OperandEn_Operand(uint8_t extra_opcode, Operand &operand) {
     ModRM modRM = *(ModRM *)&operand.encoding_[0];
     EmitModRM(modRM.Mod, extra_opcode, modRM.RM);
-    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_-1);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
   void sub(Register reg, Immediate imm) {
@@ -373,23 +398,21 @@ public:
   }
 
   void mov(Address dst, Register src) {
-    Emit1(dst.rex_);
+    EmitRegisterOperandREX(src, dst);
     Emit1(0x89);
     Emit_OperandEn_Register_Operand(src, dst);
   }
 
   void call(Address operand) {
-    Emit1(operand.rex_);
+    EmitOperandREX(operand);
     Emit1(0xFF);
     Emit_OperandEn_Operand(0x2, operand);
   }
 
   void pop(Register reg) {
-
   }
 
   void ret() {
-
   }
 };
 
