@@ -1,7 +1,7 @@
 #include "ExecMemory/AssemblyCode.h"
 
 #include "core/modules/assembler/assembler.h"
-#include "core/arch/arm64/registers-arm64.h"
+#include "core/modules/assembler/assembler-arm64.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
@@ -25,7 +25,7 @@ void *get_closure_bridge() {
 #define _ turbo_assembler_.
 #define MEM(reg, offset) MemOperand(reg, offset)
 #define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
-  TurboAssembler turbo_assembler_;
+  TurboAssembler turbo_assembler_(0);
 
   // save {q0-q7}
   _ sub(SP, SP, 8 * 16);

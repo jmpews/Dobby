@@ -16,6 +16,7 @@
 		F3900A072248C63100CF0F9B /* libhookzz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F3900A062248C63100CF0F9B /* libhookzz.dylib */; };
 		F3900A082248C63B00CF0F9B /* libhookzz.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = F3900A062248C63100CF0F9B /* libhookzz.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		F3AF10FD2250D3C100115B97 /* YourHackL1b.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */; };
+		F3AF11042255AA3600115B97 /* AssemblyDynamicBinaryInstrument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AF11022255AA3600115B97 /* AssemblyDynamicBinaryInstrument.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,9 @@
 		F3900A062248C63100CF0F9B /* libhookzz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libhookzz.dylib; sourceTree = "<group>"; };
 		F3AF10FB2250D3C100115B97 /* YourHackL1b.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = YourHackL1b.hpp; sourceTree = "<group>"; };
 		F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YourHackL1b.cpp; sourceTree = "<group>"; };
+		F3AF11022255AA3600115B97 /* AssemblyDynamicBinaryInstrument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AssemblyDynamicBinaryInstrument.cpp; sourceTree = "<group>"; };
+		F3AF11032255AA3600115B97 /* AssemblyDynamicBinaryInstrument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AssemblyDynamicBinaryInstrument.h; sourceTree = "<group>"; };
+		F3AF11062255AC5B00115B97 /* hookzz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hookzz.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				F3900A062248C63100CF0F9B /* libhookzz.dylib */,
+				F3AF11062255AC5B00115B97 /* hookzz.h */,
 			);
 			path = HookZzL1b;
 			sourceTree = "<group>";
@@ -106,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				F3AF10FB2250D3C100115B97 /* YourHackL1b.hpp */,
+				F3AF11022255AA3600115B97 /* AssemblyDynamicBinaryInstrument.cpp */,
+				F3AF11032255AA3600115B97 /* AssemblyDynamicBinaryInstrument.h */,
 				F3AF10FC2250D3C100115B97 /* YourHackL1b.cpp */,
 			);
 			name = YourHackL1b;
@@ -205,6 +212,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F39009EB2248BEF900CF0F9B /* ViewController.m in Sources */,
+				F3AF11042255AA3600115B97 /* AssemblyDynamicBinaryInstrument.cpp in Sources */,
 				F3AF10FD2250D3C100115B97 /* YourHackL1b.cpp in Sources */,
 				F39009F62248BEFB00CF0F9B /* main.m in Sources */,
 				F39009E82248BEF900CF0F9B /* AppDelegate.m in Sources */,

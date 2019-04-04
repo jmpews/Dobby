@@ -5,7 +5,7 @@
 #include "AssemblyDynamicBinaryInstrument.h"
 
 #include <stdlib.h>
-#include <hookzz.h>
+#include "hookzz.h"
 
 uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
   uintptr_t result;
