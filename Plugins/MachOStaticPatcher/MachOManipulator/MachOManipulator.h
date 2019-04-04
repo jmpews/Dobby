@@ -32,7 +32,7 @@ struct MachoInfo {
 };
 
 class MachoManipulator {
-private:
+public:
   char *inputFilePath;
 
   void *mmapFileData;
