@@ -46,11 +46,8 @@ public:
   }
 
   int value_size() const {
-    if (value_ < (2 << 8)) {
-      return 8;
-    } else if (value_ < (2 << 32)) {
-      return 32;
-    }
+    UNREACHABLE();
+    return 0;
   }
 
 private:

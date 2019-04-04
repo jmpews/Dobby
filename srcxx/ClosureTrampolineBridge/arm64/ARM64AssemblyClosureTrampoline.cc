@@ -28,7 +28,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 // _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_handler));
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
-  TurboAssembler turbo_assembler_;
+  TurboAssembler turbo_assembler_(0);
 
   PseudoLabel ClosureTrampolineEntry;
   PseudoLabel ForwardCode_ClosureBridge;

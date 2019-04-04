@@ -22,8 +22,8 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define __ turbo_assembler_.GetCodeBuffer()->
   TurboAssembler turbo_assembler_(0);
 
-  char *push_rip_12 = "\xff\x35\x0c\x00\x00\x00";
-  char *jmp_rip_14 = "\xff\x25\x0e\x00\x00\x00";
+  char *push_rip_12 = (char *)"\xff\x35\x0c\x00\x00\x00";
+  char *jmp_rip_14 = (char *)"\xff\x25\x0e\x00\x00\x00";
 
   __ EmitBuffer(push_rip_12, 6);
   __ EmitBuffer(jmp_rip_14, 6);
