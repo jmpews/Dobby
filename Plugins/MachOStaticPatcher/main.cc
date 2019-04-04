@@ -55,8 +55,7 @@ void ZzStaticHookInitialize(int offset, addr_t rt, HookEntryStatic *entry_staic)
   WritableDataChunk *stub = AllocateDataChunk(sizeof(void *));
 
   entry->function_address             = (void *)rt;
-  entry->trampoline_target            = stub->address;
-  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry);
+  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, stub->address);
   route->Dispatch();
   
   route->Commit();
@@ -113,12 +112,16 @@ int main(int argc, char **argv) {
   // check argc if contain patch-function vmaddr
   if (argc < 3)
     return 0;
+  
 
   // save the function virtual address list
   // gen the function Offset __text list
   section_t *__text = mm->getSection("__text");
   printf("virtual address %p\n", __text->addr);
-
+  
+  // ensure whole TEXT fileoff == vmaddr_offset.
+  assert((mm->machoInfo.segDATA->vmaddr - mm->machoInfo.segTEXT->vmaddr) == mm->machoInfo.segDATA->fileoff);
+  
   // [LIEF Framework]
   auto getFuncOffset = [&](section_t *text, addr_t va) -> int {
     addr_t text_section_va = text->addr;
