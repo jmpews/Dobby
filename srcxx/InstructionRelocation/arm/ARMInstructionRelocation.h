@@ -247,7 +247,7 @@ public:
   }
 
 private:
-  void *released_address_;
+  // void *released_address_;
 };
 
 // Generate the relocated instruction

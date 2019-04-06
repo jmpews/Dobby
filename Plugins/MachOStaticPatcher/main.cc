@@ -86,14 +86,20 @@ void ZzStaticHookInitialize(addr_t func_vmaddr, addr_t func_rtaddr, HookEntrySta
 
   // Allocate trampoline target stub
   WritableDataChunk *stub = AllocateStaticDataChunk(sizeof(void *));
+  
+  // convert stub vmaddr to runtime address
+  addr_t sutb_rtaddr = func_rtaddr + ((addr_t)stub->address - func_vmaddr);
 
   entry->function_address             = (void *)func_rtaddr;
-  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, stub->address);
+  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, (void *)sutb_rtaddr);
   route->Dispatch();
 
   route->Commit();
-
-  entry_staic->relocated_origin_function = (uint64_t)entry->relocated_origin_function;
+  
+  // convert relocated_origin_function runtime address to vmaddr
+  segment_command_t *zTEXT = mm->getSegment("__zTEXT");
+  addr_t relocated_origin_function_vmaddr = zTEXT->vmaddr + ((uint64_t)entry->relocated_origin_function - (uint64_t)mm->mmapFileData - zTEXT->fileoff);
+  entry_staic->relocated_origin_function = relocated_origin_function_vmaddr;
   entry_staic->trampoline_target_stub    = (uint64_t *)stub->address;
   return;
 }
@@ -184,6 +190,7 @@ int main(int argc, char **argv) {
   /* InterceptorStatic *interceptor    = static_cast<InterceptorStatic *>(zDATAContent); */
   WritableDataChunk *data        = AllocateStaticDataChunk(sizeof(InterceptorStatic));
   InterceptorStatic *interceptor = static_cast<InterceptorStatic *>(TranslateVa2Rt(data->address, mm->mmapFileData));
+  interceptor->this_ = (uint64_t)data->address;
 
   // the interceptor should be the first struture in the zDATA segment
   assert(interceptor == zDATAContent);
@@ -212,6 +219,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < funcList.size(); i++) {
     addr_t funcRT            = (addr_t)TranslateVa2Rt((void *)funcList[i], mm->mmapFileData);
     HookEntryStatic *entryRT = (HookEntryStatic *)TranslateVa2Rt((void *)interceptor->entry[i], mm->mmapFileData);
+    entryRT->function = funcList[i];
     ZzStaticHookInitialize(funcList[i], funcRT, entryRT);
     LOG("[+] initialize the func map runtime %p.\n", (void *)funcRT);
   }
