@@ -31,7 +31,8 @@ public:
   void link_to(int pos);
 
 private:
-  // pos_: "< 0", indicate the Label is Binded, "> 0", indicate the Label is Linked, "= 0" indicate the Label is iter-terminal or unused
+  // pos_: "< 0", indicate the Label is Binded, "> 0", indicate the Label is Linked, "= 0" indicate the Label is
+  // iter-terminal or unused
   int pos_;
   int near_link_pos_;
 };

@@ -161,7 +161,8 @@ void ARMRelocateSingleInst(int32_t inst, uint32_t from_pc, uint32_t to_pc, Turbo
           break;
 
         // ===
-        // just modify orin instruction label bits, and keep the link and cond bits, the next instruction `b_imm` will do the rest work.
+        // just modify orin instruction label bits, and keep the link and cond bits, the next instruction `b_imm` will
+        // do the rest work.
         label = 0x4;
         imm24 = label >> 2;
         _ EmitARMInst((inst & 0xff000000) | imm24);

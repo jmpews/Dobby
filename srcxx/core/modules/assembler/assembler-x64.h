@@ -354,7 +354,7 @@ public:
 
   void Emit_OperandEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitExtraOpcodeRegister(extra_opcode, reg);
-    if(reg.size() == 64)
+    if (reg.size() == 64)
       EmitImmediate(imm, 32);
     else
       EmitImmediate(imm, reg.size());

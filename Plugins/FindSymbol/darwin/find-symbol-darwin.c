@@ -36,7 +36,7 @@ void *ZzFindSymbol(const char *image_name, const char *symbol_name) {
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = _dyld_get_image_header(i);
     const char *name_                = _dyld_get_image_name(i);
-    name_ = strrchr(name_, '/') + 1;
+    name_                            = strrchr(name_, '/') + 1;
     if (image_name != NULL && strcmp(image_name, name_))
       continue;
     result = iterateSymbolTable(header, symbol_name);

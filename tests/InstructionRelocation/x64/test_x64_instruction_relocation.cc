@@ -19,14 +19,14 @@ sub_140006C30+1B     8B F2                                            mov     es
 sub_140006C30+1D     E8 0E CA FF FF                                   call    sub_140003660
 sub_140006C30+1D
 sub_140006C30+22     48 8B 0F                                         mov     rcx, [rdi]
-sub_140006C30+25     48 8D 15 24 17 07 00                             lea     rdx, aCDvsP4BuildSwG_1      ; "C:\\dvs\\p4\\build\\sw\\gcomp\\dev\\src"...
-sub_140006C30+2C     48 89 5C 24 30                                   mov     [rsp+48h+var_18], rbx
-sub_140006C30+31     41 B9 03 00 00 00                                mov     r9d, 3
+sub_140006C30+25     48 8D 15 24 17 07 00                             lea     rdx, aCDvsP4BuildSwG_1      ;
+"C:\\dvs\\p4\\build\\sw\\gcomp\\dev\\src"... sub_140006C30+2C     48 89 5C 24 30                                   mov
+[rsp+48h+var_18], rbx sub_140006C30+31     41 B9 03 00 00 00                                mov     r9d, 3
 sub_140006C30+37     48 89 44 24 28                                   mov     [rsp+48h+var_20], rax
 sub_140006C30+3C     41 B8 F9 00 00 00                                mov     r8d, 0F9h
-sub_140006C30+42     48 8D 05 EF 19 07 00                             lea     rax, aInitiateTransi        ; "Initiate transition to %s state for %s"
-sub_140006C30+49     48 89 44 24 20                                   mov     [rsp+48h+var_28], rax
-sub_140006C30+4E     E8 ED D5 00 00                                   call    sub_140014270
+sub_140006C30+42     48 8D 05 EF 19 07 00                             lea     rax, aInitiateTransi        ; "Initiate
+transition to %s state for %s" sub_140006C30+49     48 89 44 24 20                                   mov
+[rsp+48h+var_28], rax sub_140006C30+4E     E8 ED D5 00 00                                   call    sub_140014270
 sub_140006C30+4E
 sub_140006C30+53     48 83 BF D0 02 00 00 00                          cmp     qword ptr [rdi+2D0h], 0
 sub_140006C30+5B     74 10                                            jz      short loc_140006C9D
@@ -37,8 +37,8 @@ sub_140006C30+62     48 8B 8F D0 02 00 00                             mov     rc
 sub_140006C30+69     48 89 41 48                                      mov     [rcx+48h], rax
 sub_140006C30+69
 sub_140006C30+6D
-sub_140006C30+6D                                                  loc_140006C9D:                          ; CODE XREF: sub_140006C30+5B↑j
-sub_140006C30+6D     8B 97 34 03 00 00                                mov     edx, [rdi+334h]
+sub_140006C30+6D                                                  loc_140006C9D:                          ; CODE XREF:
+sub_140006C30+5B↑j sub_140006C30+6D     8B 97 34 03 00 00                                mov     edx, [rdi+334h]
 sub_140006C30+73     48 8B 4F 08                                      mov     rcx, [rdi+8]
 sub_140006C30+77     89 B7 B0 02 00 00                                mov     [rdi+2B0h], esi
 sub_140006C30+7D     48 8B 5C 24 50                                   mov     rbx, [rsp+48h+arg_0]
@@ -104,24 +104,24 @@ int instrLenArray[] = {
 // clang-format on
 
 TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
-  void *TargetFunction = hexData;
-  uintptr_t srcIP      = (uintptr_t)TargetFunction;
-  uintptr_t currIP     = srcIP;
-  int funcLen          = sizeof(hexData);
-  unsigned char opcode1         = 0;
-  InstrMnemonic instr = {0};
+  void *TargetFunction  = hexData;
+  uintptr_t srcIP       = (uintptr_t)TargetFunction;
+  uintptr_t currIP      = srcIP;
+  int funcLen           = sizeof(hexData);
+  unsigned char opcode1 = 0;
+  InstrMnemonic instr   = {0};
 
   int i   = 0;
   opcode1 = *(byte *)srcIP;
-  
+
   do {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
     decodeItem->DecodeHandler(&instr, (addr_t)currIP);
-    
+
     REQUIRE(instr.len == instrLenArray[i]);
     currIP += instr.len;
     opcode1 = *(byte *)currIP;
-    if(instr.instr.opcode) {
+    if (instr.instr.opcode) {
       printf("ndx %d: %d\n", i, instr.len);
       // clear instr
       memset((void *)&instr, 0, sizeof(InstrMnemonic));

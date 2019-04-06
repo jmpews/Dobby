@@ -42,7 +42,7 @@ const void *ExternalReference::address() {
 
 AssemblerBase::AssemblerBase(void *address) {
   realized_address_ = address;
-  buffer_ = NULL;
+  buffer_           = NULL;
 }
 
 int AssemblerBase::pc_offset() const {

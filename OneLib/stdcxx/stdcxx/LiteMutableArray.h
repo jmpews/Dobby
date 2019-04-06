@@ -15,11 +15,11 @@ public:
   LiteMutableArray() {
     initWithCapacity(1);
   }
-  
+
   LiteMutableArray(int count) {
     initWithCapacity(count);
   }
-  
+
   virtual bool initIterator(void *iterationContext) const;
 
   virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
