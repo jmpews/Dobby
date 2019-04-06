@@ -90,9 +90,9 @@ void MachoManipulator::Load(char *inputFilePath) {
   size_t mmapFileLength;
   char *mmapFileData = NULL;
 #endif
-  
+
   this->inputFilePath = inputFilePath;
-  
+
   _MapFileToMemory(inputFilePath, (void **)&mmapFileData, (size_t *)&mmapFileLength);
 
   if (!mmapFileData)
@@ -143,7 +143,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   // new segment command
   int cmdsize = sizeof(segment_command_t);
   memcpy((void *)&newSeg, (void *)machoInfo.segLinkEdit, cmdsize);
-  memcpy(newSeg.segname, segName, strlen(segName) + 1 );
+  memcpy(newSeg.segname, segName, strlen(segName) + 1);
   newSeg.vmsize   = newSegSize;
   newSeg.filesize = newSegSize;
   newSeg.vmaddr   = new_vmaddr;
@@ -173,7 +173,7 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   machoInfo.segLinkEdit->vmaddr += newSegSize;
   machoInfo.segLinkEdit->fileoff += newSegSize;
   LOG("[-] fix linkedit load_command done\n");
-  
+
   // fix header
   machoInfo.header->ncmds += 1;
   machoInfo.header->sizeofcmds += newSeg.cmdsize;
@@ -238,7 +238,6 @@ void MachoManipulator::AddSegment(char *segName, int segPermission) {
   copyPosition = (addr_t)newMmapFileData;
   copyLength   = newSeg.fileoff;
   memcpy((void *)copyPosition, machoInfo.header, newSeg.fileoff);
-  
 
   copyPosition = (addr_t)newMmapFileData + newSeg.fileoff + newSegSize;
   assert(copyPosition == ((addr_t)newMmapFileData + machoInfo.segLinkEdit->fileoff));

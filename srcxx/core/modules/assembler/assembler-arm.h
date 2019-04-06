@@ -261,7 +261,7 @@ public:
 
   void CommitRealizeAddress(void *address) {
     DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
-    released_address_ = (void *)address;
+    AssemblerBase::CommitRealizeAddress(address);
   }
 
   void EmitARMInst(arm_inst_t inst);
@@ -335,7 +335,7 @@ private:
   }
 
 private:
-  void *released_address_;
+  // void *released_address_;
 };
 
 // ===== TurboAssembler =====

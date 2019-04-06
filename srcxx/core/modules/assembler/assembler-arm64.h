@@ -352,7 +352,7 @@ public:
 
   void CommitRealizeAddress(void *address) {
     DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
-    released_address_ = (void *)address;
+    AssemblerBase::CommitRealizeAddress(address);
   }
 
   void Emit(int32_t value);
@@ -571,7 +571,7 @@ private:
   }
 
 private:
-  void *released_address_;
+  // void *released_address_;
 };
 
 // ===== TurboAssembler =====
@@ -618,12 +618,12 @@ public:
     movk(rd, h2, 32);
     movk(rd, h3, 48);
   }
-  
-  void AdrpAddMov(Register rd, uint64_t from,  uint64_t to) {
-    uint64_t from_PAGE = ALIGN(from , 0x1000);
-    uint64_t to_PAGE = ALIGN(to, 0x1000);
+
+  void AdrpAddMov(Register rd, uint64_t from, uint64_t to) {
+    uint64_t from_PAGE  = ALIGN(from, 0x1000);
+    uint64_t to_PAGE    = ALIGN(to, 0x1000);
     uint64_t to_PAGEOFF = (uint64_t)to % 0x1000;
-    
+
     adrp(rd, to_PAGE - from_PAGE);
     add(rd, rd, to_PAGEOFF);
   }
