@@ -13,16 +13,16 @@ typedef struct {
   void *cursor;
   int capacity;
   union {
-  LiteMutableArray *data_chunks;
-  LiteMutableArray *code_chunks;
+    LiteMutableArray *data_chunks;
+    LiteMutableArray *code_chunks;
   };
 } ExecutablePage, WritablePage;
 
 class ExecutableMemoryArena {
 public:
-    static AssemblyCodeChunk *AllocateCodeChunk(int inSize);
+  static AssemblyCodeChunk *AllocateCodeChunk(int inSize);
 
-    static void Destory(AssemblyCodeChunk *codeChunk);
+  static void Destory(AssemblyCodeChunk *codeChunk);
 
 private:
   static LiteMutableArray *page_chunks;

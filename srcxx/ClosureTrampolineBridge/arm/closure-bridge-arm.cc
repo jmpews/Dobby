@@ -70,7 +70,7 @@ void *get_closure_bridge() {
   _ mov(pc, r12);
 
   AssemblyCode *code = AssemblyCode::FinalizeTurboAssembler(&turbo_assembler_);
-  closure_bridge      = (void *)code->raw_instruction_start();
+  closure_bridge     = (void *)code->raw_instruction_start();
 
   DLOG("[*] Build the closure bridge at %p\n", closure_bridge);
 

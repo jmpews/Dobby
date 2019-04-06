@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 extern "C" {
-  extern int ZzReplace(void *function_address, void *replace_call, void **origin_call);
+extern int ZzReplace(void *function_address, void *replace_call, void **origin_call);
 }
 
 #endif /* YourHackL1b_hpp */

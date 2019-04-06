@@ -42,7 +42,8 @@ AssemblyCode *AssemblyCode::FinalizeFromCodeBuffer(void *address, CodeBufferBase
   DCHECK_NE(NULL, address);
   DCHECK_NE(NULL, codeBuffer);
 
-  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
+  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
+  // instructions
   CodePatch(address, codeBuffer->getRawBuffer(), codeBuffer->getSize());
 
   // Alloc a new AssemblyCode

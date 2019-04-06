@@ -8,23 +8,22 @@
 using namespace zz;
 
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
-	DWORD oldProtect;
+  DWORD oldProtect;
   int pageSize;
 
-// Get page size
+  // Get page size
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   pageSize = si.dwPageSize;
 
   void *addressPageAlign = (void *)ALIGN(address, pageSize);
-  
 
   if (!VirtualProtect(addressPageAlign, pageSize, PAGE_EXECUTE_READWRITE, &oldProtect))
     return kMemoryOperationError;
 
   memcpy(address, buffer, size);
 
-   if (!VirtualProtect(addressPageAlign, pageSize, oldProtect, &oldProtect))
+  if (!VirtualProtect(addressPageAlign, pageSize, oldProtect, &oldProtect))
     return kMemoryOperationError;
 
   return kMemoryOperationSuccess;

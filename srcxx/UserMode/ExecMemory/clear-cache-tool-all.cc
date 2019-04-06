@@ -8,9 +8,9 @@
 #include <assert.h>
 
 /*
- * The compiler generates calls to __clear_cache() when creating 
+ * The compiler generates calls to __clear_cache() when creating
  * trampoline functions on the stack for use with nested functions.
- * It is expected to invalidate the instruction cache for the 
+ * It is expected to invalidate the instruction cache for the
  * specified range.
  */
 
@@ -32,13 +32,13 @@ void ClearCache(void *start, void *end) {
   sysarch(ARM_SYNC_ICACHE, &arg);
 #elif defined(__linux__)
 /*
-     * We used to include asm/unistd.h for the __ARM_NR_cacheflush define, but
-     * it also brought many other unused defines, as well as a dependency on
-     * kernel headers to be installed.
-     *
-     * This value is stable at least since Linux 3.13 and should remain so for
-     * compatibility reasons, warranting it's re-definition here.
-     */
+ * We used to include asm/unistd.h for the __ARM_NR_cacheflush define, but
+ * it also brought many other unused defines, as well as a dependency on
+ * kernel headers to be installed.
+ *
+ * This value is stable at least since Linux 3.13 and should remain so for
+ * compatibility reasons, warranting it's re-definition here.
+ */
 #define __ARM_NR_cacheflush 0x0f0002
   register int start_reg __asm("r0")        = (int)(intptr_t)start;
   const register int end_reg __asm("r1")    = (int)(intptr_t)end;
