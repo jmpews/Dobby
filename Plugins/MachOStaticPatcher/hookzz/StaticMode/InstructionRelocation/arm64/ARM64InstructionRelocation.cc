@@ -57,33 +57,32 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
     } else if ((inst & CompareBranchFixedMask) == CompareBranchFixed) {
       int32_t rt;
       int32_t imm19;
-      imm19               = bits(inst, 5, 24);
-      
-      int offset = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
-      imm19 = offset >> 2;
+      imm19 = bits(inst, 5, 24);
+
+      int offset                   = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
+      imm19                        = offset >> 2;
       int32_t compare_branch_instr = (inst & 0xff00001f) | LFT(imm19, 19, 5);
-      
+
       _ Emit(compare_branch_instr);
     } else if ((inst & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) {
       int32_t imm26;
-      imm26          = bits(inst, 0, 25);
-      
-      int32_t offset = (imm26 << 2) + (cur_dest_pc - cur_src_pc);
-      imm26 = offset >> 2;
+      imm26 = bits(inst, 0, 25);
+
+      int32_t offset                     = (imm26 << 2) + (cur_dest_pc - cur_src_pc);
+      imm26                              = offset >> 2;
       int32_t unconditional_branch_instr = (inst & 0xfc000000) | LFT(imm26, 26, 0);
-      
+
       _ Emit(unconditional_branch_instr);
     } else if ((inst & ConditionalBranchFixedMask) == ConditionalBranchFixed) {
       int32_t imm19;
-      imm19          = bits(inst, 5, 23);
-      
-      int offset = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
-      imm19 = offset >> 2;
+      imm19 = bits(inst, 5, 23);
+
+      int offset           = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
+      imm19                = offset >> 2;
       int32_t b_cond_instr = (inst & 0xff00001f) | LFT(imm19, 19, 5);
-      
+
       _ Emit(b_cond_instr);
-      
-      
+
     } else {
       // origin write the instruction bytes
       _ Emit(inst);

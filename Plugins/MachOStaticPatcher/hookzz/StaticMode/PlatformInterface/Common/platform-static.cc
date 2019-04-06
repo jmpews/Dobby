@@ -8,7 +8,6 @@
 
 #include "MachOManipulator/MachOManipulator.h"
 
-
 extern MachoManipulator *mm;
 
 namespace zz {
@@ -20,10 +19,10 @@ int OSMemory::PageSize() {
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   void *result = NULL;
   if (access == kReadExecute) {
-      segment_command_t *zTEXT = mm->getSegment("__zTEXT");
-    return (void *)zTEXT->vmaddr;
+    void *content = mm->getSegmentContent("__zTEXT");
+    return content;
   } else if (access == kReadWrite) {
-      segment_command_t *zDATA = mm->getSegment("__zDATA");
+    segment_command_t *zDATA = mm->getSegment("__zDATA");
     return (void *)zDATA->vmaddr;
   } else {
     FATAL("Not Support the specific MemoryPermission!!!");
