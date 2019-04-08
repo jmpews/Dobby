@@ -63,15 +63,20 @@ set(HookZz.SOURCE_FILE
 )
 
 set(HookZzStatic.SOURCE_FILE
-    hookzz/StaticMode/ExecMemory/clear-cache-tool-static.cc
-    hookzz/StaticMode/ExecMemory/code-patch-tool-static.cc
-    hookzz/StaticMode/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
-    hookzz/StaticMode/PlatformInterface/Common/platform-static.cc
-    hookzz/StaticMode/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
+    hookzz_static/ExecMemory/clear-cache-tool-static.cc
+    hookzz_static/ExecMemory/code-patch-tool-static.cc
+    hookzz_static/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
+    hookzz_static/PlatformInterface/Common/platform-static.cc
+    hookzz_static/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
 )
 
 set(MachOManipulator.SOURCE_FILE
     MachOManipulator/MachOManipulator.cc
+)
+
+set(RuntimeSupport.SOURCE_FILE
+    RuntimeSupport/FunctionInlineReplaceExport.cc
+    RuntimeSupport/StubRebase.cc
 )
 
 include_directories(
@@ -90,6 +95,16 @@ add_executable(MachOStaticPatcher
     ${HookZz.SOURCE_FILE}
     ${HookZzStatic.SOURCE_FILE}
     ${MachOManipulator.SOURCE_FILE}
+)
+
+
+if(SYSTEM.iOS)
+    # -lstdc++
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+add_library(RuntimeSupport
+    ${RuntimeSupport.SOURCE_FILE}
 )
 
 add_subdirectory(${PrimaryPath}/OneLib onelib.out)
