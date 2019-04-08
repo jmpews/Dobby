@@ -11,6 +11,6 @@
 
 #include <stdio.h>
 
-void runMainFunction(int name);
+void runMainFunction(char *name);
 
 #endif /* MainLogic_h */

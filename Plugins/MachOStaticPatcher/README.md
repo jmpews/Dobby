@@ -32,14 +32,17 @@ security cms -D -i /YourBinaryApp/embedded.mobileprovision > profile.plist
 /usr/libexec/PlistBuddy -x -c 'Print :Entitlements' profile.plist > entitlements.plist
 
 # force resign the app
-codesign -f -s "iPhone Developer: Haolin Huang (5JBQ9SJ278)" --entitlements entitlements.plist /YourBinaryApp
+codesign -f -s "iPhone Developer: Haolin Huang (xxxxxx)" --entitlements entitlements.plist /YourBinaryApp
 ```
+
+#### 3. Use the Xcode Run Script instead of above operation
 
 
 #### 4. Add Runtime initialization library
 
 the origin placeholder need to do rebase.
 
+so, inject or other way what you want, add `RuntimeSupport` library to your project.
 
 #### 5. install the App
 

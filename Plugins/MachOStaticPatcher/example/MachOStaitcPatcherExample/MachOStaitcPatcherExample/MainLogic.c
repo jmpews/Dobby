@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-void runMainFunction(int name) {
+void runMainFunction(char *name) {
   int x, y, z;
   x = 1;
   y = 2;
