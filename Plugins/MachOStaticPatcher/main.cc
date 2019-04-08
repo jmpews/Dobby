@@ -180,8 +180,8 @@ int main(int argc, char **argv) {
   }
 
   // insert ZDATA, zTEXT segment
-  mm->AddSegment("__zDATA", 5);
-  mm->AddSegment("__zTEXT", 3);
+  mm->AddSegment("__zDATA", 3);
+  mm->AddSegment("__zTEXT", 5);
 
   segment_command_t *zDATA = mm->getSegment("__zDATA");
   void *zDATAContent       = mm->getSegmentContent("__zDATA");

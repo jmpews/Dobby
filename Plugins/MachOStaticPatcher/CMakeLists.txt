@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
 project(MachOStaticPatcher)
-set(PrimaryPath ../..)
 
-include(${PrimaryPath}/cmake/Util.cmake)
-include(${PrimaryPath}/cmake/Macros.cmake)
+if(HOOKZZ_SOURCE_DIR)
+  message(STATUS "HOOKZZ_SOURCE_DIR : ${HOOKZZ_SOURCE_DIR}")
+else()
+  message(FATAL_ERROR "[!] XxTrampoline: no HOOKZZ_SOURCE_DIR specificed!")
+endif()
+
+
+include(${HOOKZZ_SOURCE_DIR}/cmake/Util.cmake)
+include(${HOOKZZ_SOURCE_DIR}/cmake/Macros.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,33 +39,33 @@ add_subdirectory(third-party/LIEF)
 endif()
 
 set(HookZz.SOURCE_FILE
-    ${PrimaryPath}/srcxx/core/arch/Cpu.cc
-    ${PrimaryPath}/srcxx/core/arch/CpuRegister.cc
-    ${PrimaryPath}/srcxx/core/arch/CpuFeature.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/arch/Cpu.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/arch/CpuRegister.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/arch/CpuFeature.cc
 
-    ${PrimaryPath}/srcxx/core/modules/assembler/assembler.cc
-    ${PrimaryPath}/srcxx/core/modules/assembler/assembler-arm64.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/modules/assembler/assembler.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/modules/assembler/assembler-arm64.cc
 
-    ${PrimaryPath}/srcxx/core/modules/codegen/codegen-arm64.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/core/modules/codegen/codegen-arm64.cc
 
-    ${PrimaryPath}/srcxx/ExecMemory/CodeBuffer/CodeBufferBase.cc
-    ${PrimaryPath}/srcxx/ExecMemory/CodeBuffer/code-buffer-arm64.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/CodeBuffer/CodeBufferBase.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/CodeBuffer/code-buffer-arm64.cc
 
-    ${PrimaryPath}/srcxx/ExecMemory/AssemblerCodeBuffer.cc
-    ${PrimaryPath}/srcxx/ExecMemory/AssemblyCode.cc
-    ${PrimaryPath}/srcxx/ExecMemory/ExecutableMemoryArena.cc
-    ${PrimaryPath}/srcxx/ExecMemory/PageAllocator.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/AssemblerCodeBuffer.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/AssemblyCode.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/ExecutableMemoryArena.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/ExecMemory/PageAllocator.cc
 
     # InterceptRouting
-    ${PrimaryPath}/srcxx/InterceptRouting/InterceptRouting.cpp
+    ${HOOKZZ_SOURCE_DIR}/srcxx/InterceptRouting/InterceptRouting.cpp
 
     #InterceptRoutingPlugin
-    ${PrimaryPath}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-    ${PrimaryPath}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
+    ${HOOKZZ_SOURCE_DIR}/srcxx/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
     # srcxx
-    ${PrimaryPath}/srcxx/hookzz.cpp
-    ${PrimaryPath}/srcxx/interceptor.cpp
+    ${HOOKZZ_SOURCE_DIR}/srcxx/hookzz.cpp
+    ${HOOKZZ_SOURCE_DIR}/srcxx/interceptor.cpp
 )
 
 set(HookZzStatic.SOURCE_FILE
@@ -82,12 +88,12 @@ set(RuntimeSupport.SOURCE_FILE
 include_directories(
     .
     ${Target.path}
-    ${PrimaryPath}/include
-    ${PrimaryPath}/srcxx
-    ${PrimaryPath}/srcxx/UserMode
-    ${PrimaryPath}/OneLib/logging
-    ${PrimaryPath}/OneLib/stdcxx
-    ${PrimaryPath}/OneLib/include
+    ${HOOKZZ_SOURCE_DIR}/include
+    ${HOOKZZ_SOURCE_DIR}/srcxx
+    ${HOOKZZ_SOURCE_DIR}/srcxx/UserMode
+    ${HOOKZZ_SOURCE_DIR}/OneLib/logging
+    ${HOOKZZ_SOURCE_DIR}/OneLib/stdcxx
+    ${HOOKZZ_SOURCE_DIR}/OneLib/include
 )
 
 add_executable(MachOStaticPatcher
@@ -97,17 +103,7 @@ add_executable(MachOStaticPatcher
     ${MachOManipulator.SOURCE_FILE}
 )
 
-
-if(SYSTEM.iOS)
-    # -lstdc++
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-add_library(RuntimeSupport
-    ${RuntimeSupport.SOURCE_FILE}
-)
-
-add_subdirectory(${PrimaryPath}/OneLib onelib.out)
+add_subdirectory(${HOOKZZ_SOURCE_DIR}/OneLib onelib.out)
 target_link_libraries(MachOStaticPatcher logging stdcxx)
 
 if(0)
