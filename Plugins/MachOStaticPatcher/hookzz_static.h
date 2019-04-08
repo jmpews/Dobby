@@ -1,5 +1,7 @@
 #define MAX_STATIC_HOOK_ENTRY 64
 
+#include <stdint.h>
+
 typedef struct _InterceptorStatic {
   uint64_t this_;
   uint64_t count;
