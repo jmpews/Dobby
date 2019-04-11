@@ -1,4 +1,4 @@
-#include "Internal.h"
+#include "InterfaceInternal.h"
 
 extern void _dyld_register_func_for_add_image(void (*func)(const struct mach_header *mh, intptr_t vmaddr_slide));
 
@@ -27,7 +27,10 @@ void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide) {
   void *zDATAContent = getSegmentContent((mach_header_t *)mh, "__zDATA");
   if (zDATAContent) {
     InterceptorStatic *interceptor = (InterceptorStatic *)zDATAContent;
-    if (interceptor->this_) {
+    if (interceptor->this_ && ((addr_t)interceptor->this_ != (addr_t)zDATAContent)) {
+      // set interceptor initialized flag.
+      interceptor->this_ == (uint64_t)zDATAContent;
+      
       // iterate all entry
       for (int i = 0; i < interceptor->count; i++) {
         interceptor->entry[i] += vmaddr_slide;
@@ -40,7 +43,7 @@ void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide) {
   }
 }
 
-__attribute__((constructor)) void _rebase_process() {
-  printf("[*] Register StubRebase CallBack.\n");
+__attribute__((constructor))
+void _rebase_process() {
   _dyld_register_func_for_add_image(rebase_stub);
 }

@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 set(RuntimeSupport.SOURCE_FILE
     FunctionInlineReplaceExport.cc
-    StubRebase.cc
+    TrampolineStubRebase.cc
 )
 
 include_directories(
