@@ -48,6 +48,13 @@ typedef struct _HookEntryStatic {
 
 // =====
 
+// clang-format off
+#ifdef __cplusplus
 extern "C" {
-  void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call);
+#endif //__cplusplus
+
+void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call);
+
+#ifdef __cplusplus
 }
+#endif //__cplusplus
