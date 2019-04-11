@@ -264,6 +264,10 @@ void MachoManipulator::Dump(char *outputFilePath) {
   outputStream.open(outputPath);
 
   outputStream.write((const char *)mmapFileData, mmapFileLength);
+  outputStream.close();
+  
+  // set Target executable
+  chmod(outputPath.c_str(), 0x755);
 }
 
 segment_command_t *MachoManipulator::getSegment(char *segName) {

@@ -27,6 +27,7 @@ typedef struct nlist nlist_t;
 
 extern "C" {
 void *getSegmentContent(mach_header_t *header, char *segName);
+void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call);
 }
 
 // =====

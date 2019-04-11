@@ -236,7 +236,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncd ~/project/HookZz/Plugins/MachOStaticPatcher/OneKey\nsh auto.sh\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# cd ~/project/HookZz/Plugins/MachOStaticPatcher/OneKey\n# sh auto.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -405,6 +405,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Z68GS36L8B;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MachOStaitcPatcherExample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -422,6 +423,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Z68GS36L8B;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MachOStaitcPatcherExample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
