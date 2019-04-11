@@ -29,7 +29,7 @@ void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide) {
     InterceptorStatic *interceptor = (InterceptorStatic *)zDATAContent;
     if (interceptor->this_ && ((addr_t)interceptor->this_ != (addr_t)zDATAContent)) {
       // set interceptor initialized flag.
-      interceptor->this_ == (uint64_t)zDATAContent;
+      interceptor->this_ = (uint64_t)zDATAContent;
       
       // iterate all entry
       for (int i = 0; i < interceptor->count; i++) {
