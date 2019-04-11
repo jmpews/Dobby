@@ -2,7 +2,51 @@
 
 MachOSaticPatcher is a static hook tool which is based on HookZz.
 
-## Usage
+## Compile & Build
+
+#### 1. Build `MachOStaticPatcher` Executable
+
+`MachOStaticPatcher` will modify, and insert a indirect branch stub at the target function which you want to hook. It's not enough, so RuntimeSupport library is necessary at runtime.
+
+```
+cd HookZz/Plugins/MachOStaticPatcher
+
+mkdir build
+
+cmake .. -DHOOKZZ_SOURCE_DIR=/path/HookZz
+
+make -j4
+```
+
+final, you will find the `MachOStaticPatcher` executable
+
+#### 2 Build `RuntimeSupport` Library
+
+The RuntimeSupport library will do some auxiliary work and provide interface function(ZzReplaceStatic).
+
+You can use any one way below.
+
+**Choice 1:** Build RuntimeSupport as library
+
+```
+cd HookZz/Plugins/MachOStaticPatcher/RuntimeSupport
+
+mkdir build
+
+cmake .. -DCMAKE_TOOLCHAIN_FILE=${HOOKZZ_SOURCE_DIR}/cmake/ios.toolchain.cmake -DPLATFORM=OS64 -DARCHS=arm64 -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=0 -DDEPLOYMENT_TARGET=9.3 -DCMAKE_SYSTEM_PROCESSOR=aarch64
+
+make
+```
+
+add `libRuntimeSupport.dylib` to your project.
+
+
+**Choice 2:** Add the source file to your hack lib.
+
+add `FunctionInlineReplaceExport.cc`, `StubRebase.cc`, `internal.h` to your project.
+
+
+## Use `MachOStaticPathcer` to insert indirect branch stub.
 
 #### 0. Check the origin code signature
 
@@ -13,18 +57,18 @@ codesign --verify --verbose=3 /YourBinaryApp
 #### 1. Remove the origin code signature.
 
 ```
-codesign --remove-signature /YourBinaryApp
+codesign --remove-signature /YourBinaryApp/Binary
 ```
 
-#### 2. Static initialize the app
+#### 2. Static insert indirect branch stub to your binary
 
-insert the hook routing and stub placeholder.
+`function_vmaddr` is the function virtual address which is same as the IDA pro show.
 
 ```
-./MachOStaticPatcher /YourBinaryApp/binary 0x100001000
+./MachOStaticPatcher /YourBinaryApp/binary function_vmaddr1 function_vmaddr2
 ```
 
-#### 3. Resign the App
+#### 3. Resign the binary
 
 ```
 # dump the entitlements.plist
@@ -35,18 +79,24 @@ security cms -D -i /YourBinaryApp/embedded.mobileprovision > profile.plist
 codesign -f -s "iPhone Developer: Haolin Huang (xxxxxx)" --entitlements entitlements.plist /YourBinaryApp
 ```
 
-#### 3. Use the Xcode Run Script instead of above operation
+#### 4. Not done yet.
+
+static patch the binary is done, but the stub content is virtual address, so the RuntimeSupport will do some `rebase` work which like `dyld`.
+
+## Use `RuntimeSupport` library
 
 
-#### 4. Add Runtime initialization library
+As I mentioned above, add the RuntimeSupport to your hack lib on your way.
 
-the origin placeholder need to do rebase.
+So, Now you can hook target function as.
 
-so, inject or other way what you want, add `RuntimeSupport` library to your project.
+```
+ZzReplaceStatic("binary_image_name", function_vmaddr, your_fake_function);
+```
 
-#### 5. install the App
+## Use `OneKey` Xcode Run Script
 
-drop the app to `Devices` -> `INSTALLED APPS` window.
+config the `OneKey/auto.sh`, and add it to the Xcode run script
 
 ## Epilogue
 
