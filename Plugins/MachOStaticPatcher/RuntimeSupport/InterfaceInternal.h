@@ -27,7 +27,7 @@ typedef struct nlist nlist_t;
 
 extern "C" {
 void *getSegmentContent(mach_header_t *header, char *segName);
-void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call);
+void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide);
 }
 
 // =====
@@ -45,3 +45,9 @@ typedef struct _HookEntryStatic {
   uint64_t relocated_origin_function;
   uint64_t *trampoline_target_stub;
 } HookEntryStatic;
+
+// =====
+
+extern "C" {
+  void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call);
+}

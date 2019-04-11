@@ -1,18 +1,24 @@
 
-#include "Internal.h"
+#include "InterfaceInternal.h"
 
-InterceptorStatic *FindInterceptorInImage(const char *image_name) {
+static InterceptorStatic *FindInterceptorInImage(const char *image_name) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
 
   for (size_t i = 0; i < image_count; i++) {
-    const struct mach_header *header = _dyld_get_image_header(i);
+    mach_header_t *header = (mach_header_t *)_dyld_get_image_header(i);
     const char *name_                = _dyld_get_image_name(i);
     if (!name_)
       continue;
     name_ = strrchr(name_, '/') + 1;
     if (image_name != NULL && strcmp(image_name, name_))
       continue;
+    
+    // try to rebase the image.
+    intptr_t vmslide = _dyld_get_image_vmaddr_slide(i);
+    rebase_stub((const struct mach_header *)header, vmslide);
+    
+    // get the segment zDATA content
     void *content = getSegmentContent((mach_header_t *)_dyld_get_image_header(i), "__zDATA");
     return (InterceptorStatic *)content;
   }
@@ -20,7 +26,7 @@ InterceptorStatic *FindInterceptorInImage(const char *image_name) {
   return NULL;
 }
 
-HookEntryStatic *FindFunctionEntry(InterceptorStatic *interceptor, void *function_virtual_address) {
+static HookEntryStatic *FindFunctionEntry(InterceptorStatic *interceptor, void *function_virtual_address) {
   if (interceptor->this_) {
     // iterate all entry
     for (int i = 0; i < interceptor->count; i++) {
@@ -34,7 +40,6 @@ HookEntryStatic *FindFunctionEntry(InterceptorStatic *interceptor, void *functio
 }
 
 void ZzReplaceStatic(char *image_name, void *function_virtual_address, void *replace_call, void **origin_call) {
-
   InterceptorStatic *interceptor = FindInterceptorInImage(image_name);
   if (!interceptor)
     return;
