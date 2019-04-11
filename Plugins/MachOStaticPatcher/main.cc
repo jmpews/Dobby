@@ -179,9 +179,11 @@ int main(int argc, char **argv) {
     funcOffsetList.push_back(getFuncOffset(__text, p));
   }
 
-  // insert ZDATA, zTEXT segment
-  mm->AddSegment("__zDATA", 3);
-  mm->AddSegment("__zTEXT", 5);
+  if (!mm->getSegment("__zDATA") && !mm->getSegment("__zTEXT")) {
+    // insert ZDATA, zTEXT segment
+    mm->AddSegment("__zDATA", 3);
+    mm->AddSegment("__zTEXT", 5);
+  }
 
   segment_command_t *zDATA = mm->getSegment("__zDATA");
   void *zDATAContent       = mm->getSegmentContent("__zDATA");
@@ -227,5 +229,7 @@ int main(int argc, char **argv) {
 
   // try to staitc the InterceptorStatic and all HookEntryStatic to binary
   mm->Dump();
+  
+  
   return 0;
 }
