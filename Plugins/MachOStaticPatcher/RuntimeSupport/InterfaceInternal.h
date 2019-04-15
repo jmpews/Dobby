@@ -26,8 +26,8 @@ typedef struct nlist nlist_t;
 #endif
 
 extern "C" {
-void *getSegmentContent(mach_header_t *header, char *segName);
-void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide);
+  void *getRuntimeSegmentContent(mach_header_t *header, char *segName, intptr_t vmslide = 0);
+  void rebase_stub(const struct mach_header *mh, intptr_t vmaddr_slide);
 }
 
 // =====
