@@ -19,7 +19,7 @@ static InterceptorStatic *FindInterceptorInImage(const char *image_name) {
     rebase_stub((const struct mach_header *)header, vmslide);
     
     // get the segment zDATA content
-    void *content = getSegmentContent((mach_header_t *)_dyld_get_image_header(i), "__zDATA");
+    void *content = getRuntimeSegmentContent((mach_header_t *)_dyld_get_image_header(i), "__zDATA");
     return (InterceptorStatic *)content;
   }
 

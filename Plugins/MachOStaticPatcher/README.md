@@ -6,7 +6,7 @@ MachOSaticPatcher is a static hook tool which is based on HookZz.
 
 #### 1. Build `MachOStaticPatcher` Executable
 
-`MachOStaticPatcher` will modify, and insert a indirect branch stub at the target function which you want to hook. It's not enough, so RuntimeSupport library is necessary at runtime.
+`MachOStaticPatcher` modify and insert an indirect branch stub at the target function which you want to hook. It's not enough, so RuntimeSupport library is necessary at runtime.
 
 ```
 cd HookZz/Plugins/MachOStaticPatcher
@@ -18,15 +18,15 @@ cmake .. -DHOOKZZ_SOURCE_DIR=/path/HookZz
 make -j4
 ```
 
-final, you will find the `MachOStaticPatcher` executable
+final, you found the `MachOStaticPatcher` executable
 
 #### 2 Build `RuntimeSupport` Library
 
-The RuntimeSupport library will do some auxiliary work and provide interface function(ZzReplaceStatic).
+The `RuntimeSupport` library do some auxiliary work and provide interface function(ZzReplaceStatic).
 
 You can use any one way below.
 
-**Choice 1:** Build RuntimeSupport as library
+**Choice 1:** Build `RuntimeSupport` as the library
 
 ```
 cd HookZz/Plugins/MachOStaticPatcher/RuntimeSupport
@@ -62,7 +62,7 @@ codesign --remove-signature /YourBinaryApp/Binary
 
 #### 2. Static insert indirect branch stub to your binary
 
-`function_vmaddr` is the function virtual address which is same as the IDA pro show.
+`function_vmaddr` is the virtual function address which is the same as the IDA pro show.
 
 ```
 ./MachOStaticPatcher /YourBinaryApp/binary function_vmaddr1 function_vmaddr2
@@ -81,12 +81,12 @@ codesign -f -s "iPhone Developer: Haolin Huang (xxxxxx)" --entitlements entitlem
 
 #### 4. Not done yet.
 
-static patch the binary is done, but the stub content is virtual address, so the RuntimeSupport will do some `rebase` work which like `dyld`.
+static patch the binary is done, but the stub content is a virtual address, so the RuntimeSupport do some `rebase` work which like `dyld`.
 
 ## Use `RuntimeSupport` library
 
 
-As I mentioned above, add the RuntimeSupport to your hack lib on your way.
+As I mentioned above, add the `RuntimeSupport` to your hack lib on your way.
 
 So, Now you can hook target function as.
 
