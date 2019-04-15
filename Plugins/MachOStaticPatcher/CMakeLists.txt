@@ -67,6 +67,8 @@ set(HookZz.SOURCE_FILE
     ${HOOKZZ_SOURCE_DIR}/srcxx/hookzz.cpp
     ${HOOKZZ_SOURCE_DIR}/srcxx/interceptor.cpp
 )
+source_group(HookZz FILES ${HookZz.SOURCE_FILE})
+
 
 set(HookZzStatic.SOURCE_FILE
     hookzz_static/ExecMemory/clear-cache-tool-static.cc
@@ -75,6 +77,7 @@ set(HookZzStatic.SOURCE_FILE
     hookzz_static/PlatformInterface/Common/platform-static.cc
     hookzz_static/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
 )
+source_group(HookZzStatic FILES ${HookZzStatic.SOURCE_FILE})
 
 set(MachOManipulator.SOURCE_FILE
     MachOManipulator/MachOManipulator.cc

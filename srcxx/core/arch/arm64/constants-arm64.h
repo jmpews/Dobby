@@ -372,7 +372,7 @@ enum LogicalShiftedOp {
 // PC relative addressing.
 enum PCRelAddressingOp {
   PCRelAddressingFixed = 0x10000000,
-  PCRelAddressingFMask = 0x1F000000,
+  PCRelAddressingFixedMask = 0x1F000000,
   PCRelAddressingMask  = 0x9F000000,
   ADR                  = PCRelAddressingFixed | 0x00000000,
   ADRP                 = PCRelAddressingFixed | 0x80000000
