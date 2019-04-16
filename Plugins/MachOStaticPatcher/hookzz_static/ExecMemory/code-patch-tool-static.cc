@@ -17,8 +17,8 @@ extern void *TranslateVa2Rt(void *va, void *machoFileRuntimeMemory);
 
 // the VirtualAddress is Allocate form OSMemory
 _MemoryOperationError CodePatch(void *virtualAddress, void *buffer, int size) {
-  // void *rtAddress = TranslateVa2Rt(virtualAddress, mm->mmapFileData);
-  memcpy(virtualAddress, buffer, size);
+   void *rtAddress = TranslateVa2Rt(virtualAddress, mm->mmapFileData);
+  memcpy(rtAddress, buffer, size);
 
 #if 0
   // map the segment data -> mmap page

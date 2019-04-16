@@ -36,7 +36,13 @@ public:
   }
 } PseudoLabelData;
 
+#include "MachOManipulator/MachOManipulator.h"
+extern MachoManipulator *mm;
+extern void *TranslateVa2Rt(void *va, void *machoFileRuntimeMemory);
+
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
+  from_pc = (addr_t)buffer;
+  buffer = TranslateVa2Rt(buffer, mm->mmapFileData);
 
   // prologue
   int relo_code_chunk_size = 32;
@@ -99,22 +105,22 @@ TryRelocateWithNewCodeChunkAgain:
       int32_t b_cond_instr = (inst & 0xff00001f) | LFT(imm19, 19, 5);
 
       _ Emit(b_cond_instr);
-    } else if((inst & PCRelAddressingMask) == ADRP) {
+    } else if ((inst & PCRelAddressingMask) == ADRP) {
       uint64_t src_PAGE  = ALIGN(cur_src_pc, 0x1000);
-      uint64_t dest_PAGE    = ALIGN(cur_dest_pc, 0x1000);
-      
+      uint64_t dest_PAGE = ALIGN(cur_dest_pc, 0x1000);
+
       uint32_t immhi = bits(inst, 5, 23);
       uint32_t immlo = bits(inst, 29, 30);
-      
-      int64_t imm = (LFT(immhi, 19, 5) | LFT(immlo, 2, 0)) << 12;
-      
+
+      uint64_t imm = (LFT(immhi, 19, 2) | LFT(immlo, 2, 0)) << 12;
+
       uint64_t final_PAGE = src_PAGE + imm;
-      
-      imm = final_PAGE - dest_PAGE;
+
+      imm   = final_PAGE - dest_PAGE;
       immhi = bits(imm >> 12, 2, 20);
       immlo = bits(imm >> 12, 0, 1);
-      
-      int32_t adrp_instr  = (inst & 0x9f00001f) | LFT(immhi, 19, 5) | LFT(immlo, 2, 29);
+
+      int32_t adrp_instr = (inst & 0x9f00001f) | LFT(immhi, 19, 5) | LFT(immlo, 2, 29);
 
       _ Emit(adrp_instr);
     } else {

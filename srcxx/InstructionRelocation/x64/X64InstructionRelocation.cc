@@ -103,6 +103,8 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
 }
 
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
+  from_pc = (addr_t)buffer;
+
   int relo_code_chunk_size = 32;
   int chunk_size_step      = 16;
   AssemblyCodeChunk *codeChunk;
