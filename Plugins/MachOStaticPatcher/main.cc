@@ -98,10 +98,11 @@ void ZzStaticHookInitialize(addr_t func_vmaddr, addr_t func_rtaddr, HookEntrySta
   route->Commit();
 
   // convert relocated_origin_function runtime address to vmaddr
-  segment_command_t *zTEXT = mm->getSegment("__zTEXT");
-  addr_t relocated_origin_function_vmaddr =
-      zTEXT->vmaddr + ((uint64_t)entry->relocated_origin_function - (uint64_t)mm->mmapFileData - zTEXT->fileoff);
-  entry_staic->relocated_origin_function = relocated_origin_function_vmaddr;
+  //  segment_command_t *zTEXT = mm->getSegment("__zTEXT");
+  //  addr_t relocated_origin_function_vmaddr = zTEXT->vmaddr + ((uint64_t)entry->relocated_origin_function - (uint64_t)mm->mmapFileData - zTEXT->fileoff);
+  //  entry_staic->relocated_origin_function = relocated_origin_function_vmaddr;
+  
+  entry_staic->relocated_origin_function = (uint64_t)entry->relocated_origin_function;
   entry_staic->trampoline_target_stub    = (uint64_t *)stub->address;
   return;
 }
