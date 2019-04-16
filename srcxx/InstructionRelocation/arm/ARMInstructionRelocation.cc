@@ -605,6 +605,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
 }
 
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
+  from_pc = (addr_t)buffer;
 
   bool is_thumb      = (uint32_t)buffer % 2;
   AssemblyCode *code = NULL;

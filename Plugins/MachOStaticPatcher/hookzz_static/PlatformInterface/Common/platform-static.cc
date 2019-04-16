@@ -19,8 +19,10 @@ int OSMemory::PageSize() {
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   void *result = NULL;
   if (access == kReadExecute) {
-    void *content = mm->getSegmentContent("__zTEXT");
-    return content;
+//    void *content = mm->getSegmentContent("__zTEXT");
+//    return content;
+    segment_command_t *zTEXT = mm->getSegment("__zTEXT");
+    return (void *)zTEXT->vmaddr;
   } else if (access == kReadWrite) {
     segment_command_t *zDATA = mm->getSegment("__zDATA");
     return (void *)zDATA->vmaddr;

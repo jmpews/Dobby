@@ -33,6 +33,7 @@ public:
 } PseudoLabelData;
 
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
+  from_pc = (addr_t)buffer;
 
   uint64_t cur_addr    = (uint64_t)buffer;
   uint64_t cur_src_pc  = from_pc;

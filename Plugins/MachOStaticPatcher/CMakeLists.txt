@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(MachOStaticPatcher)
 
+add_definitions(-DMACHO_STATIC_PATCHER)
+
+
 if(HOOKZZ_SOURCE_DIR)
   message(STATUS "HOOKZZ_SOURCE_DIR : ${HOOKZZ_SOURCE_DIR}")
 else()

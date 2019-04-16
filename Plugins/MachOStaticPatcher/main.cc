@@ -88,10 +88,11 @@ void ZzStaticHookInitialize(addr_t func_vmaddr, addr_t func_rtaddr, HookEntrySta
   WritableDataChunk *stub = AllocateStaticDataChunk(sizeof(void *));
 
   // convert stub vmaddr to runtime address
-  addr_t sutb_rtaddr = func_rtaddr + ((addr_t)stub->address - func_vmaddr);
+  // addr_t sutb_rtaddr = func_rtaddr + ((addr_t)stub->address - func_vmaddr);
+  
 
-  entry->function_address             = (void *)func_rtaddr;
-  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, (void *)sutb_rtaddr);
+  entry->function_address             = (void *)func_vmaddr;
+  FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, (void *)stub->address);
   route->Dispatch();
 
   route->Commit();
