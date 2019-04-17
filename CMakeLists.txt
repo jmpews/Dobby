@@ -44,7 +44,7 @@ if(Z_DEBUG)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
-# Platform
+# iOS Simulator Platform
 if(Z_PLATFORM STREQUAL "SIMULATOR64")
     set(SYSTEM.iOS 1)
     set(PROCESSOR.X86_64 1)
@@ -261,7 +261,7 @@ if(SYSTEM.Android OR SYSTEM.Linux)
     endif()
 endif()
 
-if(SYSTEM.Darwin)
+if(SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
     set(Target.srcxx.UserMode.PlatformInterface.Common.FILES
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix.cc
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix/extensions-posix.cc
