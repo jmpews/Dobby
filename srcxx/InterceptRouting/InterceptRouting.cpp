@@ -35,6 +35,10 @@ void InterceptRouting::Prepare() {
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
+// Patch the address with branch instr
+// X86_64(14 bytes): [jmp rip] [data_address]
+// ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
+// ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
   CodeBufferBase *trampolineCodeBuffer = NULL;
   trampolineCodeBuffer                 = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());

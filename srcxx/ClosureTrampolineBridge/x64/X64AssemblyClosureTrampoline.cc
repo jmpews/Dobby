@@ -36,5 +36,5 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   entry->carry_handler = carry_handler;
   entry->size          = code->raw_instruction_size();
 
-  return NULL;
+  return entry;
 }
