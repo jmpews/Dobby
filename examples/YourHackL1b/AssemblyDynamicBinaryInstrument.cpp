@@ -58,7 +58,7 @@ void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 
 __attribute__((constructor)) void ___main() {
 
-  ZzDynamicBinaryInstrument((void *)malloc, malloc_handler);
+//  ZzDynamicBinaryInstrument((void *)malloc, malloc_handler);
 //  ZzDynamicBinaryInstrument((void *)free, free_handler);
 
   return;
