@@ -347,7 +347,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
+    HOOKZZ_DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   void CommitRealizeAddress(void *address) {

@@ -34,7 +34,7 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
 
   AssemblyCode *code = FinalizeFromCodeBuffer(address, reinterpret_cast<CodeBufferBase *>(assembler->GetCodeBuffer()));
 
-  DLOG("[*] AssemblyCode finalize assembler at %p\n", (void *)code->raw_instruction_start());
+  HOOKZZ_DLOG("[*] AssemblyCode finalize assembler at %p\n", (void *)code->raw_instruction_start());
   return reinterpret_cast<AssemblyCode *>(code);
 }
 

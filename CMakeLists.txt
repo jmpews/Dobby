@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 # ===== Handle Option =====
 option(SHARED "Build shared library" OFF)
 
-option(Z_DEBUG "Enable debug log" OFF)
+option(HOOKZZ_DLOG "Enable debug log" OFF)
 
 option(Plugin.DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
@@ -38,8 +38,8 @@ if(CLOSURE_BRIDGE_TEMPLATE)
 endif()
 
 # Enable debug will log more infomation
-if(Z_DEBUG)
-   add_definitions(-DZ_DEBUG)
+if(HOOKZZ_DEBUG)
+   add_definitions(-DHOOKZZ_DEBUG)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()

@@ -1,13 +1,17 @@
 # HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
 
-A hook framework for arm / arm64 / iOS / Android
+A hook framework for arm / arm64(aarch64) / x86_64 / iOS / Android / Linux / Windows
 
 _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 
 
-## 1. Compile
+## 1. Build & Compile
 
-**`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
+#### 1.0 Clone the project
+
+```
+git clone --branch dev --depth 1 git@github.com:jmpews/HookZz.git
+```
 
 #### 1.1. Use BuildScript for iOS 64 & Simulator 64
 
@@ -33,7 +37,7 @@ cmake .. \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
 -DSHARED=ON \
--DZ_DEBUG=OFF
+-DHOOKZZ_DEBUG=OFF
 
 make -j4
 ```
@@ -41,18 +45,35 @@ make -j4
 if you want generate Xcode Project, just replace with `cmake -G Xcode `.
 
 
-#### 1.3. Build for Android/`arm64-v8a`
+#### 1.3. Build for Android, `arm64-v8a`
 
 ```
 export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
 
-cmake ../.. \
+cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
 -DCMAKE_BUILD_TYPE=Release \
 -DANDROID_ABI="arm64-v8a" \
 -DANDROID_NATIVE_API_LEVEL=android-21 \
--DZ_DEBUG=OFF \
--DSHARED=ON
+-DSHARED=ON \
+-DHOOKZZ_DEBUG=OFF
+
+make -j4
+```
+
+#### 1.4. Build for Android, `armeabi-v7a`
+
+```
+export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
+
+cmake .. \
+-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release \
+-DANDROID_ABI="armeabi-v7a" \
+-DANDROID_STL=c++_static \
+-DANDROID_NATIVE_API_LEVEL=android-14 \
+-DSHARED=ON \
+-DHOOKZZ_DEBUG=OFF
 
 make -j4
 ```
@@ -96,6 +117,10 @@ void hook_fread() {
 #### 4.1. Android / ARM
 
 4.1.1. not fixed `pld`
+
+#### 4.2 x86
+
+`x86_64` is tested, but not `x86`.
 
 ## 5. Refer
 1. [frida-gum](https://github.com/frida/frida-gum) 
