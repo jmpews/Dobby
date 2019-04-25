@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <set>
 
@@ -61,6 +62,15 @@ size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
 void __main() {
 
   TracedFileList = new std::unordered_map<FILE *, const char *>();
+
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#ifdef TARGET_OS_IPHONE
+  std::ifstream file;
+  file.open("/System/Library/CoreServices/SystemVersion.plist");
+  std::cout << file.rdbuf();
+#endif
+#endif
 
   ZzReplace((void *)fopen, (void *)fake_fopen, (void **)&orig_fopen);
   ZzReplace((void *)fwrite, (void *)fake_fwrite, (void **)&orig_fwrite);
