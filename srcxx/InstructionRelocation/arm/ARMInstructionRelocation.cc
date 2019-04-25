@@ -504,7 +504,7 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int *relocate_size, uint32_t f
   while (cur_addr < ((uint32_t)buffer + *relocate_size)) {
     int off = turbo_assembler_.GetCodeBuffer()->getSize();
     ARMRelocateSingleInst(inst, cur_src_pc, cur_dest_pc, turbo_assembler_);
-    DLOG("[*] relocate arm inst: 0x%x\n", inst);
+    HOOKZZ_DLOG("[*] relocate arm inst: 0x%x\n", inst);
     // Move to next instruction
     cur_src_pc += ARM_INST_LEN;
     cur_dest_pc += turbo_assembler_.GetCodeBuffer()->getSize() - off;
@@ -556,7 +556,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
     int off = turbo_assembler_.GetCodeBuffer()->getSize();
     if (is_thumb2(inst)) {
       Thumb2RelocateSingleInst((uint16_t)inst, (uint16_t)(inst >> 16), cur_src_pc, cur_dest_pc, turbo_assembler_);
-      DLOG("[*] relocate thumb2 inst: 0x%x\n", inst);
+      HOOKZZ_DLOG("[*] relocate thumb2 inst: 0x%x\n", inst);
 
       // Move to next instruction
       cur_src_pc += Thumb2_INST_LEN;
@@ -564,7 +564,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
       actual_relocate_size += Thumb2_INST_LEN;
     } else {
       Thumb1RelocateSingleInst((uint16_t)inst, cur_src_pc, cur_dest_pc, turbo_assembler_);
-      DLOG("[*] relocate thumb1 inst: 0x%x\n", (uint16_t)inst);
+      HOOKZZ_DLOG("[*] relocate thumb1 inst: 0x%x\n", (uint16_t)inst);
 
       // Move to next instruction
       cur_src_pc += Thumb1_INST_LEN;

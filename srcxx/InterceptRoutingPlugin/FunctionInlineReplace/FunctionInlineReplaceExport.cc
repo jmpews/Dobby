@@ -12,7 +12,7 @@ PUBLIC int ZzReplace(void *function_address, void *replace_call, void **origin_c
   if (!function_address)
     FATAL("[!] ERROR: the function address is 0x0.\n");
 
-  DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);
+  HOOKZZ_DLOG("[*] Initialize 'ZzReplace' hook at %p\n", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -31,6 +31,6 @@ PUBLIC int ZzReplace(void *function_address, void *replace_call, void **origin_c
 
   route->Commit();
 
-  DLOG("[*] Finalize %p\n", function_address);
+  HOOKZZ_DLOG("[*] Finalize %p\n", function_address);
   return (int)RS_SUCCESS;
 }

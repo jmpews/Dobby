@@ -106,7 +106,7 @@ bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) 
   }
 
   if (ret) {
-    DLOG("[!] %s\n", ((const char *)strerror(errno)));
+    FATAL("[!] %s\n", ((const char *)strerror(errno)));
   }
 
 // For accounting purposes, we want to call MADV_FREE_REUSE on macOS after

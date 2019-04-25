@@ -97,7 +97,7 @@ void *get_closure_bridge() {
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   closure_bridge     = (void *)code->raw_instruction_start();
 
-  DLOG("[*] Build the closure bridge at %p\n", closure_bridge);
+  HOOKZZ_DLOG("[*] Build the closure bridge at %p\n", closure_bridge);
 
 #endif
   return (void *)closure_bridge;

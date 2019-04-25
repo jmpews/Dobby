@@ -9,7 +9,7 @@
 #include "InterceptRoutingPlugin/intercept-routing-handler/intercept_routing_handler.h"
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
-  DLOG("%s\n", "[*] catch pre_call_forward_handler");
+  HOOKZZ_DLOG("%s\n", "[*] catch pre_call_forward_handler");
   StackFrame *stackframe = new StackFrame();
   // create stack frame as common variable between pre_call and post_call
   ThreadSupport::PushStackFrame(stackframe);
@@ -57,7 +57,7 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 
 // run the user handler **before run the origin-instructions(which have been relocated)**
 void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
-  DLOG("%s\n", "[*] catch prologue dispatch");
+  HOOKZZ_DLOG("%s\n", "[*] catch prologue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   pre_call_forward_handler(reg_ctx, entry);
   return;
@@ -65,7 +65,7 @@ void prologue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry 
 
 // run the user handler **before the function return** by replace the lr register
 void epilogue_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
-  DLOG("%s\n", "[*] catch epilogue dispatch");
+  HOOKZZ_DLOG("%s\n", "[*] catch epilogue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
   post_call_forward_handler(reg_ctx, entry);
   return;

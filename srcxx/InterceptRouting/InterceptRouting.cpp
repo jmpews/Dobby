@@ -24,7 +24,7 @@ void InterceptRouting::Prepare() {
   // set the relocated instruction address
   entry_->relocated_origin_function = (void *)relocatedCode->raw_instruction_start();
 
-  DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
+  HOOKZZ_DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
 
 #ifndef MACHO_STATIC_PATCHER
   // save original prologue
@@ -45,7 +45,7 @@ void InterceptRouting::Active() {
 
   AssemblyCode::FinalizeFromCodeBuffer(entry_->target_address, trampolineCodeBuffer);
 
-  DLOG("[*] Active the routing at %p\n", entry_->target_address);
+  HOOKZZ_DLOG("[*] Active the routing at %p\n", entry_->target_address);
 }
 
 void InterceptRouting::Commit() {

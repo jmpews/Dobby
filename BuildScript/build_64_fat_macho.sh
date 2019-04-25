@@ -20,7 +20,7 @@ cmake ../.. \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
 -DSHARED=ON \
--DZ_DEBUG=ON
+-DHOOKZZ_DEBUG=ON
 
 make -j4
 cd ..
@@ -40,7 +40,7 @@ cmake ../.. \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
 -DSHARED=ON \
--DZ_DEBUG=ON
+-DHOOKZZ_DEBUG=ON
 
 make -j4
 cd ..
@@ -52,7 +52,7 @@ cd temp_build_x86_64
 
 cmake ../.. \
 -DSHARED=ON \
--DZ_DEBUG=ON
+-DHOOKZZ_DEBUG=ON
 
 make -j4
 

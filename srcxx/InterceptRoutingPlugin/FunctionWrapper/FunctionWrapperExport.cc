@@ -8,7 +8,7 @@
 #include "InterceptRoutingPlugin/FunctionWrapper/function-wrapper-x64.h"
 
 PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_call) {
-  DLOG("[*] Initialize 'ZzWrap' hook at %p\n", function_address);
+  HOOKZZ_DLOG("[*] Initialize 'ZzWrap' hook at %p\n", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -24,6 +24,6 @@ PUBLIC RetStatus ZzWrap(void *function_address, PRECALL pre_call, POSTCALL post_
   interceptor->AddHookEntry(entry);
   route->Commit();
 
-  DLOG("[*] Finalize %p\n", function_address);
+  HOOKZZ_DLOG("[*] Finalize %p\n", function_address);
   return RS_SUCCESS;
 }
