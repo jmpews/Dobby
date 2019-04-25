@@ -58,14 +58,13 @@ size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
   return orig_fwrite(ptr, size, count, stream);
 }
 
- __attribute__((constructor))
-void __main() {
+__attribute__((constructor)) void __main() {
 
   TracedFileList = new std::unordered_map<FILE *, const char *>();
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
-#ifdef TARGET_OS_IPHONE
+#if (TARGET_OS_IPHONE || TARGET_OS_MAC)
   std::ifstream file;
   file.open("/System/Library/CoreServices/SystemVersion.plist");
   std::cout << file.rdbuf();
