@@ -48,18 +48,18 @@ void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 
 void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   uintptr_t mem_ptr;
-  
+
   mem_ptr = getCallFirstArg(reg_ctx);
-  
+
   char *buffer = "[-] function free first arg: 0x00000000.\n";
-  format_integer_manually(strchr(buffer, '.')-1, mem_ptr);
+  format_integer_manually(strchr(buffer, '.') - 1, mem_ptr);
   puts(buffer);
 }
 
 __attribute__((constructor)) void ___main() {
 
-//  ZzDynamicBinaryInstrument((void *)malloc, malloc_handler);
-//  ZzDynamicBinaryInstrument((void *)free, free_handler);
+  //  ZzInstrument((void *)malloc, malloc_handler);
+  //  ZzInstrument((void *)free, free_handler);
 
   return;
 }

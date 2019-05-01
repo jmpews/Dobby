@@ -7,11 +7,11 @@
 
 #include "InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
-PUBLIC int ZzDynamicBinaryInstrument(void *inst_address, DBICallTy handler) {
+PUBLIC int ZzInstrument(void *inst_address, DBICallTy handler) {
   if (!inst_address)
     FATAL("[!] ERROR: the function address is 0x0.\n");
 
-  HOOKZZ_DLOG("[*] Initialize 'ZzDynamicBinaryInstrument' hook at %p\n", inst_address);
+  HOOKZZ_DLOG("[*] Initialize 'ZzInstrument' hook at %p\n", inst_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 

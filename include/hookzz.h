@@ -112,7 +112,7 @@ int ZzReplace(void *function_address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
 typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-int ZzDynamicBinaryInstrument(void *inst_address, DBICallTy dbi_call);
+int ZzInstrument(void *inst_address, DBICallTy dbi_call);
 
 #ifdef __cplusplus
 }
