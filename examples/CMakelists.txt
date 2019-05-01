@@ -12,16 +12,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET_OPTION(Plugin.DynamicBinaryInstrument ON)
 add_subdirectory(${PrimaryPath} hookzz.out)
 
+include_directories(${PrimaryPath}/examples/YourHackL1b)
+
 add_executable(HookSimpleFunction
     ${PrimaryPath}/examples/HookSimpleFunction/HookSimpleFunction.cc
     ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
     ${PrimaryPath}/examples/YourHackL1b/AssemblyDynamicBinaryInstrument.cpp
 )
 
-include_directories(${PrimaryPath}/examples/YourHackL1b)
-
 target_link_libraries(HookSimpleFunction
     hookzz
 )
 
+add_library(_fopen_monitor SHARED
+    ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
+)
 
+target_link_libraries(_fopen_monitor
+    hookzz
+)
