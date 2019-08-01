@@ -1,4 +1,4 @@
-# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
+# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/F8P3uGy)
 
 A hook framework for arm / arm64(aarch64) / x86_64 / iOS / Android / Linux / Windows
 
