@@ -85,7 +85,7 @@ void *iterateSymbolTable(struct mach_header *header, const char *name) {
   char *strtab            = (char *)(linkedit_base + symtab_cmd->stroff);
 
   for (int i = 0; i < symtab_cmd->nsyms; i++) {
-    if(symtab[i].n_value) {
+    if (symtab[i].n_value) {
       uint32_t strtab_offset = symtab[i].n_un.n_strx;
       char *tmp_symbol_name  = strtab + strtab_offset;
       // TODO: what you want !!!

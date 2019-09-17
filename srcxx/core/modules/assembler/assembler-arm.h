@@ -307,7 +307,7 @@ public:
   }
 
 private:
-  void EmitType01(Condition cond, Opcode opcode, int set_cc, Register rd, Register rn, Operand o) {
+  void EmitType01(Condition cond, Opcode opcode, int set_cc, const Register rd, Register rn, Operand o) {
     ASSERT(rd != no_reg);
     ASSERT(cond != kNoCondition);
 
@@ -325,7 +325,7 @@ private:
   }
 
   // load store operation
-  void EmitMemOp(Condition cond, bool load, bool byte, Register rd, const MemOperand x) {
+  void EmitMemOp(Condition cond, bool load, bool byte, const Register rd, const MemOperand x) {
     ASSERT(rd != no_reg);
     ASSERT(cond != kNoCondition);
 

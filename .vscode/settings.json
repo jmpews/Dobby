@@ -89,7 +89,8 @@
     "streambuf": "cpp",
     "cmath": "cpp",
     "array": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "stdio.h": "c"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }
