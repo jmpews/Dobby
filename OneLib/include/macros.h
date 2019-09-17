@@ -8,7 +8,7 @@
 
 // assert
 #include <assert.h>
-#define ASSERT(X) assert(X)
+#define ASSERT(X)
 
 // left/right shift
 #define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
