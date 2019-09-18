@@ -16,6 +16,9 @@ set(TargetSource )
 
 include_directories(.)
 
-set(TargetSource darwin/find-symbol-darwin.c)
+set(TargetSource
+  darwin/find_symbol_darwin.c
+  darwin/find_symbol_dyld_shared_cache.c
+)
 
 add_library(findsymbol STATIC ${TargetSource})

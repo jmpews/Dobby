@@ -50,7 +50,7 @@ typedef int dword;
 #elif defined(_ARCH_PPC)
 #define TARGET_ARCH_PPC 1
 #else
-#error Target architecture was not detected as supported by v8
+#error Target architecture was not detected as supported by HookZz
 #endif
 
 #endif
