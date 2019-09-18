@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # ===== Handle Option =====
@@ -249,10 +249,10 @@ if(SYSTEM.Android OR SYSTEM.Linux)
     set(Target.srcxx.UserMode.PlatformInterface.Common.FILES
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix.cc
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix/extensions-posix.cc
-    ) 
+    )
     set(Target.srcxx.UserMode.ExecMemory.FILES
         ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-posix.cc
-    ) 
+    )
     if(MultiThreadSupport)
         set(Target.srcxx.UserMode.PlatformInterface.Thread.FILES
             ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/platform-thread-posix.cc
@@ -265,10 +265,10 @@ if(SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
     set(Target.srcxx.UserMode.PlatformInterface.Common.FILES
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix.cc
         ${Target.path}/srcxx/UserMode/PlatformInterface/Common/platform-posix/extensions-posix.cc
-    ) 
+    )
     set(Target.srcxx.UserMode.ExecMemory.FILES
         ${Target.path}/srcxx/UserMode/ExecMemory/code-patch-tool-darwin.cc
-    ) 
+    )
     if(MultiThreadSupport)
         set(Target.srcxx.UserMode.PlatformInterface.Thread.FILES
             ${Target.path}/srcxx/UserMode/PlatformInterface/Thread/platform-thread-posix.cc
