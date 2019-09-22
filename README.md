@@ -1,74 +1,67 @@
-# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/P4uCTTH)
+# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/F8P3uGy)
 
-A hook framework for arm / arm64 / iOS / Android
+A hook framework for arm / arm64(aarch64) / x86_64 / iOS / Android / Linux / Windows
 
 _tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
 
-## Features
 
-- Static Binary Instrumentation for Mach-O [doing]
+## 1. Build & Compile
 
-- **replace function** with `replace_call`
-
-- **wrap function** with `pre_call` and `post_call`
-
-- **dynamic binary instrumentation** with `dbi_call`
-
-- the power to hook short function(even single one instruction)
-
-- the power to access registers directly(ex: `reg_ctx->general.regs.x16`)
-
-- it's cute, **70kb+-**
-
-## Multiple Branch Type Support
-
-| Branch Type | Arch/Mode | Trampoline Assembly | Bytes | Range |
-| - | - | - | - | - |
-| - | ARM64 | `B xxx` | 4 | +-(1<<25) |
-| - | ARM64 | `LDR x17, 8`<br>`BR x17`<br>`.long 0x41414141`<br>`.long 0x41414141` | 16 | (1<<64) |
-| - | ARM/ARM | `B xxx` | 4 | +-(1<<25) |
-| - | ARM/ARM | `LDR pc, [pc, #-4]`<br>`.long 0x41414141` | 8 | (1<<32) |
-| - | ARM/Thumb1 | `B xxx` | 2 | +-(1<<10) |
-| - | ARM/Thumb2 | `B xxx` | 4 | +-(1<<23) |
-| - | ARM/Thumb2 | `LDR pc, [pc, #-[2\|4]`<br>`.long 0x41414141` | 8 | (1<<32) |
-
-## Compile
-
-**`git clone --depth 1 git@github.com:jmpews/HookZz.git`**
-
-#### 0x1. Build for iOS/ARM64
+#### 1.0 Clone the project
 
 ```
-# 1: not recommend
-export CFLAGS="-DIOS -arch arm64 -miphoneos-version-min=6.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
-cmake .. \
--DPLATFORM=iOS \
--DARCH=arm64 \
--DSHARED=ON \
--DCMAKE_OSX_SYSROOT="" \
--DCMAKE_BUILD_TYPE=Release
+git clone --branch dev --depth 1 git@github.com:jmpews/HookZz.git
+```
 
-# 2: recommend
+#### 1.1. Use BuildScript for iOS 64 & Simulator 64
+
+```
+cd BuildScript
+sh ./build_64_fat_macho.sh
+```
+
+#### 1.2. Build for iOS/ARM64
+
+```
+mkdir temp_build_aarch64
+
+cd temp_build_aarch64
+
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DIOS_PLATFORM=OS64 \
--DIOS_ARCH=arm64 \
--DENABLE_ARC=0 \
+-DPLATFORM=OS64 \
+-DARCHS=arm64 \
 -DENABLE_BITCODE=0 \
+-DENABLE_ARC=0 \
 -DENABLE_VISIBILITY=0 \
--DIOS_DEPLOYMENT_TARGET=9.3 \
--DDEBUG=OFF \
+-DDEPLOYMENT_TARGET=9.3 \
+-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
 -DSHARED=ON \
--DPLATFORM=iOS \
--DARCH=armv8 \
--DCMAKE_BUILD_TYPE=Release
+-DHOOKZZ_DEBUG=OFF
 
 make -j4
 ```
 
 if you want generate Xcode Project, just replace with `cmake -G Xcode `.
 
-#### 0x2. Build for Android/`armeabi-armv7a`
+
+#### 1.3. Build for Android, `arm64-v8a`
+
+```
+export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
+
+cmake .. \
+-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release \
+-DANDROID_ABI="arm64-v8a" \
+-DANDROID_NATIVE_API_LEVEL=android-21 \
+-DSHARED=ON \
+-DHOOKZZ_DEBUG=OFF
+
+make -j4
+```
+
+#### 1.4. Build for Android, `armeabi-v7a`
 
 ```
 export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
@@ -79,48 +72,34 @@ cmake .. \
 -DANDROID_ABI="armeabi-v7a" \
 -DANDROID_STL=c++_static \
 -DANDROID_NATIVE_API_LEVEL=android-14 \
--DDEBUG=OFF \
--DSHARED=ON
-
-make -j4
-```
-#### Build for Android/`arm64-v8a`
-
-```
-export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-
-cmake .. \
--DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
--DCMAKE_BUILD_TYPE=Release \
--DANDROID_ABI="arm64-v8a" \
--DANDROID_STL=c++_static \
--DANDROID_NATIVE_API_LEVEL=android-14 \
--DDEBUG=OFF \
--DSHARED=ON
+-DSHARED=ON \
+-DHOOKZZ_DEBUG=OFF
 
 make -j4
 ```
 
-## Usage
-#### 0x0. ARM/ARM64 B-xxx Branch
+## 2. Example
 
-when should i use?
+#### 2.1. Example for iOS 64 & Simulator 64
 
-![](http://ww1.sinaimg.cn/large/a4decaedly1fwo1wdsum8j20af03gmx2.jpg)
+Ref: [iOS/AArch64.ARMv8](examples/iOS/AArch64.ARMv8)
+
+#### 2.2. for HOST
+
+Ref: [HOST](examples/HookSimpleFunction)
+
+use `cmake ..` is done.
+
+
+## 3. Usage
+
+#### 3.1. replace hook function
 
 ```
-#define FAKE(func) fake_##func
-#define ORIG(func) orig_##func
-void hook_demo() {
-    zz_enable_arm_arm64_b_branch();
-    // find the `AES_set_encrypt_key` symbol address by yourself
-    int ret = ZzReplace((void *)AES_set_encrypt_key, (void *)FAKE(AES_set_encrypt_key), (void **)&ORIG(AES_set_encrypt_key));
-    zz_disable_arm_arm64_b_branch();
+extern "C" {
+  extern int ZzReplace(void *function_address, void *replace_call, void **origin_call);
 }
-```
 
-#### 0x1. replace hook function
-```
 size_t (*origin_fread)(void * ptr, size_t size, size_t nitems, FILE * stream);
 
 size_t (fake_fread)(void * ptr, size_t size, size_t nitems, FILE * stream) {
@@ -133,39 +112,17 @@ void hook_fread() {
 }
 ```
 
-#### 2. wrap hook function
-```
-void common_pre_call(RegisterContext *reg_ctx, const HookEntryInfo *info)
-{
-    printf("common pre call\n");
-}
+## 4. Known Issues
 
-void hook_open() {
-    ZzWrap((void *)open, common_pre_call, NULL);
-}
-```
+#### 4.1. Android / ARM
 
-#### 3. dynamic binary instrumentation
-```
-void catchDecrypt(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  printf("descrypt catch by HookZz\n");
-}
+4.1.1. not fixed `pld`
 
-__attribute__((constructor)) void initlializeTemplate() {
-    struct mach_header *mainHeader = (struct mach_header *)_dyld_get_image_header(0);
-    int slide                      = _dyld_get_image_vmaddr_slide(0);
-    uintptr_t targetVmAddr         = 0x1001152BC;
-    uintptr_t finalAddr            = targetVmAddr + slide;
-    ZzDynamicBinaryInstrumentation((void *)finalAddr, catchDecrypt);
-}
-```
+#### 4.2 x86
 
-## Known Issues
+`x86_64` is tested, but not `x86`.
 
-#### Android / ARM
-1. not fixed `pld`
-
-## Refer
+## 5. Refer
 1. [frida-gum](https://github.com/frida/frida-gum) 
 2. [minhook](https://github.com/TsudaKageyu/minhook) 
 3. [substrate](https://github.com/jevinskie/substrate).
