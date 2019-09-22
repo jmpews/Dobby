@@ -1,8 +1,8 @@
-# HookZz <sub>(beta)</sub> [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discordapp.com/invite/P4uCTTH)
+# HookZz [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discordapp.com/invite/P4uCTTH)
 
-A hook framework for arm / arm64(aarch64) / x86_64 / iOS / Android / Linux / Windows
+**if you have any question [go to Discord](https://discordapp.com/invite/P4uCTTH) or [full documentation here](http://hookzz.libkernel.com/)**
 
-if you have any question [go to Discord](https://discordapp.com/invite/P4uCTTH) or [full documentation here](http://hookzz.libkernel.com/)
+**HookZz still in beta**
 
 ## Installation
 
@@ -15,7 +15,7 @@ cd HookZz && mkdir build && cd build && cmake .. && make
 
 #### build for others (iOS / Android / ARM / ARM64)
 
--> [full Installation documents](./docs/installtion.md)
+-> [full Installation documents](./docs/installation.md) or [full Installation document site](http://hookzz.libkernel.com)
 
 ## Usage and Example
 
