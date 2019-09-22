@@ -1,99 +1,25 @@
-# HookZz    [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discord.gg/F8P3uGy)
+# HookZz <sub>(beta)</sub> [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discordapp.com/invite/P4uCTTH)
 
 A hook framework for arm / arm64(aarch64) / x86_64 / iOS / Android / Linux / Windows
 
-_tips: any question [go to Discord](https://discordapp.com/invite/P4uCTTH)_
+if you have any question [go to Discord](https://discordapp.com/invite/P4uCTTH) or [full documentation here](http://hookzz.libkernel.com/)
 
+## Installation
 
-## 1. Build & Compile
-
-#### 1.0 Clone the project
-
+#### build for host machine
 ```
-git clone --branch dev --depth 1 git@github.com:jmpews/HookZz.git
-```
+git clone --branch dev --depth 1 https://github.com/jmpews/HookZz.git
 
-#### 1.1. Use BuildScript for iOS 64 & Simulator 64
-
-```
-cd BuildScript
-sh ./build_64_fat_macho.sh
+cd HookZz && mkdir build && cd build && cmake .. && make
 ```
 
-#### 1.2. Build for iOS/ARM64
+#### build for others (iOS / Android / ARM / ARM64)
 
-```
-mkdir temp_build_aarch64
+-> [full Installation documents](./docs/installtion.md)
 
-cd temp_build_aarch64
+## Usage and Example
 
-cmake .. \
--DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DPLATFORM=OS64 \
--DARCHS=arm64 \
--DENABLE_BITCODE=0 \
--DENABLE_ARC=0 \
--DENABLE_VISIBILITY=0 \
--DDEPLOYMENT_TARGET=9.3 \
--DCMAKE_SYSTEM_PROCESSOR=aarch64 \
--DSHARED=ON \
--DHOOKZZ_DEBUG=OFF
-
-make -j4
-```
-
-if you want generate Xcode Project, just replace with `cmake -G Xcode `.
-
-
-#### 1.3. Build for Android, `arm64-v8a`
-
-```
-export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-
-cmake .. \
--DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
--DCMAKE_BUILD_TYPE=Release \
--DANDROID_ABI="arm64-v8a" \
--DANDROID_NATIVE_API_LEVEL=android-21 \
--DSHARED=ON \
--DHOOKZZ_DEBUG=OFF
-
-make -j4
-```
-
-#### 1.4. Build for Android, `armeabi-v7a`
-
-```
-export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-
-cmake .. \
--DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
--DCMAKE_BUILD_TYPE=Release \
--DANDROID_ABI="armeabi-v7a" \
--DANDROID_STL=c++_static \
--DANDROID_NATIVE_API_LEVEL=android-14 \
--DSHARED=ON \
--DHOOKZZ_DEBUG=OFF
-
-make -j4
-```
-
-## 2. Example
-
-#### 2.1. Example for iOS 64 & Simulator 64
-
-Ref: [iOS/AArch64.ARMv8](examples/iOS/AArch64.ARMv8)
-
-#### 2.2. for HOST
-
-Ref: [HOST](examples/HookSimpleFunction)
-
-use `cmake ..` is done.
-
-
-## 3. Usage
-
-#### 3.1. replace hook function
+#### simple replace hook function
 
 ```
 extern "C" {
@@ -112,17 +38,25 @@ void hook_fread() {
 }
 ```
 
-## 4. Known Issues
+#### multi-platform example
 
-#### 4.1. Android / ARM
+- [iOS](./examples/iOS)
+
+- [HOST](./examples)
+
+
+## Known Issues
+
+#### Android / ARM
 
 4.1.1. not fixed `pld`
 
-#### 4.2 x86
+#### x86
 
-`x86_64` is tested, but not `x86`.
+`x86_64` tested, but not `x86`.
 
-## 5. Refer
+## Refer
+
 1. [frida-gum](https://github.com/frida/frida-gum) 
 2. [minhook](https://github.com/TsudaKageyu/minhook) 
 3. [substrate](https://github.com/jevinskie/substrate).
