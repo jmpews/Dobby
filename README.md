@@ -1,6 +1,6 @@
 # HookZz [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discordapp.com/invite/P4uCTTH)
 
-**if you have any question [go to Discord](https://discordapp.com/invite/P4uCTTH) or [full documentation here](http://hookzz.libkernel.com/)**
+**if you have any question [go to Discord](https://discord.gg/dAEEywt) or [full documentation here](http://hookzz.libkernel.com/)**
 
 **HookZz still in beta**
 
