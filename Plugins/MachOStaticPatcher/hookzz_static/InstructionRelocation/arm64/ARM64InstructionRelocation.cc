@@ -44,6 +44,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
   from_pc = (addr_t)buffer;
   buffer = TranslateVa2Rt(buffer, mm->mmapFileData);
 
+  bool flag = false; // 是否不应该被hook，即超出跳转范围等
+  
   // prologue
   int relo_code_chunk_size = 32;
   int chunk_size_step      = 16;
@@ -75,6 +77,12 @@ TryRelocateWithNewCodeChunkAgain:
       int32_t imm19           = bits(inst, 5, 23);
       uint64_t target_address = (imm19 << 2) + cur_src_pc;
 
+      //ldr原本只能PC偏移1MB，这里改成了adrp可偏移4GB，所以应该合理
+      if((cur_dest_pc - target_address) >= (1UL << 35)){
+        flag = true;
+        break;
+      }
+      
       _ AdrpAddMov(X(rt), cur_dest_pc, target_address);
       _ ldr(X(rt), 0);
     } else if ((inst & CompareBranchFixedMask) == CompareBranchFixed) {
@@ -84,6 +92,12 @@ TryRelocateWithNewCodeChunkAgain:
 
       int offset                   = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                        = offset >> 2;
+      
+      if(imm19 >= (1L << 23)){//cbz只能跳转偏移1MB
+        flag = true;
+        break;
+      }
+      
       int32_t compare_branch_instr = (inst & 0xff00001f) | LFT(imm19, 19, 5);
 
       _ Emit(compare_branch_instr);
@@ -93,6 +107,13 @@ TryRelocateWithNewCodeChunkAgain:
 
       int32_t offset                     = (imm26 << 2) + (cur_dest_pc - cur_src_pc);
       imm26                              = offset >> 2;
+      
+      //b指令可以偏移跳转128MB
+      if(imm26 >= (1L << 30)){
+        flag = true;
+        break;
+      }
+      
       int32_t unconditional_branch_instr = (inst & 0xfc000000) | LFT(imm26, 26, 0);
 
       _ Emit(unconditional_branch_instr);
@@ -102,6 +123,12 @@ TryRelocateWithNewCodeChunkAgain:
 
       int offset           = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                = offset >> 2;
+      
+      if(imm19 >= (1L << 23)){//b.cond跳转偏移1MB
+        flag = true;
+        break;
+      }
+      
       int32_t b_cond_instr = (inst & 0xff00001f) | LFT(imm19, 19, 5);
 
       _ Emit(b_cond_instr);
@@ -120,6 +147,12 @@ TryRelocateWithNewCodeChunkAgain:
       immhi = bits(imm >> 12, 2, 20);
       immlo = bits(imm >> 12, 0, 1);
 
+      uint64_t tmp = (LFT(immhi, 19, 5) | LFT(immlo, 2, 29));
+      if(tmp >= (1UL << 35)){ //adrp偏移4GB，这里粗略计算判断
+        flag = true;
+        break;
+      }
+      
       int32_t adrp_instr = (inst & 0x9f00001f) | LFT(immhi, 19, 5) | LFT(immlo, 2, 29);
 
       _ Emit(adrp_instr);
@@ -135,6 +168,12 @@ TryRelocateWithNewCodeChunkAgain:
     inst = *(arm64_inst_t *)cur_addr;
   }
 
+  if(flag){
+    LOG("函数0x%llx不能被hook。\n", from_pc);
+    ExecutableMemoryArena::Destory(codeChunk);//这里实际应该清理的
+    return NULL;//返回NULL帮助外面判断
+  }
+  
   // Branch to the rest of instructions
   _ AdrpAddMov(x17, cur_dest_pc, cur_src_pc);
   _ br(x17);
