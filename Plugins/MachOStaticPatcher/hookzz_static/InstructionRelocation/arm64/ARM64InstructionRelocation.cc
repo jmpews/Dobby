@@ -78,7 +78,7 @@ TryRelocateWithNewCodeChunkAgain:
       uint64_t target_address = (imm19 << 2) + cur_src_pc;
 
       //ldr原本只能PC偏移1MB，这里改成了adrp可偏移4GB，所以应该合理
-      if((cur_dest_pc - target_address) >= (1UL << 35)){
+      if((cur_dest_pc - target_address) >= (1UL << 30)){
         flag = true;
         break;
       }
@@ -93,7 +93,7 @@ TryRelocateWithNewCodeChunkAgain:
       int offset                   = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                        = offset >> 2;
       
-      if(imm19 >= (1L << 23)){//cbz只能跳转偏移1MB
+      if(imm19 >= (1L << 18)){//cbz只能跳转偏移1MB
         flag = true;
         break;
       }
@@ -109,7 +109,7 @@ TryRelocateWithNewCodeChunkAgain:
       imm26                              = offset >> 2;
       
       //b指令可以偏移跳转128MB
-      if(imm26 >= (1L << 30)){
+      if(imm26 >= (1L << 25)){
         flag = true;
         break;
       }
@@ -124,7 +124,7 @@ TryRelocateWithNewCodeChunkAgain:
       int offset           = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                = offset >> 2;
       
-      if(imm19 >= (1L << 23)){//b.cond跳转偏移1MB
+      if(imm19 >= (1L << 18)){//b.cond跳转偏移1MB
         flag = true;
         break;
       }
@@ -148,7 +148,7 @@ TryRelocateWithNewCodeChunkAgain:
       immlo = bits(imm >> 12, 0, 1);
 
       uint64_t tmp = (LFT(immhi, 19, 5) | LFT(immlo, 2, 29));
-      if(tmp >= (1UL << 35)){ //adrp偏移4GB，这里粗略计算判断
+      if(tmp >= (1UL << 30)){ //adrp偏移4GB，这里粗略计算判断
         flag = true;
         break;
       }
