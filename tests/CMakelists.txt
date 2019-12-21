@@ -23,14 +23,14 @@ add_executable(tests_InstructionRelocation_x64
 
 )
 
-add_subdirectory(${PrimaryPath} hookzz.out)
+add_subdirectory(${PrimaryPath} dobby.out)
 
 add_executable(HookSimpleFunction
     ${PrimaryPath}/tests/HookSimpleFunction/HookSimpleFunction.cc
 )
 
 target_link_libraries(HookSimpleFunction
-    hookzz
+    dobby
 )
 
 

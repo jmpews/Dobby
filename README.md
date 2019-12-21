@@ -1,61 +1,27 @@
-# HookZz [![](https://img.shields.io/badge/chat-on--discord-7289da.svg?style=flat-square&longCache=true&logo=discord)](https://discordapp.com/invite/P4uCTTH)
+## Dobby
 
-**if you have any question [go to Discord](https://discord.gg/dAEEywt) or [full documentation here](http://hookzz.libkernel.com/)**
+Dobby a lightweight, multi-platform, multi-architecture hook framework.
 
-**HookZz still in beta**
+* Minimal and modular library
+* Multi-platform support(Windows/macOS/iOS/Android/Linux)
+* Multiple architecture support(X86-64, ARM, ARM64)
+* Clean code without STL(port to kernel easily)
+* Plugin support(like StaticDobby?)
+* iOS kernel exploit support
 
-## Installation
-
-#### build for host machine
-```
-git clone --branch dev --depth 1 https://github.com/jmpews/HookZz.git
-
-cd HookZz && mkdir build && cd build && cmake .. && make
-```
-
-#### build for others (iOS / Android / ARM / ARM64)
-
--> [full Installation documents](./docs/installation.md) or [full Installation document site](http://hookzz.libkernel.com)
-
-## Usage and Example
-
-#### simple replace hook function
+## Getting started
 
 ```
-extern "C" {
-  extern int ZzReplace(void *function_address, void *replace_call, void **origin_call);
-}
-
-size_t (*origin_fread)(void * ptr, size_t size, size_t nitems, FILE * stream);
-
-size_t (fake_fread)(void * ptr, size_t size, size_t nitems, FILE * stream) {
-    // Do What you Want.
-    return origin_fread(ptr, size, nitems, stream);
-}
-
-void hook_fread() {
-    ZzReplace((void *)fread, (void *)fake_fread, (void **)&origin_fread);
-}
+git clone https://github.com/jmpews/Dobby.git --depth=1
+cd Dobby/example/
+mkdir build; cd build; cmake ..
 ```
 
-#### multi-platform example
+## Documentation
 
-- [iOS](./examples/iOS)
+[full Installation documentation site](http://dobby.libkernel.com)
 
-- [HOST](./examples)
-
-
-## Known Issues
-
-#### Android / ARM
-
-4.1.1. not fixed `pld`
-
-#### x86
-
-`x86_64` tested, but not `x86`.
-
-## Refer
+## Credits
 
 1. [frida-gum](https://github.com/frida/frida-gum) 
 2. [minhook](https://github.com/TsudaKageyu/minhook) 

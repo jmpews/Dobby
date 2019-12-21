@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+cmake-build-*
 
 CMakeLists.txt.user
 CMakeCache.txt

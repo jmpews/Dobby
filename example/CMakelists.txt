@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.5)
+project(DobbyExample)
+
+set(PrimaryPath ..)
+
+include(${PrimaryPath}/cmake/Macros.cmake)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+SET_OPTION(Plugin.DynamicBinaryInstrument ON)
+add_subdirectory(${PrimaryPath} dobby.out)
+
+include_directories(${PrimaryPath}/examples/YourHackL1b)
+
+add_executable(HookSimpleFunction
+    ${PrimaryPath}/examples/HookSimpleFunction/HookSimpleFunction.cc
+    ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
+    ${PrimaryPath}/examples/YourHackL1b/AssemblyDynamicBinaryInstrument.cpp
+)
+
+target_link_libraries(HookSimpleFunction
+    dobby
+)
+
+add_library(fopen_monitor SHARED
+    ${PrimaryPath}/examples/YourHackL1b/YourHackL1b.cpp
+)
+
+target_link_libraries(fopen_monitor
+    dobby
+)

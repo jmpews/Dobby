@@ -90,7 +90,9 @@
     "cmath": "cpp",
     "array": "cpp",
     "fstream": "cpp",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "__functional_base_03": "cpp",
+    "filesystem": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }
