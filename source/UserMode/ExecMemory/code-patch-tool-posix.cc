@@ -11,6 +11,7 @@
 
 using namespace zz;
 
+#if !defined(__APPLE__)
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
   int page_size                = (int)sysconf(_SC_PAGESIZE);
@@ -29,3 +30,5 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
   return kMemoryOperationSuccess;
 }
+
+#endif

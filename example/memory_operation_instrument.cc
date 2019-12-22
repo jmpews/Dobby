@@ -2,7 +2,7 @@
 // Created by jmpews on 2019/3/31.
 //
 
-#include "AssemblyDynamicBinaryInstrument.h"
+#include "./memory_operation_instrument.h"
 
 #include <stdlib.h>
 #include <stdio.h>

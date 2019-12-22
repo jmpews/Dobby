@@ -1,13 +1,5 @@
-//
-//  YourHackL1b.hpp
-//  HookExample
-//
-//  Created by jmpews on 2019/3/25.
-//  Copyright © 2019 jmpews. All rights reserved.
-//
-
-#ifndef YourHackL1b_hpp
-#define YourHackL1b_hpp
+#ifndef FILE_OPERATION_MONITOR_H
+#define FILE_OPERATION_MONITOR_H
 
 #include <stdio.h>
 

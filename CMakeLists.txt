@@ -157,6 +157,12 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
     )
 endif ()
 
+if(SYSTEM.Darwin)
+  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+    source/UserMode/ExecMemory/code-patch-tool-darwin.cc
+  )
+endif()
+
 if (FunctionWrapper OR DynamicBinaryInstrument)
   set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
@@ -172,6 +178,7 @@ if (FunctionWrapper OR DynamicBinaryInstrument)
 endif ()
 
 if (FunctionWrapper)
+  message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
   set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
     source/InterceptRoutingPlugin/FunctionWrapper/function-wrapper.cc
     source/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
@@ -180,6 +187,10 @@ if (FunctionWrapper)
 endif ()
 
 if (DynamicBinaryInstrument)
+  if(PROCESSOR.X86_64 OR PROCESSOR.X86)
+    message(FATAL_ERROR "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
+  endif ()
+  
   set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc

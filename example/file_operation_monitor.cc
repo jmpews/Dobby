@@ -6,8 +6,6 @@
 //  Copyright © 2019 jmpews. All rights reserved.
 //
 
-#include "YourHackL1b.hpp"
-
 #include <stdlib.h> /* getenv */
 
 #include <stdio.h>
@@ -20,6 +18,8 @@
 #include <set>
 
 #include <unordered_map>
+
+#include "./file_operation_monitor.h"
 
 std::unordered_map<FILE *, const char *> *TracedFileList;
 
@@ -93,8 +93,6 @@ __attribute__((constructor)) void __main() {
   memset(buffer, 0, 64);
 
   fread(buffer, 64, 1, fd);
-
-  std::cout << "[*] HookExample End!\n";
 
   return;
 }
