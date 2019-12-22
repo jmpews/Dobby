@@ -2,7 +2,6 @@
 
 #include "PlatformInterface/Common/Platform.h"
 #include "PlatformInterface/ExecMemory/ClearCacheTool.h"
-#include "macros.h"
 
 #include <unistd.h>
 
