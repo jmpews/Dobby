@@ -9,6 +9,7 @@ bool LiteCollectionIterator::initWithCollection(const LiteCollection *inCollecti
   innerIterator     = 0;
   int *iterIndexPtr = (int *)LiteMemOpt::alloc(sizeof(int));
   innerIterator     = (void *)iterIndexPtr;
+  inCollection->initIterator(innerIterator);
   return true;
 }
 
