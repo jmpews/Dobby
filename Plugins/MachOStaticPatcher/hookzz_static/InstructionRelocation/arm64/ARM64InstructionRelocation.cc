@@ -78,7 +78,7 @@ TryRelocateWithNewCodeChunkAgain:
       uint64_t target_address = (imm19 << 2) + cur_src_pc;
 
       //ldr原本只能PC偏移1MB，这里改成了adrp可偏移4GB，所以应该合理
-      if((cur_dest_pc - target_address) >= (1UL << 30)){
+      if((cur_dest_pc - target_address) >= (1UL << 29)){
         flag = true;
         break;
       }
@@ -93,7 +93,7 @@ TryRelocateWithNewCodeChunkAgain:
       int offset                   = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                        = offset >> 2;
       
-      if(imm19 >= (1L << 18)){//cbz只能跳转偏移1MB
+      if(imm19 >= (1L << 17)){//cbz只能跳转偏移1MB
         flag = true;
         break;
       }
@@ -109,7 +109,7 @@ TryRelocateWithNewCodeChunkAgain:
       imm26                              = offset >> 2;
       
       //b指令可以偏移跳转128MB
-      if(imm26 >= (1L << 25)){
+      if(imm26 >= (1L << 24)){
         flag = true;
         break;
       }
@@ -124,7 +124,7 @@ TryRelocateWithNewCodeChunkAgain:
       int offset           = (imm19 << 2) + (cur_dest_pc - cur_src_pc);
       imm19                = offset >> 2;
       
-      if(imm19 >= (1L << 18)){//b.cond跳转偏移1MB
+      if(imm19 >= (1L << 17)){//b.cond跳转偏移1MB
         flag = true;
         break;
       }
@@ -148,7 +148,7 @@ TryRelocateWithNewCodeChunkAgain:
       immlo = bits(imm >> 12, 0, 1);
 
       uint64_t tmp = (LFT(immhi, 19, 5) | LFT(immlo, 2, 29));
-      if(tmp >= (1UL << 30)){ //adrp偏移4GB，这里粗略计算判断
+      if(tmp >= (1UL << 27)){ //adrp偏移4GB，这里粗略计算判断
         flag = true;
         break;
       }
@@ -167,12 +167,6 @@ TryRelocateWithNewCodeChunkAgain:
     cur_addr += 4;
     inst = *(arm64_inst_t *)cur_addr;
   }
-
-  if(flag){
-    LOG("函数0x%llx不能被hook。\n", from_pc);
-    ExecutableMemoryArena::Destory(codeChunk);//这里实际应该清理的
-    return NULL;//返回NULL帮助外面判断
-  }
   
   // Branch to the rest of instructions
   _ AdrpAddMov(x17, cur_dest_pc, cur_src_pc);
@@ -185,6 +179,12 @@ TryRelocateWithNewCodeChunkAgain:
   code = new AssemblyCode;
   code->initWithAddressRange((addr_t)turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getSize());
 
+  if(flag){
+    LOG("函数0x%llx不能被hook。\n", from_pc);
+    ExecutableMemoryArena::Destory(codeChunk);//这里实际应该清理的
+    return NULL;//返回NULL帮助外面判断
+  }
+  
   if (code->raw_instruction_size() > codeChunk->size) {
     // free the codeChunk
     ExecutableMemoryArena::Destory(codeChunk);
