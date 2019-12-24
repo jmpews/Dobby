@@ -6,8 +6,8 @@ Dobby a lightweight, multi-platform, multi-architecture hook framework.
 * Multi-platform support(Windows/macOS/iOS/Android/Linux)
 * Multiple architecture support(X86-64, ARM, ARM64)
 * Clean code without STL(port to kernel easily)
-* Plugin support(like StaticDobby?)
-* iOS kernel exploit support
+* Plugin support(DobbyDrill ?)
+* iOS kernel exploit support(Gollum ?)
 
 ## Getting started
 

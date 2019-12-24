@@ -99,9 +99,6 @@ else ()
 
 endif ()
 
-set(Target.path .)
-set(Target.SOURCE_FILES ${Target.SOURCE_FILES})
-
 set(dobby.SOURCE_FILE_LIST
   # cpu
   source/core/arch/CpuFeature.cc
