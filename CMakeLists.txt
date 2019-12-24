@@ -17,19 +17,21 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # ===== Handle Option =====
-option(SHARED "Build shared library" ON)
+option(GENERATE_SHARED "Build shared library" ON)
+
+option(GENERATE_FRAMEWORK "Build framework library" ON)
 
 option(DLOG "Enable debug log" OFF)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
+# option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
-option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
+# option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
 
-option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
+# option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
 
-option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
+# option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
 include(cmake/XcodeGenerator.cmake)
 
@@ -100,7 +102,7 @@ endif ()
 set(Target.path .)
 set(Target.SOURCE_FILES ${Target.SOURCE_FILES})
 
-set(Dobby.SOURCE_FILE_LIST
+set(dobby.SOURCE_FILE_LIST
   # cpu
   source/core/arch/CpuFeature.cc
   source/core/arch/CpuRegister.cc
@@ -150,7 +152,7 @@ set(Dobby.SOURCE_FILE_LIST
   )
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
-  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/core/arch/x86/cpu-x86.cc
     source/InstructionRelocation/x86/X86OpcodoDecodeTable.cc
     source/InstructionRelocation/${arch1}/${ARCH1}IPRelativeOpcodeTable.cc
@@ -158,13 +160,13 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
 endif ()
 
 if(SYSTEM.Darwin)
-  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/UserMode/ExecMemory/code-patch-tool-darwin.cc
   )
 endif()
 
 if (FunctionWrapper OR DynamicBinaryInstrument)
-  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
     source/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
@@ -179,7 +181,7 @@ endif ()
 
 if (FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
-  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRoutingPlugin/FunctionWrapper/function-wrapper.cc
     source/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
     source/InterceptRoutingPlugin/FunctionWrapper/intercept_routing_handler.cc
@@ -191,7 +193,7 @@ if (DynamicBinaryInstrument)
     message(FATAL_ERROR "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
   endif ()
   
-  set(Dobby.SOURCE_FILE_LIST ${Dobby.SOURCE_FILE_LIST}
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
@@ -225,13 +227,31 @@ include_directories(
   ./external/stdcxx
 )
 
-if (SHARED)
-  add_library(dobby SHARED ${Dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+set(dobby.HEADER_FILE_LIST
+  include/dobby.h
+)
+
+if (GENERATE_SHARED)
+  add_library(dobby SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
 else ()
-  add_library(dobby STATIC ${Dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+  add_library(dobby STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
 endif ()
 
-target_include_directories(dobby PUBLIC ./include)
+target_include_directories(dobby PUBLIC include)
+
+if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
+set_target_properties(dobby PROPERTIES
+  FRAMEWORK TRUE
+  FRAMEWORK_VERSION A
+  MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
+  # MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+  VERSION 1.0.0 # current version
+  SOVERSION 1.0.0 # compatibility version
+  PUBLIC_HEADER include/dobby.h
+  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
+)
+endif()
+
 
 if (SYSTEM.Android)
   target_link_libraries(dobby log)
