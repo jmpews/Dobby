@@ -26,7 +26,7 @@ void InterceptRouting::Prepare() {
 
   DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
 
-#ifndef MACHO_STATIC_PATCHER
+#ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
   _memcpy(entry_->origin_instructions.data, entry_->target_address, relocate_size);
   entry_->origin_instructions.size    = relocate_size;

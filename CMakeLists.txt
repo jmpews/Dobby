@@ -25,6 +25,8 @@ option(DLOG "Enable debug log" OFF)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
+option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
+
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
 # option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
@@ -189,6 +191,7 @@ if (DynamicBinaryInstrument)
   if(PROCESSOR.X86_64 OR PROCESSOR.X86)
     message(FATAL_ERROR "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
   endif ()
+  message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
   
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
@@ -228,16 +231,21 @@ set(dobby.HEADER_FILE_LIST
   include/dobby.h
 )
 
+set(dobby_name dobby)
+if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
+set(dobby_name Dobby)
+endif()
+
 if (GENERATE_SHARED)
-  add_library(dobby SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
 else ()
-  add_library(dobby STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
 endif ()
 
-target_include_directories(dobby PUBLIC include)
+target_include_directories(${dobby_name} PUBLIC include)
 
 if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
-set_target_properties(dobby PROPERTIES
+set_target_properties(${dobby_name} PROPERTIES
   FRAMEWORK TRUE
   FRAMEWORK_VERSION A
   MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
@@ -247,9 +255,22 @@ set_target_properties(dobby PROPERTIES
   PUBLIC_HEADER include/dobby.h
   XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
 )
+
+# add Gollum framework
+if(Plugin.Gollum)
+if(NOT SYSTEM.iOS)
+message(FATAL_ERROR "[!] Gollum.framework only works on iOS.")
+endif ()
+message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
+add_custom_command(TARGET ${dobby_name}
+  POST_BUILD
+  COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_name}>/Frameworks
+  COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_name}>/Frameworks/Gollum.framework
+  )
+endif()
 endif()
 
 
 if (SYSTEM.Android)
-  target_link_libraries(dobby log)
+  target_link_libraries(Dobby log)
 endif ()
