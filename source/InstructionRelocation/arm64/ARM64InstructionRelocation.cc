@@ -34,8 +34,8 @@ typedef struct _PseudoDataLabel {
   uint64_t address;
 
 public:
-  _PseudoDataLabel(uint64_t address) {
-    address = address;
+  _PseudoDataLabel(uint64_t data) {
+    address = data;
   }
 } PseudoDataLabel;
 
@@ -140,7 +140,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
     if ((instr & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) { // ldr x0, #16
       int rt                = decode_rt(instr);
       char opc              = bits(instr, 30, 31);
-      addr_t memory_address = decode_imm19_offset(instr);
+      addr_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
 
 #define MEM(reg, offset) MemOperand(reg, offset)
       _ nop(); // for debug
@@ -186,7 +186,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
         }
       }
       _ nop();
-    } else if ((instr & TestBranchFixedMask) == TestBranchFixed) {
+    } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
       addr_t branch_address               = decode_imm14_offset(instr) + curr_orig_pc;
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
       labels->pushObject((LiteObject *)branchAddressLabel);
@@ -197,9 +197,9 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 8;
+      int64_t offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
       uint32_t imm14 = offset >> 2;
-      set_bits(branch_instr, 5, 14, imm14);
+      set_bits(branch_instr, 5, 18, imm14);
 
       _ nop();
       {
@@ -211,7 +211,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       }
       _ nop();
 
-    } else if ((instr & CompareBranchFixedMask) == CompareBranchFixed) {
+    } else if ((instr & CompareBranchFixedMask) == CompareBranchFixed) { // cbz cbnz
       addr_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
 
       uint32_t branch_instr = instr;
@@ -220,7 +220,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 8;
+      int64_t offset = 4 * 3;
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
@@ -236,7 +236,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
         }
       }
       _ nop();
-    } else if ((instr & ConditionalBranchFixedMask) == ConditionalBranchFixed) {
+    } else if ((instr & ConditionalBranchFixedMask) == ConditionalBranchFixed) { // b.cond
 
       addr_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
 
@@ -246,7 +246,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       cond      = cond ^ 1;
       set_bits(branch_instr, 0, 3, cond);
 
-      int64_t offset = 8;
+      int64_t offset = 4 * 3;
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 

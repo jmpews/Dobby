@@ -254,7 +254,11 @@ public:
     buffer_ = new CodeBuffer(32);
     DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
+  ~Assembler() {
+    buffer_->release();
+  }
 
+public:
   void Emit1(byte val) {
     buffer_->Emit8(val);
   }

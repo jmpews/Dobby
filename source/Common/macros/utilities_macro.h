@@ -25,8 +25,8 @@
 #define sbits(obj, st, fn) ((long)(bits(obj, st, fn) | ((long)bit(obj, fn) * ~submask(fn - st))))
 
 // make it easy
-#define set_bit(obj, st, bit) (((~(1 << st)) & obj) | (bit << st))
-#define set_bits(obj, st, fn, bits) (((~(submask(fn - st) << st)) & obj) | (bits << st))
+#define set_bit(obj, st, bit) obj = (((~(1 << st)) & obj) | (bit << st))
+#define set_bits(obj, st, fn, bits) obj = (((~(submask(fn - st) << st)) & obj) | (bits << st))
 
 // definition to expand macro then apply to pragma message
 // #pragma message(VAR_NAME_VALUE(HOST_OS_IOS))

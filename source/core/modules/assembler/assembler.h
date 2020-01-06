@@ -64,6 +64,7 @@ class AssemblerBase {
 public:
   AssemblerBase(void *address);
 
+public:
   int pc_offset() const;
 
   CodeBuffer *GetCodeBuffer();

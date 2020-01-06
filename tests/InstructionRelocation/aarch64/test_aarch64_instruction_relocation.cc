@@ -53,7 +53,7 @@ int _main(int argc, const char **argv) {
   int relo_size = (uint64_t)pc_relative_instructions_end - (uint64_t)pc_relative_instructions;
   zz::AssemblyCode *code = GenRelocateCode((void *)pc_relative_instructions, &relo_size, 0, 0);
   
-  char *instruction_bytes = (char *)code->raw_instruction_start();
+  unsigned char *instruction_bytes = (unsigned char *)code->raw_instruction_start();
   for (int i = 0; i < code->raw_instruction_size(); i += 1) {
     printf("%.2x ", instruction_bytes[i]);
   }
