@@ -63,7 +63,7 @@ elseif (SYSTEM.Linux)
 endif ()
 
 if (COMPILER.Clang)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=default")
   if (PROCESSOR.ARM)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
   elseif (PROCESSOR.AARCH64)

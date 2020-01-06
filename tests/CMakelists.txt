@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(HookZzT)
+project(test_dobby)
 
 set(PrimaryPath ..)
 
@@ -14,23 +14,27 @@ enable_language(ASM)
 
 include_directories(
     ${PrimaryPath}/tests
-    ${PrimaryPath}/srcxx
+    ${PrimaryPath}/source
 )
 
-add_executable(tests_InstructionRelocation_x64
-    ${PrimaryPath}/srcxx/InstructionRelocation/x64/X64IPRelativeOpcodeTable.cc
-    ${PrimaryPath}/tests/InstructionRelocation/x64/test_x64_instruction_relocation.cc
-
+include_directories(
+  ${PrimaryPath}/source
+  ${PrimaryPath}/source/UserMode
+  ${PrimaryPath}/external
+  ${PrimaryPath}/external/logging
+  ${PrimaryPath}/external/stdcxx
 )
 
 add_subdirectory(${PrimaryPath} dobby.out)
 
-add_executable(HookSimpleFunction
-    ${PrimaryPath}/tests/HookSimpleFunction/HookSimpleFunction.cc
+add_executable(tests_instr_relo_x64
+    ${PrimaryPath}/source/InstructionRelocation/x64/X64IPRelativeOpcodeTable.cc
+    ${PrimaryPath}/tests/InstructionRelocation/x64/test_x64_instruction_relocation.cc
 )
 
-target_link_libraries(HookSimpleFunction
+add_executable(tests_instr_relo_aarch64
+    ${PrimaryPath}/tests/InstructionRelocation/aarch64/test_aarch64_instruction_relocation.cc
+)
+target_link_libraries(tests_instr_relo_aarch64
     dobby
 )
-
-
