@@ -14,7 +14,7 @@
 #include "symbol_internal.h"
 
 void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **strs, size_t *nsyms) {
-  segment_command_t *cur_seg_cmd;
+  segment_command_t *curr_seg_cmd;
   segment_command_t *linkedit_segment   = NULL;
   segment_command_t *data_segment       = NULL;
   segment_command_t *text_segment       = NULL;
@@ -22,20 +22,20 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **str
   struct dysymtab_command *dysymtab_cmd = NULL;
 
   uintptr_t cur = (uintptr_t)header + sizeof(mach_header_t);
-  for (int i = 0; i < header->ncmds; i++, cur += cur_seg_cmd->cmdsize) {
-    cur_seg_cmd = (segment_command_t *)cur;
-    if (cur_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
-      if (strcmp(cur_seg_cmd->segname, "__LINKEDIT") == 0) {
-        linkedit_segment = cur_seg_cmd;
-      } else if (strcmp(cur_seg_cmd->segname, "__DATA") == 0) {
-        data_segment = cur_seg_cmd;
-      } else if (strcmp(cur_seg_cmd->segname, "__TEXT") == 0) {
-        text_segment = cur_seg_cmd;
+  for (int i = 0; i < header->ncmds; i++, cur += curr_seg_cmd->cmdsize) {
+    curr_seg_cmd = (segment_command_t *)cur;
+    if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
+        linkedit_segment = curr_seg_cmd;
+      } else if (strcmp(curr_seg_cmd->segname, "__DATA") == 0) {
+        data_segment = curr_seg_cmd;
+      } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
+        text_segment = curr_seg_cmd;
       }
-    } else if (cur_seg_cmd->cmd == LC_SYMTAB) {
-      symtab_cmd = (struct symtab_command *)cur_seg_cmd;
-    } else if (cur_seg_cmd->cmd == LC_DYSYMTAB) {
-      dysymtab_cmd = (struct dysymtab_command *)cur_seg_cmd;
+    } else if (curr_seg_cmd->cmd == LC_SYMTAB) {
+      symtab_cmd = (struct symtab_command *)curr_seg_cmd;
+    } else if (curr_seg_cmd->cmd == LC_DYSYMTAB) {
+      dysymtab_cmd = (struct dysymtab_command *)curr_seg_cmd;
     }
   }
 

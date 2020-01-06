@@ -33,41 +33,36 @@ unsigned int LiteMutableArray::getCapacity() const {
 
 unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
   const LiteObject **newArray;
-  unsigned int finalCapacity;
-  int oldSize = 0, newSize = 0;
 
-  if (newCapacity <= capacity)
-    return capacity;
+  if (newCapacity <= this->capacity)
+    return this->capacity;
 
 #undef CAPACITY_STEP
 #define CAPACITY_STEP 64
-  finalCapacity = (int)ALIGN(newCapacity + CAPACITY_STEP, CAPACITY_STEP);
+  newCapacity = (int)ALIGN(newCapacity + CAPACITY_STEP, CAPACITY_STEP);
 
-  newSize  = sizeof(LiteObject *) * finalCapacity;
-  newArray = (const LiteObject **)LiteMemOpt::alloc(newSize);
-  // clear with mark 'A'
-  _memset(newArray, 0, newSize);
+  int newSize = sizeof(LiteObject *) * newCapacity;
+  newArray    = (const LiteObject **)LiteMemOpt::alloc(newSize);
+  assert(newArray);
+  _memset(newArray, 'A', newSize);
 
-  if (newArray) {
-    int offset = count * sizeof(LiteObject *);
+  // copy the origin content
+  int offset = sizeof(LiteObject *) * this->count;
+  _memcpy(newArray, this->array, offset);
 
-    // copy the origin content
-    _memcpy(newArray, array, offset);
+  // free the origin
+  int oldSize = this->capacity * sizeof(LiteObject *);
+  LiteMemOpt::free(this->array, oldSize);
 
-    // free the origin
-    LiteMemOpt::free(array, oldSize);
+  this->array    = newArray;
+  this->capacity = newCapacity;
 
-    array    = newArray;
-    capacity = newCapacity;
-  }
-
-  return capacity;
+  return newCapacity;
 }
 
 bool LiteMutableArray::initIterator(void *inIterator) const {
   unsigned int *iterator = (unsigned int *)inIterator;
-
-  *iterator = 0;
+  *iterator              = 0;
   return true;
 }
 
@@ -75,11 +70,16 @@ bool LiteMutableArray::getNextObjectForIterator(void *inIterator, LiteObject **r
   unsigned int *iterator = (unsigned int *)inIterator;
   unsigned int index     = (*iterator)++;
 
-  if (index < count) {
-    *ret = (const_cast<LiteObject *>(array[index]));
+  if (index < this->count) {
+    *ret = (const_cast<LiteObject *>(this->array[index]));
     return true;
   } else {
     *ret = 0;
     return false;
   }
+}
+
+void LiteMutableArray::release() {
+  int size = this->capacity * sizeof(LiteObject *);
+  LiteMemOpt::free(this->array, size);
 }

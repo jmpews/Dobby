@@ -263,7 +263,7 @@ public:
     AssemblerBase::CommitRealizeAddress(address);
   }
 
-  void EmitARMInst(arm_inst_t inst);
+  void EmitARMInst(arm_inst_t instr);
 
   void EmitAddress(uint32_t value);
 

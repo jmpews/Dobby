@@ -60,9 +60,9 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
 
   mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_align_address;
-  vm_prot_t cur_protection, max_protection;
+  vm_prot_t curr_protection, max_protection;
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
-                     (mach_vm_address_t)remap_page, TRUE, &cur_protection, &max_protection, inherit);
+                     (mach_vm_address_t)remap_page, TRUE, &curr_protection, &max_protection, inherit);
 
   if (kr != KERN_SUCCESS) {
     // perror((const char *)strerror(errno));

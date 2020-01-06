@@ -1,45 +1,42 @@
 #include "stdcxx/LiteMutableBuffer.h"
 
 bool LiteMutableBuffer::initWithCapacity(int in_capacity) {
-  buffer_ = (byte *)LiteMemOpt::alloc(in_capacity);
-  if (!buffer_) {
-    return false;
-  }
+  this->buffer_ = (byte *)LiteMemOpt::alloc(in_capacity);
+  assert(this->buffer_);
 
-  cursor_   = buffer_;
-  capacity_ = in_capacity;
+  this->cursor_   = buffer_;
+  this->capacity_ = in_capacity;
   return true;
 }
 
 int LiteMutableBuffer::ensureCapacity(int new_capacity) {
   byte *new_buffer;
-  unsigned int final_capacity;
 
-  if (new_capacity <= capacity_)
-    return capacity_;
+  if (new_capacity <= this->capacity_)
+    return this->capacity_;
 
 #undef CAPACITY_STEP
 #define CAPACITY_STEP 64
-  final_capacity = (int)ALIGN(new_capacity + CAPACITY_STEP, CAPACITY_STEP);
+  new_capacity = (int)ALIGN(new_capacity + CAPACITY_STEP, CAPACITY_STEP);
 
-  new_buffer = (byte *)LiteMemOpt::alloc(final_capacity);
-  // clear with the mark 'A'
-  _memset(new_buffer, 'A', final_capacity);
+  new_buffer = (byte *)LiteMemOpt::alloc(new_capacity);
+  assert(new_buffer);
+  _memset(new_buffer, 'A', new_capacity);
 
-  if (new_buffer) {
-    int offset = (int)(cursor_ - buffer_);
-    ASSERT(offset == getSize());
+  int offset = (int)(this->cursor_ - this->buffer_);
+  assert(offset == this->getSize());
+  _memcpy(new_buffer, this->buffer_, offset);
 
-    // copy the origin content
-    _memcpy(new_buffer, buffer_, offset);
+  // free the origin
+  LiteMemOpt::free(this->buffer_, this->capacity_);
 
-    // free the origin
-    LiteMemOpt::free(buffer_, capacity_);
+  this->cursor_   = new_buffer + offset;
+  this->buffer_   = new_buffer;
+  this->capacity_ = new_capacity;
 
-    cursor_   = new_buffer + offset;
-    buffer_   = new_buffer;
-    capacity_ = new_capacity;
-  }
+  return new_capacity;
+}
 
-  return capacity_;
+void LiteMutableBuffer::release() {
+  LiteMemOpt::free(this->buffer_, this->capacity_);
 }

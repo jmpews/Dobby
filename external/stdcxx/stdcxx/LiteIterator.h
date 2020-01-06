@@ -17,9 +17,13 @@ protected:
   void *innerIterator;
 
 public:
-  virtual void reset();
-
   static LiteCollectionIterator *withCollection(const LiteCollection *inCollection);
+
+public:
+  virtual void release();
+
+public:
+  virtual void reset();
 
   virtual bool initWithCollection(const LiteCollection *inCollection);
 

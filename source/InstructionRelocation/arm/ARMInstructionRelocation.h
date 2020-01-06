@@ -28,7 +28,7 @@ public:
     while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
       // instruction offset to label
       int32_t offset            = pos() - instruction->position_ - Thumb_PC_OFFSET;
-      const thumb2_inst_t inst  = _buffer->LoadThumb2Inst(instruction->position_);
+      const thumb2_inst_t instr = _buffer->LoadThumb2Inst(instruction->position_);
       const thumb1_inst_t inst1 = _buffer->LoadThumb1Inst(instruction->position_);
       const thumb1_inst_t inst2 = _buffer->LoadThumb1Inst(instruction->position_ + sizeof(thumb1_inst_t));
 
@@ -54,7 +54,7 @@ public:
     for (auto instruction : instructions_) {
       // instruction offset to label
       int32_t offset      = pos() - instruction.position_ - Thumb_PC_OFFSET;
-      const int32_t inst  = _buffer->Load<int32_t>(instruction.position_);
+      const int32_t instr  = _buffer->Load<int32_t>(instruction.position_);
       const int16_t inst1 = _buffer->Load<int16_t>(instruction.position_);
       const int16_t inst2 = _buffer->Load<int16_t>(instruction.position_ + sizeof(int16_t));
 

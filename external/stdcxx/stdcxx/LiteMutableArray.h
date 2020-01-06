@@ -20,10 +20,6 @@ public:
     initWithCapacity(count);
   }
 
-  virtual bool initIterator(void *iterationContext) const;
-
-  virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
-
   virtual bool pushObject(const LiteObject *object);
 
   virtual unsigned int getCount() const;
@@ -33,6 +29,13 @@ public:
   virtual unsigned int ensureCapacity(unsigned int newCapacity);
 
   virtual bool initWithCapacity(unsigned int capacity);
+
+  virtual bool initIterator(void *iterationContext) const;
+
+  virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
+
+public:
+  virtual void release();
 };
 
 #endif

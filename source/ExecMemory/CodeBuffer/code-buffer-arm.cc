@@ -14,38 +14,38 @@ thumb2_inst_t CodeBuffer::LoadThumb2Inst(int offset) {
   return *reinterpret_cast<thumb2_inst_t *>(buffer_ + offset);
 };
 
-void CodeBuffer::RewriteARMInst(int offset, arm_inst_t inst) {
-  *reinterpret_cast<arm_inst_t *>(buffer_ + offset) = inst;
+void CodeBuffer::RewriteARMInst(int offset, arm_inst_t instr) {
+  *reinterpret_cast<arm_inst_t *>(buffer_ + offset) = instr;
   return;
 }
 
-void CodeBuffer::RewriteThumb1Inst(int offset, thumb1_inst_t inst) {
-  *reinterpret_cast<thumb1_inst_t *>(buffer_ + offset) = inst;
+void CodeBuffer::RewriteThumb1Inst(int offset, thumb1_inst_t instr) {
+  *reinterpret_cast<thumb1_inst_t *>(buffer_ + offset) = instr;
   return;
 }
 
-void CodeBuffer::RewriteThumb2Inst(int offset, thumb2_inst_t inst) {
-  *reinterpret_cast<thumb2_inst_t *>(buffer_ + offset) = inst;
+void CodeBuffer::RewriteThumb2Inst(int offset, thumb2_inst_t instr) {
+  *reinterpret_cast<thumb2_inst_t *>(buffer_ + offset) = instr;
   return;
 }
 
-void CodeBuffer::EmitARMInst(arm_inst_t inst) {
+void CodeBuffer::EmitARMInst(arm_inst_t instr) {
   ensureCapacity(getSize() + sizeof(arm_inst_t));
-  *reinterpret_cast<arm_inst_t *>(cursor_) = inst;
+  *reinterpret_cast<arm_inst_t *>(cursor_) = instr;
   cursor_ += sizeof(arm_inst_t);
   return;
 }
 
-void CodeBuffer::EmitThumb1Inst(thumb1_inst_t inst) {
+void CodeBuffer::EmitThumb1Inst(thumb1_inst_t instr) {
   ensureCapacity(getSize() + sizeof(thumb1_inst_t));
-  *reinterpret_cast<thumb1_inst_t *>(cursor_) = inst;
+  *reinterpret_cast<thumb1_inst_t *>(cursor_) = instr;
   cursor_ += sizeof(thumb1_inst_t);
   return;
 }
 
-void CodeBuffer::EmitThumb2Inst(thumb2_inst_t inst) {
+void CodeBuffer::EmitThumb2Inst(thumb2_inst_t instr) {
   ensureCapacity(getSize() + sizeof(thumb2_inst_t));
-  *reinterpret_cast<thumb2_inst_t *>(cursor_) = inst;
+  *reinterpret_cast<thumb2_inst_t *>(cursor_) = instr;
   cursor_ += sizeof(thumb2_inst_t);
 
   return;

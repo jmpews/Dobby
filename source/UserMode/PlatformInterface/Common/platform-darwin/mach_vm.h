@@ -176,7 +176,7 @@ extern
 #endif /* mig_external */
     kern_return_t
     mach_vm_map(vm_map_t target_task, mach_vm_address_t *address, mach_vm_size_t size, mach_vm_offset_t mask, int flags,
-                mem_entry_name_port_t object, memory_object_offset_t offset, boolean_t copy, vm_prot_t cur_protection,
+                mem_entry_name_port_t object, memory_object_offset_t offset, boolean_t copy, vm_prot_t curr_protection,
                 vm_prot_t max_protection, vm_inherit_t inheritance);
 
 /* Routine mach_vm_machine_attribute */
@@ -198,7 +198,7 @@ extern
     kern_return_t
     mach_vm_remap(vm_map_t target_task, mach_vm_address_t *target_address, mach_vm_size_t size, mach_vm_offset_t mask,
                   int flags, vm_map_t src_task, mach_vm_address_t src_address, boolean_t copy,
-                  vm_prot_t *cur_protection, vm_prot_t *max_protection, vm_inherit_t inheritance);
+                  vm_prot_t *curr_protection, vm_prot_t *max_protection, vm_inherit_t inheritance);
 
 /* Routine mach_vm_page_query */
 #ifdef mig_external
@@ -448,7 +448,7 @@ typedef struct {
   int flags;
   memory_object_offset_t offset;
   boolean_t copy;
-  vm_prot_t cur_protection;
+  vm_prot_t curr_protection;
   vm_prot_t max_protection;
   vm_inherit_t inheritance;
 } __Request__mach_vm_map_t __attribute__((unused));
@@ -785,7 +785,7 @@ typedef struct {
   NDR_record_t NDR;
   kern_return_t RetCode;
   mach_vm_address_t target_address;
-  vm_prot_t cur_protection;
+  vm_prot_t curr_protection;
   vm_prot_t max_protection;
 } __Reply__mach_vm_remap_t __attribute__((unused));
 #ifdef __MigPackStructs

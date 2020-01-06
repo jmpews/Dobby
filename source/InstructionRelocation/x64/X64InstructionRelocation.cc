@@ -16,10 +16,10 @@
 using namespace zz::x64;
 
 AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_ip, uint64_t to_ip) {
-  uint64_t cur_addr    = (uint64_t)buffer;
-  uint64_t cur_src_ip  = from_ip;
-  uint64_t cur_dest_ip = to_ip;
-  byte opcode1         = *(byte *)cur_addr;
+  uint64_t curr_addr    = (uint64_t)buffer;
+  uint64_t curr_orig_ip = from_ip;
+  uint64_t curr_relo_ip = to_ip;
+  byte opcode1          = *(byte *)curr_addr;
 
   InstrMnemonic instr = {0};
   TurboAssembler turbo_assembler_(0);
@@ -27,16 +27,16 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
   turbo_assembler_.CommitRealizeAddress((void *)to_ip);
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
-  while ((cur_addr < ((uint64_t)buffer + *relocate_size))) {
+  while ((curr_addr < ((uint64_t)buffer + *relocate_size))) {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
-    decodeItem->DecodeHandler(&instr, (uint64_t)cur_addr);
+    decodeItem->DecodeHandler(&instr, (uint64_t)curr_addr);
 
     // Jcc Relocate OpcodeEncoding=D and rel8
     // Solution:
     // Convert to 32bit AKA rel32
     if (instr.instr.opcode1 >= 0x70 && instr.instr.opcode1 <= 0x7F) {
       int orig_offset = *(byte *)&instr.instr.Immediate;
-      int offset      = (int)(cur_src_ip + orig_offset - cur_dest_ip);
+      int offset      = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
       __ Emit8(0x0F);
       __ Emit8(opcode1);
       __ Emit32(offset);
@@ -49,39 +49,39 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     } else if (instr.instr.opcode1 >= 0xEB) {
       // JMP rel8
       byte orig_offset = *(byte *)&instr.instr.Immediate;
-      byte offset      = cur_src_ip + orig_offset - cur_dest_ip;
+      byte offset      = curr_orig_ip + orig_offset - curr_relo_ip;
       __ Emit8(0xE9);
       __ Emit32(offset);
     } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
       // JMP/CALL rel32
       dword orig_offset = *(dword *)&instr.instr.Immediate;
-      dword offset      = (dword)(cur_src_ip + orig_offset - cur_dest_ip);
+      dword offset      = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);
       __ Emit8(instr.instr.opcode1);
       __ Emit32(offset);
     } else if (instr.flag & kIPRelativeAddress) {
       // IP-Relative Address
-      dword orig_disp = *(dword *)(cur_addr + instr.instr.DisplacementOffset);
-      dword disp      = (dword)(cur_src_ip + orig_disp - cur_dest_ip);
+      dword orig_disp = *(dword *)(curr_addr + instr.instr.DisplacementOffset);
+      dword disp      = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
 #if 0
       byte InstrArray[15];
-      LiteMemOpt::copy(InstrArray, cur_ip, instr.len);
+      LiteMemOpt::copy(InstrArray, curr_ip, instr.len);
       *(dword *)(InstrArray + instr.instr.DisplacementOffset) = disp;
       _ Emit(InstrArray, instr.len);
 
 #else
-      __ EmitBuffer((void *)cur_addr, instr.instr.DisplacementOffset);
+      __ EmitBuffer((void *)curr_addr, instr.instr.DisplacementOffset);
       __ Emit32(disp);
 #endif
     } else {
       // Emit the origin instrution
-      __ EmitBuffer((void *)cur_addr, instr.len);
+      __ EmitBuffer((void *)curr_addr, instr.len);
     }
 
     // go next
-    cur_src_ip += instr.len;
-    cur_dest_ip += instr.len;
-    cur_addr += instr.len;
-    opcode1 = *(byte *)cur_addr;
+    curr_orig_ip += instr.len;
+    curr_relo_ip += instr.len;
+    curr_addr += instr.len;
+    opcode1 = *(byte *)curr_addr;
 
     // clear instr structure
     _memset((void *)&instr, 0, sizeof(InstrMnemonic));
@@ -89,7 +89,7 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
 
   // jmp to the origin rest instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpBranch((addr_t)cur_src_ip);
+  codegen.JmpBranch((addr_t)curr_orig_ip);
 
   // Generate executable code
   CodePatch(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getRawBuffer(),

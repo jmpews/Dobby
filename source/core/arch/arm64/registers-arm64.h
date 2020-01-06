@@ -134,6 +134,7 @@ constexpr Register wLR = w30;
 } // namespace arm64
 } // namespace zz
 
+#define W(code) CPURegister::W(code)
 #define X(code) CPURegister::X(code)
 #define Q(code) CPURegister::Q(code)
 #define InvalidRegister CPURegister::InvalidRegister()

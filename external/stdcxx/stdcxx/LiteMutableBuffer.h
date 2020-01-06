@@ -26,6 +26,10 @@ public:
     initWithCapacity(size);
   }
 
+public:
+  virtual void release();
+
+public:
   virtual int ensureCapacity(int newCapacity);
 
   virtual bool initWithCapacity(int capacity = 8);

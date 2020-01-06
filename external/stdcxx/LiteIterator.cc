@@ -1,26 +1,30 @@
 #include "stdcxx/LiteIterator.h"
 
 void LiteCollectionIterator::reset() {
+  this->collection->initIterator(this->innerIterator);
   return;
 }
 
 bool LiteCollectionIterator::initWithCollection(const LiteCollection *inCollection) {
-  collection        = inCollection;
-  innerIterator     = 0;
-  int *iterIndexPtr = (int *)LiteMemOpt::alloc(sizeof(int));
-  innerIterator     = (void *)iterIndexPtr;
-  inCollection->initIterator(innerIterator);
+  this->collection    = inCollection;
+  int *iterIndexPtr   = (int *)LiteMemOpt::alloc(sizeof(int));
+  this->innerIterator = (void *)iterIndexPtr;
+  this->collection->initIterator(this->innerIterator);
   return true;
-}
-
-LiteObject *LiteCollectionIterator::getNextObject() {
-  LiteObject *retObj;
-  collection->getNextObjectForIterator(innerIterator, &retObj);
-  return retObj;
 }
 
 LiteCollectionIterator *LiteCollectionIterator::withCollection(const LiteCollection *inCollection) {
   LiteCollectionIterator *iter = new LiteCollectionIterator;
   iter->initWithCollection(inCollection);
   return iter;
+}
+
+LiteObject *LiteCollectionIterator::getNextObject() {
+  LiteObject *retObj;
+  collection->getNextObjectForIterator(this->innerIterator, &retObj);
+  return retObj;
+}
+
+void LiteCollectionIterator::release() {
+  LiteMemOpt::free(this->innerIterator, sizeof(void **));
 }

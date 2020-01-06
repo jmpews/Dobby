@@ -17,9 +17,9 @@ public:
 public:
   arm64_inst_t LoadInst(int offset);
 
-  void RewriteInst(int offset, arm64_inst_t inst);
+  void RewriteInst(int offset, arm64_inst_t instr);
 
-  void EmitInst(arm64_inst_t inst);
+  void EmitInst(arm64_inst_t instr);
 
   void Emit64(int64_t data);
 };

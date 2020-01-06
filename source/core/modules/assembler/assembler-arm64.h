@@ -39,8 +39,21 @@ public:
   } PseudoLabelInstruction;
 
 public:
-  PseudoLabel() {
+  PseudoLabel(void) {
+    instructions_.initWithCapacity(8);
   }
+  ~PseudoLabel(void) {
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
+    PseudoLabelInstruction *instruction;
+    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+      delete instruction;
+    }
+    iter->release();
+    delete iter;
+
+    instructions_.release();
+  }
+
   bool has_confused_instructions() {
     return instructions_.getCount() > 0;
   }
@@ -71,24 +84,8 @@ public:
       _buffer->RewriteInst(instruction->position_, encoded);
     }
 
-#if 0
-    for (auto instruction : instructions_) {
-      int32_t offset       = pos() - instruction.position_;
-      const int32_t inst32 = _buffer->LoadInst(instruction.position_);
-      int32_t encoded      = 0;
-
-      switch (instruction.type_) {
-      case kLdrLiteral: {
-        encoded = inst32 & 0xFF00001F;
-        encoded = encoded | LFT((offset >> 2), 19, 5);
-      } break;
-      default:
-        UNREACHABLE();
-        break;
-      }
-      _buffer->RewriteInst(instruction.position_, encoded);
-    }
-#endif
+    iter->release();
+    delete iter;
   };
 
   void link_to(int pos, PseudoLabelType type) {
@@ -96,9 +93,6 @@ public:
     instruction->position_              = pos;
     instruction->type_                  = type;
     instructions_.pushObject((LiteObject *)instruction);
-#if 0
-    instructions_.push_back({pos, type});
-#endif
   }
 
 private:
@@ -108,8 +102,9 @@ private:
       // dummy
   };
 #endif
+
 private:
-#if 0
+#if 0 // NO STL
   std::vector<PseudoLabelInstruction> instructions_;
 #endif
   LiteMutableArray instructions_;
@@ -358,6 +353,10 @@ public:
   void EmitInt64(int64_t value);
 
   void bind(Label *label);
+
+  void nop() {
+    Emit(0xD503201F);
+  }
 
   void brk(int code) {
     Emit(BRK | LFT(code, 16, 5));

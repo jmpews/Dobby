@@ -3,8 +3,8 @@
 namespace zz {
 namespace arm {
 
-void Assembler::EmitARMInst(arm_inst_t inst) {
-  buffer_->EmitARMInst(inst);
+void Assembler::EmitARMInst(arm_inst_t instr) {
+  buffer_->EmitARMInst(instr);
 }
 
 void Assembler::EmitAddress(uint32_t value) {

@@ -24,17 +24,17 @@ public:
 
   thumb2_inst_t LoadThumb2Inst(int offset);
 
-  void RewriteARMInst(int offset, arm_inst_t inst);
+  void RewriteARMInst(int offset, arm_inst_t instr);
 
-  void RewriteThumb1Inst(int offset, thumb1_inst_t inst);
+  void RewriteThumb1Inst(int offset, thumb1_inst_t instr);
 
-  void RewriteThumb2Inst(int offset, thumb2_inst_t inst);
+  void RewriteThumb2Inst(int offset, thumb2_inst_t instr);
 
-  void EmitARMInst(arm_inst_t inst);
+  void EmitARMInst(arm_inst_t instr);
 
-  void EmitThumb1Inst(thumb1_inst_t inst);
+  void EmitThumb1Inst(thumb1_inst_t instr);
 
-  void EmitThumb2Inst(thumb2_inst_t inst);
+  void EmitThumb2Inst(thumb2_inst_t instr);
 
   void Emit32(int32_t data);
 };
