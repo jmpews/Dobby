@@ -270,6 +270,14 @@ add_custom_command(TARGET ${dobby_name}
 endif()
 endif()
 
+if(Plugin.FindSymbol)
+if(NOT SYSTEM.Darwin)
+message(FATAL_ERROR "[!] Plugin.FindSymbol only works on Darwin.")
+endif()
+message(STATUS "[Dobby] Enable Plugin.FindSymbol");
+endif()
+
+
 
 if (SYSTEM.Android)
   target_link_libraries(Dobby log)
