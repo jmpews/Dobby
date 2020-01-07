@@ -342,7 +342,11 @@ public:
     buffer_ = new CodeBuffer(32);
     DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
+  ~Assembler() {
+    buffer_->release();
+  }
 
+public:
   void CommitRealizeAddress(void *address) {
     DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
     AssemblerBase::CommitRealizeAddress(address);

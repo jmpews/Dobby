@@ -30,6 +30,7 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
     AssemblyCodeChunk *codeChunk = ExecutableMemoryArena::AllocateCodeChunk(buffer_size);
     address                      = codeChunk->address;
     assembler->CommitRealizeAddress(codeChunk->address);
+    delete codeChunk;
   }
 
   AssemblyCode *code = FinalizeFromCodeBuffer(address, reinterpret_cast<CodeBufferBase *>(assembler->GetCodeBuffer()));

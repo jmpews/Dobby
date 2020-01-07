@@ -159,10 +159,19 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
 endif ()
 
 if(SYSTEM.Darwin)
+  include_directories(
+    source/UserMode/ExecMemory/substrated/include
+  )
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/UserMode/ExecMemory/code-patch-tool-darwin.cc
   )
 endif()
+
+if(SYSTEM.iOS)
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    source/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
+  )
+endif ()
 
 if (FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}

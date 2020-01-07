@@ -22,6 +22,48 @@
 
 using namespace zz;
 
+#if defined(__arm64__) || defined(__aarch64__)
+#include <mach/mach.h>
+#include "bootstrap.h"
+#include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
+static mach_port_t substrated_server_port = MACH_PORT_NULL;
+mach_port_t connect_mach_service(const char *name) {
+  mach_port_t port;
+  kern_return_t kr;
+
+  if (!MACH_PORT_VALID(bootstrap_port)) {
+    task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
+  }
+
+  if (!MACH_PORT_VALID(bootstrap_port)) {
+    return MACH_PORT_NULL;
+  }
+
+  kr = bootstrap_look_up(bootstrap_port, (char *)name, &port);
+  if (kr != KERN_SUCCESS) {
+    port = MACH_PORT_NULL;
+  }
+
+  return port;
+}
+
+int code_patch_with_substrated(mach_vm_address_t address, size_t size) {
+  if (!MACH_PORT_VALID(substrated_server_port)) {
+    substrated_server_port = connect_mach_service("cy:com.saurik.substrated");
+  }
+  if (!MACH_PORT_VALID(substrated_server_port))
+    return -1;
+
+  kern_return_t kr;
+  kr = substrated_mark(substrated_server_port, mach_task_self(), address, size, &address);
+  if (kr != KERN_SUCCESS) {
+    LOG("code patch with substrated failed");
+    return -1;
+  }
+  return 0;
+}
+#endif
+
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
   int page_size             = (int)sysconf(_SC_PAGESIZE);
@@ -29,7 +71,6 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   int offset                = static_cast<int>((addr_t)address - page_align_address);
 
 #ifdef __APPLE__
-
   addr_t remap_page =
       (addr_t)mmap(0, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, VM_MAKE_TAG(255), 0);
   if ((void *)remap_page == MAP_FAILED)
@@ -63,12 +104,17 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   vm_prot_t curr_protection, max_protection;
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
                      (mach_vm_address_t)remap_page, TRUE, &curr_protection, &max_protection, inherit);
-
   if (kr != KERN_SUCCESS) {
-    // perror((const char *)strerror(errno));
+    munmap((void *)remap_page, (mach_vm_address_t)page_size);
     return kMemoryOperationError;
   }
 
+  int err = munmap((void *)dest_page_address_, (mach_vm_address_t)page_size);
+
+#endif
+
+#if defined(__arm64__) || defined(__aarch64__)
+  code_patch_with_substrated(remap_page, page_size);
 #endif
 
   addr_t clear_start_ = (addr_t)page_align_address + offset;
