@@ -272,5 +272,5 @@ endif()
 
 
 if (SYSTEM.Android)
-  target_link_libraries(Dobby log)
+  target_link_libraries( ${dobby_name} log)
 endif ()
