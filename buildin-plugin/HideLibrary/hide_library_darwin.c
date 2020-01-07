@@ -12,7 +12,9 @@
 
 #include "dobby_find_symbol.h"
 
-void *(*removeImageFromAllImages)(const mach_header *mh) = NULL;
+#include "logging/logging.h"
+
+void *(*removeImageFromAllImages)(const struct mach_header *mh) = NULL;
 
 static void init_miss_symbol() {
   removeImageFromAllImages = DobbyFindSymbol("dyld", "__Z24removeImageFromAllImagesPK11mach_header");
@@ -26,7 +28,7 @@ int DobbyHideLibrary(const char *library_name) {
   }
 
   int image_count = _dyld_image_count();
-  for (size_t i = 0; i < count; i++) {
+  for (size_t i = 0; i < image_count; i++) {
     const char *image_path = _dyld_get_image_name(i);
     char *image_name       = strrchr(image_path, '/');
     if (!image_name)
