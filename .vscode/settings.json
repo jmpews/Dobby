@@ -92,7 +92,9 @@
     "fstream": "cpp",
     "stdio.h": "c",
     "__functional_base_03": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "queue": "cpp",
+    "random": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

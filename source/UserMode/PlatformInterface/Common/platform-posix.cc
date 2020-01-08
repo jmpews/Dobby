@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
+
 #if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h> // for pthread_set_name_np
 #endif
@@ -15,11 +16,6 @@
 #include <sys/types.h>
 #if defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h> // NOLINT, for sysctl
-#endif
-
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-#define LOG_TAG "zzzzz"
-#include <android/log.h> // NOLINT
 #endif
 
 #include "logging/logging.h"

@@ -6,7 +6,7 @@
 typedef struct {
   void *address;
   int size;
-} AssemblyCodeChunk, WritableDataChunk;
+} MemoryChunk, AssemblyCodeChunk, WritableDataChunk;
 
 typedef struct {
   void *address;
