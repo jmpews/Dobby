@@ -94,7 +94,13 @@
     "__functional_base_03": "cpp",
     "filesystem": "cpp",
     "queue": "cpp",
-    "random": "cpp"
+    "random": "cpp",
+    "__errc": "cpp",
+    "__node_handle": "cpp",
+    "bit": "cpp",
+    "complex": "cpp",
+    "iomanip": "cpp",
+    "sstream": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

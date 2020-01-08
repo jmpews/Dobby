@@ -3,8 +3,15 @@
 #include "core/logging.h"
 #include "core/macros.h"
 
-std::vector<MemoryRegion> GetProcessMemoryLayout() {
-  std::vector<MemoryRegion> result;
+bool memory_region_comparator(MemoryRegion al, MemoryRegion b) {
+  return (a.address > b.address);
+}
+
+std::vector<MemoryRegion> ProcessMemoryLayout;
+std::vector<MemoryRegion> *GetProcessMemoryLayout() {
+  if (!ProcessMemoryLayout.empty()) {
+    ProcessMemoryLayout.clear();
+  }
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
@@ -62,7 +69,9 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
       permission = MemoryPermission::kNoAccess;
     }
 
-    result.push_back(MemoryRegion(region_start, region_end, permission));
+    result.push_back(MemoryRegion(region_start, region_end - region_start, permission));
   }
-  return result;
+  std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
+
+  return &ProcessMemoryLayout;
 }

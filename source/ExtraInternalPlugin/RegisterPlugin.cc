@@ -1,11 +1,8 @@
 #include "ExtraInternalPlugin/RegisterPlugin.h"
 
-
-
-
 void ExtraInternalPlugin::registerPlugin(const char *name, ExtraInternalPlugin *plugin) {
 
-  if(!plugins_) {
+  if (!plugins_) {
     plugins_ = new LiteMutableArray;
   }
 

@@ -5,6 +5,6 @@
 
 #include <vector>
 
-std::vector<MemoryRegion> GetProcessMemoryLayout();
+std::vector<MemoryRegion> *GetProcessMemoryLayout();
 
 #endif

@@ -25,10 +25,11 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
   while ((page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
-    if ((addr_t)page->cursor + inSize < ((addr_t)page->address + page->capacity)) {
+    if (((addr_t)page->cursor + inSize) < ((addr_t)page->address + page->capacity)) {
       break;
     }
   }
+  delete iter;
 
   // alloc a new executable page.
   if (!page) {

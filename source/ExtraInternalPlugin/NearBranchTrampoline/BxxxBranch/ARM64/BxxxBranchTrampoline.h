@@ -5,7 +5,7 @@
 
 #include "ExtraInternalPlugin/RegisterPlugin.h"
 
-PUBLIC void zz_enable_arm64_bxx_branch_trampoline();
+PUBLIC void dobby_enable_arm64_bxx_branch_trampoline();
 
 class BxxxRouting : public RoutingPlugin {
   // @Return: if false will continue to iter next plugin

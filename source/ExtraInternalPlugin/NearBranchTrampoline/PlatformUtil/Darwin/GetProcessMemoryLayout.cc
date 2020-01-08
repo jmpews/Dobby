@@ -30,34 +30,34 @@
 
 #include <vector>
 
-std::vector<MemoryRegion> GetProcessMemoryLayout() {
-  std::vector<MemoryRegion> result;
+bool memory_region_comparator(MemoryRegion al, MemoryRegion b) {
+  return (a.address > b.address);
+}
 
-  mach_msg_type_number_t count;
-  struct vm_region_submap_info_64 info;
-  vm_size_t nesting_depth;
-  kern_return_t kr = KERN_SUCCESS;
+std::vector<MemoryRegion> ProcessMemoryLayout;
+std::vector<MemoryRegion> *GetProcessMemoryLayout() {
+  if (!ProcessMemoryLayout.empty()) {
+    ProcessMemoryLayout.clear();
+  }
 
-  vm_address_t addr = 0;
-  vm_size_t size    = 0;
-
-  while (1) {
-    count = VM_REGION_SUBMAP_INFO_COUNT_64;
-    kr = vm_region_recurse_64(mach_task_self(), &addr, &size, (natural_t *)&nesting_depth, (vm_region_info_64_t)&info,
-                              &count);
+  struct vm_region_submap_short_info_64 submap_info;
+  mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  mach_vm_address_t addr       = 0;
+  mach_vm_size_t size          = 0;
+  natural_t depth              = 0;
+  while (true) {
+    count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+    kern_return_t kr =
+        mach_vm_region_recurse(mach_task_self(), &addr, &size, &depth, (vm_region_recurse_info_t)&submap_info, &count);
     if (kr == KERN_INVALID_ADDRESS) {
       break;
-    } else if (kr) {
-      mach_error("vm_region:", kr);
-      break; /* last region done */
+    } else {
+      KERN_RETURN_ASSERT(kr);
     }
 
-    if (info.is_submap) {
-      nesting_depth++;
+    if ((0 && submap_info.is_submap) {
+      depth++;
     } else {
-      addr += size;
-      uintptr_t start = addr - size;
-      uintptr_t end   = addr;
       MemoryPermission permission;
       if ((info.protection & PROT_READ) && (info.protection & PROT_WRITE)) {
         permission = MemoryPermission::kReadWrite;
@@ -68,9 +68,12 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
       } else {
         continue;
       }
-      MemoryRegion region = {start, end, permission};
+      MemoryRegion region = {addr, size, permission};
       result.push_back(region);
     }
   }
-  return result;
+
+  std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
+
+  return &ProcessMemoryLayout;
 }
