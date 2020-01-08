@@ -40,7 +40,7 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **str
   }
 
   if (!symtab_cmd || !linkedit_segment) {
-    return NULL;
+    return;
   }
 
   uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
@@ -50,8 +50,8 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **str
   size_t symtab_count     = symtab_cmd->nsyms;
 
   *nsyms = symtab_count;
-  *syms  = symtab;
-  *strs  = strtab;
+  *syms  = (uintptr_t)symtab;
+  *strs  = (char *)strtab;
 }
 
 void *iterateSymbolTable(char *name, nlist_t *syms, size_t nsyms, char *strs) {
@@ -84,13 +84,13 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name) {
     nlist_t *syms = 0;
     char *strs    = 0;
 
-    if (is_addr_in_dyld_shared_cache(header, 0))
-      get_syms_in_dyld_shared_cache(header, &syms, &strs, &nsyms);
+    if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
+      get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&syms, &strs, &nsyms);
     else
-      get_syms_in_single_image(header, &syms, &strs, &nsyms);
+      get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&syms, &strs, &nsyms);
 
-    result = iterateSymbolTable(symbol_name, syms, nsyms, strs);
-    result = (uintptr_t)result + slide;
+    result = iterateSymbolTable((char *)symbol_name, syms, nsyms, strs);
+    result = (void *)((uintptr_t)result + slide);
     if (result)
       break;
   }

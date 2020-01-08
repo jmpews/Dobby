@@ -37,10 +37,15 @@ cmake .. \
 -DARCHS=arm64 \
 -DENABLE_BITCODE=0 \
 -DENABLE_ARC=0 \
--DENABLE_VISIBILITY=0 \
+-DENABLE_VISIBILITY=1 \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
--DDynamicBinaryInstrument=ON
+-DDynamicBinaryInstrument=ON \
+-DPlugin.FindSymbol=ON \
+-DPlugin.HideLibrary=ON \
+-DPlugin.Gollum=ON
+
+
 
 make -j4
 ```

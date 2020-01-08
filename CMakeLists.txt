@@ -27,6 +27,10 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
 option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
 
+option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
+
+option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
+
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
 # option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
@@ -228,12 +232,36 @@ set(stdcxx.SOURCE_FILE_LIST
   external/stdcxx/LiteObject.cc
   )
 
+set(dobby.plugin.SOURCE_FILE_LIST
+)
+if(Plugin.FindSymbol)
+  if(NOT SYSTEM.Darwin)
+    message(FATAL_ERROR "[!] Plugin.FindSymbol only works on Darwin.")
+  endif()
+  message(STATUS "[Dobby] Enable Plugin.FindSymbol")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    buildin-plugin/FindSymbol/darwin/find_symbol_darwin.c
+    buildin-plugin/FindSymbol/darwin/find_symbol_dyld_shared_cache.c
+  )
+endif()
+if(Plugin.HideLibrary)
+  if(NOT SYSTEM.Darwin)
+    message(FATAL_ERROR "[!] Plugin.HideLibrary only works on Darwin.")
+  endif()
+  message(STATUS "[Dobby] Enable Plugin.HideLibrary")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    buildin-plugin/HideLibrary/hide_library_darwin.c
+  )
+endif()
+
 include_directories(
   .
   ./source
   ./source/UserMode
   ./external/logging
   ./external/stdcxx
+  ./buildin-plugin/FindSymbol
+  ./buildin-plugin/HideLibrary
 )
 
 set(dobby.HEADER_FILE_LIST
@@ -246,9 +274,9 @@ set(dobby_name Dobby)
 endif()
 
 if (GENERATE_SHARED)
-  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 else ()
-  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST})
+  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 endif ()
 
 target_include_directories(${dobby_name} PUBLIC include)
@@ -278,15 +306,6 @@ add_custom_command(TARGET ${dobby_name}
   )
 endif()
 endif()
-
-if(Plugin.FindSymbol)
-if(NOT SYSTEM.Darwin)
-message(FATAL_ERROR "[!] Plugin.FindSymbol only works on Darwin.")
-endif()
-message(STATUS "[Dobby] Enable Plugin.FindSymbol");
-endif()
-
-
 
 if (SYSTEM.Android)
   target_link_libraries(Dobby log)
