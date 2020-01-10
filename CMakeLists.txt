@@ -25,6 +25,8 @@ option(DLOG "Enable debug log" OFF)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
+option(NearBranch "Use [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
+
 option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
 
 option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
@@ -77,8 +79,8 @@ endif ()
 
 # Set Prefix
 if (PROCESSOR.ARM)
-  set(arch1 arm)
   set(ARCH1 ARM)
+  set(arch1 arm)
 elseif (PROCESSOR.AARCH64)
   set(ARCH1 ARM64)
   set(arch1 arm64)
@@ -213,6 +215,26 @@ if (DynamicBinaryInstrument)
     source/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
     )
 endif ()
+
+if(NearBranchTrampoline)
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    source/ExtraInternalPlugin/RegisterPlugin.cc
+    source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
+  if(SYSTEM.Darwin)
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
+  elseif(SYSTEM.Linux)
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
+  endif()
+  if(PROCESSOR.ARM OR PROCESSOR.AARCH64)
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/ExtraInternalPlugin/NearBranchTrampoline/BxxxBranch/${ARCH1}/BxxxBranchTrampoline.cc)
+  elseif(PROCESSOR.X86_64 OR PROCESSOR.X86)
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/ExtraInternalPlugin/NearBranchTrampoline/JmpImmediate32/${ARCH1}/BxxxBranchTrampoline.cc)
+  endif()
+endif()
 
 # add logging library
 add_subdirectory(external/logging)
