@@ -3,6 +3,6 @@
 
 #include "dobby_internal.h"
 
-PUBLIC zz_enable_arm_bxx_branch_trampoline();
+PUBLIC dobby_enable_arm_bxx_branch_trampoline();
 
 #endif

@@ -21,6 +21,10 @@
 
 using namespace zz::arm64;
 
+void dobby_enable_arm64_bxx_branch_trampoline() {
+  ExtraInternalPlugin::registerPlugin("arm64_bxx_trampoline", new BxxxRouting);
+}
+
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
 static AssemblyCode *BuildFastForwardTrampoline(uintptr_t forward_address) {
   TurboAssembler turbo_assembler_;
@@ -45,13 +49,6 @@ static AssemblyCode *BuildFastForwardTrampoline(uintptr_t forward_address) {
   turbo_assembler_.release();
 
   return code;
-}
-
-bool BxxxRouting::Prepare(InterceptRouting *routing) {
-  ARM64InterceptRouting *routing = reinterpret_cast<ARM64InterceptRouting *>(routing);
-  HookEntry *entry               = routing->GetHookEntry();
-
-  return true;
 }
 
 bool BxxxRouting::Active(InterceptRouting *routing) {

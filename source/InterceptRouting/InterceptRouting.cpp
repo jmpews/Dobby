@@ -5,6 +5,8 @@
 #include "InterceptRouting.h"
 #include "ExecMemory/CodeBuffer/CodeBufferBase.h"
 
+#include "ExtraInternalPlugin/RegisterPlugin.h"
+
 using namespace zz;
 
 void InterceptRouting::Prepare() {
@@ -49,7 +51,16 @@ void InterceptRouting::Active() {
 }
 
 void InterceptRouting::Commit() {
-  Active();
+  bool handle_by_plugin        = false;
+  RoutingPlugin *plugin        = NULL;
+  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
+  while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
+    if (plugin->Active(this))
+      handle_by_plugin = true;
+  }
+
+  if (!handle_by_plugin)
+    Active();
 }
 
 HookEntry *InterceptRouting::GetHookEntry() {
