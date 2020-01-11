@@ -4,7 +4,8 @@
 #include "UnifiedInterface/MemoryCommon.h"
 
 #include <vector>
+#include <algorithm>
 
-std::vector<MemoryRegion> *GetProcessMemoryLayout();
+std::vector<MemoryRegion> GetProcessMemoryLayout();
 
 #endif

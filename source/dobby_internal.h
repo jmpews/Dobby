@@ -8,6 +8,11 @@
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
+#include "stdcxx/LiteIterator.h"
+#include "stdcxx/LiteMutableArray.h"
+#include "stdcxx/LiteMutableBuffer.h"
+
+#include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>

@@ -1,21 +1,26 @@
+#include "dobby_internal.h"
 
 #include "PlatformInterface/Common/Platform.h"
-#include "core/logging.h"
-#include "core/macros.h"
 
-bool memory_region_comparator(MemoryRegion al, MemoryRegion b) {
+#include "ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
+
+#include "ExecMemory/ExecutableMemoryArena.h"
+
+#include <vector>
+
+bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address > b.address);
 }
 
 std::vector<MemoryRegion> ProcessMemoryLayout;
-std::vector<MemoryRegion> *GetProcessMemoryLayout() {
+std::vector<MemoryRegion> GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
-    return result;
+    return ProcessMemoryLayout;
 
   while (!feof(fp)) {
     char line_buffer[1024 + 1];
@@ -69,9 +74,9 @@ std::vector<MemoryRegion> *GetProcessMemoryLayout() {
       permission = MemoryPermission::kNoAccess;
     }
 
-    result.push_back(MemoryRegion(region_start, region_end - region_start, permission));
+    ProcessMemoryLayout.push_back(MemoryRegion{region_start, region_end - region_start, permission});
   }
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
-  return &ProcessMemoryLayout;
+  return ProcessMemoryLayout;
 }

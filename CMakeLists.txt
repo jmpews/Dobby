@@ -25,7 +25,7 @@ option(DLOG "Enable debug log" OFF)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(NearBranch "Use [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
+option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
 
 option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
 
@@ -217,15 +217,16 @@ if (DynamicBinaryInstrument)
 endif ()
 
 if(NearBranchTrampoline)
+  message(STATUS "[Dobby] Enable Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/ExtraInternalPlugin/RegisterPlugin.cc
     source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
   if(SYSTEM.Darwin)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
       source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
-  elseif(SYSTEM.Linux)
+  elseif(SYSTEM.Posix)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
+      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc)
   endif()
   if(PROCESSOR.ARM OR PROCESSOR.AARCH64)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -330,5 +331,5 @@ endif()
 endif()
 
 if (SYSTEM.Android)
-  target_link_libraries(Dobby log)
+  target_link_libraries(${dobby_name} log)
 endif ()

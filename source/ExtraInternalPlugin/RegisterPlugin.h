@@ -1,7 +1,9 @@
 #ifndef EXTRA_INTERNAL_PLUGIN_H
 #define EXTRA_INTERNAL_PLUGIN_H
 
-#include "stdcxx/LiteMutableArray.h"
+#include "dobby_internal.h"
+
+#include "InterceptRouting/InterceptRouting.h"
 
 // Internal Plugin
 class ExtraInternalPlugin {

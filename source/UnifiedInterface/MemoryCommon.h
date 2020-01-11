@@ -5,20 +5,20 @@
 #include "UnifiedInterface/StdMemory.h"
 // "the same attribute memory region, such as __TEXT segment"
 
-struct MemoryRange {
+typedef struct MemoryRange {
   uintptr_t address;
   size_t length;
-};
+} MemoryRange;
 
-struct MemoryRegion {
+typedef struct MemoryRegion {
   uintptr_t address;
   size_t length;
   MemoryPermission permission;
-};
+} MemoryRegion;
 
-struct MemoryPage {
+typedef struct MemoryPage {
   uintptr_t address;
   MemoryPermission permission;
-};
+} MemoryPage;
 
 #endif // MEM_MEMORY_REGION_H

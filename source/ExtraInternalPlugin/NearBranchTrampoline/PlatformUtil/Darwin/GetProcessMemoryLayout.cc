@@ -24,18 +24,19 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#include "UserMode/PlatformInterface/Common/platform-darwin/mach_vm.h"
 #include "ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
 
 #include "ExecMemory/ExecutableMemoryArena.h"
 
 #include <vector>
 
-bool memory_region_comparator(MemoryRegion al, MemoryRegion b) {
+bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address > b.address);
 }
 
 std::vector<MemoryRegion> ProcessMemoryLayout;
-std::vector<MemoryRegion> *GetProcessMemoryLayout() {
+std::vector<MemoryRegion> GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -52,28 +53,28 @@ std::vector<MemoryRegion> *GetProcessMemoryLayout() {
     if (kr == KERN_INVALID_ADDRESS) {
       break;
     } else {
-      KERN_RETURN_ASSERT(kr);
+      break;
     }
 
-    if ((0 && submap_info.is_submap) {
+    if (0 && submap_info.is_submap) {
       depth++;
     } else {
       MemoryPermission permission;
-      if ((info.protection & PROT_READ) && (info.protection & PROT_WRITE)) {
+      if ((submap_info.protection & PROT_READ) && (submap_info.protection & PROT_WRITE)) {
         permission = MemoryPermission::kReadWrite;
-      } else if ((info.protection & PROT_READ) == info.protection) {
+      } else if ((submap_info.protection & PROT_READ) == submap_info.protection) {
         permission = MemoryPermission::kRead;
-      } else if ((info.protection & PROT_READ) && (info.protection & PROT_EXEC)) {
+      } else if ((submap_info.protection & PROT_READ) && (submap_info.protection & PROT_EXEC)) {
         permission = MemoryPermission::kReadExecute;
       } else {
         continue;
       }
       MemoryRegion region = {addr, size, permission};
-      result.push_back(region);
+      ProcessMemoryLayout.push_back(region);
     }
   }
 
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
-  return &ProcessMemoryLayout;
+  return ProcessMemoryLayout;
 }
