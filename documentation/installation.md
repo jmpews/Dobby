@@ -40,9 +40,8 @@ cmake .. \
 -DENABLE_VISIBILITY=1 \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
--DDynamicBinaryInstrument=ON \
--DPlugin.FindSymbol=ON \
--DPlugin.HideLibrary=ON \
+-DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
+-DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON \
 -DPlugin.Gollum=ON
 
 

@@ -33,6 +33,8 @@ option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
 
 option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
+option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
 # option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
@@ -276,19 +278,32 @@ if(Plugin.HideLibrary)
     buildin-plugin/HideLibrary/hide_library_darwin.c
   )
 endif()
+if(Plugin.ObjectiveC)
+  if(NOT SYSTEM.Darwin)
+    message(FATAL_ERROR "[!] Plugin.ObjectiveC only works on Darwin.")
+  endif()
+  message(STATUS "[Dobby] Enable Plugin.ObjectiveC")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    external/helpers/variable_cache.c
+    buildin-plugin/ObjectiveC/objective_c_tookit.mm
+  )
+endif()
 
 include_directories(
   .
   ./source
   ./source/UserMode
+  ./external
   ./external/logging
   ./external/stdcxx
   ./buildin-plugin/FindSymbol
   ./buildin-plugin/HideLibrary
+  ./buildin-plugin/ObjectiveC
 )
 
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
+  
 )
 
 set(dobby_name dobby)
@@ -305,7 +320,7 @@ endif ()
 target_include_directories(${dobby_name} PUBLIC include)
 
 if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
-set_target_properties(${dobby_name} PROPERTIES
+set_target_properties(Dobby PROPERTIES
   FRAMEWORK TRUE
   FRAMEWORK_VERSION A
   MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
@@ -317,12 +332,12 @@ set_target_properties(${dobby_name} PROPERTIES
 )
 
 # add Gollum framework
-if(Plugin.Gollum)
+if(Plugin.Gollum AND GENERATE_FRAMEWORK)
 if(NOT SYSTEM.iOS)
 message(FATAL_ERROR "[!] Gollum.framework only works on iOS.")
 endif ()
 message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
-add_custom_command(TARGET ${dobby_name}
+add_custom_command(TARGET Dobby
   POST_BUILD
   COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_name}>/Frameworks
   COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_name}>/Frameworks/Gollum.framework
@@ -331,5 +346,10 @@ endif()
 endif()
 
 if (SYSTEM.Android)
-  target_link_libraries(${dobby_name} log)
+  target_link_libraries(dobby log)
+endif ()
+
+if (SYSTEM.Darwin AND Plugin.ObjectiveC)
+  target_link_libraries(${dobby_name}
+    "-framework Foundation")
 endif ()
