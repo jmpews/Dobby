@@ -27,6 +27,11 @@
 #include <mach/vm_statistics.h>
 #endif
 
+#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
+#define LOG_TAG "Dobby"
+#include <android/log.h>
+#endif
+
 #include <string.h>
 
 namespace zz {

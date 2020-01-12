@@ -1,15 +1,5 @@
-//
-//  YourHackL1b.cpp
-//  HookExample
-//
-//  Created by jmpews on 2019/3/25.
-//  Copyright © 2019 jmpews. All rights reserved.
-//
-
 #include <stdlib.h> /* getenv */
-
 #include <stdio.h>
-
 #include <string.h>
 
 #include <iostream>
@@ -21,37 +11,45 @@
 
 #include "./file_operation_monitor.h"
 
-std::unordered_map<FILE *, const char *> *TracedFileList;
+std::unordered_map<FILE *, const char *> *TracedFopenFileList;
 
 FILE *(*orig_fopen)(const char *filename, const char *mode);
 FILE *fake_fopen(const char *filename, const char *mode) {
-  std::cout << "[-] trace file: " << filename << std::endl;
   FILE *result = NULL;
   result       = orig_fopen(filename, mode);
-  TracedFileList->insert(std::make_pair(result, filename));
+  if (result != NULL) {
+    char *traced_filename = (char *)malloc(128);
+    // FIXME: strncpy
+    strcpy(traced_filename, filename);
+    std::cout << "[-] trace file: " << filename << std::endl;
+    TracedFopenFileList->insert(std::make_pair(result, traced_filename));
+  }
   return result;
 }
 
-const char *GetFileDescriptorTraced(FILE *file) {
+static const char *GetFileDescriptorTraced(FILE *stream, bool removed) {
   std::unordered_map<FILE *, const char *>::iterator it;
-  it = TracedFileList->find(file);
-  if (it != TracedFileList->end())
+  it = TracedFopenFileList->find(stream);
+  if (it != TracedFopenFileList->end()) {
+    if (removed)
+      TracedFopenFileList->erase(it);
     return it->second;
+  }
   return NULL;
 }
 
 size_t (*orig_fread)(void *ptr, size_t size, size_t count, FILE *stream);
 size_t fake_fread(void *ptr, size_t size, size_t count, FILE *stream) {
-  const char *file_name = GetFileDescriptorTraced(stream);
+  const char *file_name = GetFileDescriptorTraced(stream, false);
   if (file_name) {
-    printf("[-] fread %s\n    to %p\n", file_name, ptr);
+    printf("[-] fread: %s, buffer: %p\n", file_name, ptr);
   }
   return orig_fread(ptr, size, count, stream);
 }
 
 size_t (*orig_fwrite)(const void *ptr, size_t size, size_t count, FILE *stream);
 size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
-  const char *file_name = GetFileDescriptorTraced(stream);
+  const char *file_name = GetFileDescriptorTraced(stream, false);
   if (file_name) {
     printf("[-] fwrite %s\n    from %p\n", file_name, ptr);
   }
@@ -60,7 +58,7 @@ size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
 
 __attribute__((constructor)) void __main() {
 
-  TracedFileList = new std::unordered_map<FILE *, const char *>();
+  TracedFopenFileList = new std::unordered_map<FILE *, const char *>();
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
