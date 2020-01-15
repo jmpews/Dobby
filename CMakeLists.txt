@@ -37,6 +37,8 @@ option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]
 
 option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
 
+option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
+
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
 # option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
@@ -44,8 +46,6 @@ option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
 # option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
 
 # option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
-
-include(cmake/XcodeGenerator.cmake)
 
 # Use native assembly bridge to replace the runtime codegen
 if (CLOSURE_BRIDGE_TEMPLATE)
@@ -295,6 +295,15 @@ if(Plugin.SensitiveFunction)
   message(STATUS "[Dobby] Enable Plugin.Sensitive")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     buildin-plugin/SensitiveFunction/sensitive_function_monitor.cc
+  )
+endif()
+if(Plugin.ApplicationEventMonitor)
+  message(STATUS "[Dobby] Enable Plugin.ApplicationEventMonitor")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    buildin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
+    buildin-plugin/ApplicationEventMonitor/file_operation_monitor.cc
+    buildin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
+    buildin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
   )
 endif()
 

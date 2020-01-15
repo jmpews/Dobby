@@ -6,10 +6,9 @@
 #include <fstream>
 
 #include <set>
-
 #include <unordered_map>
 
-#include "./file_operation_monitor.h"
+#include "./dobby_monitor.h"
 
 std::unordered_map<FILE *, const char *> *TracedFopenFileList;
 

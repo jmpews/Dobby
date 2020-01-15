@@ -10,10 +10,9 @@
 #include <fstream>
 
 #include <set>
-
 #include <unordered_map>
 
-#include "./dynamic_loader_monitor.h"
+#include "./dobby_monitor.h"
 
 std::unordered_map<int, const char *> posix_file_descriptors;
 
@@ -74,4 +73,11 @@ int fake_close(int fd) {
     free((void *)traced_filename);
   }
   return orig_close(fd);
+}
+
+__attribute__((constructor)) static void ctor() {
+  DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
+  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
+  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
+  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
 }

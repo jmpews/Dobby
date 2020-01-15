@@ -1,13 +1,9 @@
-//
-// Created by jmpews on 2019/3/31.
-//
-
-#include "./memory_operation_instrument.h"
+#include "./dobby_monitor.h"
+#include "dobby.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "dobby.h"
 
 uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
   uintptr_t result;
@@ -41,7 +37,7 @@ void format_integer_manually(char *buf, uint64_t integer) {
 void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   size_t size_ = 0;
   size_        = getCallFirstArg(reg_ctx);
-  char *buffer = "[-] function malloc first arg: 0x00000000.\n";
+  char *buffer = (char *)"[-] function malloc first arg: 0x00000000.\n";
   format_integer_manually(strchr(buffer, '.') - 1, size_);
   puts(buffer);
 }
@@ -51,15 +47,13 @@ void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 
   mem_ptr = getCallFirstArg(reg_ctx);
 
-  char *buffer = "[-] function free first arg: 0x00000000.\n";
+  char *buffer = (char *)"[-] function free first arg: 0x00000000.\n";
   format_integer_manually(strchr(buffer, '.') - 1, mem_ptr);
   puts(buffer);
 }
 
-__attribute__((constructor)) void ___main() {
-
-  DobbyInstrument((void *)malloc, malloc_handler);
-  DobbyInstrument((void *)free, free_handler);
-
+__attribute__((constructor)) static void ctor() {
+  // DobbyInstrument((void *)malloc, malloc_handler);
+  // DobbyInstrument((void *)free, free_handler);
   return;
 }

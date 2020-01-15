@@ -6,10 +6,11 @@
 #include <fstream>
 
 #include <set>
-
 #include <unordered_map>
 
-#include "./dynamic_loader_monitor.h"
+#include "./dobby_monitor.h"
+
+#include <dlfcn.h>
 
 std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 
@@ -55,4 +56,10 @@ int fake_dlclose(void *__handle) {
     free((void *)traced_filename);
   }
   return orig_dlclose(__handle);
+}
+
+__attribute__((constructor)) static void ctor() {
+  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }

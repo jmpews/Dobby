@@ -41,3 +41,7 @@ int DobbyHideLibrary(const char *library_name) {
   }
   return 0;
 }
+
+__attribute__((constructor)) static void ctor() {
+  DobbyHideLibrary("libdobby.dylib");
+}

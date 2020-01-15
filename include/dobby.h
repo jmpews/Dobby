@@ -95,7 +95,7 @@ typedef struct _HookEntryInfo {
   };
 } HookEntryInfo;
 
-#if 1
+#if 0
 // wrap function with pre_call and post_call
 typedef void (*PreCallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 typedef void (*PostCallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
