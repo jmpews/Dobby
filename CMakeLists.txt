@@ -35,6 +35,8 @@ option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
 option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
+option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
+
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
 # option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
@@ -265,6 +267,7 @@ if(Plugin.FindSymbol)
   endif()
   message(STATUS "[Dobby] Enable Plugin.FindSymbol")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    buildin-plugin/FindSymbol/re/re.c
     buildin-plugin/FindSymbol/darwin/find_symbol_darwin.c
     buildin-plugin/FindSymbol/darwin/find_symbol_dyld_shared_cache.c
   )
@@ -286,6 +289,12 @@ if(Plugin.ObjectiveC)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     external/helpers/variable_cache.c
     buildin-plugin/ObjectiveC/objective_c_tookit.mm
+  )
+endif()
+if(Plugin.SensitiveFunction)
+  message(STATUS "[Dobby] Enable Plugin.Sensitive")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    buildin-plugin/SensitiveFunction/sensitive_function_monitor.cc
   )
 endif()
 

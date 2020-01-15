@@ -13,6 +13,8 @@
 
 #include "symbol_internal.h"
 
+#include "re/re.h"
+
 void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **strs, size_t *nsyms) {
   segment_command_t *curr_seg_cmd;
   segment_command_t *linkedit_segment   = NULL;
@@ -54,13 +56,16 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **str
   *strs  = (char *)strtab;
 }
 
-void *iterateSymbolTable(char *name, nlist_t *syms, size_t nsyms, char *strs) {
+void *iterateSymbolTable(char *name_pattern, nlist_t *syms, size_t nsyms, char *strs) {
   for (uint32_t i = 0; i < nsyms; i++) {
     if (syms[i].n_value) {
       uint32_t strtab_offset = syms[i].n_un.n_strx;
       char *tmp_symbol_name  = strs + strtab_offset;
       // TODO: what you want !!!
-      if (strcmp(tmp_symbol_name, name) == 0) {
+      if (re_match(name_pattern, tmp_symbol_name) != -1) {
+        return (void *)(syms[i].n_value);
+      }
+      if (0 && strcmp(name_pattern, tmp_symbol_name) == 0) {
         return (void *)(syms[i].n_value);
       }
     }
@@ -68,7 +73,7 @@ void *iterateSymbolTable(char *name, nlist_t *syms, size_t nsyms, char *strs) {
   return NULL;
 }
 
-void *DobbyFindSymbol(const char *image_name, const char *symbol_name) {
+void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
 
@@ -89,7 +94,7 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name) {
     else
       get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&syms, &strs, &nsyms);
 
-    result = iterateSymbolTable((char *)symbol_name, syms, nsyms, strs);
+    result = iterateSymbolTable((char *)symbol_name_pattern, syms, nsyms, strs);
     result = (void *)((uintptr_t)result + slide);
     if (result)
       break;
