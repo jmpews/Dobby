@@ -5,7 +5,7 @@
 
 using namespace zz::x64;
 
-CodeBuffer *GenTrampoline(void *from, void *to) {
+CodeBufferBase *GenTrampoline(void *from, void *to) {
   TurboAssembler turbo_assembler_(from);
 #define _ turbo_assembler_.
 
@@ -15,5 +15,5 @@ CodeBuffer *GenTrampoline(void *from, void *to) {
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpBranch((addr_t)to);
 
-  return turbo_assembler_.GetCodeBuffer();
+  return turbo_assembler_.GetCodeBuffer()->copy();
 }

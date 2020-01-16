@@ -41,7 +41,7 @@ size_t (*orig_fread)(void *ptr, size_t size, size_t count, FILE *stream);
 size_t fake_fread(void *ptr, size_t size, size_t count, FILE *stream) {
   const char *file_name = GetFileDescriptorTraced(stream, false);
   if (file_name) {
-    printf("[-] fread: %s, buffer: %p\n", file_name, ptr);
+    LOG("[-] fread: %s, buffer: %p\n", file_name, ptr);
   }
   return orig_fread(ptr, size, count, stream);
 }
@@ -50,7 +50,7 @@ size_t (*orig_fwrite)(const void *ptr, size_t size, size_t count, FILE *stream);
 size_t fake_fwrite(void *ptr, size_t size, size_t count, FILE *stream) {
   const char *file_name = GetFileDescriptorTraced(stream, false);
   if (file_name) {
-    printf("[-] fwrite %s\n    from %p\n", file_name, ptr);
+    LOG("[-] fwrite %s\n    from %p\n", file_name, ptr);
   }
   return orig_fwrite(ptr, size, count, stream);
 }

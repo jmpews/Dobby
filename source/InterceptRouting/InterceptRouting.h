@@ -7,7 +7,7 @@
 
 class CodeBuffer;
 
-extern CodeBuffer *GenTrampoline(void *from, void *to);
+extern CodeBufferBase *GenTrampoline(void *from, void *to);
 
 extern zz::AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 

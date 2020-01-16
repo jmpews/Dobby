@@ -36,12 +36,12 @@ int DobbyHideLibrary(const char *library_name) {
 
     if (strcmp(image_name, library_name) == 0) {
       removeImageFromAllImages(_dyld_get_image_header(i));
-      DLOG("remove %s library logically", library_name);
+      LOG("remove %s library logically", library_name);
     }
   }
   return 0;
 }
 
 __attribute__((constructor)) static void ctor() {
-  DobbyHideLibrary("libdobby.dylib");
+  // DobbyHideLibrary("libdobby.dylib");
 }

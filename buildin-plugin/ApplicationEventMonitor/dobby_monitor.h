@@ -11,6 +11,8 @@
 #include <set>
 #include <unordered_map>
 
+#include "logging/logging.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -13,6 +13,13 @@ public:
   }
 
 public:
+  CodeBufferBase *copy() {
+    CodeBufferBase *result = new CodeBufferBase(this->getCapacity());
+    result->EmitBuffer(this->getRawBuffer(), this->getSize());
+    return result;
+  }
+
+public:
   void Emit8(uint8_t data);
 
   void Emit16(uint16_t data);

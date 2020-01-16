@@ -105,11 +105,14 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   kr = mach_vm_remap(task_self, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE, task_self,
                      (mach_vm_address_t)remap_page, TRUE, &curr_protection, &max_protection, inherit);
   if (kr != KERN_SUCCESS) {
-    munmap((void *)remap_page, (mach_vm_address_t)page_size);
     return kMemoryOperationError;
   }
 
-  int err = munmap((void *)dest_page_address_, (mach_vm_address_t)page_size);
+  int err = munmap((void *)remap_page, (mach_vm_address_t)page_size);
+  if (err == -1) {
+    FATAL_STRERROR("munmap %p failed");
+    return kMemoryOperationError;
+  }
 
 #endif
 

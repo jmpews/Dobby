@@ -100,7 +100,8 @@
     "bit": "cpp",
     "complex": "cpp",
     "iomanip": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "stdarg.h": "c"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }

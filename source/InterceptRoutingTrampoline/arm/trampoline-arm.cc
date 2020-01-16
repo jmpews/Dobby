@@ -14,7 +14,7 @@ CodeBuffer *gen_arm_trampoline(void *from, void *to) {
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch((uint32_t)to);
 
-  return turbo_assembler_.GetCodeBuffer();
+  return turbo_assembler_.GetCodeBuffer()->copy();
 }
 
 CodeBuffer *gen_thumb_trampoline(void *from, void *to) {
@@ -31,10 +31,10 @@ CodeBuffer *gen_thumb_trampoline(void *from, void *to) {
   }
   _ EmitAddress((uint32_t)to);
 
-  return thumb_turbo_assembler_.GetCodeBuffer();
+  return thumb_turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBuffer *GenTrampoline(void *from, void *to) {
+CodeBufferBase *GenTrampoline(void *from, void *to) {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
   ExecuteState execute_state_;

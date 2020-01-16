@@ -26,6 +26,10 @@ public:
     initWithCapacity(size);
   }
 
+  ~LiteMutableBuffer() {
+    this->release();
+  }
+
 public:
   virtual void release();
 

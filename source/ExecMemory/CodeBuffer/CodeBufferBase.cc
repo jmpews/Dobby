@@ -3,7 +3,7 @@
 
 void CodeBufferBase::Emit8(uint8_t value) {
   // Ensure the free space enough for the template T value
-  ensureCapacity(sizeof(uint8_t) + getSize());
+  this->ensureCapacity(sizeof(uint8_t) + this->getSize());
 
   *reinterpret_cast<uint8_t *>(cursor_) = value;
   cursor_ += sizeof(uint8_t);
@@ -11,7 +11,7 @@ void CodeBufferBase::Emit8(uint8_t value) {
 
 void CodeBufferBase::Emit16(uint16_t value) {
   // Ensure the free space enough for the template T value
-  ensureCapacity(sizeof(uint16_t) + getSize());
+  this->ensureCapacity(sizeof(uint16_t) + this->getSize());
 
   *reinterpret_cast<uint16_t *>(cursor_) = value;
   cursor_ += sizeof(uint16_t);
@@ -19,7 +19,7 @@ void CodeBufferBase::Emit16(uint16_t value) {
 
 void CodeBufferBase::Emit32(uint32_t value) {
   // Ensure the free space enough for the template T value
-  ensureCapacity(sizeof(uint32_t) + getSize());
+  this->ensureCapacity(sizeof(uint32_t) + this->getSize());
 
   *reinterpret_cast<uint32_t *>(cursor_) = value;
   cursor_ += sizeof(uint32_t);
@@ -27,7 +27,7 @@ void CodeBufferBase::Emit32(uint32_t value) {
 
 void CodeBufferBase::Emit64(uint64_t value) {
   // Ensure the free space enough for the template T value
-  ensureCapacity(sizeof(uint64_t) + getSize());
+  this->ensureCapacity(sizeof(uint64_t) + this->getSize());
 
   *reinterpret_cast<uint64_t *>(cursor_) = value;
   cursor_ += sizeof(uint64_t);
@@ -35,7 +35,7 @@ void CodeBufferBase::Emit64(uint64_t value) {
 
 void CodeBufferBase::EmitBuffer(void *buffer, int buffer_size) {
   // Ensure the free space enough for the template T value
-  ensureCapacity(buffer_size + getSize());
+  this->ensureCapacity(buffer_size + this->getSize());
 
   _memcpy(cursor_, buffer, buffer_size);
 

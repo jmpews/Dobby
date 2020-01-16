@@ -1,6 +1,8 @@
 #include "stdcxx/LiteMutableBuffer.h"
 
 bool LiteMutableBuffer::initWithCapacity(int in_capacity) {
+  if (in_capacity <= 0)
+    return false;
   this->buffer_ = (byte *)LiteMemOpt::alloc(in_capacity);
   assert(this->buffer_);
 
@@ -36,6 +38,12 @@ int LiteMutableBuffer::ensureCapacity(int new_capacity) {
 
   return new_capacity;
 }
+
+#if 0
+LiteMutableBuffer *LiteMutableBuffer::copy() {
+  LiteMutableBuffer *result = new LiteMutableBuffer(this->capacity_);
+}
+#endif
 
 void LiteMutableBuffer::release() {
   LiteMemOpt::free(this->buffer_, this->capacity_);

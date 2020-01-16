@@ -43,7 +43,7 @@ void *(*orig_dlsym)(void *__handle, const char *__symbol);
 void *fake_dlsym(void *__handle, const char *__symbol) {
   const char *traced_filename = get_traced_filename(__handle, false);
   if (traced_filename) {
-    printf("[-] dlsym: %s, symbol: %s\n", traced_filename, __symbol);
+    LOG("[-] dlsym: %s, symbol: %s\n", traced_filename, __symbol);
   }
   return orig_dlsym(__handle, __symbol);
 }
@@ -52,7 +52,7 @@ int (*orig_dlclose)(void *__handle);
 int fake_dlclose(void *__handle) {
   const char *traced_filename = get_traced_filename(__handle, true);
   if (traced_filename) {
-    printf("[-] dlclose: %s\n", traced_filename);
+    LOG("[-] dlclose: %s\n", traced_filename);
     free((void *)traced_filename);
   }
   return orig_dlclose(__handle);

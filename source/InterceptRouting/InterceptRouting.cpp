@@ -45,17 +45,22 @@ void InterceptRouting::Active() {
   trampolineCodeBuffer                 = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());
 
   AssemblyCode::FinalizeFromCodeBuffer(entry_->target_address, trampolineCodeBuffer);
+  delete trampolineCodeBuffer;
 
   DLOG("[*] Active the routing at %p\n", entry_->target_address);
 }
 
 void InterceptRouting::Commit() {
-  bool handle_by_plugin        = false;
-  RoutingPlugin *plugin        = NULL;
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
-  while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
-    if (plugin->Active(this))
-      handle_by_plugin = true;
+  bool handle_by_plugin = false;
+
+  if (ExtraInternalPlugin::plugins_) {
+    RoutingPlugin *plugin        = NULL;
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
+    while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
+      if (plugin->Active(this))
+        handle_by_plugin = true;
+    }
+    delete iter;
   }
 
   if (!handle_by_plugin)

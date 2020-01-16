@@ -255,7 +255,7 @@ public:
     DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
-    buffer_->release();
+    delete buffer_;
   }
 
 public:
