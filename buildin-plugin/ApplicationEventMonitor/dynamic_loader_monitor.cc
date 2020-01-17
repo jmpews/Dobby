@@ -11,6 +11,7 @@
 #include "./dobby_monitor.h"
 
 #include <dlfcn.h>
+#include <sys/param.h>
 
 std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 
@@ -19,7 +20,7 @@ void *fake_dlopen(const char *__file, int __mode) {
 
   void *result = orig_dlopen(__file, __mode);
   if (result != NULL) {
-    char *traced_filename = (char *)malloc(128);
+    char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
     std::cout << "[-] trace handle: " << __file << std::endl;

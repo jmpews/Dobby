@@ -8,6 +8,8 @@
 #include <set>
 #include <unordered_map>
 
+#include <sys/param.h>
+
 #include "./dobby_monitor.h"
 
 std::unordered_map<FILE *, const char *> *TracedFopenFileList;
@@ -17,7 +19,7 @@ FILE *fake_fopen(const char *filename, const char *mode) {
   FILE *result = NULL;
   result       = orig_fopen(filename, mode);
   if (result != NULL) {
-    char *traced_filename = (char *)malloc(128);
+    char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, filename);
     std::cout << "[-] trace file: " << filename << std::endl;

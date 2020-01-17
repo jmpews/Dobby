@@ -14,21 +14,23 @@
 
 #include "./dobby_monitor.h"
 
+#include <sys/param.h>
+
 std::unordered_map<int, const char *> posix_file_descriptors;
 
 int (*orig_open)(const char *pathname, int flags, ...);
 int fake_open(const char *pathname, int flags, ...) {
   mode_t mode = 0;
-  // if (flags & O_CREAT) {
-  va_list args;
-  va_start(args, flags);
-  mode = (mode_t)va_arg(args, int);
-  va_end(args);
-  // }
+  if (flags & O_CREAT) {
+    va_list args;
+    va_start(args, flags);
+    mode = (mode_t)va_arg(args, int);
+    va_end(args);
+  }
 
   int result = orig_open(pathname, flags, mode);
   if (result != -1) {
-    char *traced_filename = (char *)malloc(128);
+    char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
     std::cout << "[-] trace open handle: " << pathname << std::endl;
@@ -41,7 +43,7 @@ int (*orig___open)(const char *pathname, int flags, int mode);
 int fake___open(const char *pathname, int flags, int mode) {
   char *traced_filename = NULL;
   if (pathname) {
-    traced_filename = (char *)malloc(128);
+    traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
     std::cout << "[-] trace open handle: " << pathname << std::endl;
@@ -93,7 +95,6 @@ int fake_close(int fd) {
 
 __attribute__((constructor)) static void ctor() {
   DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
-  // DobbyHook((void *)0x0000000184224e4c, (void *)fake___open, (void **)&orig___open);
   DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
   DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
   DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);

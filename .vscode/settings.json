@@ -101,7 +101,15 @@
     "complex": "cpp",
     "iomanip": "cpp",
     "sstream": "cpp",
-    "stdarg.h": "c"
+    "stdarg.h": "c",
+    "clocale": "cpp",
+    "codecvt": "cpp",
+    "condition_variable": "cpp",
+    "numeric": "cpp",
+    "shared_mutex": "cpp",
+    "thread": "cpp",
+    "memory_resource": "cpp",
+    "cinttypes": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
 }
