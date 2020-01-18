@@ -112,4 +112,6 @@
     "cinttypes": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
+  "lldb.showDisassembly": "auto",
+  "lldb.dereferencePointers": true,
 }

@@ -11,19 +11,12 @@ git clone --depth 1 git@github.com:jmpews/Dobby.git
 ```
 cd Dobby && mkdir build_for_host && cd build_for_host
 
-cmake .. -DDynamicBinaryInstrument=ON
+cmake ..
 
 make -j4
 ```
 
 ## Build for iOS
-
-#### Use BuildScript for iOS & Simulator
-
-```
-cd BuildScript
-sh ./build_64_fat_macho.sh
-```
 
 #### Manual build for iOS[ARM/ARM64]
 
@@ -35,22 +28,18 @@ cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
 -DPLATFORM=OS64 \
 -DARCHS=arm64 \
--DENABLE_BITCODE=0 \
+-DENABLE_BITCODE=1 \
 -DENABLE_ARC=0 \
 -DENABLE_VISIBILITY=1 \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
 -DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
--DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON \
--DPlugin.Gollum=ON
-
-
+-DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 
 make -j4
 ```
 
-if you want generate Xcode Project, just replace with `cmake -G Xcode `.
-
+if you want generate Xcode Project, just replace with `cmake -G Xcode`.
 
 ## Build for Android
 
