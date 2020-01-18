@@ -70,9 +70,9 @@ __attribute__((constructor)) void __main() {
 #endif
 #endif
 
-  DobbyHook((void *)fopen, (void *)fake_fopen, (void **)&orig_fopen);
-  DobbyHook((void *)fwrite, (void *)fake_fwrite, (void **)&orig_fwrite);
-  DobbyHook((void *)fread, (void *)fake_fread, (void **)&orig_fread);
+  // DobbyHook((void *)fopen, (void *)fake_fopen, (void **)&orig_fopen);
+  // DobbyHook((void *)fwrite, (void *)fake_fwrite, (void **)&orig_fwrite);
+  // DobbyHook((void *)fread, (void *)fake_fread, (void **)&orig_fread);
 
   char *home   = getenv("HOME");
   char *subdir = (char *)"/Library/Caches/";

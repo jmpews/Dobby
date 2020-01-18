@@ -77,7 +77,9 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #endif
 
-typedef enum _RetStatus { kUnknown = -1, RS_DONE = 0, RS_SUCCESS, RS_FAILED } RetStatus;
+#define RT_FAILED -1
+#define RT_SUCCESS 0
+typedef enum _RetStatus { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 
 typedef enum _PackageType {
   kFunctionWrapper,
