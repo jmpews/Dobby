@@ -56,10 +56,10 @@ static inline int64_t SignExtend(unsigned long x, int M, int N) {
 
 #if 0
 static inline unsigned long set_bit(obj, st, unsigned long bit) {
-  return ((~(1 << st)) & obj) | (bit << st);
+  return (((~(1 << st)) & obj) | (bit << st));
 }
 static inline unsigned long set_bits(obj, st, fn, unsigned long bits) {
-  return ((~(submask(fn - st) << st)) & obj) | (bits << st);
+  return (((~(submask(fn - st) << st)) & obj) | (bits << st));
 }
 #endif
 
@@ -120,6 +120,10 @@ static inline int decode_rt(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
+static inline int decode_rd(uint32_t instr) {
+  return bits(instr, 0, 4);
+}
+
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_pc, addr_t to_pc) {
   from_pc = (addr_t)buffer;
 
@@ -156,18 +160,22 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       }
       _ nop();
     } else if ((instr & PCRelAddressingFixedMask) == PCRelAddressingFixed) {
-      int64_t imm = 0;
-      if ((instr & PCRelAddressingMask) == ADR)
-        imm = decode_immhi_immlo_offset(instr);
-      else
-        imm = decode_immhi_immlo_zero12_offset(instr);
-      addr_t runtime_address = curr_orig_pc + imm;
+      int rd = decode_rd(instr);
+
+      int64_t imm            = 0;
+      addr_t runtime_address = 0;
+      if ((instr & PCRelAddressingMask) == ADR) {
+        imm             = decode_immhi_immlo_offset(instr);
+        runtime_address = curr_orig_pc + imm;
+      } else {
+        imm             = decode_immhi_immlo_zero12_offset(instr);
+        runtime_address = ALIGN_FLOOR(curr_orig_pc, (1 << 12)) + imm;
+      }
 
       /* output Mov */
       _ nop();
       {
-        _ Mov(X(17), runtime_address); // should we replace with `Ldr` to set  X17 ?
-        ;
+        _ Mov(X(rd), runtime_address); // should we replace with `Ldr` to set  X17 ?
       }
       _ nop();
 

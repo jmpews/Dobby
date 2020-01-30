@@ -68,10 +68,9 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   int page_size             = (int)sysconf(_SC_PAGESIZE);
   addr_t page_align_address = ALIGN_FLOOR(address, page_size);
   int offset                = static_cast<int>((addr_t)address - page_align_address);
-  
+
   static mach_port_t self_port = mach_task_self();
 #ifdef __APPLE__
-
 
 #if 0 // REMOVE
   vm_prot_t prot;
@@ -91,22 +90,25 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 #endif
 
   // try modify with substrated (steal from frida-gum)
-  
+
   addr_t remap_page =
       (addr_t)mmap(0, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, VM_MAKE_TAG(255), 0);
   if ((void *)remap_page == MAP_FAILED)
     return kMemoryOperationError;
-  
+
   kr = vm_copy(self_port, (vm_address_t)page_align_address, page_size, (vm_address_t)remap_page);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
   memcpy((void *)(remap_page + offset), buffer, size);
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_WRITE);
-  
+
   int ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
   if (ret == RT_FAILED) {
     LOG("Not found substrated service, use vm_remap.");
+
+    mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
+
     mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_align_address;
     vm_prot_t curr_protection, max_protection;
     kr = mach_vm_remap(self_port, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_port,
@@ -115,7 +117,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
       return kMemoryOperationError;
     }
   }
-  
+
   // unmap the origin page
   int err = munmap((void *)remap_page, (mach_vm_address_t)page_size);
   if (err == -1) {
