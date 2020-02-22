@@ -146,6 +146,9 @@ set(dobby.SOURCE_FILE_LIST
   source/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
   source/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
+  # plugin register
+  source/ExtraInternalPlugin/RegisterPlugin.cc
+
   # unified interface
 
   # user mode - platform interface
@@ -178,6 +181,7 @@ if(SYSTEM.Darwin)
 endif()
 
 if(SYSTEM.iOS)
+  add_definitions(-DCODE_PATCH_WITH_SUBSTRATED)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
   )
@@ -223,7 +227,6 @@ endif ()
 if(NearBranchTrampoline)
   message(STATUS "[Dobby] Enable Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/ExtraInternalPlugin/RegisterPlugin.cc
     source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
   if(SYSTEM.Darwin)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -325,7 +328,7 @@ set(dobby.HEADER_FILE_LIST
 )
 
 set(dobby_name dobby)
-if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
+if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
 set(dobby_name Dobby)
 endif()
 
@@ -337,7 +340,7 @@ endif ()
 
 target_include_directories(${dobby_name} PUBLIC include)
 
-if(SYSTEM.Darwin AND GENERATE_FRAMEWORK)
+if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
 set_target_properties(Dobby PROPERTIES
   FRAMEWORK TRUE
   FRAMEWORK_VERSION A
@@ -350,7 +353,7 @@ set_target_properties(Dobby PROPERTIES
 )
 
 # add Gollum framework
-if(Plugin.Gollum AND GENERATE_FRAMEWORK)
+if(Plugin.Gollum AND GENERATE_FRAMEWORK AND)
 if(NOT SYSTEM.iOS)
 message(FATAL_ERROR "[!] Gollum.framework only works on iOS.")
 endif ()

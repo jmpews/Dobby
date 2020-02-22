@@ -111,6 +111,9 @@ int DobbyHook(void *function_address, void *replace_call, void **origin_call);
 typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 int DobbyInstrument(void *inst_address, DBICallTy dbi_call);
 
+// iterate symbol table and find symbol
+void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
+
 #ifdef __cplusplus
 }
 #endif

@@ -22,6 +22,7 @@
 
 using namespace zz;
 
+#ifdef CODE_PATCH_WITH_SUBSTRATED
 #include <mach/mach.h>
 #include "bootstrap.h"
 #include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
@@ -61,6 +62,7 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
   }
   return 0;
 }
+#endif
 
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   kern_return_t kr;
@@ -103,12 +105,14 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   memcpy((void *)(remap_page + offset), buffer, size);
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_WRITE);
 
-  int ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
+  int ret = RT_FAILED;
+#ifdef CODE_PATCH_WITH_SUBSTRATED
+  ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
+#endif
   if (ret == RT_FAILED) {
-    LOG("Not found substrated service, use vm_remap.");
+    DLOG("not found substrated service, use vm_remap.");
 
     mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
-
     mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_align_address;
     vm_prot_t curr_protection, max_protection;
     kr = mach_vm_remap(self_port, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_port,

@@ -62,10 +62,10 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *syms, size_t nsyms, char *
       uint32_t strtab_offset = syms[i].n_un.n_strx;
       char *tmp_symbol_name  = strs + strtab_offset;
       // TODO: what you want !!!
-      if (re_match(name_pattern, tmp_symbol_name) != -1) {
+      if (0 && re_match(name_pattern, tmp_symbol_name) != -1) {
         return (void *)(syms[i].n_value);
       }
-      if (0 && strcmp(name_pattern, tmp_symbol_name) == 0) {
+      if (1 && strcmp(name_pattern, tmp_symbol_name) == 0) {
         return (void *)(syms[i].n_value);
       }
     }

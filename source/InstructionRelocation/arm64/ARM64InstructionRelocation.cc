@@ -179,7 +179,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       }
       _ nop();
 
-    } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) {
+    } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
       addr_t branch_address               = decode_imm26_offset(instr) + curr_orig_pc;
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
       labels->pushObject((LiteObject *)branchAddressLabel);

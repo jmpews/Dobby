@@ -10,11 +10,16 @@
 PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_call) {
 
   if (!function_address)
-    FATAL("[!] ERROR: the function address is 0x0.\n");
+    FATAL("ERROR: the function address is 0x0.");
 
-  DLOG("[*] Initialize 'DobbyHook' hook at %p\n", function_address);
+  DLOG("[*] Initialize 'DobbyHook' hook at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
+  
+  if(interceptor->FindHookEntry(function_address)) {
+    DLOG("ERROR: function %s already been hooked.", function_address);
+    return (int)RS_FAILED;
+  }
 
   HookEntry *entry        = new HookEntry();
   entry->id               = interceptor->entries->getCount();

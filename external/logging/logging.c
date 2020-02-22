@@ -16,7 +16,9 @@ int custom_log(const char *fmt, ...) {
   va_start(args, fmt);
 #pragma clang diagnostic ignored "-Wformat"
   vprintf(fmt, args);
+#if 0
   vsyslog(LOG_ERR, fmt, args);
+#endif
 #pragma clang diagnostic warning "-Wformat"
   va_end(args);
   return 0;
