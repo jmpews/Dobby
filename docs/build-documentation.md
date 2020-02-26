@@ -6,6 +6,28 @@
 git clone --depth 1 git@github.com:jmpews/Dobby.git
 ```
 
+## Cmake build options
+
+```
+option(GENERATE_SHARED "Build shared library" ON)
+
+option(GENERATE_FRAMEWORK "Build framework library" ON)
+
+option(DLOG "Enable debug log" OFF)
+
+option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
+
+option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
+
+option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
+
+option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
+
+option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
+
+option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+```
+
 ## Build for host
 
 ```
@@ -16,9 +38,21 @@ cmake ..
 make -j4
 ```
 
-## Build for iOS
+## Build for iOS / macOS
 
-#### Manual build for iOS[ARM/ARM64]
+#### Manual build for macOS X64 host
+
+```
+cd Dobby && mkdir build_for_macos_x64 && cd build_for_macos_x64
+
+cmake .. \
+-DCMAKE_BUILD_TYPE=Release \
+-DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+
+make -j4
+```
+
+#### Manual build for iOS [ARM/ARM64]
 
 ```
 cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64

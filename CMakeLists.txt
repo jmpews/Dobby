@@ -35,15 +35,13 @@ option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
 option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
-option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
+# frida is better choice
+# option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
 
-option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
+# frida is better choice
+# option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
-
-# option(NearBranchTrampoline "Use Near Branch Instead of Ldr Branch in the ARM or ARM64 Architecture, and use Jmp Immediate in the X86_64" OFF)
-
-# option(MultiThreadSupport "Enable MultiThreadSupport(For FunctionWrapper Routing Plugin Must be ON)" OFF)
 
 # option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
@@ -353,7 +351,7 @@ set_target_properties(Dobby PROPERTIES
 )
 
 # add Gollum framework
-if(Plugin.Gollum AND GENERATE_FRAMEWORK AND)
+if(Plugin.Gollum AND GENERATE_FRAMEWORK)
 if(NOT SYSTEM.iOS)
 message(FATAL_ERROR "[!] Gollum.framework only works on iOS.")
 endif ()
