@@ -45,8 +45,8 @@ extern int (*LOGFUNC)(const char *, ...);
 
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
-    LOG_NO_TAG("[!] [%s:%d:%s]\n", __FILE__, __LINE__, __func__);                                                      \
-    LOG(fmt, ##__VA_ARGS__);                                                                                           \
+    LOG_NO_TAG("[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                      \
+    LOG_NO_TAG("[!] " fmt "\n", ##__VA_ARGS__);                                                                                           \
     assert(0);                                                                                                         \
   } while (0)
 

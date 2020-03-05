@@ -145,6 +145,9 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       int rt                = decode_rt(instr);
       char opc              = bits(instr, 30, 31);
       addr_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
+      if (memory_address >= (*relocate_size_ptr + from_pc)) {
+        UNIMPLEMENTED();
+      }
 
 #define MEM(reg, offset) MemOperand(reg, offset)
       _ nop(); // for debug
@@ -280,6 +283,20 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
     curr_orig_pc += 4;
     curr_addr += 4;
     instr = *(arm64_inst_t *)curr_addr;
+
+    { // check branch in relocate-code range
+      LiteCollectionIterator *iter = NULL;
+      PseudoDataLabel *dataLabel   = NULL;
+      // Realize all the Pseudo-Label-Data
+      iter = LiteCollectionIterator::withCollection(labels);
+      while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
+        if (dataLabel->address == curr_orig_pc) {
+          FATAL("label(%p) in relo-code range(%p-%p), please enable b-xxx branch plugin.", dataLabel->address, from_pc,
+                from_pc + *relocate_size_ptr);
+        }
+      }
+      delete iter;
+    }
   }
 
   // Branch to the rest of instructions
@@ -295,8 +312,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
 #endif
 
   LiteCollectionIterator *iter = NULL;
-
-  PseudoDataLabel *dataLabel = NULL;
+  PseudoDataLabel *dataLabel   = NULL;
 
   // Realize all the Pseudo-Label-Data
   iter = LiteCollectionIterator::withCollection(labels);

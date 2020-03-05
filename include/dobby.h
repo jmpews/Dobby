@@ -114,6 +114,11 @@ int DobbyInstrument(void *inst_address, DBICallTy dbi_call);
 // iterate symbol table and find symbol
 void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
 
+// bxx branch plugin
+#if defined(__arm64__) || defined(__aarch64__) || defined(__arm__)
+void dobby_enable_arm64_bxx_branch_trampoline();
+#endif
+
 #ifdef __cplusplus
 }
 #endif

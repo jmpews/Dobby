@@ -43,10 +43,10 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     } else if (instr.instr.opcode1 >= 0xE0 && instr.instr.opcode1 <= 0xE2) {
       // LOOP/LOOPcc
       UNIMPLEMENTED();
-    } else if (instr.instr.opcode1 >= 0xE3) {
+    } else if (instr.instr.opcode1 == 0xE3) {
       // JCXZ JCEXZ JCRXZ
       UNIMPLEMENTED();
-    } else if (instr.instr.opcode1 >= 0xEB) {
+    } else if (instr.instr.opcode1 == 0xEB) {
       // JMP rel8
       byte orig_offset = *(byte *)&instr.instr.Immediate;
       byte offset      = curr_orig_ip + orig_offset - curr_relo_ip;
