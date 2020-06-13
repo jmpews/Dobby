@@ -109,7 +109,8 @@
     "shared_mutex": "cpp",
     "thread": "cpp",
     "memory_resource": "cpp",
-    "cinttypes": "cpp"
+    "cinttypes": "cpp",
+    "shared_cache_internal.h": "c"
   },
   "C_Cpp.configurationWarnings": "Disabled",
   "lldb.showDisassembly": "auto",

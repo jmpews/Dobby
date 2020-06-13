@@ -7,7 +7,7 @@
 
 #include <fcntl.h> // open
 
-#include "symbol_internal.h"
+#include "shared_cache_internal.h"
 
 #include "shared-cache/dyld_cache_format.h"
 
@@ -38,22 +38,25 @@ addr_t get_dyld_shared_cache_base_address() {
 void mmap_dyld_shared_cache() {
   char cache_file_path[256] = {0};
   snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
-           DYLD_SHARED_CACHE_BASE_NAME, "arm64");
+           DYLD_SHARED_CACHE_BASE_NAME, ARCH_NAME);
   int fd = open(cache_file_path, O_RDONLY, 0);
+  if(fd == -1) {
+    printf("open %s failed", cache_file_path);
+  }
 
   uint8_t *mmap_cache_header;
   uint8_t *mmap_cache_local_symbol;
 
   // auto align
   mmap_cache_header = mmap(0, sizeof(struct dyld_cache_header), PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
-  if (!mmap_cache_header)
+  if (mmap_cache_header == MAP_FAILED)
     printf("mmap dyld_shared_cache header failed.\n");
 
   // auto align
   mmap_cache_local_symbol =
       mmap(0, ((struct dyld_cache_header *)mmap_cache_header)->localSymbolsSize, PROT_READ, MAP_FILE | MAP_PRIVATE, fd,
            ((struct dyld_cache_header *)mmap_cache_header)->localSymbolsOffset);
-  if (!mmap_cache_local_symbol)
+  if (mmap_cache_local_symbol == MAP_FAILED)
     printf("mmap dyld_shared_cache local symbol failed.\n");
 
   g_mmap_cache_header       = mmap_cache_header;
@@ -97,7 +100,7 @@ uintptr_t get_dyld_shared_cache_slide() {
   return slide;
 }
 
-void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *syms, char **strs, size_t *nsyms) {
+void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_ptr, char **string_pool_ptr, uint32_t *nlist_count_ptr) {
 
   pthread_once(&mmap_dyld_shared_cache_once, mmap_dyld_shared_cache);
 
@@ -124,8 +127,8 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *syms, char **s
     }
   }
 
-  *nsyms = (size_t)localNlistCount;
-  *syms  = (uintptr_t)localNlists;
-  *strs  = (char *)localStrings;
+  *nlist_count_ptr = (size_t)localNlistCount;
+  *nlist_array_ptr = (uintptr_t)localNlists;
+  *string_pool_ptr = (char *)localStrings;
   return;
 }

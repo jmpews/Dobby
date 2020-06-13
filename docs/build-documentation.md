@@ -58,15 +58,9 @@ make -j4
 cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64
 
 cmake .. \
--DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DPLATFORM=OS64 \
--DARCHS=arm64 \
--DENABLE_BITCODE=1 \
--DENABLE_ARC=0 \
--DENABLE_VISIBILITY=1 \
--DDEPLOYMENT_TARGET=9.3 \
--DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+-DPLATFORM=OS64 -DARCHS="arm64e" -DCMAKE_SYSTEM_PROCESSOR=arm64e \
+-DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
 -DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
 -DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 

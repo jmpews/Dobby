@@ -1,4 +1,3 @@
-
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
@@ -10,7 +9,7 @@
 
 #include <string.h>
 
-#include "dobby_find_symbol.h"
+#include "dobby_symbol_resolver.h"
 
 #include "logging/logging.h"
 

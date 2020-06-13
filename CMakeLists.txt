@@ -27,8 +27,6 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
 option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
 
-option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
-
 option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
 
 option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
@@ -46,11 +44,11 @@ option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]
 # option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
 
 # Use native assembly bridge to replace the runtime codegen
-if (CLOSURE_BRIDGE_TEMPLATE)
-  SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
-  enable_language(ASM)
-  add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
-endif ()
+# if (CLOSURE_BRIDGE_TEMPLATE)
+#   SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
+#   enable_language(ASM)
+#   add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
+# endif ()
 
 # Enable debug will log more infomation
 if (DOBBY_DEBUG)
@@ -243,14 +241,14 @@ if(NearBranchTrampoline)
 endif()
 
 # add logging library
-add_subdirectory(external/logging)
+# add_subdirectory(external/logging)
 set(logging.SOURCE_FILE_LIST
   external/logging/logging.c
   external/logging/cxxlogging.cc
   )
 
 # add stdcxx library
-add_subdirectory(external/stdcxx)
+# add_subdirectory(external/stdcxx)
 set(stdcxx.SOURCE_FILE_LIST
   external/stdcxx/LiteCollection.cc
   external/stdcxx/LiteIterator.cc
@@ -263,14 +261,16 @@ set(stdcxx.SOURCE_FILE_LIST
 set(dobby.plugin.SOURCE_FILE_LIST
 )
 if(Plugin.FindSymbol)
+  include_directories(builtin-plugin/SymbolResolver/)
   if(NOT SYSTEM.Darwin)
     message(FATAL_ERROR "[!] Plugin.FindSymbol only works on Darwin.")
   endif()
+
   message(STATUS "[Dobby] Enable Plugin.FindSymbol")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    buildin-plugin/FindSymbol/re/re.c
-    buildin-plugin/FindSymbol/darwin/find_symbol_darwin.c
-    buildin-plugin/FindSymbol/darwin/find_symbol_dyld_shared_cache.c
+    builtin-plugin/SymbolResolver/re/re.c
+    builtin-plugin/SymbolResolver/darwin/dyld_shared_cache_symbol_table_iterator.c
+    builtin-plugin/SymbolResolver/darwin/symbol_table_iterator.c
   )
 endif()
 if(Plugin.HideLibrary)
@@ -279,7 +279,7 @@ if(Plugin.HideLibrary)
   endif()
   message(STATUS "[Dobby] Enable Plugin.HideLibrary")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    buildin-plugin/HideLibrary/hide_library_darwin.c
+    builtin-plugin/HideLibrary/hide_library_darwin.c
   )
 endif()
 if(Plugin.ObjectiveC)
@@ -289,22 +289,16 @@ if(Plugin.ObjectiveC)
   message(STATUS "[Dobby] Enable Plugin.ObjectiveC")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     external/helpers/variable_cache.c
-    buildin-plugin/ObjectiveC/objective_c_tookit.mm
-  )
-endif()
-if(Plugin.SensitiveFunction)
-  message(STATUS "[Dobby] Enable Plugin.Sensitive")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    buildin-plugin/SensitiveFunction/sensitive_function_monitor.cc
+    builtin-plugin/ObjectiveC/objective_c_tookit.mm
   )
 endif()
 if(Plugin.ApplicationEventMonitor)
   message(STATUS "[Dobby] Enable Plugin.ApplicationEventMonitor")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    buildin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
-    buildin-plugin/ApplicationEventMonitor/file_operation_monitor.cc
-    buildin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
-    buildin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
+    builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
+    builtin-plugin/ApplicationEventMonitor/file_operation_monitor.cc
+    builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
+    builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
   )
 endif()
 
@@ -315,19 +309,19 @@ include_directories(
   ./external
   ./external/logging
   ./external/stdcxx
-  ./buildin-plugin/FindSymbol
-  ./buildin-plugin/HideLibrary
-  ./buildin-plugin/ObjectiveC
+  builtin-plugin/FindSymbol
+  builtin-plugin/HideLibrary
+  builtin-plugin/ObjectiveC
 )
 
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
-  
 )
 
 set(dobby_name dobby)
+
 if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
-set(dobby_name Dobby)
+  set(dobby_name Dobby)
 endif()
 
 if (GENERATE_SHARED)
@@ -339,29 +333,24 @@ endif ()
 target_include_directories(${dobby_name} PUBLIC include)
 
 if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
-set_target_properties(Dobby PROPERTIES
-  FRAMEWORK TRUE
-  FRAMEWORK_VERSION A
-  MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
-  # MACOSX_FRAMEWORK_INFO_PLIST Info.plist
-  VERSION 1.0.0 # current version
-  SOVERSION 1.0.0 # compatibility version
-  PUBLIC_HEADER include/dobby.h
-  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
-)
-
-# add Gollum framework
-if(Plugin.Gollum AND GENERATE_FRAMEWORK)
-if(NOT SYSTEM.iOS)
-message(FATAL_ERROR "[!] Gollum.framework only works on iOS.")
-endif ()
-message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
-add_custom_command(TARGET Dobby
-  POST_BUILD
-  COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_name}>/Frameworks
-  COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_name}>/Frameworks/Gollum.framework
+  # set framework property
+  set_target_properties(Dobby PROPERTIES
+    FRAMEWORK TRUE
+    FRAMEWORK_VERSION A
+    MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
+    # MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+    VERSION 1.0.0 # current version
+    SOVERSION 1.0.0 # compatibility version
+    PUBLIC_HEADER include/dobby.h
+    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
   )
-endif()
+
+  # message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
+  # add_custom_command(TARGET Dobby
+  #   POST_BUILD
+  #   COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_name}>/Frameworks
+  #   COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_name}>/Frameworks/Gollum.framework
+  #   )
 endif()
 
 if (SYSTEM.Android)

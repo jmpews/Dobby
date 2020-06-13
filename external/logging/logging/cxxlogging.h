@@ -1,5 +1,5 @@
-#ifndef CXX_LOGGING_H
-#define CXX_LOGGING_H
+#ifndef CXXLOGGING_H_
+#define CXXLOGGING_H_
 
 #include "logging.h"
 

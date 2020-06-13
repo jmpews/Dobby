@@ -1,6 +1,6 @@
 
-#ifndef CHECK_LOGGING_H
-#define CHECK_LOGGING_H
+#ifndef CHECK_LOGGING_H_
+#define CHECK_LOGGING_H_
 
 #include "logging.h"
 
@@ -58,8 +58,8 @@
 #define CHECK_LT(lhs, rhs) CHECK_OP(LT, <, lhs, rhs)
 #define CHECK_GE(lhs, rhs) CHECK_OP(GE, >=, lhs, rhs)
 #define CHECK_GT(lhs, rhs) CHECK_OP(GT, >, lhs, rhs)
-#define CHECK_NULL(val) CHECK((val) == nullptr)
-#define CHECK_NOT_NULL(val) CHECK((val) != nullptr)
+#define CHECK_NULL(val) CHECK((val) == NULL)
+#define CHECK_NOT_NULL(val) CHECK((val) != NULL)
 
 #ifdef DEBUG
 #define DCHECK_EQ(lhs, rhs) DCHECK_OP(EQ, ==, lhs, rhs)

@@ -125,7 +125,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   // unmap the origin page
   int err = munmap((void *)remap_page, (mach_vm_address_t)page_size);
   if (err == -1) {
-    FATAL_STRERROR("munmap %p failed");
+    STRERROR();
     return kMemoryOperationError;
   }
 

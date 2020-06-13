@@ -2,6 +2,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
+#include <mach-o/dyld_images.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,11 +12,12 @@
 
 #include <string.h>
 
-#include "symbol_internal.h"
+#include "shared_cache_internal.h"
 
 #include "re/re.h"
 
-void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **strs, size_t *nsyms) {
+void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, char **string_pool,
+                              uint32_t *nlist_count) {
   segment_command_t *curr_seg_cmd;
   segment_command_t *linkedit_segment   = NULL;
   segment_command_t *data_segment       = NULL;
@@ -49,24 +51,27 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *syms, char **str
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
   nlist_t *symtab         = (nlist_t *)(linkedit_base + symtab_cmd->symoff);
   char *strtab            = (char *)(linkedit_base + symtab_cmd->stroff);
-  size_t symtab_count     = symtab_cmd->nsyms;
+  uint32_t symtab_count   = symtab_cmd->nsyms;
 
-  *nsyms = symtab_count;
-  *syms  = (uintptr_t)symtab;
-  *strs  = (char *)strtab;
+  *nlist_count = symtab_count;
+  *nlist_array = (uintptr_t)symtab;
+  *string_pool = (char *)strtab;
 }
 
-void *iterateSymbolTable(char *name_pattern, nlist_t *syms, size_t nsyms, char *strs) {
-  for (uint32_t i = 0; i < nsyms; i++) {
-    if (syms[i].n_value) {
-      uint32_t strtab_offset = syms[i].n_un.n_strx;
-      char *tmp_symbol_name  = strs + strtab_offset;
+void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlist_count, char *string_pool) {
+  for (uint32_t i = 0; i < nlist_count; i++) {
+    if (nlist_array[i].n_value) {
+      uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
+      char *tmp_symbol_name  = string_pool + strtab_offset;
       // TODO: what you want !!!
       if (0 && re_match(name_pattern, tmp_symbol_name) != -1) {
-        return (void *)(syms[i].n_value);
+        return (void *)(nlist_array[i].n_value);
       }
+#if 0 // DEBUG
+      printf("> %s", tmp_symbol_name);
+#endif
       if (1 && strcmp(name_pattern, tmp_symbol_name) == 0) {
-        return (void *)(syms[i].n_value);
+        return (void *)(nlist_array[i].n_value);
       }
     }
   }
@@ -76,7 +81,6 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *syms, size_t nsyms, char *
 void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
-
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = _dyld_get_image_header(i);
     uintptr_t slide                  = _dyld_get_image_vmaddr_slide(i);
@@ -85,19 +89,41 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
     if (image_name != NULL && strcmp(image_name, name_))
       continue;
 
-    size_t nsyms  = 0;
-    nlist_t *syms = 0;
-    char *strs    = 0;
+    uint32_t nlist_count   = 0;
+    nlist_t *nlist_array = 0;
+    char *string_pool    = 0;
 
     if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
-      get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&syms, &strs, &nsyms);
+      get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
     else
-      get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&syms, &strs, &nsyms);
+      get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
 
-    result = iterateSymbolTable((char *)symbol_name_pattern, syms, nsyms, strs);
+    result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     result = (void *)((uintptr_t)result + slide);
     if (result)
       break;
+  }
+
+  struct mach_header *dyld_header = NULL;
+  if (strcmp(image_name, "dyld") == 0) {
+    kern_return_t kr;
+    task_dyld_info_data_t task_dyld_info;
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+    if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
+      return NULL;
+    }
+
+    const struct dyld_all_image_infos *infos =
+        (struct dyld_all_image_infos *)(uintptr_t)task_dyld_info.all_image_info_addr;
+    dyld_header = (struct mach_header *)infos->dyldImageLoadAddress;
+
+    uint32_t nlist_count = 0;
+    nlist_t *nlist_array = 0;
+    char *string_pool    = 0;
+    get_syms_in_single_image((mach_header_t *)dyld_header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+
+    result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
+    result = (void *)((uintptr_t)result + (uintptr_t)dyld_header);
   }
 
   return result;
