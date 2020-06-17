@@ -13,8 +13,6 @@ class AssemblyCode : public LiteObject {
 public:
   void initWithAddressRange(addr_t address, int size);
 
-  static AssemblyCode *FinalizeFromCodeBuffer(void *address, CodeBufferBase *codeBuffer);
-
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static AssemblyCode *FinalizeFromAddress(addr_t address, int size);
 

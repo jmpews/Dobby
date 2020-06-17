@@ -1,10 +1,9 @@
 #include "dobby_internal.h"
 
 #include "InterceptRouting.h"
-
 #include "ExecMemory/CodeBuffer/CodeBufferBase.h"
-
 #include "ExtraInternalPlugin/RegisterPlugin.h"
+#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 
 using namespace zz;
 
@@ -42,11 +41,7 @@ void InterceptRouting::Prepare() {
 // ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
-  CodeBufferBase *trampolineCode = NULL;
-  trampolineCode                 = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());
-
-  AssemblyCode::FinalizeFromCodeBuffer(entry_->target_address, trampolineCode);
-  delete trampolineCode;
+  CodePatch(entry_->target_address, trampoline_->getRawBuffer(), trampoline_->getSize());
 
   DLOG("Active the routing at %p\n", entry_->target_address);
 }

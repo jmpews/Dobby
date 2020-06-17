@@ -13,6 +13,9 @@ void FunctionInlineReplaceRouting::Dispatch() {
 }
 
 void FunctionInlineReplaceRouting::BuildReplaceRouting() {
+  // hijack trampoline
+  this->trampoline_ = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());
+  DLOG("create 'hijack trampoline' %p\n", this->trampoline_);
 }
 
 void *FunctionInlineReplaceRouting::GetTrampolineTarget() {

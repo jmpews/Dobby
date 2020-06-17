@@ -32,5 +32,6 @@ public:
 private:
 protected:
   HookEntry *entry_;
+  CodeBufferBase *trampoline_;
 };
 #endif
