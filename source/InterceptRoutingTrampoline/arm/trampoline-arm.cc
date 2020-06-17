@@ -6,9 +6,8 @@
 
 using namespace zz::arm;
 
-CodeBuffer *gen_arm_trampoline(void *from, void *to) {
+CodeBufferBase *gen_arm_trampoline(void *from, void *to) {
   TurboAssembler turbo_assembler_(from);
-#undef _
 #define _ turbo_assembler_.
 
   CodeGen codegen(&turbo_assembler_);
@@ -17,7 +16,7 @@ CodeBuffer *gen_arm_trampoline(void *from, void *to) {
   return turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBuffer *gen_thumb_trampoline(void *from, void *to) {
+CodeBufferBase *gen_thumb_trampoline(void *from, void *to) {
   CustomThumbTurboAssembler thumb_turbo_assembler_(from);
 #undef _
 #define _ thumb_turbo_assembler_.

@@ -21,8 +21,6 @@ option(GENERATE_SHARED "Build shared library" ON)
 
 option(GENERATE_FRAMEWORK "Build framework library" ON)
 
-option(DLOG "Enable debug log" OFF)
-
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
 option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
@@ -55,6 +53,7 @@ if (DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  message(STATUS "[Dobby] Enable Debug Mode")
 endif ()
 
 if (SYSTEM.iOS)
@@ -81,15 +80,19 @@ endif ()
 if (PROCESSOR.ARM)
   set(ARCH1 ARM)
   set(arch1 arm)
+  set(core_arch arm)
 elseif (PROCESSOR.AARCH64)
   set(ARCH1 ARM64)
   set(arch1 arm64)
+  set(core_arch arm64)
 elseif (PROCESSOR.X86)
-  set(ARCH1 IA32)
-  set(arch1 ia32)
+  set(ARCH1 X86)
+  set(arch1 x86)
+  set(core_arch ia32)
 elseif (PROCESSOR.X86_64)
   set(ARCH1 X64)
   set(arch1 x64)
+  set(core_arch x64)
 else ()
 
 endif ()
@@ -114,10 +117,10 @@ set(dobby.SOURCE_FILE_LIST
 
   # assembler
   source/core/modules/assembler/assembler.cc
-  source/core/modules/assembler/assembler-${arch1}.cc
+  source/core/modules/assembler/assembler-${core_arch}.cc
 
   # codegen
-  source/core/modules/codegen/codegen-${arch1}.cc
+  source/core/modules/codegen/codegen-${core_arch}.cc
 
   # executable memory - code buffer
   source/ExecMemory/CodeBuffer/CodeBufferBase.cc
@@ -163,8 +166,12 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/core/arch/x86/cpu-x86.cc
     source/InstructionRelocation/x86/X86OpcodoDecodeTable.cc
-    source/InstructionRelocation/${arch1}/${ARCH1}IPRelativeOpcodeTable.cc
     )
+  if (PROCESSOR.X86_64)
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/InstructionRelocation/${arch1}/${ARCH1}IPRelativeOpcodeTable.cc
+      )
+  endif ()
 endif ()
 
 if(SYSTEM.Darwin)

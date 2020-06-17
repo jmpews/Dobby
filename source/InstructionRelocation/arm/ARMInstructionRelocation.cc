@@ -38,10 +38,9 @@ typedef struct _CustomThumbPseudoDataLabel {
 static std::vector<PseudoDataLabel> labels;
 static std::vector<CustomThumbPseudoDataLabel> thumb_labels;
 #endif
-LiteMutableArray *labels;
-LiteMutableArray *thumb_labels;
 
-void ARMRelocateSingleInst(int32_t instr, uint32_t from_pc, uint32_t to_pc, TurboAssembler &turbo_assembler) {
+static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableArray *labels, int32_t instr,
+                                   uint32_t from_pc, uint32_t to_pc) {
   bool rewrite_flag = false;
 #define _ turbo_assembler.
   // top level encoding
@@ -187,8 +186,8 @@ void ARMRelocateSingleInst(int32_t instr, uint32_t from_pc, uint32_t to_pc, Turb
 // =====
 
 // relocate thumb-1 instructions
-void Thumb1RelocateSingleInst(int16_t instr, uint32_t from_pc, uint32_t to_pc,
-                              CustomThumbTurboAssembler &turbo_assembler) {
+static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
+                                      int16_t instr, uint32_t from_pc, uint32_t to_pc) {
   bool rewrite_flag = false;
   uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t offset = 0;
@@ -322,8 +321,8 @@ void Thumb1RelocateSingleInst(int16_t instr, uint32_t from_pc, uint32_t to_pc,
   }
 }
 
-void Thumb2RelocateSingleInst(int16_t inst1, int16_t inst2, uint32_t from_pc, uint32_t to_pc,
-                              CustomThumbTurboAssembler &turbo_assembler) {
+static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
+                                      int16_t inst1, int16_t inst2, uint32_t from_pc, uint32_t to_pc) {
 
   bool rewrite_flag = false;
   // Branches and miscellaneous control
@@ -497,12 +496,14 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int *relocate_size, uint32_t f
   uint32_t curr_relo_pc = to_pc + ARM_PC_OFFSET;
   uint32_t instr        = *(uint32_t *)curr_addr;
 
+  LiteMutableArray *labels = new LiteMutableArray;
+
   TurboAssembler turbo_assembler_(0);
 #undef _
 #define _ turbo_assembler_.
   while (curr_addr < ((uint32_t)buffer + *relocate_size)) {
     int off = turbo_assembler_.GetCodeBuffer()->getSize();
-    ARMRelocateSingleInst(instr, curr_orig_pc, curr_relo_pc, turbo_assembler_);
+    ARMRelocateSingleInstr(turbo_assembler_, labels, instr, curr_orig_pc, curr_relo_pc);
     DLOG("[*] relocate arm instr: 0x%x\n", instr);
     // Move to next instruction
     curr_orig_pc += ARM_INST_LEN;
@@ -541,6 +542,9 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
   uint32_t curr_relo_pc    = to_pc + Thumb_PC_OFFSET;
   uint32_t instr           = *(uint32_t *)curr_addr;
   int actual_relocate_size = 0;
+
+  LiteMutableArray *thumb_labels = new LiteMutableArray;
+
   CustomThumbTurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
@@ -554,15 +558,15 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
 
     int off = turbo_assembler_.GetCodeBuffer()->getSize();
     if (is_thumb2(instr)) {
-      Thumb2RelocateSingleInst((uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc, curr_relo_pc, turbo_assembler_);
-      DLOG("[*] relocate thumb2 instr: 0x%x\n", instr);
+      Thumb2RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
+                                curr_relo_pc) DLOG("[*] relocate thumb2 instr: 0x%x\n", instr);
 
       // Move to next instruction
       curr_orig_pc += Thumb2_INST_LEN;
       curr_addr += Thumb2_INST_LEN;
       actual_relocate_size += Thumb2_INST_LEN;
     } else {
-      Thumb1RelocateSingleInst((uint16_t)instr, curr_orig_pc, curr_relo_pc, turbo_assembler_);
+      Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc);
       DLOG("[*] relocate thumb1 instr: 0x%x\n", (uint16_t)instr);
 
       // Move to next instruction
