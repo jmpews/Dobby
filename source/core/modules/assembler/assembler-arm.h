@@ -46,17 +46,35 @@ public:
     int type_;
   } PseudoLabelInstruction;
 
+public:
+  PseudoLabel(void) {
+    instructions_.initWithCapacity(8);
+  }
+  ~PseudoLabel(void) {
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
+    PseudoLabelInstruction *instruction;
+    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+      delete instruction;
+    }
+    iter->release();
+    delete iter;
+
+    instructions_.release();
+  }
+
   bool has_confused_instructions() {
-    return instructions_->getCount() > 0;
+    return instructions_.getCount() > 0;
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
     CodeBuffer *_buffer;
     if (buffer)
       _buffer = buffer;
+    else
+      UNREACHABLE();
 
     PseudoLabelInstruction *instruction;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
     while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
       int32_t offset       = pos() - instruction->position_;
       const int32_t inst32 = _buffer->LoadARMInst(instruction->position_);
@@ -75,18 +93,22 @@ public:
       }
       _buffer->RewriteARMInst(instruction->position_, encoded);
     }
+
+    iter->release();
+    delete iter;
   };
 
+  // compatible for thumb with int type
   void link_to(int pos, int type) {
     PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
     instruction->position_              = pos;
     instruction->type_                  = type;
-    instructions_->pushObject((LiteObject *)instruction);
+    instructions_.pushObject((LiteObject *)instruction);
   }
 
 protected:
   // std::vector<PseudoLabelInstruction> instructions_;
-  LiteMutableArray *instructions_;
+  LiteMutableArray instructions_;
 };
 
 // ===== Operand =====
@@ -255,7 +277,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG("[*] Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG("Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   ~Assembler() {

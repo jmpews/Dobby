@@ -20,7 +20,7 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
       ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)instrument_routing_dispatch);
   this->prologue_dispatch_bridge = closure_trampoline_entry->address;
 
-  DLOG("[*] create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
+  DLOG("create dynamic binary instrumentation call closure trampoline to 'prologue_dispatch_bridge' %p\n",
        closure_trampoline_entry->address);
 }
 

@@ -11,7 +11,7 @@ PUBLIC int DobbyInstrument(void *inst_address, DBICallTy handler) {
   if (!inst_address)
     FATAL("[!] ERROR: the function address is 0x0.\n");
 
-  DLOG("[*] Initialize 'DobbyInstrument' hook at %p\n", inst_address);
+  DLOG("Initialize 'DobbyInstrument' hook at %p\n", inst_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -25,6 +25,6 @@ PUBLIC int DobbyInstrument(void *inst_address, DBICallTy handler) {
   interceptor->AddHookEntry(entry);
   route->Commit();
 
-  DLOG("[*] Finalize %p\n", inst_address);
+  DLOG("Finalize %p\n", inst_address);
   return RS_SUCCESS;
 }

@@ -66,7 +66,7 @@ extern "C" {
     LOG_NO_TAG("ErrorMessage: %s \n", strerror(errno));                                                                \
   } while (0)
 
-#if defined(DEBUG)
+#if defined(DOBBY_DEBUG)
 #define DLOG(fmt, ...) LOG(fmt, ##__VA_ARGS__)
 #else
 #define DLOG(fmt, ...)

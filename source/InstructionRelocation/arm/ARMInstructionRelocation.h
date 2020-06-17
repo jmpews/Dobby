@@ -24,7 +24,7 @@ public:
       _buffer = buffer;
 
     PseudoLabelInstruction *instruction;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(instructions_);
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
     while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
       // instruction offset to label
       int32_t offset            = pos() - instruction->position_ - Thumb_PC_OFFSET;

@@ -9,14 +9,15 @@
 using namespace zz;
 
 void InterceptRouting::Prepare() {
-  Interceptor *interceptor             = Interceptor::SharedInstance();
-  int relocate_size                    = 0;
-  AssemblyCode *relocatedCode          = NULL;
-  CodeBufferBase *trampolineCodeBuffer = NULL;
+  Interceptor *interceptor = Interceptor::SharedInstance();
+  int relocate_size        = 0;
 
-  // get the trampoline size
-  trampolineCodeBuffer = (CodeBufferBase *)GenTrampoline((void *)entry_->target_address, NULL);
-  relocate_size        = trampolineCodeBuffer->getSize();
+  AssemblyCode *relocatedCode    = NULL;
+  CodeBufferBase *trampolineCode = NULL;
+
+  // get the trampolineCode size
+  trampolineCode = (CodeBufferBase *)GenTrampoline((void *)entry_->target_address, NULL);
+  relocate_size  = trampolineCode->getSize();
 
 #define DUMMY_0 0
   // gen the relocated code
@@ -25,7 +26,7 @@ void InterceptRouting::Prepare() {
   // set the relocated instruction address
   entry_->relocated_origin_function = (void *)relocatedCode->raw_instruction_start();
 
-  DLOG("[*] Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
+  DLOG("Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
@@ -41,13 +42,13 @@ void InterceptRouting::Prepare() {
 // ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
-  CodeBufferBase *trampolineCodeBuffer = NULL;
-  trampolineCodeBuffer                 = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());
+  CodeBufferBase *trampolineCode = NULL;
+  trampolineCode                 = (CodeBufferBase *)GenTrampoline(entry_->target_address, GetTrampolineTarget());
 
-  AssemblyCode::FinalizeFromCodeBuffer(entry_->target_address, trampolineCodeBuffer);
-  delete trampolineCodeBuffer;
+  AssemblyCode::FinalizeFromCodeBuffer(entry_->target_address, trampolineCode);
+  delete trampolineCode;
 
-  DLOG("[*] Active the routing at %p\n", entry_->target_address);
+  DLOG("Active the routing at %p\n", entry_->target_address);
 }
 
 void InterceptRouting::Commit() {
@@ -64,7 +65,7 @@ void InterceptRouting::Commit() {
   }
 
   if (!handle_by_plugin)
-    Active();
+    this->Active();
 }
 
 HookEntry *InterceptRouting::GetHookEntry() {

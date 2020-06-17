@@ -27,6 +27,7 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
 
   void *address = assembler->GetRealizeAddress();
   if (!address) {
+    // assembler without specific memory address
     AssemblyCodeChunk *codeChunk = ExecutableMemoryArena::AllocateCodeChunk(buffer_size);
     address                      = codeChunk->address;
     assembler->CommitRealizeAddress(codeChunk->address);
@@ -34,15 +35,12 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
   }
 
   AssemblyCode *code = FinalizeFromCodeBuffer(address, reinterpret_cast<CodeBufferBase *>(assembler->GetCodeBuffer()));
+  DLOG("AssemblyCode finalize assembler at %p\n", (void *)code->raw_instruction_start());
 
-  DLOG("[*] AssemblyCode finalize assembler at %p\n", (void *)code->raw_instruction_start());
   return reinterpret_cast<AssemblyCode *>(code);
 }
 
 AssemblyCode *AssemblyCode::FinalizeFromCodeBuffer(void *address, CodeBufferBase *codeBuffer) {
-  DCHECK_NE(NULL, address);
-  DCHECK_NE(NULL, codeBuffer);
-
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
   // instructions
   CodePatch(address, codeBuffer->getRawBuffer(), codeBuffer->getSize());

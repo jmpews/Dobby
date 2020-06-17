@@ -10,9 +10,9 @@
 PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_call) {
 
   if (!function_address)
-    FATAL("ERROR: the function address is 0x0.");
+    FATAL("function address is 0x0");
 
-  DLOG("[*] Initialize 'DobbyHook' hook at %p", function_address);
+  DLOG("Initialize 'DobbyHook' hook at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
   
@@ -36,6 +36,6 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
 
   route->Commit();
 
-  DLOG("[*] Finalize %p\n", function_address);
+  DLOG("Finalize %p\n", function_address);
   return (int)RS_SUCCESS;
 }
