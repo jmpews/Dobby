@@ -340,7 +340,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG("Assembler buffer at %p\n", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG("Initialize assembler code buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     buffer_->release();
@@ -620,7 +620,7 @@ public:
     movk(rd, h3, 48);
   }
 
-  void AdrpAddMov(Register rd, uint64_t from, uint64_t to) {
+  void AdrpAdd(Register rd, uint64_t from, uint64_t to) {
     uint64_t from_PAGE  = ALIGN(from, 0x1000);
     uint64_t to_PAGE    = ALIGN(to, 0x1000);
     uint64_t to_PAGEOFF = (uint64_t)to % 0x1000;

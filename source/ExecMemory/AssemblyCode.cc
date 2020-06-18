@@ -3,8 +3,6 @@
 #include "PlatformInterface/ExecMemory/CodePatchTool.h"
 #include "logging/check_logging.h"
 
-namespace zz {
-
 AssemblyCode *AssemblyCode::FinalizeFromAddress(addr_t address, int size) {
   AssemblyCode *result = NULL;
   result               = new AssemblyCode;
@@ -44,7 +42,7 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
   CodePatch(address, codeBuffer->getRawBuffer(), codeBuffer->getSize());
 
   result = FinalizeFromAddress((addr_t)address, codeBuffer->getSize());
-  DLOG("AssemblyCode finalize assembler at %p\n", (void *)address);
+  DLOG("Finalize assembler at %p", (void *)address);
 
   return result;
 }
@@ -66,5 +64,3 @@ void AssemblyCode::initWithAddressRange(addr_t address, int size) {
   address_ = (addr_t)address;
   size_    = size;
 }
-
-} // namespace zz

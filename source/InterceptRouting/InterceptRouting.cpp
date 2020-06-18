@@ -8,15 +8,18 @@
 using namespace zz;
 
 void InterceptRouting::Prepare() {
-  Interceptor *interceptor = Interceptor::SharedInstance();
-  int relocate_size        = 0;
+  AssemblyCode *relocatedCode = NULL;
 
-  AssemblyCode *relocatedCode    = NULL;
-  CodeBufferBase *trampolineCode = NULL;
-
-  // get the trampolineCode size
-  trampolineCode = (CodeBufferBase *)GenTrampoline((void *)entry_->target_address, NULL);
-  relocate_size  = trampolineCode->getSize();
+  int relocate_size = 0;
+  {
+    relocate_size = this->PredefinedTrampolineSize();
+    // if near branch trampoline plugin enabled
+    if (ExtraInternalPlugin::near_branch_trampoline) {
+      RoutingPlugin *plugin = NULL;
+      plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
+      relocate_size         = plugin->PredefinedTrampolineSize();
+    }
+  }
 
 #define DUMMY_0 0
   // gen the relocated code
@@ -24,8 +27,7 @@ void InterceptRouting::Prepare() {
 
   // set the relocated instruction address
   entry_->relocated_origin_function = (void *)relocatedCode->raw_instruction_start();
-
-  DLOG("Relocate origin (prologue) instruction at %p.\n", (void *)relocatedCode->raw_instruction_start());
+  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocate_size, entry_->relocated_origin_function);
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
@@ -41,26 +43,52 @@ void InterceptRouting::Prepare() {
 // ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
-  CodePatch(entry_->target_address, trampoline_->getRawBuffer(), trampoline_->getSize());
-
-  DLOG("Active the routing at %p\n", entry_->target_address);
+  CodePatch(entry_->target_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
+  LOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
 }
 
 void InterceptRouting::Commit() {
+#if 0
   bool handle_by_plugin = false;
-
   if (ExtraInternalPlugin::plugins_) {
     RoutingPlugin *plugin        = NULL;
     LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
     while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
+      DLOG("Run plugin %s", "Unknown");
       if (plugin->Active(this))
         handle_by_plugin = true;
     }
     delete iter;
   }
+#endif
 
-  if (!handle_by_plugin)
-    this->Active();
+  this->Active();
+  DLOG("InterceptRouting: >>>>> end <<<<<");
+}
+
+int InterceptRouting::PredefinedTrampolineSize() {
+#if __arm64__
+  return 12;
+#elif __arm__
+  return 12;
+#endif
+}
+
+void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
+  CodeBufferBase *trampoline_buffer;
+  // if near branch trampoline plugin enabled
+  if (ExtraInternalPlugin::near_branch_trampoline) {
+    RoutingPlugin *plugin = NULL;
+    plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
+    if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
+      DLOG("Failed enable near branch trampoline plugin");
+    }
+  }
+
+  if (this->GetTrampolineBuffer() == NULL) {
+    trampoline_buffer = GenerateNormalTrampolineBuffer(src, dst);
+    this->SetTrampolineBuffer(trampoline_buffer);
+  }
 }
 
 HookEntry *InterceptRouting::GetHookEntry() {

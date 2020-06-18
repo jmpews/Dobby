@@ -1,7 +1,8 @@
 #include "ExtraInternalPlugin/RegisterPlugin.h"
 
 LiteMutableArray *ExtraInternalPlugin::plugins_ = NULL;
-;
+
+ExtraInternalPlugin *ExtraInternalPlugin::near_branch_trampoline = NULL;
 
 void ExtraInternalPlugin::registerPlugin(const char *name, ExtraInternalPlugin *plugin) {
   if (!plugins_) {

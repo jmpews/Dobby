@@ -7,8 +7,9 @@
 
 class LiteObject {
 public:
-  LiteObject() {
-  }
+  virtual ~LiteObject() {
+    
+  };
 
 public:
   virtual bool init();

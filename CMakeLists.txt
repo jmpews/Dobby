@@ -230,6 +230,7 @@ endif ()
 if(NearBranchTrampoline)
   message(STATUS "[Dobby] Enable Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    source/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
     source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
   if(SYSTEM.Darwin)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -237,13 +238,6 @@ if(NearBranchTrampoline)
   elseif(SYSTEM.Posix)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
       source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc)
-  endif()
-  if(PROCESSOR.ARM OR PROCESSOR.AARCH64)
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/ExtraInternalPlugin/NearBranchTrampoline/BxxxBranch/${ARCH1}/BxxxBranchTrampoline.cc)
-  elseif(PROCESSOR.X86_64 OR PROCESSOR.X86)
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/ExtraInternalPlugin/NearBranchTrampoline/JmpImmediate32/${ARCH1}/BxxxBranchTrampoline.cc)
   endif()
 endif()
 

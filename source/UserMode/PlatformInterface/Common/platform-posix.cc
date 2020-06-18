@@ -65,19 +65,17 @@ int OSMemory::PageSize() {
 }
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
-  DCHECK_EQ(0, size % PageSize());
-
   int prot = GetProtectionFromMemoryPermission(access);
 
-  void *result = mmap(address, size, prot, MAP_PRIVATE | MAP_ANONYMOUS, kMmapFd, kMmapFdOffset);
-  if (result == nullptr)
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+  if(address != NULL) {
+    flags = MAP_PRIVATE | MAP_FIXED;
+  }
+  void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
+  if (result == MAP_FAILED)
     return nullptr;
 
-  // TODO: if need align
-
-  void *aligned_base = result;
-  return static_cast<void *>(aligned_base);
+  return result;
 }
 
 bool OSMemory::Free(void *address, const int size) {

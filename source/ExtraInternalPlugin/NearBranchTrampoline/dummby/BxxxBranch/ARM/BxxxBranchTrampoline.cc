@@ -33,7 +33,7 @@ static Code *build_arm_fast_forward_trampoline(uintptr_t address, MemoryRegion *
 }
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
-void ARMInterceptRouting::BuildFastForwardTrampoline() {
+void ARMInterceptRouting::GenerateFastForwardTrampoline() {
   uint32_t forward_address;
   Code *code;
   if (entry_->type == kFunctionInlineHook) {

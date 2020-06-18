@@ -26,7 +26,7 @@ using namespace zz::x64;
 #define X64_JMP_IMM32_RANGE_SIZE (1UL << 32)
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
-static AssemblyCode *BuildFastForwardTrampoline(uintptr_t forward_address) {
+static AssemblyCode *GenerateFastForwardTrampoline(uintptr_t forward_address) {
   TurboAssembler turbo_assembler_;
   CodeGen codegen(&turbo_assembler_);
   void *fast_forward_trampoline = NULL;
@@ -69,8 +69,9 @@ bool JmpImm32Routing::Active(InterceptRouting *routing) {
   uint64_t target_address            = (uint64_t)entry->target_address;
 
   AssemblyCode *fast_forward_trampoline;
-
-  fast_forward_trampoline = BuildFastForwardTrampoline((uintptr_t)routing->GetTrampolineTarget());
+  fast_forward_trampoline = GenerateFastForwardTrampoline((uintptr_t)routing->GetTrampolineTarget());
+  if (!fast_forward_trampoline)
+    return false;
 
   TurboAssembler turbo_assembler_;
 #define _ turbo_assembler_.

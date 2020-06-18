@@ -61,9 +61,15 @@ extern "C" {
     LOG_NO_TAG("[!] " fmt "\n", ##__VA_ARGS__);                                                                        \
   } while (0)
 
-#define STRERROR()                                                                                                     \
+#define ERRNO_PRINT()                                                                                                  \
   do {                                                                                                                 \
-    LOG_NO_TAG("ErrorMessage: %s \n", strerror(errno));                                                                \
+    FATAL_LOG("ErrorMessage: %s \n", strerror(errno));                                                                 \
+  } while (0)
+
+#define CHECK_ERROR_CODE(lsh, rhs)                                                                                     \
+  do {                                                                                                                 \
+    if (lhs != rsh)                                                                                                    \
+      ERRNO_PRINT();                                                                                                   \
   } while (0)
 
 #if defined(DOBBY_DEBUG)

@@ -13,10 +13,9 @@
 class DynamicBinaryInstrumentRouting : public X64InterceptRouting {
 public:
   DynamicBinaryInstrumentRouting(HookEntry *entry, void *handler) : X64InterceptRouting(entry) {
+    DLOG("DynamicBinaryInstrumentRouting: >>>>> start <<<<<");
     this->handler = handler;
   }
-
-  void *GetTrampolineTarget();
 
   void Dispatch();
 

@@ -15,90 +15,110 @@ using namespace zz;
 
 LiteMutableArray *NearExecutableMemoryArena::page_chunks = NULL;
 
-// Search code cave from MemoryLayout
-void NearExecutableMemoryArena::PushMostNearCodePage(addr_t pos, int range_size) {
-  std::vector<MemoryRegion> memory_layout = GetProcessMemoryLayout();
-  addr_t memory_region_start              = 0;
-  addr_t memory_region_end                = 0;
-  addr_t pre_memory_region_end            = 0;
-  addr_t next_memory_region_start         = 0;
-  for (int i = 0; i < memory_layout.size(); i++) {
+static int get_region_index_within_layout(addr_t pos, std::vector<MemoryRegion> &layout) {
+  addr_t region_start, region_end;
+  for (int i = 0; i < layout.size(); i++) {
+    region_start = layout[i].address;
+    region_end   = region_start + layout[i].length;
+    if (region_start < pos && region_end > pos) {
+      return i;
+    }
+  }
+  return 0;
+}
 
-    memory_region_start = memory_layout[i].address;
-    memory_region_end   = memory_region_start + memory_layout[i].length;
-    if (memory_region_start < pos && memory_region_end > pos) {
-      MemoryRegion *pre_memory_region  = &memory_layout[i - 1];
-      MemoryRegion *next_memory_region = &memory_layout[i + 1];
-      pre_memory_region_end            = pre_memory_region->address + pre_memory_region->length;
-      next_memory_region_start         = next_memory_region->address;
-      break;
+// Search code cave from MemoryLayout
+int NearExecutableMemoryArena::PushMostNearCodePage(addr_t pos, int range_size) {
+  std::vector<MemoryRegion> memory_layout = GetProcessMemoryLayout();
+  int ndx                                 = get_region_index_within_layout(pos, memory_layout);
+  if (!ndx) {
+    FATAL_LOG("Get region index failed");
+    return RT_FAILED;
+  }
+
+  addr_t blank_page = 0;
+  // left <<<< search
+  if (blank_page == 0) {
+    addr_t blank_page_max = pos + range_size;
+    for (int i = ndx; i > 0; i--) {
+      // make sure blank region in required range.
+      if (memory_layout[i].address + memory_layout[i].length > blank_page_max)
+        break;
+      if (memory_layout[i - 1].address > memory_layout[i].address + memory_layout[i].length) {
+        blank_page = memory_layout[i].address + memory_layout[i].length;
+        break;
+      }
     }
   }
 
-  if (memory_region_start - pre_memory_region_end > (16 * MB))
-    pre_memory_region_end = memory_region_start - (16 * MB);
-
-  // add pages to list
-  for (addr_t page_addr = pre_memory_region_end; page_addr < memory_region_start; page_addr += OSMemory::PageSize()) {
-    void *page_address = OSMemory::Allocate((void *)page_addr, OSMemory::PageSize(), MemoryPermission::kReadExecute);
-    ExecutablePage *newPage = new ExecutablePage;
-    newPage->address        = page_address;
-    newPage->cursor         = newPage->address;
-    newPage->capacity       = OSMemory::PageSize();
-    newPage->code_chunks    = new LiteMutableArray(8);
-    NearExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  // right >>>> search
+  if (blank_page == 0) {
+    addr_t blank_page_min = pos - range_size;
+    for (int i = ndx; i < memory_layout.size(); i++) {
+      // make sure blank region in required range.
+      if (memory_layout[i].address - OSMemory::PageSize() < blank_page_min)
+        break;
+      if (memory_layout[i + 1].address + memory_layout[i + 1].length < memory_layout[i].address) {
+        blank_page = memory_layout[i].address - OSMemory::PageSize();
+        break;
+      }
+    }
   }
-  DLOG("add near pages from %p - %p", pre_memory_region_end, memory_region_start);
 
-  if (next_memory_region_start - memory_region_end > (16 * MB))
-    next_memory_region_start = memory_region_end + (16 * MB);
-
-  // add pages to list
-  for (addr_t page_addr = memory_region_end; page_addr < next_memory_region_start; page_addr += OSMemory::PageSize()) {
-    void *page_address = OSMemory::Allocate((void *)page_addr, OSMemory::PageSize(), MemoryPermission::kReadExecute);
-    ExecutablePage *newPage = new ExecutablePage;
-    newPage->address        = page_address;
-    newPage->cursor         = newPage->address;
-    newPage->capacity       = OSMemory::PageSize();
-    newPage->code_chunks    = new LiteMutableArray(8);
-    NearExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  if (blank_page == 0) {
+    LOG("Failed to alloc near page");
+    return RT_FAILED;
   }
-  DLOG("add near pages from %p - %p", memory_region_end, next_memory_region_start);
+
+  void *page_address = OSMemory::Allocate((void *)blank_page, OSMemory::PageSize(), MemoryPermission::kReadExecute);
+  if (!page_address) {
+    FATAL_LOG("Failed alloc executable page");
+  }
+  ExecutablePage *newPage = new ExecutablePage;
+  newPage->address        = page_address;
+  newPage->cursor         = newPage->address;
+  newPage->capacity       = OSMemory::PageSize();
+  newPage->code_chunks    = new LiteMutableArray(8);
+  NearExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  return RT_SUCCESS;
 }
 
 AssemblyCodeChunk *NearExecutableMemoryArena::AllocateCodeChunk(int inSize, addr_t pos, size_t range_size) {
   void *result                 = NULL;
-  ExecutablePage *page         = NULL;
+  ExecutablePage *found_page   = NULL;
   AssemblyCodeChunk *codeChunk = NULL;
 
   if (!NearExecutableMemoryArena::page_chunks) {
     NearExecutableMemoryArena::page_chunks = new LiteMutableArray;
   }
 
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
-  while ((page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
-    if (llabs((intptr_t)((addr_t)page->cursor - pos)) < range_size) {
-      if (((addr_t)page->cursor + inSize) < ((addr_t)page->address + page->capacity)) {
+search_once_more:
+  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(NearExecutableMemoryArena::page_chunks);
+  ExecutablePage *_page        = 0;
+  while ((_page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
+    if (llabs((intptr_t)((addr_t)_page->cursor - pos)) < range_size) {
+      if (((addr_t)_page->cursor + inSize) < ((addr_t)_page->address + _page->capacity)) {
+        found_page = _page;
         break;
       }
     }
   }
   delete iter;
 
-  if (!page) {
-    NearExecutableMemoryArena::PushMostNearCodePage(pos, range_size);
-    // try again
-    NearExecutableMemoryArena::AllocateCodeChunk(inSize, pos, range_size);
-  } else {
+  if (found_page) {
     codeChunk          = new AssemblyCodeChunk;
-    codeChunk->address = page->cursor;
+    codeChunk->address = found_page->cursor;
     codeChunk->size    = inSize;
 
-    page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
-    page->cursor = (void *)((addr_t)page->cursor + inSize);
+    found_page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
+    found_page->cursor = (void *)((addr_t)found_page->cursor + inSize);
     return codeChunk;
   }
 
-  UNREACHABLE();
+  int rt = NearExecutableMemoryArena::PushMostNearCodePage(pos, range_size);
+  if (rt == RT_SUCCESS) {
+    goto search_once_more;
+  }
+
   return NULL;
 }

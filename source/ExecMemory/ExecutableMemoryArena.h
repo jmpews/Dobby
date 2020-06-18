@@ -24,7 +24,7 @@ public:
 
   static void Destory(AssemblyCodeChunk *codeChunk);
 
-private:
+public:
   static LiteMutableArray *page_chunks;
 };
 

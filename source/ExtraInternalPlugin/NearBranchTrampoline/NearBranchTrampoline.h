@@ -5,14 +5,17 @@
 
 #include "ExtraInternalPlugin/RegisterPlugin.h"
 
-class BxxxRouting : public RoutingPlugin {
+class NearBranchTrampolinePlugin : public RoutingPlugin {
   // @Return: if false will continue to iter next plugin
   bool Prepare(InterceptRouting *routing) {
     return false;
   };
 
-  // @Return: if false will continue to iter next plugin
   bool Active(InterceptRouting *routing);
+
+  bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst);
+
+  int PredefinedTrampolineSize();
 };
 
 #endif

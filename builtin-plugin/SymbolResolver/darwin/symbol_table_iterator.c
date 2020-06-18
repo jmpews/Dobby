@@ -106,7 +106,6 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
 
   struct mach_header *dyld_header = NULL;
   if (strcmp(image_name, "dyld") == 0) {
-    kern_return_t kr;
     task_dyld_info_data_t task_dyld_info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {

@@ -53,7 +53,7 @@ void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 }
 
 __attribute__((constructor)) static void ctor() {
-  // DobbyInstrument((void *)malloc, malloc_handler);
-  // DobbyInstrument((void *)free, free_handler);
+  DobbyInstrument((void *)malloc, malloc_handler);
+  DobbyInstrument((void *)free, free_handler);
   return;
 }

@@ -7,14 +7,18 @@
 
 class CodeBuffer;
 
-extern CodeBufferBase *GenTrampoline(void *from, void *to);
+extern CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to);
 
-extern zz::AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
+extern AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 
 class InterceptRouting {
 public:
   InterceptRouting(HookEntry *entry) : entry_(entry) {
     entry->route = this;
+
+    trampoline_        = NULL;
+    trampoline_buffer_ = NULL;
+    trampoline_target_ = NULL;
   }
 
   virtual void Dispatch() = 0;
@@ -25,13 +29,43 @@ public:
 
   void Commit();
 
+  // entry =====
+
   HookEntry *GetHookEntry();
 
-  virtual void *GetTrampolineTarget() = 0;
+  // trampoline =====
 
-private:
+  int PredefinedTrampolineSize();
+
+  void GenerateTrampolineBuffer(void *src, void *dst);
+
+  void SetTrampolineBuffer(CodeBufferBase *buffer) {
+    trampoline_buffer_ = buffer;
+  }
+
+  CodeBufferBase *GetTrampolineBuffer() {
+    return trampoline_buffer_;
+  }
+
+  void SetTrampolineTarget(void *address) {
+    trampoline_target_ = address;
+  }
+
+  void *GetTrampolineTarget() {
+    return trampoline_target_;
+  }
+
 protected:
+  // hook entry
   HookEntry *entry_;
-  CodeBufferBase *trampoline_;
+
+  // trampoline
+  AssemblyCode *trampoline_;
+
+  // trampoline buffer before active
+  CodeBufferBase *trampoline_buffer_;
+
+  // trampoline target
+  void *trampoline_target_;
 };
 #endif

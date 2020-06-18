@@ -12,6 +12,7 @@ class CodeGen : public CodeGenBase {
 public:
   CodeGen(TurboAssembler *turbo_assember) : CodeGenBase(turbo_assember) {
   }
+
   void LiteralLdrBranch(uint32_t address);
 };
 

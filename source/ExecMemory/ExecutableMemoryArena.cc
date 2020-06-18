@@ -15,9 +15,8 @@ void ExecutableMemoryArena::Destory(AssemblyCodeChunk *codeChunk) {
 }
 
 AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
-  void *result                 = NULL;
-  ExecutablePage *page         = NULL;
-  AssemblyCodeChunk *codeChunk = NULL;
+  AssemblyCodeChunk *result = NULL, *codeChunk = NULL;
+  ExecutablePage *page = NULL;
 
   if (!ExecutableMemoryArena::page_chunks) {
     ExecutableMemoryArena::page_chunks = new LiteMutableArray;
@@ -55,7 +54,8 @@ AssemblyCodeChunk *ExecutableMemoryArena::AllocateCodeChunk(int inSize) {
     page->cursor = (void *)((addr_t)page->cursor + inSize);
   }
 
-  return codeChunk;
+  result = codeChunk;
+  return result;
 }
 
 // UserMode

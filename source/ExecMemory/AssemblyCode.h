@@ -4,9 +4,9 @@
 #include "stdcxx/LiteObject.h"
 #include "core/modules/assembler/assembler.h"
 
-class CodeBuffer;
+using namespace zz;
 
-namespace zz {
+class CodeBuffer;
 
 class AssemblyCode : public LiteObject {
 
@@ -33,7 +33,5 @@ private:
   addr_t address_;
   int size_;
 };
-
-} // namespace zz
 
 #endif

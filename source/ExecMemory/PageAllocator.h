@@ -3,8 +3,6 @@
 
 #include "PlatformInterface/Common/Platform.h"
 
-namespace zz {
-
 class PageAllocator {
 public:
   static void *Allocate(MemoryPermission permission);
@@ -13,7 +11,5 @@ public:
 
   static bool SetPermissions(void *address, MemoryPermission access);
 };
-
-} // namespace zz
 
 #endif

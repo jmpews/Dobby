@@ -26,10 +26,9 @@ using namespace zz::arm;
 class FunctionInlineReplaceRouting : public InterceptRouting {
 public:
   FunctionInlineReplaceRouting(HookEntry *entry, void *replace_call) : InterceptRouting(entry) {
+    DLOG("FunctionInlineReplaceRouting: >>>>> start <<<<<");
     this->replace_call = replace_call;
   }
-
-  void *GetTrampolineTarget();
 
   void Dispatch();
 

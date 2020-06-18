@@ -50,10 +50,12 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
     count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     kern_return_t kr =
         mach_vm_region_recurse(mach_task_self(), &addr, &size, &depth, (vm_region_recurse_info_t)&submap_info, &count);
-    if (kr == KERN_INVALID_ADDRESS) {
-      break;
-    } else {
-      break;
+    if(kr != KERN_SUCCESS) {
+      if (kr == KERN_INVALID_ADDRESS) {
+        break;
+      } else {
+        break;
+      }
     }
 
     if (0 && submap_info.is_submap) {
@@ -70,8 +72,11 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
         continue;
       }
       MemoryRegion region = {addr, size, permission};
+      DLOG("%p - %p", addr, addr + size);
       ProcessMemoryLayout.push_back(region);
     }
+    
+    addr += size;
   }
 
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);

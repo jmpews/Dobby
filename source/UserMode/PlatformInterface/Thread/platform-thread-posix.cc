@@ -48,7 +48,7 @@ static pthread_key_t LocalKeyToPthreadKey(OSThread::LocalStorageKey local_key) {
 OSThread::LocalStorageKey OSThread::CreateThreadLocalKey() {
   pthread_key_t key;
   int result = pthread_key_create(&key, nullptr);
-  DCHECK_EQ(0, result);
+  CHECK_EQ(0, result);
   LocalStorageKey local_key = PthreadKeyToLocalKey(key);
   return local_key;
 }
@@ -56,7 +56,7 @@ OSThread::LocalStorageKey OSThread::CreateThreadLocalKey() {
 void OSThread::DeleteThreadLocalKey(LocalStorageKey key) {
   pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
   int result                = pthread_key_delete(pthread_key);
-  DCHECK_EQ(0, result);
+  CHECK_EQ(0, result);
 }
 
 void *OSThread::GetThreadLocal(LocalStorageKey key) {
@@ -67,5 +67,5 @@ void *OSThread::GetThreadLocal(LocalStorageKey key) {
 void OSThread::SetThreadLocal(LocalStorageKey key, void *value) {
   pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
   int result                = pthread_setspecific(pthread_key, value);
-  DCHECK_EQ(0, result);
+  CHECK_EQ(0, result);
 }

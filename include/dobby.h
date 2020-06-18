@@ -109,14 +109,14 @@ int DobbyHook(void *function_address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
 typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-int DobbyInstrument(void *inst_address, DBICallTy dbi_call);
+int DobbyInstrument(void *instr_address, DBICallTy dbi_call);
 
 // iterate symbol table and find symbol
 void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
 
 // bxx branch plugin
 #if defined(__arm64__) || defined(__aarch64__) || defined(__arm__)
-void dobby_enable_arm64_bxx_branch_trampoline();
+void dobby_enable_near_branch_trampoline();
 #endif
 
 #ifdef __cplusplus
