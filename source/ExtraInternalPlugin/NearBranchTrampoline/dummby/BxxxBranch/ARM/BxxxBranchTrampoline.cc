@@ -5,7 +5,7 @@
 #include "BxxxBranchTrampoline.h"
 
 static Code *build_thumb_fast_forward_trampoline(uintptr_t address, MemoryRegion *region) {
-  CustomThumbTurboAssembler thumb_turbo_assembler_;
+  ThumbTurboAssembler thumb_turbo_assembler_;
 #define _ thumb_turbo_assembler_.
 
   _ t2_ldr(pc, MemOperand(pc, 0));

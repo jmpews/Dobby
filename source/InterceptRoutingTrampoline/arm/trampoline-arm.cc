@@ -4,9 +4,12 @@
 
 #include "InstructionRelocation/arm/ARMInstructionRelocation.h"
 
+#include "ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.h"
+#include "ExtraInternalPlugin/RegisterPlugin.h"
+
 using namespace zz::arm;
 
-CodeBufferBase *gen_arm_trampoline(void *from, void *to) {
+static CodeBufferBase *generate_arm_trampoline(void *from, void *to) {
   TurboAssembler turbo_assembler_(from);
 #define _ turbo_assembler_.
 
@@ -16,8 +19,8 @@ CodeBufferBase *gen_arm_trampoline(void *from, void *to) {
   return turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBufferBase *gen_thumb_trampoline(void *from, void *to) {
-  CustomThumbTurboAssembler thumb_turbo_assembler_(from);
+CodeBufferBase *generate_thumb_trampoline(void *from, void *to) {
+  ThumbTurboAssembler thumb_turbo_assembler_(from);
 #undef _
 #define _ thumb_turbo_assembler_.
 
@@ -33,21 +36,24 @@ CodeBufferBase *gen_thumb_trampoline(void *from, void *to) {
   return thumb_turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBufferBase *GenTrampoline(void *from, void *to) {
+CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to) {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
-  ExecuteState execute_state_;
-
   // set instruction running state
+  ExecuteState execute_state_;
   execute_state_ = ARMExecuteState;
   if ((addr_t)from % 2) {
     execute_state_ = ThumbExecuteState;
   }
 
   if (execute_state_ == ARMExecuteState) {
-    return gen_arm_trampoline(from, to);
+    return generate_arm_trampoline(from, to);
   } else {
-    return gen_thumb_trampoline(from, to);
+    return generate_thumb_trampoline(from, to);
   }
-  return 0;
+  return NULL;
+}
+
+CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
+  return NULL;
 }

@@ -10,29 +10,29 @@ using namespace zz;
 void InterceptRouting::Prepare() {
   AssemblyCode *relocatedCode = NULL;
 
-  int relocate_size = 0;
+  int predefined_relocate_size = 0;
   {
-    relocate_size = this->PredefinedTrampolineSize();
+    predefined_relocate_size = this->PredefinedTrampolineSize();
     // if near branch trampoline plugin enabled
     if (ExtraInternalPlugin::near_branch_trampoline) {
       RoutingPlugin *plugin = NULL;
       plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
-      relocate_size         = plugin->PredefinedTrampolineSize();
+      predefined_relocate_size         = plugin->PredefinedTrampolineSize();
     }
   }
 
 #define DUMMY_0 0
   // gen the relocated code
-  relocatedCode = GenRelocateCode((void *)entry_->target_address, &relocate_size, DUMMY_0, DUMMY_0);
+  relocatedCode = GenRelocateCode((void *)entry_->target_address, predefined_relocate_size, DUMMY_0, DUMMY_0);
 
   // set the relocated instruction address
   entry_->relocated_origin_function = (void *)relocatedCode->raw_instruction_start();
-  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocate_size, entry_->relocated_origin_function);
+  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocatedCode->raw_instruction_size(), entry_->relocated_origin_function);
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
-  _memcpy(entry_->origin_instructions.data, entry_->target_address, relocate_size);
-  entry_->origin_instructions.size    = relocate_size;
+  _memcpy(entry_->origin_instructions.data, entry_->target_address, relocatedCode->raw_instruction_size());
+  entry_->origin_instructions.size    = relocatedCode->raw_instruction_size();
   entry_->origin_instructions.address = entry_->target_address;
 #endif
 }

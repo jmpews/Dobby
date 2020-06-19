@@ -198,9 +198,9 @@ private:
   }
 };
 
-class CustomThumbTurboAssembler : public CustomThumbAssembler {
+class ThumbTurboAssembler : public CustomThumbAssembler {
 public:
-  CustomThumbTurboAssembler(void *address) : CustomThumbAssembler(address) {
+  ThumbTurboAssembler(void *address) : CustomThumbAssembler(address) {
   }
 
   void T1_Ldr(Register rt, CustomThumbPseudoLabel *label) {

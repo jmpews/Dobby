@@ -1,4 +1,6 @@
-#include "InstructionRelocation/arm/ARMInstructionRelocation.h"
+#include "./ARMInstructionRelocation.h"
+
+#include "dobby_internal.h"
 
 #include "core/arch/arm/registers-arm.h"
 #include "core/modules/assembler/assembler-arm.h"
@@ -31,17 +33,17 @@ typedef struct _PseudoDataLabel {
 typedef struct _CustomThumbPseudoDataLabel {
   CustomThumbPseudoLabel label;
   uint32_t address;
-} CustomThumbPseudoDataLabel;
+} ThumbPseudoDataLabel;
 
 // TODO: NOT THREAD SAFE!!!
 #if 0
 static std::vector<PseudoDataLabel> labels;
-static std::vector<CustomThumbPseudoDataLabel> thumb_labels;
+static std::vector<ThumbPseudoDataLabel> thumb_labels;
 #endif
 
 static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableArray *labels, int32_t instr,
                                    uint32_t from_pc, uint32_t to_pc) {
-  bool rewrite_flag = false;
+  bool is_instr_relocated = false;
 #define _ turbo_assembler.
   // top level encoding
   uint32_t cond, op0, op1;
@@ -79,7 +81,7 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
       // ===
       // Record the pseudo label to realized at the last.
       labels->pushObject((LiteObject *)pseudoDataLabel);
-      rewrite_flag = true;
+      is_instr_relocated = true;
     } while (0);
   }
 
@@ -122,7 +124,7 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
           // ===
           // Record the pseudo label to realized at the last.
           labels->pushObject((LiteObject *)pseudoDataLabel);
-          rewrite_flag = true;
+          is_instr_relocated = true;
         } while (0);
 
         // EXample
@@ -172,13 +174,13 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
         }
         _ ldr(pc, MemOperand(pc, -4));
         _ EmitAddress(target_address);
-        rewrite_flag = true;
+        is_instr_relocated = true;
       } while (0);
     }
   }
 
   // if the instr do not needed relocate, just rewrite the origin
-  if (!rewrite_flag) {
+  if (!is_instr_relocated) {
     _ EmitARMInst(instr);
   }
 }
@@ -186,9 +188,9 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
 // =====
 
 // relocate thumb-1 instructions
-static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
-                                      int16_t instr, uint32_t from_pc, uint32_t to_pc) {
-  bool rewrite_flag = false;
+static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
+                                      int16_t instr, addr32_t from_pc, addr32_t to_pc) {
+  bool is_instr_relocated = false;
   uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t offset = 0;
 
@@ -203,14 +205,14 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       uint16_t rewrite_inst = 0;
       rewrite_inst          = (instr & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
 
-      CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-      customPseudoDataLabel->address                    = val;
+      ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+      pseudoDataLabel->address              = val;
       // ===
-      _ T2_Ldr(TEMP_REG, &customPseudoDataLabel->label);
+      _ T2_Ldr(TEMP_REG, &pseudoDataLabel->label);
       _ EmitInt16(rewrite_inst);
       // ===
-      thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-      rewrite_flag = true;
+      thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+      is_instr_relocated = true;
     }
   }
 
@@ -222,14 +224,14 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     val            = ALIGN_FLOOR(val, 4);
     rt             = bits(instr, 8, 10);
 
-    CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-    customPseudoDataLabel->address                    = val;
+    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+    pseudoDataLabel->address              = val;
     // ===
-    _ T2_Ldr(Register::R(rt), &customPseudoDataLabel->label);
+    _ T2_Ldr(Register::R(rt), &pseudoDataLabel->label);
     _ t2_ldr(Register::R(rt), MemOperand(Register::R(rt), 0));
     // ===
-    thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-    rewrite_flag = true;
+    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+    is_instr_relocated = true;
   }
 
   // adr
@@ -238,15 +240,15 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     uint16_t imm8 = bits(instr, 0, 7);
     val           = from_pc + imm8;
 
-    CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-    customPseudoDataLabel->address                    = val;
+    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+    pseudoDataLabel->address              = val;
     // ===
-    _ T2_Ldr(Register::R(rd), &customPseudoDataLabel->label);
+    _ T2_Ldr(Register::R(rd), &pseudoDataLabel->label);
     // ===
     if (pc.code() == rd)
       val += 1;
-    thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-    rewrite_flag = true;
+    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+    is_instr_relocated = true;
   }
 
   // b
@@ -260,18 +262,18 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     uint32_t offset = imm8 << 1;
     val             = from_pc + offset;
 
-    CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-    customPseudoDataLabel->address                    = val + 1;
+    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+    pseudoDataLabel->address              = val + 1;
     // modify imm8 field
     imm8 = 0x4 >> 1;
     // ===
     _ EmitInt16((instr & 0xfff0) | imm8);
     _ t1_nop();
     _ t2_b(4);
-    _ T2_Ldr(pc, &customPseudoDataLabel->label);
+    _ T2_Ldr(pc, &pseudoDataLabel->label);
     // ===
-    thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-    rewrite_flag = true;
+    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+    is_instr_relocated = true;
   }
 
   // compare branch (cbz, cbnz)
@@ -282,18 +284,18 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     val             = from_pc + offset;
     rn              = bits(instr, 0, 2);
 
-    CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-    customPseudoDataLabel->address                    = val + 1;
+    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+    pseudoDataLabel->address              = val + 1;
 
     imm5 = bits(0x4 >> 1, 1, 5);
     i    = bit(0x4 >> 1, 6);
     // ===
     _ EmitInt16((instr & 0xfd07) | imm5 << 3 | i << 9);
     _ t2_b(0);
-    _ T2_Ldr(pc, &customPseudoDataLabel->label);
+    _ T2_Ldr(pc, &pseudoDataLabel->label);
     // ===
-    thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-    rewrite_flag = true;
+    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+    is_instr_relocated = true;
   }
 
   // unconditional branch
@@ -302,17 +304,17 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     uint32_t offset = imm11 << 1;
     val             = from_pc + offset;
 
-    CustomThumbPseudoDataLabel *customPseudoDataLabel = new CustomThumbPseudoDataLabel;
-    customPseudoDataLabel->address                    = val + 1;
+    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
+    pseudoDataLabel->address              = val + 1;
     // ===
-    _ T2_Ldr(pc, &customPseudoDataLabel->label);
+    _ T2_Ldr(pc, &pseudoDataLabel->label);
     // ===
-    thumb_labels->pushObject((LiteObject *)customPseudoDataLabel);
-    rewrite_flag = true;
+    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
+    is_instr_relocated = true;
   }
 
   // if the instr do not needed relocate, just rewrite the origin
-  if (!rewrite_flag) {
+  if (!is_instr_relocated) {
 #if 0
         if (from_pc % Thumb2_INST_LEN)
             _ t1_nop();
@@ -321,10 +323,10 @@ static void Thumb1RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
   }
 }
 
-static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
-                                      int16_t inst1, int16_t inst2, uint32_t from_pc, uint32_t to_pc) {
+static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
+                                      thumb1_inst_t inst1, thumb1_inst_t inst2, addr32_t from_pc, addr32_t to_pc) {
 
-  bool rewrite_flag = false;
+  bool is_instr_relocated = false;
   // Branches and miscellaneous control
   if ((inst1 & 0xf800) == 0xf000 && (inst2 & 0x8000) == 0x8000) {
     int32_t op1 = 0, op3 = 0;
@@ -341,7 +343,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       int imm11 = bits(inst2, 0, 10);
 
       int32_t label = (S << 20) | (J2 << 19) | (J1 << 18) | (imm6 << 12) | (imm11 << 1);
-      uint32_t val  = from_pc + label;
+      addr32_t val  = from_pc + label;
 
       // ===
       imm11 = 0x4 >> 1;
@@ -352,7 +354,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val + THUMB_ADDRESS_FLAG);
       // ===
-      rewrite_flag = true;
+      is_instr_relocated = true;
     }
 
     // B-T4 AKA b.w
@@ -366,13 +368,13 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       int i2    = !(J2 ^ S);
 
       int32_t label = (S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
-      int32_t val   = from_pc + label;
+      addr32_t val   = from_pc + label;
 
       // ===
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val + THUMB_ADDRESS_FLAG);
       // ===
-      rewrite_flag = true;
+      is_instr_relocated = true;
     }
 
     // BL, BLX (immediate) - T1 variant AKA bl
@@ -386,7 +388,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       int imm10 = bits(inst1, 0, 9);
       // S is sign-bit, '-S' maybe not better
       int32_t label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
-      int32_t val   = from_pc + label;
+      addr32_t val   = from_pc + label;
 
       // =====
       _ t2_bl(4);
@@ -394,7 +396,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val + THUMB_ADDRESS_FLAG);
       // =====
-      rewrite_flag = true;
+      is_instr_relocated = true;
     }
 
     // BL, BLX (immediate) - T2 variant AKA blx
@@ -408,7 +410,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       int imm10l = bits(inst2, 1, 10);
       // S is sign-bit, '-S' maybe not better
       int32_t label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
-      uint32_t val  = from_pc + label;
+      addr32_t val  = from_pc + label;
 
       // =====
       _ t2_bl(4);
@@ -416,7 +418,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val);
       // =====
-      rewrite_flag = true;
+      is_instr_relocated = true;
     }
   }
 
@@ -431,7 +433,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     uint32_t imm8  = bits(inst2, 0, 7);
     uint32_t rd    = bits(inst2, 8, 11);
     uint32_t label = imm8 | (imm3 << 8) | (i << 11);
-    int32_t val    = 0;
+    addr32_t val    = 0;
 
     if (rn == 15 && o1 == 0 && o2 == 0) {
       // ADR - T3 variant
@@ -448,7 +450,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     _ t2_b(0);
     _ EmitAddress(val);
     // ===
-    rewrite_flag = true;
+    is_instr_relocated = true;
   }
 
   // LDR literal (T2)
@@ -458,7 +460,7 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     uint16_t rt    = bits(inst2, 12, 15);
 
     uint32_t label = imm12;
-    int32_t val    = 0;
+    addr32_t val    = 0;
     if (U == 1) {
       val = from_pc + label;
     } else {
@@ -474,11 +476,11 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
     _ EmitAddress(val);
     _ t2_ldr(regRt, MemOperand(regRt, 0));
     // =====
-    rewrite_flag = true;
+    is_instr_relocated = true;
   }
 
   // if the instr do not needed relocate, just rewrite the origin
-  if (!rewrite_flag) {
+  if (!is_instr_relocated) {
 #if 0
         if (from_pc % Thumb2_INST_LEN)
             _ t1_nop();
@@ -490,32 +492,41 @@ static void Thumb2RelocateSingleInstr(CustomThumbTurboAssembler &turbo_assembler
 
 // =====
 
-AssemblyCode *gen_arm_relocate_code(void *buffer, int *relocate_size, uint32_t from_pc, uint32_t to_pc) {
-  uint32_t curr_addr    = (uint32_t)buffer;
-  uint32_t curr_orig_pc = from_pc + ARM_PC_OFFSET;
-  uint32_t curr_relo_pc = to_pc + ARM_PC_OFFSET;
-  uint32_t instr        = *(uint32_t *)curr_addr;
-
+AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, addr32_t from_pc, addr32_t to_pc) {
   LiteMutableArray *labels = new LiteMutableArray;
 
   TurboAssembler turbo_assembler_(0);
 #undef _
 #define _ turbo_assembler_.
-  while (curr_addr < ((uint32_t)buffer + *relocate_size)) {
-    int off = turbo_assembler_.GetCodeBuffer()->getSize();
+
+  addr32_t curr_orig_pc = from_pc + ARM_PC_OFFSET;
+  addr32_t curr_relo_pc = to_pc + ARM_PC_OFFSET;
+
+  addr_t buffer_cursor    = (addr_t)buffer;
+  arm_inst_t instr        = *(arm_inst_t *)buffer_cursor;
+  while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
+    int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
+
     ARMRelocateSingleInstr(turbo_assembler_, labels, instr, curr_orig_pc, curr_relo_pc);
     DLOG("Relocate arm instr: 0x%x", instr);
+
     // Move to next instruction
     curr_orig_pc += ARM_INST_LEN;
-    curr_relo_pc += turbo_assembler_.GetCodeBuffer()->getSize() - off;
-    curr_addr += ARM_INST_LEN;
-    instr = *(uint32_t *)curr_addr;
+    buffer_cursor += ARM_INST_LEN;
+
+    {
+      // 1 orignal instrution => ? relocated instruction
+      int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
+      int relo_len = relo_offset - last_relo_offset;
+      curr_relo_pc = relo_len;
+    }
+    instr = *(arm_inst_t *)buffer_cursor;
   }
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
   // next instruction address  == curr_addr
-  codegen.LiteralLdrBranch(curr_addr);
+  codegen.LiteralLdrBranch(curr_orig_pc);
 
 #if 0
   // Realize all the Pseudo-Label-Data
@@ -536,27 +547,27 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int *relocate_size, uint32_t f
   return code;
 }
 
-AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t from_pc, uint32_t to_pc) {
-  uint32_t curr_addr       = (uint32_t)buffer;
-  uint32_t curr_orig_pc    = from_pc + Thumb_PC_OFFSET;
-  uint32_t curr_relo_pc    = to_pc + Thumb_PC_OFFSET;
-  uint32_t instr           = *(uint32_t *)curr_addr;
-  int actual_relocate_size = 0;
-
+AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size, addr32_t from_pc, addr32_t to_pc) {
   LiteMutableArray *thumb_labels = new LiteMutableArray;
 
-  CustomThumbTurboAssembler turbo_assembler_(0);
+  ThumbTurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
-  // put nop if the first instruction type is thumb1
-  if (curr_orig_pc % Thumb2_INST_LEN)
-    _ t1_nop();
+  addr32_t curr_orig_pc    = from_pc + Thumb_PC_OFFSET;
+  addr32_t curr_relo_pc    = to_pc + Thumb_PC_OFFSET;
 
-  while (curr_addr < ((uint32_t)buffer + *relocate_size)) {
+  // put nop if the first instruction type is thumb1
+  if (curr_orig_pc % Thumb2_INST_LEN) {
+    _ t1_nop();
+  }
+
+  addr_t buffer_cursor       = (addr_t)buffer;
+  thumb2_inst_t instr           = *(thumb2_inst_t *)buffer;
+  while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
     _ AlignThumbNop();
 
-    int off = turbo_assembler_.GetCodeBuffer()->getSize();
+    int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
     if (is_thumb2(instr)) {
       Thumb2RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
                                 curr_relo_pc);
@@ -564,29 +575,33 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
 
       // Move to next instruction
       curr_orig_pc += Thumb2_INST_LEN;
-      curr_addr += Thumb2_INST_LEN;
-      actual_relocate_size += Thumb2_INST_LEN;
+      buffer_cursor += Thumb2_INST_LEN;
     } else {
       Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc);
       DLOG("Relocate thumb1 instr: 0x%x", (uint16_t)instr);
 
       // Move to next instruction
       curr_orig_pc += Thumb1_INST_LEN;
-      curr_addr += Thumb1_INST_LEN;
-      actual_relocate_size += Thumb1_INST_LEN;
+      buffer_cursor += Thumb1_INST_LEN;
     }
-    curr_relo_pc += turbo_assembler_.GetCodeBuffer()->getSize() - off;
-    instr = *(uint32_t *)curr_addr;
+
+    {
+      // 1 orignal instrution => ? relocated instruction
+      int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
+      int relo_len = relo_offset - last_relo_offset;
+      curr_relo_pc = relo_len;
+    }
+    instr = *(thumb2_inst_t *)buffer_cursor;
   }
 
   // set the actual relocate instruction size, as the thumb1 || thumb2 cause  relocate_size != actual_relocate_size
-  *relocate_size = actual_relocate_size;
+  /* predefined_relocate_size = actual_relocate_size; */
 
   _ AlignThumbNop();
 
   // Branch to the rest of instructions
   _ t2_ldr(pc, MemOperand(pc, 0));
-  _ EmitAddress(curr_addr + THUMB_ADDRESS_FLAG);
+  _ EmitAddress(curr_orig_pc + THUMB_ADDRESS_FLAG);
 
 #if 0
   // Realize all the Pseudo-Label-Data
@@ -597,9 +612,9 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
 #endif
 
   // Realize all the Pseudo-Label-Data
-  CustomThumbPseudoDataLabel *it;
+  ThumbPseudoDataLabel *it = nullptr;
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(thumb_labels);
-  while ((it = reinterpret_cast<CustomThumbPseudoDataLabel *>(iter->getNextObject())) != NULL) {
+  while ((it = reinterpret_cast<ThumbPseudoDataLabel *>(iter->getNextObject())) != NULL) {
     _ CustomThumbPseudoBind(&(it->label));
     _ EmitAddress(it->address);
   }
@@ -608,23 +623,19 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int *relocate_size, uint32_t
   return code;
 }
 
-AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {
-  from_pc = (addr_t)buffer;
-
-  bool is_thumb      = (uint32_t)buffer % 2;
+AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t from_pc, addr_t to_pc) {
   AssemblyCode *code = NULL;
-
-  buffer = (void *)(ALIGN(buffer, 2));
 
   // Clear labels cache, Not-Thread-Safe
   // TODO:
   // labels.clear();
   // thumb_labels.clear();
 
+  bool is_thumb      = (addr32_t)buffer % 2;
   if (is_thumb) {
-    code = gen_thumb_relocate_code(buffer, relocate_size, from_pc, to_pc);
+    code = gen_thumb_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
   } else {
-    code = gen_arm_relocate_code(buffer, relocate_size, from_pc, to_pc);
+    code = gen_arm_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
   }
   return code;
 }

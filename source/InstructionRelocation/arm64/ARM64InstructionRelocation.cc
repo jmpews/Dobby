@@ -1,4 +1,6 @@
-#include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
+#include "./ARM64InstructionRelocation.h"
+
+#include "dobby_internal.h"
 
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/modules/assembler/assembler-arm64.h"
@@ -124,28 +126,27 @@ static inline int decode_rd(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
-AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_pc, addr_t to_pc) {
-  from_pc = (addr_t)buffer;
-
-  uint64_t curr_addr    = (uint64_t)buffer;
-  uint64_t curr_orig_pc = from_pc;
-  uint64_t curr_relo_pc = to_pc;
-  uint32_t instr        = *(uint32_t *)curr_addr;
-
+AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t from_pc, addr_t to_pc) {
   // std::vector<PseudoDataLabel> labels;
   LiteMutableArray *labels = new LiteMutableArray;
 
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
-  while (curr_addr < ((uint64_t)buffer + *relocate_size_ptr)) {
-    int off = turbo_assembler_.GetCodeBuffer()->getSize();
+  uint64_t curr_orig_pc = from_pc;
+  uint64_t curr_relo_pc = to_pc;
+
+  addr_t buffer_cursor    = (addr_t)buffer;
+  arm64_inst_t instr        = *(arm64_inst_t *)buffer_cursor;
+
+  while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
+    int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     if ((instr & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) { // ldr x0, #16
       int rt                = decode_rt(instr);
       char opc              = bits(instr, 30, 31);
-      addr_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
-      if (memory_address >= (*relocate_size_ptr + from_pc)) {
+      addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
+      if (memory_address >= (predefined_relocate_size + from_pc)) {
         UNIMPLEMENTED();
       }
 
@@ -166,7 +167,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       int rd = decode_rd(instr);
 
       int64_t imm            = 0;
-      addr_t runtime_address = 0;
+      addr64_t   runtime_address = 0;
       if ((instr & PCRelAddressingMask) == ADR) {
         imm             = decode_immhi_immlo_offset(instr);
         runtime_address = curr_orig_pc + imm;
@@ -198,11 +199,11 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       }
       _ nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
-      addr_t branch_address               = decode_imm14_offset(instr) + curr_orig_pc;
+      addr64_t branch_address               = decode_imm14_offset(instr) + curr_orig_pc;
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
       labels->pushObject((LiteObject *)branchAddressLabel);
 
-      uint32_t branch_instr = instr;
+      arm64_inst_t branch_instr = instr;
 
       char op = bit(instr, 24);
       op      = op ^ 1;
@@ -223,9 +224,9 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       _ nop();
 
     } else if ((instr & CompareBranchFixedMask) == CompareBranchFixed) { // cbz cbnz
-      addr_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
+      addr64_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
 
-      uint32_t branch_instr = instr;
+      arm64_inst_t branch_instr = instr;
 
       char op = bit(instr, 24);
       op      = op ^ 1;
@@ -248,10 +249,9 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       }
       _ nop();
     } else if ((instr & ConditionalBranchFixedMask) == ConditionalBranchFixed) { // b.cond
+      addr64_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
 
-      addr_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
-
-      uint32_t branch_instr = instr;
+      arm64_inst_t branch_instr = instr;
 
       char cond = bits(instr, 0, 3);
       cond      = cond ^ 1;
@@ -279,10 +279,17 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
     }
 
     // Move to next instruction
-    curr_relo_pc += turbo_assembler_.GetCodeBuffer()->getSize() - off;
     curr_orig_pc += 4;
-    curr_addr += 4;
-    instr = *(arm64_inst_t *)curr_addr;
+    buffer_cursor += 4;
+
+    {
+      // 1 orignal instrution => ? relocated instruction
+      int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
+      int relo_len = relo_offset - last_relo_offset;
+      curr_relo_pc = relo_len;
+    }
+
+    instr = *(arm64_inst_t *)buffer_cursor;
 
     { // check branch in relocate-code range
       LiteCollectionIterator *iter = NULL;
@@ -292,7 +299,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
         if (dataLabel->address == curr_orig_pc) {
           FATAL("label(%p) in relo-code range(%p-%p), please enable b-xxx branch plugin.", dataLabel->address, from_pc,
-                from_pc + *relocate_size_ptr);
+                from_pc + predefined_relocate_size);
         }
       }
       delete iter;

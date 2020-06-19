@@ -8,6 +8,9 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef uint32_t addr32_t;
+typedef uint64_t addr64_t;
+
 #if defined(__arm64__) || defined(__aarch64__)
 #define Tx(type) type##arm64
 #define TX() type##ARM64

@@ -23,7 +23,7 @@ option(GENERATE_FRAMEWORK "Build framework library" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
+option(NearBranch "Use Near Branch Trampoline, available: aarch64" OFF)
 
 option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
 
@@ -190,7 +190,7 @@ if(SYSTEM.iOS)
   )
 endif ()
 
-if (FunctionWrapper OR DynamicBinaryInstrument)
+if ((FunctionWrapper OR DynamicBinaryInstrument) AND (NOT (PROCESSOR.X86_64 OR PROCESSOR.X86)))
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
@@ -215,20 +215,20 @@ endif ()
 
 if (DynamicBinaryInstrument)
   if(PROCESSOR.X86_64 OR PROCESSOR.X86)
-    message(FATAL_ERROR "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
+    message(STATUS "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
+  else()
+    message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
+    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+      source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
+      source/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+      source/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
+      source/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
+      )
   endif ()
-  message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
-  
-  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-    source/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-    source/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
-    source/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
-    )
 endif ()
 
 if(NearBranchTrampoline)
-  message(STATUS "[Dobby] Enable Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]")
+  message(STATUS "[Dobby] Use Near Branch Trampoline, available: aarch64")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
     source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
