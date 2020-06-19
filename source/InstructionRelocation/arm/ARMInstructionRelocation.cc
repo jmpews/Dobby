@@ -368,7 +368,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
       int i2    = !(J2 ^ S);
 
       int32_t label = (S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
-      addr32_t val   = from_pc + label;
+      addr32_t val  = from_pc + label;
 
       // ===
       _ t2_ldr(pc, MemOperand(pc, 0));
@@ -388,7 +388,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
       int imm10 = bits(inst1, 0, 9);
       // S is sign-bit, '-S' maybe not better
       int32_t label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
-      addr32_t val   = from_pc + label;
+      addr32_t val  = from_pc + label;
 
       // =====
       _ t2_bl(4);
@@ -433,7 +433,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     uint32_t imm8  = bits(inst2, 0, 7);
     uint32_t rd    = bits(inst2, 8, 11);
     uint32_t label = imm8 | (imm3 << 8) | (i << 11);
-    addr32_t val    = 0;
+    addr32_t val   = 0;
 
     if (rn == 15 && o1 == 0 && o2 == 0) {
       // ADR - T3 variant
@@ -460,7 +460,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     uint16_t rt    = bits(inst2, 12, 15);
 
     uint32_t label = imm12;
-    addr32_t val    = 0;
+    addr32_t val   = 0;
     if (U == 1) {
       val = from_pc + label;
     } else {
@@ -502,8 +502,8 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, 
   addr32_t curr_orig_pc = from_pc + ARM_PC_OFFSET;
   addr32_t curr_relo_pc = to_pc + ARM_PC_OFFSET;
 
-  addr_t buffer_cursor    = (addr_t)buffer;
-  arm_inst_t instr        = *(arm_inst_t *)buffer_cursor;
+  addr_t buffer_cursor = (addr_t)buffer;
+  arm_inst_t instr     = *(arm_inst_t *)buffer_cursor;
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
@@ -517,7 +517,7 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, 
     {
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
-      int relo_len = relo_offset - last_relo_offset;
+      int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;
     }
     instr = *(arm_inst_t *)buffer_cursor;
@@ -553,16 +553,16 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
   ThumbTurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
-  addr32_t curr_orig_pc    = from_pc + Thumb_PC_OFFSET;
-  addr32_t curr_relo_pc    = to_pc + Thumb_PC_OFFSET;
+  addr32_t curr_orig_pc = from_pc + Thumb_PC_OFFSET;
+  addr32_t curr_relo_pc = to_pc + Thumb_PC_OFFSET;
 
   // put nop if the first instruction type is thumb1
   if (curr_orig_pc % Thumb2_INST_LEN) {
     _ t1_nop();
   }
 
-  addr_t buffer_cursor       = (addr_t)buffer;
-  thumb2_inst_t instr           = *(thumb2_inst_t *)buffer;
+  addr_t buffer_cursor = (addr_t)buffer;
+  thumb2_inst_t instr  = *(thumb2_inst_t *)buffer;
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
     _ AlignThumbNop();
@@ -588,7 +588,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
     {
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
-      int relo_len = relo_offset - last_relo_offset;
+      int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;
     }
     instr = *(thumb2_inst_t *)buffer_cursor;
@@ -613,7 +613,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
 #endif
 
   // Realize all the Pseudo-Label-Data
-  ThumbPseudoDataLabel *it = nullptr;
+  ThumbPseudoDataLabel *it     = nullptr;
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(thumb_labels);
   while ((it = reinterpret_cast<ThumbPseudoDataLabel *>(iter->getNextObject())) != NULL) {
     _ CustomThumbPseudoBind(&(it->label));
@@ -632,13 +632,13 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
   // labels.clear();
   // thumb_labels.clear();
 
-  bool is_thumb      = (addr32_t)buffer % 2;
+  bool is_thumb = (addr32_t)buffer % 2;
   if (is_thumb) {
     // remove thumb address 1 flag
-    buffer = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
-    from_pc = ALIGN_FLOOR(from_pc,2);
-    to_pc = ALIGN_FLOOR(to_pc,2);
-    code = gen_thumb_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
+    buffer  = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
+    from_pc = ALIGN_FLOOR(from_pc, 2);
+    to_pc   = ALIGN_FLOOR(to_pc, 2);
+    code    = gen_thumb_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
   } else {
     code = gen_arm_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
   }

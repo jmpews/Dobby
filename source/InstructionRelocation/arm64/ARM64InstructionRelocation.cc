@@ -134,19 +134,17 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
 #define _ turbo_assembler_.
 
   uint64_t curr_orig_pc = from_pc;
-  uint64_t curr_relo_pc = to_p
+  uint64_t curr_relo_pc = to_pc;
 
-    c;
-
-  addr_t buffer_cursor    = (addr_t)buffer;
-  arm64_inst_t instr        = *(arm64_inst_t *)buffer_cursor;
+  addr_t buffer_cursor = (addr_t)buffer;
+  arm64_inst_t instr   = *(arm64_inst_t *)buffer_cursor;
 
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     if ((instr & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) { // ldr x0, #16
-      int rt                = decode_rt(instr);
-      char opc              = bits(instr, 30, 31);
+      int rt                  = decode_rt(instr);
+      char opc                = bits(instr, 30, 31);
       addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
       if (memory_address >= (predefined_relocate_size + from_pc)) {
         UNIMPLEMENTED();
@@ -168,8 +166,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
     } else if ((instr & PCRelAddressingFixedMask) == PCRelAddressingFixed) {
       int rd = decode_rd(instr);
 
-      int64_t imm            = 0;
-      addr64_t   runtime_address = 0;
+      int64_t imm              = 0;
+      addr64_t runtime_address = 0;
       if ((instr & PCRelAddressingMask) == ADR) {
         imm             = decode_immhi_immlo_offset(instr);
         runtime_address = curr_orig_pc + imm;
@@ -201,7 +199,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
       }
       _ nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
-      addr64_t branch_address               = decode_imm14_offset(instr) + curr_orig_pc;
+      addr64_t branch_address             = decode_imm14_offset(instr) + curr_orig_pc;
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
       labels->pushObject((LiteObject *)branchAddressLabel);
 
@@ -287,7 +285,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
     {
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
-      int relo_len = relo_offset - last_relo_offset;
+      int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;
     }
 

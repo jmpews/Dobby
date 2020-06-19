@@ -26,5 +26,5 @@ LiteObject *LiteCollectionIterator::getNextObject() {
 }
 
 void LiteCollectionIterator::release() {
-  LiteMemOpt::free(this->innerIterator, sizeof(void **));
+  LiteMemOpt::free(this->innerIterator, sizeof(void *));
 }

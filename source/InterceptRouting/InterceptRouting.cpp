@@ -41,9 +41,15 @@ void InterceptRouting::Prepare() {
 // Patch the address with branch instr
 // X86_64(14 bytes): [jmp rip] [data_address]
 // ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
+// ARM64(12 bytes): [ldr x17, 4] [br x17] [data_address]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
-  CodePatch(entry_->target_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
+  void *patch_address = 0;
+  patch_address = entry_->target_address;
+#if __arm__
+  patch_address = (void *)((addr_t)patch_address - 1);
+#endif
+  CodePatch(patch_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
   LOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
 }
 
@@ -70,7 +76,7 @@ int InterceptRouting::PredefinedTrampolineSize() {
 #if __arm64__
   return 12;
 #elif __arm__
-  return 12;
+  return 8;
 #endif
 }
 
