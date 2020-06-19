@@ -1,11 +1,10 @@
 #include "./dobby_monitor.h"
-#include "dobby.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
+static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
   uintptr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
@@ -25,7 +24,7 @@ uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
 
 void format_integer_manually(char *buf, uint64_t integer) {
   int tmp = 0;
-  for (tmp = integer; tmp > 0; tmp = (tmp >> 4)) {
+  for (tmp = (int)integer; tmp > 0; tmp = (tmp >> 4)) {
     buf += (tmp % 16);
     buf--;
   }
@@ -37,9 +36,9 @@ void format_integer_manually(char *buf, uint64_t integer) {
 void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   size_t size_ = 0;
   size_        = getCallFirstArg(reg_ctx);
-  char *buffer = (char *)"[-] function malloc first arg: 0x00000000.\n";
-  format_integer_manually(strchr(buffer, '.') - 1, size_);
-  puts(buffer);
+  char *buffer_ = (char *)"[-] function malloc first arg: 0x00000000.\n";
+  format_integer_manually(strchr(buffer_, '.') - 1, size_);
+  puts(buffer_);
 }
 
 void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
@@ -53,7 +52,7 @@ void free_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 }
 
 __attribute__((constructor)) static void ctor() {
-  DobbyInstrument((void *)malloc, malloc_handler);
-  DobbyInstrument((void *)free, free_handler);
+//    DobbyInstrument((void *)mmap, malloc_handler);
+//    DobbyInstrument((void *)free, free_handler);
   return;
 }

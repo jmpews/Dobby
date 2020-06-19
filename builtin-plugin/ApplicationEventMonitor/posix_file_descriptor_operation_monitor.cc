@@ -70,7 +70,7 @@ ssize_t (*orig_read)(int fd, void *buf, size_t count);
 ssize_t fake_read(int fd, void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG("[-] read: %s, buffer: %s, size: %zu\n", traced_filename, buf, count);
+    LOG("[-] read: %s, buffer: %p, size: %zu\n", traced_filename, buf, count);
   }
   return orig_read(fd, buf, count);
 }
@@ -79,7 +79,7 @@ ssize_t (*orig_write)(int fd, const void *buf, size_t count);
 ssize_t fake_write(int fd, const void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG("[-] write: %s, buffer: %s, size: %zu\n", traced_filename, buf, count);
+    LOG("[-] write: %s, buffer: %p, size: %zu\n", traced_filename, buf, count);
   }
   return orig_write(fd, buf, count);
 }

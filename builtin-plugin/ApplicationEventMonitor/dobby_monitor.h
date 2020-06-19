@@ -11,7 +11,9 @@
 #include <set>
 #include <unordered_map>
 
-#include "logging/logging.h"
+#include "dobby.h"
+
+#define LOG printf
 
 #ifdef __cplusplus
 extern "C" {

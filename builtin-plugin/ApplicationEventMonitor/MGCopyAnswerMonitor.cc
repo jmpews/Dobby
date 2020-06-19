@@ -3,13 +3,31 @@
 #include <dlfcn.h>
 #include <CoreFoundation/CoreFoundation.h>
 
+static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
+  uintptr_t result;
+#if defined(_M_X64) || defined(__x86_64__)
+#if defined(_WIN32)
+  result = reg_ctx->general.regs.rcx;
+#else
+  result = reg_ctx->general.regs.rdi;
+#endif
+#elif defined(__arm64__) || defined(__aarch64__)
+  result = reg_ctx->general.regs.x0;
+#elif defined(__arm__)
+  result = reg_ctx->general.regs.r0;
+#else
+#error "Not Support Architecture."
+#endif
+  return result;
+}
+
 void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   CFStringRef key_ = 0;
-  key_             = getCallFirstArg(reg_ctx);
+  key_             = (CFStringRef)getCallFirstArg(reg_ctx);
 
   char str_key[256] = {0};
   CFStringGetCString(key_, str_key, 256, kCFStringEncodingUTF8);
-  printf("MGCopyAnswer: %s", str_key);
+  LOG("[#] MGCopyAnswer:: %s\n", str_key);
 }
 
 __attribute__((constructor)) static void ctor() {
