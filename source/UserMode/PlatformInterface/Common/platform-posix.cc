@@ -69,7 +69,7 @@ void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
 
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
   if(address != NULL) {
-    flags = MAP_PRIVATE | MAP_FIXED;
+    flags = flags | MAP_FIXED;
   }
   void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
   if (result == MAP_FAILED)

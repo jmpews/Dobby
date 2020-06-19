@@ -15,6 +15,7 @@ using namespace zz;
 
 LiteMutableArray *NearExecutableMemoryArena::page_chunks = NULL;
 
+#if 0
 static int get_region_index_within_layout(addr_t pos, std::vector<MemoryRegion> &layout) {
   addr_t region_start, region_end;
   for (int i = 0; i < layout.size(); i++) {
@@ -27,7 +28,6 @@ static int get_region_index_within_layout(addr_t pos, std::vector<MemoryRegion> 
   return 0;
 }
 
-// Search code cave from MemoryLayout
 int NearExecutableMemoryArena::PushMostNearCodePage(addr_t pos, int range_size) {
   std::vector<MemoryRegion> memory_layout = GetProcessMemoryLayout();
   int ndx                                 = get_region_index_within_layout(pos, memory_layout);
@@ -76,6 +76,32 @@ int NearExecutableMemoryArena::PushMostNearCodePage(addr_t pos, int range_size) 
   }
   ExecutablePage *newPage = new ExecutablePage;
   newPage->address        = page_address;
+  newPage->cursor         = newPage->address;
+  newPage->capacity       = OSMemory::PageSize();
+  newPage->code_chunks    = new LiteMutableArray(8);
+  NearExecutableMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  return RT_SUCCESS;
+}
+#endif
+
+int NearExecutableMemoryArena::PushMostNearCodePage(addr_t pos, int range_size) {
+  void *near_page = NULL;
+  addr_t min_page_addr, max_page_addr;
+  min_page_addr = ALIGN((pos - range_size), OSMemory::PageSize()) + OSMemory::PageSize();
+  max_page_addr = ALIGN((pos + range_size), OSMemory::PageSize()) - OSMemory::PageSize();
+  for (addr_t page_addr = min_page_addr; page_addr < max_page_addr; page_addr += OSMemory::PageSize()) {
+    near_page = OSMemory::Allocate((void *)page_addr, OSMemory::PageSize(), MemoryPermission::kReadExecute);
+    if (near_page)
+      break;
+  }
+
+  if (near_page == NULL) {
+    LOG("Failed to alloc near page");
+    return RT_FAILED;
+  }
+
+  ExecutablePage *newPage = new ExecutablePage;
+  newPage->address        = near_page;
   newPage->cursor         = newPage->address;
   newPage->capacity       = OSMemory::PageSize();
   newPage->code_chunks    = new LiteMutableArray(8);
