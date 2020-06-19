@@ -134,7 +134,9 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
 #define _ turbo_assembler_.
 
   uint64_t curr_orig_pc = from_pc;
-  uint64_t curr_relo_pc = to_pc;
+  uint64_t curr_relo_pc = to_p
+
+    c;
 
   addr_t buffer_cursor    = (addr_t)buffer;
   arm64_inst_t instr        = *(arm64_inst_t *)buffer_cursor;
@@ -286,7 +288,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len = relo_offset - last_relo_offset;
-      curr_relo_pc = relo_len;
+      curr_relo_pc += relo_len;
     }
 
     instr = *(arm64_inst_t *)buffer_cursor;

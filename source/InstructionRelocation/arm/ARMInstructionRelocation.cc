@@ -518,15 +518,15 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, 
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len = relo_offset - last_relo_offset;
-      curr_relo_pc = relo_len;
+      curr_relo_pc += relo_len;
     }
     instr = *(arm_inst_t *)buffer_cursor;
   }
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
-  // next instruction address  == curr_addr
-  codegen.LiteralLdrBranch(curr_orig_pc);
+  // Get the real branch address
+  codegen.LiteralLdrBranch(curr_orig_pc - ARM_PC_OFFSET);
 
 #if 0
   // Realize all the Pseudo-Label-Data
@@ -589,7 +589,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len = relo_offset - last_relo_offset;
-      curr_relo_pc = relo_len;
+      curr_relo_pc += relo_len;
     }
     instr = *(thumb2_inst_t *)buffer_cursor;
   }
@@ -601,7 +601,8 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
 
   // Branch to the rest of instructions
   _ t2_ldr(pc, MemOperand(pc, 0));
-  _ EmitAddress(curr_orig_pc + THUMB_ADDRESS_FLAG);
+  // Get the real branch address
+  _ EmitAddress(curr_orig_pc - Thumb_PC_OFFSET + THUMB_ADDRESS_FLAG);
 
 #if 0
   // Realize all the Pseudo-Label-Data
@@ -633,6 +634,10 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
 
   bool is_thumb      = (addr32_t)buffer % 2;
   if (is_thumb) {
+    // remove thumb address 1 flag
+    buffer = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
+    from_pc = ALIGN_FLOOR(from_pc,2);
+    to_pc = ALIGN_FLOOR(to_pc,2);
     code = gen_thumb_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
   } else {
     code = gen_arm_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);

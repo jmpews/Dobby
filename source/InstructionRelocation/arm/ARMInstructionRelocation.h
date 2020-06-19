@@ -110,6 +110,9 @@ public:
   }
 
   // =====
+  void t2_nop() {
+    buffer_->Emit32(0xe320f000);
+  }
   void t2_b(uint32_t imm) {
     EmitThumb2Branch(AL, imm, false);
   }
@@ -232,7 +235,10 @@ public:
   }
 
   void AlignThumbNop() {
-    if (GetCodeBuffer()->getSize() % Thumb2_INST_LEN) {
+    int pc_offset = this->GetCodeBuffer()->getSize();
+    if (pc_offset % Thumb2_INST_LEN) {
+      t1_nop();
+    } else {
       t1_nop();
     }
   }
