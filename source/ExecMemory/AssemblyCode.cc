@@ -64,3 +64,7 @@ void AssemblyCode::initWithAddressRange(addr_t address, int size) {
   address_ = (addr_t)address;
   size_    = size;
 }
+
+void AssemblyCode::reInitWithAddressRange(addr_t address, int size) {
+  this->initWithAddressRange(address, size);
+}

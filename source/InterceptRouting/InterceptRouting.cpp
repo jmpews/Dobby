@@ -7,33 +7,60 @@
 
 using namespace zz;
 
-void InterceptRouting::Prepare() {
-  AssemblyCode *relocatedCode = NULL;
+// void InterceptRouting::PrepareOriginCode() {
+//   AssemblyCode *originCode = NULL;
 
-  int predefined_relocate_size = 0;
+//   int predefined_relocate_size = 0;
+//   {
+//     predefined_relocate_size = this->PredefinedTrampolineSize();
+//     // if near branch trampoline plugin enabled
+//     if (ExtraInternalPlugin::near_branch_trampoline) {
+//       RoutingPlugin *plugin    = NULL;
+//       plugin                   = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
+//       predefined_relocate_size = plugin->PredefinedTrampolineSize();
+//     }
+//   }
+
+//   // generate the relocated code
+//   originCode = AssemblyCode::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
+
+//   origin_ = originCode;
+// }
+
+void InterceptRouting::Prepare() {
+  void *relocate_buffer = NULL;
+  relocate_buffer       = entry_->target_address;
+
+  AssemblyCode *origin = NULL;
   {
-    predefined_relocate_size = this->PredefinedTrampolineSize();
+    int predefined_relocate_size = 0;
+    predefined_relocate_size     = this->PredefinedTrampolineSize();
     // if near branch trampoline plugin enabled
     if (ExtraInternalPlugin::near_branch_trampoline) {
-      RoutingPlugin *plugin = NULL;
-      plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
-      predefined_relocate_size         = plugin->PredefinedTrampolineSize();
+      RoutingPlugin *plugin    = NULL;
+      plugin                   = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
+      predefined_relocate_size = plugin->PredefinedTrampolineSize();
     }
-  }
 
-#define DUMMY_0 0
-  // gen the relocated code
-  relocatedCode = GenRelocateCode(entry_->target_address, predefined_relocate_size, (addr_t)entry_->target_address, DUMMY_0);
+    // generate the relocated code
+    originCode = AssemblyCode::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
+  }
+  this->origin_ = origin;
+
+  AssemblyCode *relocated = NULL;
+  relocated               = new AssemblyCode::FinalizeFromAddress(0, 0);
+  GenRelocateCode((relocate_buffer, this->origin_, relocated);
+  this->relocated_ = relocated;
 
   // set the relocated instruction address
-  entry_->relocated_origin_function = (void *)relocatedCode->raw_instruction_start();
-  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocatedCode->raw_instruction_size(), entry_->relocated_origin_function);
+  entry_->relocated_origin_function = (void *)relocated->raw_instruction_start();
+  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), entry_->relocated);
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
-  _memcpy(entry_->origin_instructions.data, entry_->target_address, relocatedCode->raw_instruction_size());
-  entry_->origin_instructions.size    = relocatedCode->raw_instruction_size();
-  entry_->origin_instructions.address = entry_->target_address;
+  _memcpy(entry_->origin_instructions.data, relocate_buffer, this->origin_->raw_instruction_size());
+  entry_->origin_instructions.size    = this->origin_->raw_instruction_size();
+  entry_->origin_instructions.address = this->origin_->raw_instruction_start();
 #endif
 }
 
@@ -44,8 +71,8 @@ void InterceptRouting::Prepare() {
 // ARM64(12 bytes): [ldr x17, 4] [br x17] [data_address]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
-  void *patch_address = 0;
-  patch_address = entry_->target_address;
+  void *patch_address = NULL;
+  patch_address       = entry_->target_address;
 #if __arm__
   patch_address = (void *)((addr_t)patch_address - 1);
 #endif

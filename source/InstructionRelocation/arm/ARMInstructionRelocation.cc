@@ -492,19 +492,19 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
 
 // =====
 
-AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, addr32_t from_pc, addr32_t to_pc) {
+void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   LiteMutableArray *labels = new LiteMutableArray;
 
   TurboAssembler turbo_assembler_(0);
 #undef _
 #define _ turbo_assembler_.
 
-  addr32_t curr_orig_pc = from_pc + ARM_PC_OFFSET;
-  addr32_t curr_relo_pc = to_pc + ARM_PC_OFFSET;
+  addr32_t curr_orig_pc = origin->raw_instruction_start() + ARM_PC_OFFSET;
+  addr32_t curr_relo_pc = relocated->raw_instruction_start() + ARM_PC_OFFSET;
 
-  addr_t buffer_cursor = (addr_t)buffer;
+  addr_t buffer_cursor = (addr_t)origin->raw_instruction_start();
   arm_inst_t instr     = *(arm_inst_t *)buffer_cursor;
-  while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
+  while (buffer_cursor < ((addr_t)buffer + origin->raw_instruction_size())) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     ARMRelocateSingleInstr(turbo_assembler_, labels, instr, curr_orig_pc, curr_relo_pc);
@@ -547,14 +547,14 @@ AssemblyCode *gen_arm_relocate_code(void *buffer, int predefined_relocate_size, 
   return code;
 }
 
-AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size, addr32_t from_pc, addr32_t to_pc) {
+void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   LiteMutableArray *thumb_labels = new LiteMutableArray;
 
   ThumbTurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
-  addr32_t curr_orig_pc = from_pc + Thumb_PC_OFFSET;
-  addr32_t curr_relo_pc = to_pc + Thumb_PC_OFFSET;
+  addr32_t curr_orig_pc = origin->raw_instruction_start() + Thumb_PC_OFFSET;
+  addr32_t curr_relo_pc = relocated->raw_instruction_start() + Thumb_PC_OFFSET;
 
   // put nop if the first instruction type is thumb1
   if (curr_orig_pc % Thumb2_INST_LEN) {
@@ -562,7 +562,10 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
   }
 
   addr_t buffer_cursor = (addr_t)buffer;
-  thumb2_inst_t instr  = *(thumb2_inst_t *)buffer;
+  thumb2_inst_t instr  = *(thumb2_inst_t *)buffer_cursor;
+
+  int predefined_relocate_size = origin->raw_instruction_start();
+
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
     _ AlignThumbNop();
@@ -596,9 +599,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
 
   // set the actual relocate instruction size, as the thumb1 || thumb2 cause  relocate_size != actual_relocate_size
   /* predefined_relocate_size = actual_relocate_size; */
-
   _ AlignThumbNop();
-
   // Branch to the rest of instructions
   _ t2_ldr(pc, MemOperand(pc, 0));
   // Get the real branch address
@@ -624,7 +625,7 @@ AssemblyCode *gen_thumb_relocate_code(void *buffer, int predefined_relocate_size
   return code;
 }
 
-AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t from_pc, addr_t to_pc) {
+void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   AssemblyCode *code = NULL;
 
   // Clear labels cache, Not-Thread-Safe
@@ -632,15 +633,20 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
   // labels.clear();
   // thumb_labels.clear();
 
-  bool is_thumb = (addr32_t)buffer % 2;
+  bool is_thumb = (addr32_t)origin->raw_instruction_start() % 2;
   if (is_thumb) {
+    buffer = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
+
     // remove thumb address 1 flag
-    buffer  = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
-    from_pc = ALIGN_FLOOR(from_pc, 2);
-    to_pc   = ALIGN_FLOOR(to_pc, 2);
-    code    = gen_thumb_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
+    origin->reInitWithAddressRange(origin->raw_instruction_start() - THUMB_ADDRESS_FLAG,
+                                   origin->raw_instruction_size());
+
+    gen_thumb_relocate_code(buffer, origin, relocated);
+
+    relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
+                                      relocated->raw_instruction_size());
   } else {
-    code = gen_arm_relocate_code(buffer, predefined_relocate_size, from_pc, to_pc);
+    gen_arm_relocate_code(buffer, origin, relocated);
   }
   return code;
 }

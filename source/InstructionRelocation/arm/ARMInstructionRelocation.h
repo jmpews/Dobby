@@ -110,9 +110,6 @@ public:
   }
 
   // =====
-  void t2_nop() {
-    buffer_->Emit32(0xe320f000);
-  }
   void t2_b(uint32_t imm) {
     EmitThumb2Branch(AL, imm, false);
   }
@@ -257,7 +254,7 @@ private:
 };
 
 // Generate the relocated instruction
-AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
+AssemblyCode *GenRelocateCode(AssemblyCode *origin, addr_t from_pc, addr_t to_pc);
 
 } // namespace arm
 } // namespace zz

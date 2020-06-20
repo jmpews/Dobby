@@ -126,18 +126,20 @@ static inline int decode_rd(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
-AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t from_pc, addr_t to_pc) {
+void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   // std::vector<PseudoDataLabel> labels;
   LiteMutableArray *labels = new LiteMutableArray;
 
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
-  uint64_t curr_orig_pc = from_pc;
-  uint64_t curr_relo_pc = to_pc;
+  uint64_t curr_orig_pc = origin->raw_instruction_start();
+  uint64_t curr_relo_pc = relocated->raw_instruction_start();
 
   addr_t buffer_cursor = (addr_t)buffer;
   arm64_inst_t instr   = *(arm64_inst_t *)buffer_cursor;
+
+  int predefined_relocate_size = origin->raw_instruction_start();
 
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
@@ -318,11 +320,10 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
   }
 #endif
 
+  // Realize all the Pseudo-Label-Data
   LiteCollectionIterator *iter = NULL;
   PseudoDataLabel *dataLabel   = NULL;
-
-  // Realize all the Pseudo-Label-Data
-  iter = LiteCollectionIterator::withCollection(labels);
+  iter                         = LiteCollectionIterator::withCollection(labels);
   while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
     _ PseudoBind(&(dataLabel->label));
     _ EmitInt64(dataLabel->address);
@@ -330,14 +331,5 @@ AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t
 
   // Generate executable code
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-
-  // release resource
-  iter->reset();
-  while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
-    delete dataLabel;
-  }
-  iter->release();
-  delete iter;
-
   return code;
 }

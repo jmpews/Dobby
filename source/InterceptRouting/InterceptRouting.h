@@ -59,6 +59,12 @@ protected:
   // hook entry
   HookEntry *entry_;
 
+  // origin code
+  AssemblyCode *origin_;
+
+  // origin code
+  AssemblyCode *relocated_;
+
   // trampoline
   AssemblyCode *trampoline_;
 

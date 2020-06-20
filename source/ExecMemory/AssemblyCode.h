@@ -13,18 +13,18 @@ class AssemblyCode : public LiteObject {
 public:
   void initWithAddressRange(addr_t address, int size);
 
+  void reInitWithAddressRange(addr_t address, int size);
+
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static AssemblyCode *FinalizeFromAddress(addr_t address, int size);
 
   // realize the buffer address to runtime code, and create a corresponding Code Object
   static AssemblyCode *FinalizeFromTurboAssember(AssemblerBase *assember);
 
-  // dummy method
   inline addr_t raw_instruction_start() {
     return address_;
   };
 
-  // dummy method
   inline int raw_instruction_size() {
     return size_;
   };
