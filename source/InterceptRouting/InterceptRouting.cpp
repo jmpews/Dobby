@@ -43,24 +43,24 @@ void InterceptRouting::Prepare() {
     }
 
     // generate the relocated code
-    originCode = AssemblyCode::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
+    origin = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, predefined_relocate_size);
   }
   this->origin_ = origin;
 
   AssemblyCode *relocated = NULL;
-  relocated               = new AssemblyCode::FinalizeFromAddress(0, 0);
-  GenRelocateCode((relocate_buffer, this->origin_, relocated);
+  relocated               = AssemblyCode::FinalizeFromAddress(0, 0);
+  GenRelocateCode(relocate_buffer, origin, relocated);
   this->relocated_ = relocated;
 
   // set the relocated instruction address
   entry_->relocated_origin_function = (void *)relocated->raw_instruction_start();
-  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), entry_->relocated);
+  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), relocated->raw_instruction_start());
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
   _memcpy(entry_->origin_instructions.data, relocate_buffer, this->origin_->raw_instruction_size());
   entry_->origin_instructions.size    = this->origin_->raw_instruction_size();
-  entry_->origin_instructions.address = this->origin_->raw_instruction_start();
+  entry_->origin_instructions.address = (void *)this->origin_->raw_instruction_start();
 #endif
 }
 

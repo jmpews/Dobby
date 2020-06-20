@@ -502,9 +502,12 @@ void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *rel
   addr32_t curr_orig_pc = origin->raw_instruction_start() + ARM_PC_OFFSET;
   addr32_t curr_relo_pc = relocated->raw_instruction_start() + ARM_PC_OFFSET;
 
-  addr_t buffer_cursor = (addr_t)origin->raw_instruction_start();
+  addr_t buffer_cursor = (addr_t)buffer;
   arm_inst_t instr     = *(arm_inst_t *)buffer_cursor;
-  while (buffer_cursor < ((addr_t)buffer + origin->raw_instruction_size())) {
+
+  int predefined_relocate_size = origin->raw_instruction_size();
+
+  while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     ARMRelocateSingleInstr(turbo_assembler_, labels, instr, curr_orig_pc, curr_relo_pc);
@@ -625,9 +628,7 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
   return code;
 }
 
-void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
-  AssemblyCode *code = NULL;
-
+void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   // Clear labels cache, Not-Thread-Safe
   // TODO:
   // labels.clear();
@@ -648,5 +649,4 @@ void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocate
   } else {
     gen_arm_relocate_code(buffer, origin, relocated);
   }
-  return code;
 }

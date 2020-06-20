@@ -9,7 +9,7 @@ class CodeBuffer;
 
 extern CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to);
 
-extern AssemblyCode *GenRelocateCode(void *buffer, int predefined_relocate_size, addr_t from_pc, addr_t to_pc);
+extern void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
 
 class InterceptRouting {
 public:

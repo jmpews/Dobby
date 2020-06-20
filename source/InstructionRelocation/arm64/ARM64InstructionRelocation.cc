@@ -126,7 +126,7 @@ static inline int decode_rd(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
-void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   // std::vector<PseudoDataLabel> labels;
   LiteMutableArray *labels = new LiteMutableArray;
 
@@ -139,7 +139,7 @@ void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocate
   addr_t buffer_cursor = (addr_t)buffer;
   arm64_inst_t instr   = *(arm64_inst_t *)buffer_cursor;
 
-  int predefined_relocate_size = origin->raw_instruction_start();
+  int predefined_relocate_size = origin->raw_instruction_size();
 
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
@@ -148,9 +148,6 @@ void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocate
       int rt                  = decode_rt(instr);
       char opc                = bits(instr, 30, 31);
       addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
-      if (memory_address >= (predefined_relocate_size + from_pc)) {
-        UNIMPLEMENTED();
-      }
 
 #define MEM(reg, offset) MemOperand(reg, offset)
       _ nop(); // for debug
@@ -300,8 +297,7 @@ void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocate
       iter = LiteCollectionIterator::withCollection(labels);
       while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
         if (dataLabel->address == curr_orig_pc) {
-          FATAL("label(%p) in relo-code range(%p-%p), please enable b-xxx branch plugin.", dataLabel->address, from_pc,
-                from_pc + predefined_relocate_size);
+          FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", dataLabel->address, curr_orig_pc);
         }
       }
       delete iter;
@@ -330,6 +326,10 @@ void *GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocate
   }
 
   // Generate executable code
-  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-  return code;
+  {
+    AssemblyCode *code = NULL;
+    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    delete code;
+  }
 }

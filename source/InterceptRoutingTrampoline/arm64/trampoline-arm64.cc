@@ -16,7 +16,7 @@ using namespace zz::arm64;
 CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to) {
   CodeBufferBase *result = NULL;
 
-  LOG("Generate trampoline => %p", to);
+  DLOG("Generate trampoline => %p", to);
 
   TurboAssembler turbo_assembler_(from);
 #define _ turbo_assembler_.
