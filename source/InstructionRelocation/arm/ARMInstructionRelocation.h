@@ -236,7 +236,6 @@ public:
     if (pc_offset % Thumb2_INST_LEN) {
       t1_nop();
     } else {
-      t1_nop();
     }
   }
 

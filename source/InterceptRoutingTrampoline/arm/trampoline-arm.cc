@@ -9,34 +9,34 @@
 
 using namespace zz::arm;
 
-static CodeBufferBase *generate_arm_trampoline(void *from, void *to) {
-  TurboAssembler turbo_assembler_(from);
+static CodeBufferBase *generate_arm_trampoline(addr32_t from, addr32_t to) {
+  TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
   CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralLdrBranch((uint32_t)to);
+  codegen.LiteralLdrBranch(to);
 
   return turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBufferBase *generate_thumb_trampoline(void *from, void *to) {
-  ThumbTurboAssembler thumb_turbo_assembler_(from);
+CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
+  ThumbTurboAssembler thumb_turbo_assembler_((void *)from);
 #undef _
 #define _ thumb_turbo_assembler_.
 
   // Check if needed pc align, (relative pc instructions needed 4 align)
-  from = (void *)ALIGN(from, 2);
-  if ((uint32_t)from % 4)
+  from = ALIGN(from, 2);
+  if (from % 4) {
     _ t2_ldr(pc, MemOperand(pc, 2));
-  else {
+  } else {
     _ t2_ldr(pc, MemOperand(pc, 0));
   }
-  _ EmitAddress((uint32_t)to);
+  _ EmitAddress((addr32_t)to);
 
   return thumb_turbo_assembler_.GetCodeBuffer()->copy();
 }
 
-CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to) {
+CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
   // set instruction running state

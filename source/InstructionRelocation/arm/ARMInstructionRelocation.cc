@@ -410,7 +410,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
       int imm10l = bits(inst2, 1, 10);
       // S is sign-bit, '-S' maybe not better
       int32_t label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
-      addr32_t val  = from_pc + label;
+      addr32_t val  = ALIGN(from_pc, 4) + label;
 
       // =====
       _ t2_bl(4);
@@ -546,8 +546,13 @@ void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *rel
     _ EmitAddress(it->address);
   }
 
-  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-  return code;
+  // Generate executable code
+  {
+    AssemblyCode *code = NULL;
+    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    delete code;
+  }
 }
 
 void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
@@ -567,7 +572,8 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
   addr_t buffer_cursor = (addr_t)buffer;
   thumb2_inst_t instr  = *(thumb2_inst_t *)buffer_cursor;
 
-  int predefined_relocate_size = origin->raw_instruction_start();
+  int predefined_relocate_size = origin->raw_instruction_size();
+  DLOG("Thumb relocate %d start >>>>>", predefined_relocate_size);
 
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
@@ -624,8 +630,13 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
     _ EmitAddress(it->address);
   }
 
-  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-  return code;
+  // Generate executable code
+  {
+    AssemblyCode *code = NULL;
+    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    delete code;
+  }
 }
 
 void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
@@ -638,12 +649,13 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   if (is_thumb) {
     buffer = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
 
-    // remove thumb address 1 flag
+    // remove thumb address flag
     origin->reInitWithAddressRange(origin->raw_instruction_start() - THUMB_ADDRESS_FLAG,
                                    origin->raw_instruction_size());
 
     gen_thumb_relocate_code(buffer, origin, relocated);
 
+    // add thumb address flag
     relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
                                       relocated->raw_instruction_size());
   } else {

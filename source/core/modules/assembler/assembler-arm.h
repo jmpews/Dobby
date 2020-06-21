@@ -276,7 +276,7 @@ public:
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
-    buffer_ = new CodeBuffer(32);
+    buffer_ = new CodeBuffer(64);
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 

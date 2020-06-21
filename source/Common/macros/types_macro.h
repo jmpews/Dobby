@@ -6,7 +6,7 @@
 
 #ifndef __addr_t_defined
 #define __addr_t_defined
-typedef unsigned long long addr_t;
+typedef unsigned long addr_t;
 #endif
 
 #ifndef __byte_defined
