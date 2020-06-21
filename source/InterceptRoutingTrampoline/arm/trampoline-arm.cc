@@ -24,14 +24,8 @@ CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
 #undef _
 #define _ thumb_turbo_assembler_.
 
-  // Check if needed pc align, (relative pc instructions needed 4 align)
-  from = ALIGN(from, 2);
-  if (from % 4) {
-    _ t2_ldr(pc, MemOperand(pc, 2));
-  } else {
-    _ t2_ldr(pc, MemOperand(pc, 0));
-  }
-  _ EmitAddress((addr32_t)to);
+  _ t2_ldr(pc, MemOperand(pc, 0));
+  _ EmitAddress(to);
 
   return thumb_turbo_assembler_.GetCodeBuffer()->copy();
 }
@@ -49,6 +43,8 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   if (execute_state_ == ARMExecuteState) {
     return generate_arm_trampoline(from, to);
   } else {
+    // Check if needed pc align, (relative pc instructions needed 4 align)
+    from = ALIGN(from, 2);
     return generate_thumb_trampoline(from, to);
   }
   return NULL;

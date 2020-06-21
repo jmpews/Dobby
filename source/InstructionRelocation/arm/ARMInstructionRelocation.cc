@@ -564,11 +564,6 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
   addr32_t curr_orig_pc = origin->raw_instruction_start() + Thumb_PC_OFFSET;
   addr32_t curr_relo_pc = relocated->raw_instruction_start() + Thumb_PC_OFFSET;
 
-  // put nop if the first instruction type is thumb1
-  if (curr_orig_pc % Thumb2_INST_LEN) {
-    _ t1_nop();
-  }
-
   addr_t buffer_cursor = (addr_t)buffer;
   thumb2_inst_t instr  = *(thumb2_inst_t *)buffer_cursor;
 
@@ -577,7 +572,7 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
 
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
-    _ AlignThumbNop();
+    _ t1_nop();
 
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
     if (is_thumb2(instr)) {
@@ -606,9 +601,6 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
     instr = *(thumb2_inst_t *)buffer_cursor;
   }
 
-  // set the actual relocate instruction size, as the thumb1 || thumb2 cause  relocate_size != actual_relocate_size
-  /* predefined_relocate_size = actual_relocate_size; */
-  _ AlignThumbNop();
   // Branch to the rest of instructions
   _ t2_ldr(pc, MemOperand(pc, 0));
   // Get the real branch address

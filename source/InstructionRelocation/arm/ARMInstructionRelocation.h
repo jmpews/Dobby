@@ -122,6 +122,7 @@ public:
 
   // =====
   void t2_ldr(Register dst, const MemOperand &src) {
+    // WARNNING: literal ldr, base = ALIGN(pc, 4)
     EmitThumb2LoadStore(true, dst, src);
   }
 
@@ -130,6 +131,11 @@ private:
     bool add = true;
     uint32_t U, imm12;
     int32_t offset = x.offset();
+    // literal ldr, base = ALIGN(pc, 4)
+    if(pc_offset() % 4) {
+      offset += 2;
+    }
+
     if (offset > 0) {
       U     = B7;
       imm12 = offset;
