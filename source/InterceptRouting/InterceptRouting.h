@@ -7,7 +7,7 @@
 
 class CodeBuffer;
 
-extern CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to);
+extern CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
 
 extern void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
 
@@ -32,6 +32,10 @@ public:
   // entry =====
 
   HookEntry *GetHookEntry();
+
+  // relocated
+
+  void GenerateRelocatedCode();
 
   // trampoline =====
 

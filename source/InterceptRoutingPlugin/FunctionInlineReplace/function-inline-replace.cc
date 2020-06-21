@@ -18,6 +18,8 @@ void FunctionInlineReplaceRouting::BuildReplaceRouting() {
   LOG("Set trampoline target => %p", GetTrampolineTarget());
 
   GenerateTrampolineBuffer(entry_->target_address, GetTrampolineTarget());
+
+  GenerateRelocatedCode();
 }
 
 #if 0

@@ -28,10 +28,14 @@ using namespace zz;
 // }
 
 void InterceptRouting::Prepare() {
+}
+
+void InterceptRouting::GenerateRelocatedCode() {
   void *relocate_buffer = NULL;
   relocate_buffer       = entry_->target_address;
 
   AssemblyCode *origin = NULL;
+#if 0
   {
     int predefined_relocate_size = 0;
     predefined_relocate_size     = this->PredefinedTrampolineSize();
@@ -41,10 +45,11 @@ void InterceptRouting::Prepare() {
       plugin                   = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
       predefined_relocate_size = plugin->PredefinedTrampolineSize();
     }
-
-    // generate the relocated code
-    origin = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, predefined_relocate_size);
   }
+#endif
+  // generate the relocated code
+  int trampoline_len = trampoline_buffer_->getSize();
+  origin = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
   this->origin_ = origin;
 
   AssemblyCode *relocated = NULL;
@@ -67,15 +72,13 @@ void InterceptRouting::Prepare() {
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
 // Patch the address with branch instr
 // X86_64(14 bytes): [jmp rip] [data_address]
-// ARM64(16 bytes): [ldr x17, 4] [br x17] [data_address]
-// ARM64(12 bytes): [ldr x17, 4] [br x17] [data_address]
+// ARM64(16 bytes): [ldr] [br] [data_address]
+// ARM64(12 bytes): [adrp ] [add] [br]
 // ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
   void *patch_address = NULL;
-  patch_address       = entry_->target_address;
-#if __arm__
-  patch_address = (void *)((addr_t)patch_address - 1);
-#endif
+  patch_address       = (void *)this->origin_->raw_instruction_start();
+
   CodePatch(patch_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
   LOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
 }
@@ -119,7 +122,7 @@ void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
   }
 
   if (this->GetTrampolineBuffer() == NULL) {
-    trampoline_buffer = GenerateNormalTrampolineBuffer(src, dst);
+    trampoline_buffer = GenerateNormalTrampolineBuffer((addr_t)src, (addr_t)dst);
     this->SetTrampolineBuffer(trampoline_buffer);
   }
 }

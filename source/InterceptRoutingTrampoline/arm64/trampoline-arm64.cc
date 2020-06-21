@@ -13,22 +13,27 @@
 
 using namespace zz::arm64;
 
-CodeBufferBase *GenerateNormalTrampolineBuffer(void *from, void *to) {
+CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   CodeBufferBase *result = NULL;
 
   DLOG("Generate trampoline => %p", to);
 
-  TurboAssembler turbo_assembler_(from);
+  TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
-#if 0 // REMOVE
-  CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralLdrBranch((uint64_t)to);
-#endif
-
-  _ AdrpAdd(Register::X(17), (addr_t)from, (addr_t)to);
-  _ br(Register::X(17));
-
+  uint64_t distance = llabs((int64_t)(from - to));
+  uint64_t adrp_range = ((uint64_t)1 << (2 + 19 + 12 -1));
+  if(distance < adrp_range) {
+    // adrp, add, br
+    _ AdrpAdd(Register::X(17), from, to);
+    _ br(Register::X(17));
+    DLOG("Trampoline use [Adrp, Add, Br] combine");
+  } else {
+    // ldr, br, branch-address
+    CodeGen codegen(&turbo_assembler_);
+    codegen.LiteralLdrBranch((uint64_t)to);
+    DLOG("Trampoline use [Ldr, Br, Label] combine");
+  }
   result = turbo_assembler_.GetCodeBuffer()->copy();
   return result;
 }

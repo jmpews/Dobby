@@ -15,7 +15,7 @@ Interceptor *Interceptor::SharedInstance() {
 }
 
 HookEntry *Interceptor::FindHookEntry(void *address) {
-  HookEntry *entry;
+  HookEntry *entry = NULL;
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(entries);
   while ((entry = reinterpret_cast<HookEntry *>(iter->getNextObject())) != NULL) {
