@@ -15,7 +15,7 @@ void FunctionInlineReplaceRouting::Dispatch() {
 void FunctionInlineReplaceRouting::BuildReplaceRouting() {
   // direct => replace call
   this->SetTrampolineTarget(this->replace_call);
-  LOG("Set trampoline target => %p", GetTrampolineTarget());
+  DLOG("Set trampoline target => %p", GetTrampolineTarget());
 
   GenerateTrampolineBuffer(entry_->target_address, GetTrampolineTarget());
 

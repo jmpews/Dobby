@@ -24,7 +24,7 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
 
   // set trampoline target address
   this->SetTrampolineTarget(closure_trampoline->address);
-  LOG("Set trampoline target => %p", GetTrampolineTarget());
+  DLOG("Set trampoline target => %p", GetTrampolineTarget());
 
   this->prologue_dispatch_bridge = closure_trampoline->address;
 

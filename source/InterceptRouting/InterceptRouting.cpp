@@ -80,7 +80,7 @@ void InterceptRouting::Active() {
   patch_address       = (void *)this->origin_->raw_instruction_start();
 
   CodePatch(patch_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
-  LOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
+  DLOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
 }
 
 void InterceptRouting::Commit() {

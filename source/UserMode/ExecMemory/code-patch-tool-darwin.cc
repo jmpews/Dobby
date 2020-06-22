@@ -55,9 +55,9 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
     return -1;
 
   kern_return_t kr;
-  kr = substrated_mark(substrated_server_port, mach_task_self(), buffer, size, &address);
+  kr = substrated_mark(substrated_server_port, mach_task_self(), (mach_vm_address_t)buffer, size, (mach_vm_address_t *)&address);
   if (kr != KERN_SUCCESS) {
-    LOG("Code patch with substrated failed");
+    DLOG("Code patch with substrated failed");
     return -1;
   }
   return 0;
