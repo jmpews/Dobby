@@ -17,6 +17,7 @@ void dobby_enable_near_branch_trampoline() {
   ExtraInternalPlugin::near_branch_trampoline = plugin;
 }
 
+#if 0
 int NearBranchTrampolinePlugin::PredefinedTrampolineSize() {
 #if __arm64__
   return 4;
@@ -24,6 +25,7 @@ int NearBranchTrampolinePlugin::PredefinedTrampolineSize() {
   return 4;
 #endif
 }
+#endif
 
 extern CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t from, addr_t to);
 bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst) {

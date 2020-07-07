@@ -327,6 +327,11 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
                                       thumb1_inst_t inst1, thumb1_inst_t inst2, addr32_t from_pc, addr32_t to_pc) {
 
   bool is_instr_relocated = false;
+
+  if(turbo_assembler.pc_offset() % 4) {
+    _ t1_nop();
+  }
+
   // Branches and miscellaneous control
   if ((inst1 & 0xf800) == 0xf000 && (inst2 & 0x8000) == 0x8000) {
     int32_t op1 = 0, op3 = 0;

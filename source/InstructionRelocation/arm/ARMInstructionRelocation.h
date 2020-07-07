@@ -131,9 +131,14 @@ private:
     bool add = true;
     uint32_t U, imm12;
     int32_t offset = x.offset();
+
     // literal ldr, base = ALIGN(pc, 4)
-    if(pc_offset() % 4) {
-      offset += 2;
+    if(rt.Is(pc)) {
+      // TODO: convert to `GetRealizeAddress()` ???
+      addr_t curr_pc = pc_offset() + (addr_t)GetRealizeAddress();
+      if (curr_pc % 4) {
+        t1_nop();
+      }
     }
 
     if (offset > 0) {
