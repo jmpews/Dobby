@@ -6,7 +6,7 @@
 
 #include "core/modules/assembler/assembler.h"
 
-#include "ExecMemory/CodeBuffer/code-buffer-x64.h"
+#include "CodeBufferKit/code-buffer-x64.h"
 
 #include "logging/logging.h"
 

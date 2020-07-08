@@ -6,7 +6,7 @@
 
 typedef struct _InterceptorOptions {
   // Enable B Branch in the arm and aarch64
-  bool enable_arm_arm64_b_branch;
+  bool enable_near_branch_trampoline;
 
   // Enable dynamic closure which is use remap on the iOS
   bool enable_dynamic_closure_bridge;
@@ -15,7 +15,6 @@ typedef struct _InterceptorOptions {
 class Interceptor {
 public:
   LiteMutableArray *entries;
-  // DEL std::vector<HookEntry *> entries;
 
 public:
   static Interceptor *SharedInstance();

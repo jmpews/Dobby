@@ -1,7 +1,4 @@
 #include "stdcxx/LiteMemOpt.h"
-
-#include "Common/headers/common_header.h"
-
 #include <stdlib.h>
 #include <string.h>
 

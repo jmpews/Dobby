@@ -1,12 +1,10 @@
 #ifndef INSTRUCTION_RELOCATION_ARM_H
 #define INSTRUCTION_RELOCATION_ARM_H
 
+#include "dobby_internal.h"
+
 #include "core/arch/arm/constants-arm.h"
-#include "ExecMemory/AssemblyCode.h"
-
 #include "core/modules/assembler/assembler-arm.h"
-
-#include "logging/check_logging.h"
 
 namespace zz {
 namespace arm {

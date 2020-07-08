@@ -2,8 +2,6 @@
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#include "ExecMemory/AssemblyCode.h"
-
 #include "core/modules/assembler/assembler-arm64.h"
 
 extern void closure_trampoline_template();

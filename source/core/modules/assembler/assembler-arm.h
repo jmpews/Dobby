@@ -1,17 +1,13 @@
 #ifndef CORE_ASSEMBLER_ARM_H
 #define CORE_ASSEMBLER_ARM_H
 
+#include "common/headers/common_header.h"
+
 #include "core/arch/arm/constants-arm.h"
 #include "core/arch/arm/registers-arm.h"
-
 #include "core/modules/assembler/assembler.h"
 
-#include "ExecMemory/CodeBuffer/code-buffer-arm.h"
-
-#include "logging/check_logging.h"
-
-#include "core/utility.h"
-#include "logging/logging.h"
+#include "CodeBufferKit/code-buffer-arm.h"
 
 #include "stdcxx/LiteMutableArray.h"
 #include "stdcxx/LiteIterator.h"

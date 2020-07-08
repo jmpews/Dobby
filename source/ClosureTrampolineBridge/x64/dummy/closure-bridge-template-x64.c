@@ -31,7 +31,7 @@ __attribute__((naked)) void closure_bridge_template() {
   xASM("mov [rsp+16*14], r14");
   xASM("mov [rsp+16*15], r15");
 
-  // ======= Jump to Common Bridge Handle =======
+  // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
   // @rdi: data_address

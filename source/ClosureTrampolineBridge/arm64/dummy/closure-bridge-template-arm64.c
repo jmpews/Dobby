@@ -54,7 +54,7 @@ __attribute__((naked)) void closure_bridge_template() {
   xASM("str x1, [sp, #0]");
 #endif
 
-  // ======= Jump to Common Bridge Handle =======
+  // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
   // @x0: data_address

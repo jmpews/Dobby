@@ -1,9 +1,7 @@
 #include "dobby_internal.h"
 
 #include "InterceptRouting.h"
-#include "ExecMemory/CodeBuffer/CodeBufferBase.h"
 #include "ExtraInternalPlugin/RegisterPlugin.h"
-#include "PlatformInterface/ExecMemory/CodePatchTool.h"
 
 using namespace zz;
 
@@ -102,6 +100,7 @@ void InterceptRouting::Commit() {
   DLOG("InterceptRouting: >>>>> end <<<<<");
 }
 
+#if 0
 int InterceptRouting::PredefinedTrampolineSize() {
 #if __arm64__
   return 12;
@@ -109,6 +108,7 @@ int InterceptRouting::PredefinedTrampolineSize() {
   return 8;
 #endif
 }
+#endif
 
 void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
   CodeBufferBase *trampoline_buffer;

@@ -1,7 +1,7 @@
 #ifndef INSTRUCTION_RELOCATION_ARM64_H
 #define INSTRUCTION_RELOCATION_ARM64_H
 
-#include "ExecMemory/AssemblyCode.h"
+#include "dobby_internal.h"
 
 #include "core/arch/arm64/constants-arm64.h"
 

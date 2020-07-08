@@ -1,8 +1,8 @@
-#include "ExecMemory/AssemblyCode.h"
-
 #include "core/modules/assembler/assembler.h"
 #include "core/modules/assembler/assembler-x64.h"
 #include "core/arch/x64/registers-x64.h"
+
+#include "Helpers/AssemblyCode.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
@@ -55,7 +55,7 @@ void *get_closure_bridge() {
   _ mov(Address(rsp, 8 * 14), r14);
   _ mov(Address(rsp, 8 * 15), r15);
 
-  // ======= Jump to Common Bridge Handle =======
+  // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
   // @rdi: data_address

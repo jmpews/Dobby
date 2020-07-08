@@ -80,7 +80,7 @@ enum opcode_sentinel_enum
 #define UNDEFINED_INSTRUCTION      "\t\t; <UNDEFINED> instruction: %0-31x"
 #define UNPREDICTABLE_INSTRUCTION  "\t; <UNPREDICTABLE>"
 
-/* Common coprocessor opcodes shared between Arm and Thumb-2.  */
+/* UnifiedInterface coprocessor opcodes shared between Arm and Thumb-2.  */
 
 static const struct opcode32 coprocessor_opcodes[] =
 {

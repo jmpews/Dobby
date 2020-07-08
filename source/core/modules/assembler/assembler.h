@@ -1,7 +1,7 @@
 #ifndef CORE_ASSEMBLER_H
 #define CORE_ASSEMBLER_H
 
-#include "ExecMemory/CodeBuffer/CodeBufferBase.h"
+#include "CodeBufferKit/CodeBufferBase.h"
 
 class CodeBuffer;
 
@@ -97,7 +97,6 @@ protected:
 #include "core/modules/assembler/assembler-arm64.h"
 #elif TARGET_ARCH_X64
 #include "core/modules/assembler/assembler-x64.h"
-#include "ExecMemory/CodeBuffer/code-buffer-x64.h"
 #else
 #error "unsupported architecture"
 #endif

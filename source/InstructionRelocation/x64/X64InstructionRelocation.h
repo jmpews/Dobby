@@ -1,7 +1,9 @@
 #ifndef INSTRUCTION_RELOCATION_X64_H
 #define INSTRUCTION_RELOCATION_X64_H
 
-#include "ExecMemory/AssemblyCode.h"
+#include "common/headers/common_header.h"
+
+#include "Helpers/AssemblyCode.h"
 
 #include "core/arch/x64/constants-x64.h"
 

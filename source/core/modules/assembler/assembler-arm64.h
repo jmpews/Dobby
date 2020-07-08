@@ -1,19 +1,32 @@
 #ifndef CORE_ASSEMBLER_ARM64_H
 #define CORE_ASSEMBLER_ARM64_H
 
+#include "common/headers/common_header.h"
+
 #include "core/arch/arm64/constants-arm64.h"
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "ExecMemory/CodeBuffer/code-buffer-arm64.h"
-
-#include "logging/logging.h"
-#include "logging/check_logging.h"
-
-#include "core/utility.h"
+#include "CodeBufferKit/code-buffer-arm64.h"
 
 #include "stdcxx/LiteMutableArray.h"
 #include "stdcxx/LiteIterator.h"
+
+static inline int32_t Low16Bits(int32_t value) {
+  return static_cast<int32_t>(value & 0xffff);
+}
+
+static inline int32_t High16Bits(int32_t value) {
+  return static_cast<int32_t>(value >> 16);
+}
+
+static inline int32_t Low32Bits(int64_t value) {
+  return static_cast<int32_t>(value);
+}
+
+static inline int32_t High32Bits(int64_t value) {
+  return static_cast<int32_t>(value >> 32);
+}
 
 namespace zz {
 namespace arm64 {

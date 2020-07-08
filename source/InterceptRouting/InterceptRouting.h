@@ -3,7 +3,7 @@
 
 #include "Interceptor.h"
 
-#include "ExecMemory/AssemblyCode.h"
+#include "Helpers//AssemblyCode.h"
 
 class CodeBuffer;
 
@@ -38,8 +38,6 @@ public:
   void GenerateRelocatedCode();
 
   // trampoline =====
-
-  int PredefinedTrampolineSize();
 
   void GenerateTrampolineBuffer(void *src, void *dst);
 

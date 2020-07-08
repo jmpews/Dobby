@@ -1,7 +1,7 @@
 #ifndef CORE_ARCH_CONSTANTS_ARM64_H
 #define CORE_ARCH_CONSTANTS_ARM64_H
 
-#include "Common/headers/common_header.h"
+#include "common/headers/common_header.h"
 
 enum Shift { NO_SHIFT = -1, LSL = 0x0, LSR = 0x1, ASR = 0x2, ROR = 0x3, MSL = 0x4 };
 

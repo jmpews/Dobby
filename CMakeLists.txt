@@ -123,14 +123,12 @@ set(dobby.SOURCE_FILE_LIST
   source/core/modules/codegen/codegen-${core_arch}.cc
 
   # executable memory - code buffer
-  source/ExecMemory/CodeBuffer/CodeBufferBase.cc
-  source/ExecMemory/CodeBuffer/code-buffer-${arch1}.cc
+  source/CodeBufferKit/CodeBufferBase.cc
+  source/CodeBufferKit/code-buffer-${arch1}.cc
 
   # executable memory
-  source/ExecMemory/AssemblyCode.cc
-  source/ExecMemory/AssemblerCodeBuffer.cc
-  source/ExecMemory/ExecutableMemoryArena.cc
-  source/ExecMemory/PageAllocator.cc
+  source/Helpers/AssemblyCode.cc
+  source/MemoryArena.cc
 
   # instruction relocation
   source/InstructionRelocation/${arch1}/${ARCH1}InstructionRelocation.cc
@@ -139,19 +137,19 @@ set(dobby.SOURCE_FILE_LIST
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
+  source/InterceptRouting/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
 
   # intercept routing plugin (buildin)
-  source/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
+  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
   # plugin register
-  source/ExtraInternalPlugin/RegisterPlugin.cc
+  source/InterceptRouting/ExtraInternalPlugin/RegisterPlugin.cc
 
   # unified interface
 
   # user mode - platform interface
-  source/UserMode/PlatformInterface/Common/platform-${platform1}.cc
+  source/UserMode/UnifiedInterface/platform-${platform1}.cc
 
   # user mode - executable memory
   source/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
@@ -199,17 +197,17 @@ if ((FunctionWrapper OR DynamicBinaryInstrument) AND (NOT (PROCESSOR.X86_64 OR P
 
     # user mode - multi thread support
     source/UserMode/MultiThreadSupport/ThreadSupport.cpp
-    source/UserMode/PlatformInterface/Thread/PlatformThread.cc
-    source/UserMode/PlatformInterface/Thread/platform-thread-${platform1}.cc
+    source/UserMode/Thread/PlatformThread.cc
+    source/UserMode/Thread/platform-thread-${platform1}.cc
     )
 endif ()
 
 if (FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRoutingPlugin/FunctionWrapper/function-wrapper.cc
-    source/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
-    source/InterceptRoutingPlugin/FunctionWrapper/intercept_routing_handler.cc
+    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/function-wrapper.cc
+    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
+    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/intercept_routing_handler.cc
     )
 endif ()
 
@@ -219,10 +217,10 @@ if (DynamicBinaryInstrument)
   else()
     message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-      source/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-      source/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
-      source/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
+      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
+      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
+      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
       )
   endif ()
 endif ()
@@ -230,14 +228,14 @@ endif ()
 if(NearBranchTrampoline)
   message(STATUS "[Dobby] Use Near Branch Trampoline, available: aarch64")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
-    source/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
+    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
+    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
   if(SYSTEM.Darwin)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
+      source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
   elseif(SYSTEM.Posix)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc)
+      source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc)
   endif()
 endif()
 

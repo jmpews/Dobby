@@ -1,7 +1,4 @@
-#include "PlatformInterface/ExecMemory/CodePatchTool.h"
-#include "PlatformInterface/Common/Platform.h"
-
-#include "macros.h"
+#include "dobby_internal.h"
 
 #include <windows.h>
 

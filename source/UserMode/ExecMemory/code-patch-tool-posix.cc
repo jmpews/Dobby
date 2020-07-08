@@ -1,15 +1,10 @@
 #include "core/arch/Cpu.h"
 
-#include "PlatformInterface/Common/Platform.h"
-#include "PlatformInterface/ExecMemory/ClearCacheTool.h"
+#include "dobby_internal.h"
 
 #include <unistd.h>
 #include <sys/mman.h>
 #include <string.h>
-
-#include "logging/check_logging.h"
-
-using namespace zz;
 
 #if !defined(__APPLE__)
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {

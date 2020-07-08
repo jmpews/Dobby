@@ -4,8 +4,9 @@
 #include <vector>
 #include <map>
 
-#include "PlatformInterface/Common/Platform.h"
-#include "UserMode/PlatformInterface/Thread/PlatformThread.h"
+#include "dobby_internal.h"
+
+#include "UserMode/Thread/PlatformThread.h"
 
 // StackFrame base in CallStack
 typedef struct _StackFrame {

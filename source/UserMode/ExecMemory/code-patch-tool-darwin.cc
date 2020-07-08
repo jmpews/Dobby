@@ -1,7 +1,7 @@
 #include <core/arch/Cpu.h>
 
-#include "PlatformInterface/Common/Platform.h"
-#include "PlatformInterface/ExecMemory/ClearCacheTool.h"
+#include "PlatformUnifiedInterface//ExecMemory/ClearCacheTool.h"
+#include "PlatformUnifiedInterface/Platform.h"
 
 #include <unistd.h>
 
@@ -10,7 +10,7 @@
 #include <mach/mach.h>
 #include <mach/vm_map.h>
 #include <sys/mman.h>
-#include "PlatformInterface/Common/platform-darwin/mach_vm.h"
+#include "UserMode/UnifiedInterface/platform-darwin/mach_vm.h"
 #endif
 
 #if defined(__APPLE__)
@@ -19,8 +19,6 @@
 #endif
 
 #include "logging/check_logging.h"
-
-using namespace zz;
 
 #ifdef CODE_PATCH_WITH_SUBSTRATED
 #include <mach/mach.h>

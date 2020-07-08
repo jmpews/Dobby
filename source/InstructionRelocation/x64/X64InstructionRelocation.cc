@@ -1,17 +1,12 @@
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
+#include "./X64InstructionRelocation.h"
+
+#include "dobby_internal.h"
+
+#include "InstructionRelocation/x86/X86OpcodoDecodeTable.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/modules/assembler/assembler-x64.h"
 #include "core/modules/codegen/codegen-x64.h"
-
-#include "ExecMemory/ExecutableMemoryArena.h"
-#include "PlatformInterface/ExecMemory/CodePatchTool.h"
-
-#include "InstructionRelocation/x86/X86OpcodoDecodeTable.h"
-
-#include "logging/logging.h"
-
-#include "stdcxx/LiteMemOpt.h"
 
 using namespace zz::x64;
 
@@ -108,18 +103,18 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
   AssemblyCodeChunk *codeChunk;
   AssemblyCode *code;
   if (to_pc == 0) {
-    codeChunk = ExecutableMemoryArena::AllocateCodeChunk(relo_code_chunk_size);
+    codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
     to_pc     = (uint64_t)codeChunk->address;
   }
 
   code = GenRelocateCodeTo(buffer, relocate_size, from_pc, to_pc);
 
-  while (code->raw_instruction_size() > codeChunk->size) {
+  while (code->raw_instruction_size() > codeChunk->length) {
     // free the codeChunk
-    ExecutableMemoryArena::Destory(codeChunk);
+    MemoryArena::Destory(codeChunk);
 
     relo_code_chunk_size += chunk_size_step;
-    codeChunk = ExecutableMemoryArena::AllocateCodeChunk(relo_code_chunk_size);
+    codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
     to_pc     = (uint64_t)codeChunk->address;
     code      = GenRelocateCodeTo(buffer, relocate_size, from_pc, to_pc);
   }
