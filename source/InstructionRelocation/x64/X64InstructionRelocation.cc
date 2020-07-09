@@ -10,19 +10,24 @@
 
 using namespace zz::x64;
 
-AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_ip, uint64_t to_ip) {
-  uint64_t curr_addr    = (uint64_t)buffer;
-  uint64_t curr_orig_ip = from_ip;
-  uint64_t curr_relo_ip = to_ip;
-  byte opcode1          = *(byte *)curr_addr;
-
-  InstrMnemonic instr = {0};
+void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
   turbo_assembler_.CommitRealizeAddress((void *)to_ip);
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
-  while ((curr_addr < ((uint64_t)buffer + *relocate_size))) {
+
+  uint64_t curr_orig_ip = origin->raw_instruction_start();
+  uint64_t curr_relo_ip = relocated->raw_instruction_start();
+
+  addr_t buffer_cursor = (addr_t)buffer;
+
+  byte opcode1        = *(byte *)curr_addr;
+  InstrMnemonic instr = {0};
+
+  int predefined_relocate_size = origin->raw_instruction_size();
+
+  while ((buffer_cursor < ((addr_t)buffer + predefined_relocate_size))) {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
     decodeItem->DecodeHandler(&instr, (uint64_t)curr_addr);
 
@@ -44,7 +49,8 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     } else if (instr.instr.opcode1 == 0xEB) {
       // JMP rel8
       byte orig_offset = *(byte *)&instr.instr.Immediate;
-      byte offset      = curr_orig_ip + orig_offset - curr_relo_ip;
+      // FIXME: security cast
+      byte offset = (byte)(curr_orig_ip + orig_offset - curr_relo_ip);
       __ Emit8(0xE9);
       __ Emit32(offset);
     } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
@@ -75,8 +81,8 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     // go next
     curr_orig_ip += instr.len;
     curr_relo_ip += instr.len;
-    curr_addr += instr.len;
-    opcode1 = *(byte *)curr_addr;
+    buffer_cursor += instr.len;
+    opcode1 = *(byte *)buffer_cursor;
 
     // clear instr structure
     _memset((void *)&instr, 0, sizeof(InstrMnemonic));
@@ -84,15 +90,18 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
 
   // jmp to the origin rest instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpBranch((addr_t)curr_orig_ip);
+  codegen.JmpBranch(curr_orig_ip);
 
   // Generate executable code
-  CodePatch(turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getRawBuffer(),
-            turbo_assembler_.GetCodeBuffer()->getSize());
-  // Alloc a new AssemblyCode
-  AssemblyCode *code = new AssemblyCode;
-  code->initWithAddressRange((addr_t)turbo_assembler_.GetRealizeAddress(), turbo_assembler_.GetCodeBuffer()->getSize());
-  return code;
+  {
+    AssemblyCode *code = NULL;
+    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    delete code;
+  }
+}
+
+void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
 }
 
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc) {

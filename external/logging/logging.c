@@ -4,20 +4,22 @@
 #include <stdarg.h> // va_start
 
 #include <string.h>
-#include <unistd.h>
 #include <fcntl.h>
 
+#if defined(_POSIX_VERSION)
+#include <unistd.h>
 #include <syslog.h>
+#endif
 
 static int _syslog_enabled = 0;
-__attribute__((visibility("internal"))) void switch_to_syslog(void) {
+void switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
 
 static int _file_log_enabled     = 0;
 static const char *log_file_path = NULL;
 static int log_file_fd           = -1;
-__attribute__((visibility("internal"))) void switch_to_file_log(const char *path) {
+void switch_to_file_log(const char *path) {
   _file_log_enabled = 1;
   log_file_path     = strdup(path);
 
@@ -38,13 +40,15 @@ static int check_log_file_available() {
   return 0;
 }
 
-__attribute__((visibility("internal"))) int custom_log(const char *fmt, ...) {
+int custom_log(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
 #pragma clang diagnostic ignored "-Wformat"
+#if defined(_POSIX_VERSION)
   if (_syslog_enabled) {
     vsyslog(LOG_ERR, fmt, args);
   }
+#endif
   if (_file_log_enabled) {
     if (check_log_file_available()) {
 #define MAX_PRINT_BUFFER_SIZE 1024

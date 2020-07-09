@@ -25,7 +25,7 @@ public:
   };
 
   inline int raw_instruction_size() {
-    return range_.length;
+    return (int)range_.length;
   };
 
 private:

@@ -4,8 +4,6 @@
 
 #include <windows.h>
 
-namespace zz {
-
 int GetProtectionFromMemoryPermission(MemoryPermission access) {
   if (kReadWriteExecute == access)
     return PAGE_EXECUTE_READWRITE;
@@ -70,4 +68,3 @@ void OSPrint::Print(const char *format, ...) {
 void OSPrint::VPrint(const char *format, va_list args) {
   vprintf(format, args);
 }
-} // namespace zz

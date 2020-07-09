@@ -324,9 +324,9 @@ public:
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
-      buffer_->Emit8(imm.value());
+      buffer_->Emit8((uint8_t)imm.value());
     } else if (imm_size == 32) {
-      buffer_->Emit32(imm.value());
+      buffer_->Emit32((uint32_t)imm.value());
     }
   }
 
