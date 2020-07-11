@@ -347,11 +347,11 @@ private:
   }
 
   // load store operation
-  void EmitMemOp(Condition cond, bool load, bool byte, const Register rd, const MemOperand x) {
+  void EmitMemOp(Condition cond, bool is_load, bool is_byte, const Register rd, const MemOperand x) {
     ASSERT(rd != no_reg);
     ASSERT(cond != kNoCondition);
 
-    int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | B26 | (load ? L : 0) | (byte ? B : 0);
+    int32_t encoding = (static_cast<int32_t>(cond) << kConditionShift) | B26 | (is_load ? L : 0) | (is_byte ? B : 0);
     encoding         = encoding | OpEncode::Rd(rd) | OpEncode::MemOperand(x);
     buffer_->EmitARMInst(encoding);
   }

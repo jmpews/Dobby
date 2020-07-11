@@ -22,14 +22,14 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
   addr_t buffer_cursor = (addr_t)buffer;
 
-  byte opcode1        = *(byte *)curr_addr;
+  byte opcode1        = *(byte *)buffer_cursor;
   InstrMnemonic instr = {0};
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
   while ((buffer_cursor < ((addr_t)buffer + predefined_relocate_size))) {
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
-    decodeItem->DecodeHandler(&instr, (uint64_t)curr_addr);
+    decodeItem->DecodeHandler(&instr, (uint64_t)buffer_cursor);
 
     // Jcc Relocate OpcodeEncoding=D and rel8
     // Solution:
@@ -61,7 +61,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       __ Emit32(offset);
     } else if (instr.flag & kIPRelativeAddress) {
       // IP-Relative Address
-      dword orig_disp = *(dword *)(curr_addr + instr.instr.DisplacementOffset);
+      dword orig_disp = *(dword *)(buffer_cursor + instr.instr.DisplacementOffset);
       dword disp      = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
 #if 0
       byte InstrArray[15];
@@ -70,12 +70,12 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       _ Emit(InstrArray, instr.len);
 
 #else
-      __ EmitBuffer((void *)curr_addr, instr.instr.DisplacementOffset);
+      __ EmitBuffer((void *)buffer_cursor, instr.instr.DisplacementOffset);
       __ Emit32(disp);
 #endif
     } else {
       // Emit the origin instrution
-      __ EmitBuffer((void *)curr_addr, instr.len);
+      __ EmitBuffer((void *)buffer_cursor, instr.len);
     }
 
     // go next
