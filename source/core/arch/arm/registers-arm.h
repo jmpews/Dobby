@@ -34,6 +34,10 @@ public:
     return (reg.reg_code_ == this->reg_code_);
   }
 
+  bool IsValid() const {
+    return (reg_code_ != 0);
+  }
+
   int code() const {
     return reg_code_;
   }

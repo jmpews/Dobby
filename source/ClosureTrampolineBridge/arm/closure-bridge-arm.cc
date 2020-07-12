@@ -23,52 +23,50 @@ void *get_closure_bridge() {
 // otherwise, use the Assembler build the closure_bridge
 #else
 #define _ turbo_assembler_.
-#define MEM(reg, offset) MemOperand(reg, offset)
-#define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
   TurboAssembler turbo_assembler_(0);
 
   _ sub(sp, sp, Operand(14 * 4));
-  _ str(lr, MEM(sp, 13 * 4));
-  _ str(r12, MEM(sp, 12 * 4));
-  _ str(r11, MEM(sp, 11 * 4));
-  _ str(r10, MEM(sp, 10 * 4));
-  _ str(r9, MEM(sp, 9 * 4));
-  _ str(r8, MEM(sp, 8 * 4));
-  _ str(r7, MEM(sp, 7 * 4));
-  _ str(r6, MEM(sp, 6 * 4));
-  _ str(r5, MEM(sp, 5 * 4));
-  _ str(r4, MEM(sp, 4 * 4));
-  _ str(r3, MEM(sp, 3 * 4));
-  _ str(r2, MEM(sp, 2 * 4));
-  _ str(r1, MEM(sp, 1 * 4));
-  _ str(r0, MEM(sp, 0 * 4));
+  _ str(lr, MemOperand(sp, 13 * 4));
+  _ str(r12, MemOperand(sp, 12 * 4));
+  _ str(r11, MemOperand(sp, 11 * 4));
+  _ str(r10, MemOperand(sp, 10 * 4));
+  _ str(r9, MemOperand(sp, 9 * 4));
+  _ str(r8, MemOperand(sp, 8 * 4));
+  _ str(r7, MemOperand(sp, 7 * 4));
+  _ str(r6, MemOperand(sp, 6 * 4));
+  _ str(r5, MemOperand(sp, 5 * 4));
+  _ str(r4, MemOperand(sp, 4 * 4));
+  _ str(r3, MemOperand(sp, 3 * 4));
+  _ str(r2, MemOperand(sp, 2 * 4));
+  _ str(r1, MemOperand(sp, 1 * 4));
+  _ str(r0, MemOperand(sp, 0 * 4));
 
   _ sub(sp, sp, Operand(8));
 
-  _ mov(r0, sp);
-  _ mov(r1, r12);
+  _ mov(r0, Operand(sp));
+  _ mov(r1, Operand(r12));
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // dummy stack align
   _ add(sp, sp, Operand(8));
 
-  _ ldr(r0, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r1, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r2, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r3, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r4, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r5, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r6, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r7, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r8, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r9, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r10, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r11, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(r12, MEM_EXT(sp, 4, PostIndex));
-  _ ldr(lr, MEM_EXT(sp, 4, PostIndex));
+  _ ldr(r0, MemOperand(sp, 4, PostIndex));
+  _ ldr(r1, MemOperand(sp, 4, PostIndex));
+  _ ldr(r2, MemOperand(sp, 4, PostIndex));
+  _ ldr(r3, MemOperand(sp, 4, PostIndex));
+  _ ldr(r4, MemOperand(sp, 4, PostIndex));
+  _ ldr(r5, MemOperand(sp, 4, PostIndex));
+  _ ldr(r6, MemOperand(sp, 4, PostIndex));
+  _ ldr(r7, MemOperand(sp, 4, PostIndex));
+  _ ldr(r8, MemOperand(sp, 4, PostIndex));
+  _ ldr(r9, MemOperand(sp, 4, PostIndex));
+  _ ldr(r10, MemOperand(sp, 4, PostIndex));
+  _ ldr(r11, MemOperand(sp, 4, PostIndex));
+  _ ldr(r12, MemOperand(sp, 4, PostIndex));
+  _ ldr(lr, MemOperand(sp, 4, PostIndex));
 
   // auto switch A32 & T32 with `least significant bit`, refer `docs/A32_T32_states_switch.md`
-  _ mov(pc, r12);
+  _ mov(pc, Operand(r12));
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   closure_bridge     = (void *)code->raw_instruction_start();
