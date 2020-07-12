@@ -112,27 +112,21 @@ protected:
 class Operand {
 public:
   explicit Operand(int immediate) : immediate_(immediate), rm_(no_reg), rs_(no_reg) {
-    ASSERT(immediate < (1 << kImmed8Bits));
-    type_     = 1;
     encoding_ = immediate;
   }
   explicit Operand(Register rm) : immediate_(-1), rm_(rm), rs_(no_reg) {
-    type_     = 0;
     encoding_ = static_cast<uint32_t>(rm.code());
   }
   explicit Operand(Register rm, Shift shift, int shift_imm)
       : immediate_(-1), rm_(rm), rs_(no_reg), shift_(shift), shift_imm_(shift & 31) {
     UNREACHABLE();
 
-    ASSERT(shift_imm < (1 << kShiftImmBits));
-    type_ = 0;
     encoding_ =
         shift_imm << kShiftImmShift | static_cast<uint32_t>(shift) << kShiftShift | static_cast<uint32_t>(rm.code());
   }
   explicit Operand(Register rm, Shift shift, Register rs) : immediate_(-1), rm_(rm), rs_(rs), shift_(shift) {
     UNREACHABLE();
 
-    type_     = 0;
     encoding_ = static_cast<uint32_t>(rs.code()) << kShiftRegisterShift | static_cast<uint32_t>(shift) << kShiftShift |
                 (1 << 4) | static_cast<uint32_t>(rm.code());
   }
@@ -140,11 +134,11 @@ public:
 private:
   Register rm_;
   Register rs_;
+
   Shift shift_;
   int shift_imm_;
   int32_t immediate_;
 
-  uint32_t type_; // Encodes the type field (bits 27-25) in the instruction.
   uint32_t encoding_;
 
   friend class OpEncode;
