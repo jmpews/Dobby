@@ -21,9 +21,9 @@ public:
     if (buffer)
       _buffer = buffer;
 
-    PseudoLabelInstruction *instruction;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
-    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+    for (size_t i = 0; i < instructions_.getCount(); i++) {
+      PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
+
       // instruction offset to label
       int32_t offset            = pos() - instruction->position_ - Thumb_PC_OFFSET;
       const thumb2_inst_t instr = _buffer->LoadThumb2Inst(instruction->position_);
@@ -131,7 +131,7 @@ private:
     int32_t offset = x.offset();
 
     // literal ldr, base = ALIGN(pc, 4)
-    if(rt.Is(pc)) {
+    if (rt.Is(pc)) {
       // TODO: convert to `GetRealizeAddress()` ???
       addr_t curr_pc = pc_offset() + (addr_t)GetRealizeAddress();
       if (curr_pc % 4) {

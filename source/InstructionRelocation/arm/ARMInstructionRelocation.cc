@@ -328,7 +328,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
 
   bool is_instr_relocated = false;
 
-  if(turbo_assembler.pc_offset() % 4) {
+  if (turbo_assembler.pc_offset() % 4) {
     _ t1_nop();
   }
 
@@ -544,11 +544,10 @@ void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *rel
   }
 #endif
   // Realize all the Pseudo-Label-Data
-  PseudoDataLabel *it;
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(labels);
-  while ((it = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
-    _ PseudoBind(&(it->label));
-    _ EmitAddress(it->address);
+  for (size_t i = 0; i < labels.getCount(); i++) {
+    PseudoDataLabel *label = (PseudoDataLabel *)labels.getObject(i);
+    _ PseudoBind(&(pseudoLabel->label));
+    _ EmitAddress(pseudoLabel->address);
   }
 
   // Generate executable code
@@ -620,11 +619,10 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
 #endif
 
   // Realize all the Pseudo-Label-Data
-  ThumbPseudoDataLabel *it     = nullptr;
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(thumb_labels);
-  while ((it = reinterpret_cast<ThumbPseudoDataLabel *>(iter->getNextObject())) != NULL) {
-    _ CustomThumbPseudoBind(&(it->label));
-    _ EmitAddress(it->address);
+  for (size_t i = 0; i < thumb_labels->getCount(); i++) {
+    ThumbPseudoDataLabel *pseudoLabel = (ThumbPseudoDataLabel *)thumb_labels->getObject(i);
+    _ CustomThumbPseudoBind(&(pseudoLabel->label));
+    _ EmitAddress(pseudoLabel->address);
   }
 
   // Generate executable code

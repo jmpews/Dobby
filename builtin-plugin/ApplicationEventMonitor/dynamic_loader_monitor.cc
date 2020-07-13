@@ -19,7 +19,7 @@ void *(*orig_dlopen)(const char *__file, int __mode);
 void *fake_dlopen(const char *__file, int __mode) {
 
   void *result = orig_dlopen(__file, __mode);
-  if (result != NULL) {
+  if (__file && result != NULL) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
@@ -60,7 +60,7 @@ int fake_dlclose(void *__handle) {
 }
 
 __attribute__((constructor)) static void ctor() {
-  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
-  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
-  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
+//  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+//  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+//  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }

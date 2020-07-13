@@ -237,27 +237,20 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
   }
 #endif
 
-  LiteCollectionIterator *iter = NULL;
-
-  PseudoDataLabel *dataLabel = NULL;
-
-  // Realize all the Pseudo-Label-Data
-  iter = LiteCollectionIterator::withCollection(labels);
-  while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
-    _ PseudoBind(&(dataLabel->label));
-    _ EmitInt64(dataLabel->address);
+  for (size_t i = 0; i < labels->getCount(); i++) {
+    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
+    _ PseudoBind(&(pseudoLabel->label));
+    _ EmitInt64(pseudoLabel->address);
   }
 
   // Generate executable code
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
 
   // release resource
-  iter->reset();
-  while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
-    delete dataLabel;
+  for (size_t i = 0; i < labels->getCount(); i++) {
+    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
+    delete pseudoLabel;
   }
-  iter->release();
-  delete iter;
 
   return code;
 }

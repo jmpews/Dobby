@@ -10,6 +10,8 @@
 
 using namespace zz::x64;
 
+#define X64_ ((1 << 25) << 2) // signed
+
 CodeBufferBase* GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   CodeBufferBase *result = NULL;
 

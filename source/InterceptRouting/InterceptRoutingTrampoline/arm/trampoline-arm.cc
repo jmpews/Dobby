@@ -31,6 +31,8 @@ CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
 }
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
+  DLOG("Generate trampoline => %p", to);
+
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
   // set instruction running state

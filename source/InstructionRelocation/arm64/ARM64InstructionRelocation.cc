@@ -291,16 +291,12 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     instr = *(arm64_inst_t *)buffer_cursor;
 
     { // check branch in relocate-code range
-      LiteCollectionIterator *iter = NULL;
-      PseudoDataLabel *dataLabel   = NULL;
-      // Realize all the Pseudo-Label-Data
-      iter = LiteCollectionIterator::withCollection(labels);
-      while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
+      for (size_t i = 0; i < labels->getCount(); i++) {
+        PseudoDataLabel *label = (PseudoDataLabel *)labels->getObject(i);
         if (dataLabel->address == curr_orig_pc) {
           FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", dataLabel->address, curr_orig_pc);
         }
       }
-      delete iter;
     }
   }
 
@@ -316,11 +312,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   }
 #endif
 
-  // Realize all the Pseudo-Label-Data
-  LiteCollectionIterator *iter = NULL;
-  PseudoDataLabel *dataLabel   = NULL;
-  iter                         = LiteCollectionIterator::withCollection(labels);
-  while ((dataLabel = reinterpret_cast<PseudoDataLabel *>(iter->getNextObject())) != NULL) {
+  for (size_t i = 0; i < labels->getCount(); i++) {
+    PseudoDataLabel *label = (PseudoDataLabel *)labels->getObject(i);
     _ PseudoBind(&(dataLabel->label));
     _ EmitInt64(dataLabel->address);
   }

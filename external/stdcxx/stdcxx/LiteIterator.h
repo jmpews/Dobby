@@ -14,16 +14,28 @@ public:
 class LiteCollectionIterator : public LiteIterator {
 protected:
   const LiteCollection *collection;
+
   void *innerIterator;
+
+public:
+  LiteCollectionIterator() {
+  }
+
+  LiteCollectionIterator(const LiteCollection *inCollection) {
+    initWithCollection(inCollection);
+  }
+
+  ~LiteCollectionIterator() {
+    LiteMemOpt::free(innerIterator, sizeof(int));
+  }
 
 public:
   static LiteCollectionIterator *withCollection(const LiteCollection *inCollection);
 
 public:
-  virtual void release();
-
-public:
   virtual void reset();
+
+  virtual void release();
 
   virtual bool initWithCollection(const LiteCollection *inCollection);
 

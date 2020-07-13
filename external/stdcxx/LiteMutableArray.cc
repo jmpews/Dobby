@@ -13,6 +13,14 @@ bool LiteMutableArray::initWithCapacity(unsigned int inCapacity) {
   return true;
 }
 
+LiteObject *LiteMutableArray::getObject(const int index) {
+  return const_cast<LiteObject *>(this->array[index]);
+}
+
+bool LiteMutableArray::setObject(const LiteObject object) {
+  UNIMPLEMENTED();
+}
+
 bool LiteMutableArray::pushObject(const LiteObject *object) {
   unsigned int newCount = count + 1;
 

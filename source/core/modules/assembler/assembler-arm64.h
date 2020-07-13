@@ -56,13 +56,10 @@ public:
     instructions_.initWithCapacity(8);
   }
   ~PseudoLabel(void) {
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
-    PseudoLabelInstruction *instruction;
-    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
-      delete instruction;
+    for (size_t i = 0; i < instructions_.getCount(); i++) {
+      PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
+      delete item
     }
-    iter->release();
-    delete iter;
 
     instructions_.release();
   }
@@ -78,9 +75,9 @@ public:
     else
       UNREACHABLE();
 
-    PseudoLabelInstruction *instruction;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(&instructions_);
-    while ((instruction = reinterpret_cast<PseudoLabelInstruction *>(iter->getNextObject())) != NULL) {
+    for (size_t i = 0; i < instructions_.getCount(); i++) {
+      PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
+
       int32_t offset       = pos() - instruction->position_;
       const int32_t inst32 = _buffer->LoadInst(instruction->position_);
       int32_t encoded      = 0;
