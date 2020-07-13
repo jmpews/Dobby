@@ -3,7 +3,7 @@
 bool LiteMutableBuffer::initWithCapacity(int in_capacity) {
   if (in_capacity <= 0)
     return false;
-  this->buffer_ = (byte *)LiteMemOpt::alloc(in_capacity);
+  this->buffer_ = (byte_t *)LiteMemOpt::alloc(in_capacity);
   assert(this->buffer_);
 
   this->cursor_   = buffer_;
@@ -12,7 +12,7 @@ bool LiteMutableBuffer::initWithCapacity(int in_capacity) {
 }
 
 int LiteMutableBuffer::ensureCapacity(int new_capacity) {
-  byte *new_buffer;
+  byte_t *new_buffer;
 
   if (new_capacity <= this->capacity_)
     return this->capacity_;
@@ -21,7 +21,7 @@ int LiteMutableBuffer::ensureCapacity(int new_capacity) {
 #define CAPACITY_STEP 64
   new_capacity = (int)ALIGN(new_capacity + CAPACITY_STEP, CAPACITY_STEP);
 
-  new_buffer = (byte *)LiteMemOpt::alloc(new_capacity);
+  new_buffer = (byte_t *)LiteMemOpt::alloc(new_capacity);
   assert(new_buffer);
   _memset(new_buffer, 'A', new_capacity);
 

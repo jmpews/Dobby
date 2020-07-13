@@ -14,7 +14,7 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
   uint64_t curr_addr    = (uint64_t)buffer;
   uint64_t curr_orig_ip = from_ip;
   uint64_t curr_relo_ip = to_ip;
-  byte opcode1          = *(byte *)curr_addr;
+  byte_t opcode1        = *(byte_t *)curr_addr;
 
   InstrMnemonic instr = {0};
   TurboAssembler turbo_assembler_(0);
@@ -30,7 +30,7 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     // Solution:
     // Convert to 32bit AKA rel32
     if (instr.instr.opcode1 >= 0x70 && instr.instr.opcode1 <= 0x7F) {
-      int orig_offset = *(byte *)&instr.instr.Immediate;
+      int orig_offset = *(byte_t *)&instr.instr.Immediate;
       int offset      = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
       __ Emit8(0x0F);
       __ Emit8(opcode1);
@@ -43,8 +43,8 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
       UNIMPLEMENTED();
     } else if (instr.instr.opcode1 == 0xEB) {
       // JMP rel8
-      byte orig_offset = *(byte *)&instr.instr.Immediate;
-      byte offset      = curr_orig_ip + orig_offset - curr_relo_ip;
+      byte_t orig_offset = *(byte_t *)&instr.instr.Immediate;
+      byte_t offset      = curr_orig_ip + orig_offset - curr_relo_ip;
       __ Emit8(0xE9);
       __ Emit32(offset);
     } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
@@ -58,7 +58,7 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
       dword orig_disp = *(dword *)(curr_addr + instr.instr.DisplacementOffset);
       dword disp      = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
 #if 0
-      byte InstrArray[15];
+      byte_t InstrArray[15];
       LiteMemOpt::copy(InstrArray, curr_ip, instr.len);
       *(dword *)(InstrArray + instr.instr.DisplacementOffset) = disp;
       _ Emit(InstrArray, instr.len);
@@ -76,7 +76,7 @@ AssemblyCode *GenRelocateCodeTo(void *buffer, int *relocate_size, uint64_t from_
     curr_orig_ip += instr.len;
     curr_relo_ip += instr.len;
     curr_addr += instr.len;
-    opcode1 = *(byte *)curr_addr;
+    opcode1 = *(byte_t *)curr_addr;
 
     // clear instr structure
     _memset((void *)&instr, 0, sizeof(InstrMnemonic));

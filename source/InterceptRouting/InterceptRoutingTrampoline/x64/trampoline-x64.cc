@@ -1,19 +1,26 @@
+#include "dobby_internal.h"
+
 #include "core/modules/assembler/assembler-x64.h"
 #include "core/modules/codegen/codegen-x64.h"
 
-#include "logging/check_logging.h"
+#include "InstructionRelocation/x64/X64InstructionRelocation.h"
+
+#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.h"
+#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 using namespace zz::x64;
 
-CodeBufferBase *GenTrampoline(void *from, void *to) {
-  TurboAssembler turbo_assembler_(from);
+CodeBufferBase* GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
+  CodeBufferBase *result = NULL;
+
+  DLOG("Generate trampoline => %p", to);
+
+  TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
-  DCHECK_EQ(from, turbo_assembler_.GetRealizeAddress());
-  turbo_assembler_.CommitRealizeAddress(from);
-
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpBranch((addr_t)to);
+  codegen.JmpBranch((uint64_t)to);
 
-  return turbo_assembler_.GetCodeBuffer()->copy();
+  result = turbo_assembler_.GetCodeBuffer()->copy();
+  return result;
 }

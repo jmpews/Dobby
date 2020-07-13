@@ -31,7 +31,7 @@ inline void _ContinueDispatch(InstrMnemonic *instr, addr_t p) {
 // clang-format on
 
 void _DecodeREXPrefix(InstrMnemonic *instr, addr_t p) {
-  instr->instr.REX = *(byte *)p;
+  instr->instr.REX = *(byte_t *)p;
   instr->len++;
   instr->OperandSz = OpSz_64;
 
@@ -39,7 +39,7 @@ void _DecodeREXPrefix(InstrMnemonic *instr, addr_t p) {
 }
 
 void _DecodeLegacyPrefix(InstrMnemonic *instr, addr_t p) {
-  instr->instr.prefix = *(byte *)p;
+  instr->instr.prefix = *(byte_t *)p;
   instr->len++;
 
   _ContinueDispatch(instr, p + 1); // continue decode
@@ -53,7 +53,7 @@ void _DecodePrefix_66(InstrMnemonic *instr, addr_t p) {
 // ===== Decode Opcode =====
 
 static void _DecodeOp(InstrMnemonic *instr, addr_t p) {
-  instr->instr.opcode1 = *(byte *)p;
+  instr->instr.opcode1 = *(byte_t *)p;
   instr->len++;
 }
 
@@ -95,25 +95,25 @@ void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
 #define REX_SIB_Base(rex, sib) ((REX_B(rex) << 3) | SIB_Base(sib))
 
 void _DecodeDisplacement8(InstrMnemonic *instr, addr_t p) {
-  *(byte *)&instr->instr.Displacement = *(byte *)p;
+  *(byte_t *)&instr->instr.Displacement = *(byte_t *)p;
   instr->len += 1;
 }
 
 void _DecodeDisplacement32(InstrMnemonic *instr, addr_t p) {
   instr->instr.DisplacementOffset      = instr->len;
-  *(dword *)&instr->instr.Displacement = *(byte *)p;
+  *(dword *)&instr->instr.Displacement = *(byte_t *)p;
   instr->len += 4;
 }
 
 void _DecodeSIB(InstrMnemonic *instr, addr_t p) {
-  instr->instr.SIB = *(byte *)p;
+  instr->instr.SIB = *(byte_t *)p;
   instr->len++;
 }
 
 void _DecodeModRM(InstrMnemonic *instr, addr_t p) {
   int init_len = instr->len;
 
-  instr->instr.ModRM = *(byte *)p;
+  instr->instr.ModRM = *(byte_t *)p;
   instr->len++;
 
 #if defined(_M_X64) || defined(__x86_64__)
@@ -199,7 +199,7 @@ void _DecodeImmedite(InstrMnemonic *instr, addr_t p, int sz) {
   }
 
   if (sz == ImmSz_8) {
-    *(byte *)&instr->instr.Immediate = *(byte *)p;
+    *(byte_t *)&instr->instr.Immediate = *(byte_t *)p;
     instr->len += 1;
   } else if (sz == ImmSz_16) {
     *(word *)&instr->instr.Immediate = *(dword *)p;

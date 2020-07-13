@@ -6,10 +6,10 @@
 class LiteMutableBuffer : public LiteObject {
 protected:
   // Backing store of the buffer
-  byte *buffer_;
+  byte_t *buffer_;
 
   // Pointer to the next location to be written.
-  byte *cursor_;
+  byte_t *cursor_;
 
   // Capacity in bytes of the backing store
   int capacity_;

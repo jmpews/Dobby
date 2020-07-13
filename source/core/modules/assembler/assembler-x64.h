@@ -24,11 +24,11 @@ public:
 #define ModRM_RM(byte) (byte & 0b00000111)
 
 typedef union _ModRM {
-  byte ModRM;
+  byte_t ModRM;
   struct {
-    byte RM : 3;
-    byte RegOpcode : 3;
-    byte Mod : 2;
+    byte_t RM : 3;
+    byte_t RegOpcode : 3;
+    byte_t Mod : 2;
   };
 } ModRM;
 
@@ -259,7 +259,7 @@ public:
   }
 
 public:
-  void Emit1(byte val) {
+  void Emit1(byte_t val) {
     buffer_->Emit8(val);
   }
 

@@ -11,7 +11,7 @@ typedef uintptr_t addr_t;
 
 #ifndef __byte_defined
 #define __byte_defined
-typedef unsigned char byte;
+typedef unsigned char byte_t;
 #endif
 
 #ifndef __uint_defined

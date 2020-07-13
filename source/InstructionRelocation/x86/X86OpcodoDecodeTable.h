@@ -8,7 +8,7 @@ typedef unsigned long long addr_t;
 
 #ifndef __byte_defined
 #define __byte_defined
-typedef unsigned char byte;
+typedef unsigned char byte_t;
 #endif
 
 #ifndef __uint_defined
@@ -29,41 +29,41 @@ typedef int dword;
 enum OpcodeType { OpTy_Op1, OpTy_RegInOp1, OpTy_Op1ExtraOp };
 
 struct Instr {
-  byte prefix;
+  byte_t prefix;
 
-  byte REX;
+  byte_t REX;
 
   union {
-    byte opcode[3];
+    byte_t opcode[3];
     struct {
-      byte opcode1;
-      byte opcode2;
-      byte opcode3;
+      byte_t opcode1;
+      byte_t opcode2;
+      byte_t opcode3;
     };
   };
 
   union {
-    byte ModRM;
+    byte_t ModRM;
     struct {
-      byte Mod : 2;
-      byte RegOpcode : 3;
-      byte RM : 3;
+      byte_t Mod : 2;
+      byte_t RegOpcode : 3;
+      byte_t RM : 3;
     };
   };
 
   union {
-    byte SIB;
+    byte_t SIB;
     struct {
-      byte base : 2;
-      byte index : 3;
-      byte scale : 3;
+      byte_t base : 2;
+      byte_t index : 3;
+      byte_t scale : 3;
     };
   };
 
-  byte Displacement[4];
+  byte_t Displacement[4];
   int DisplacementOffset;
 
-  byte Immediate[4];
+  byte_t Immediate[4];
   int ImmediateOffset;
 };
 
