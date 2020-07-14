@@ -33,7 +33,7 @@ int fake_open(const char *pathname, int flags, ...) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    std::cout << "[-] trace open handle: " << pathname << std::endl;
+    LOG("[-] trace open handle: %s\n", pathname);
     posix_file_descriptors.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -46,7 +46,7 @@ int fake___open(const char *pathname, int flags, int mode) {
     traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    std::cout << "[-] trace open handle: " << pathname << std::endl;
+    LOG("[-] trace open handle: %s\n", pathname);
   }
   int result = orig___open(pathname, flags, mode);
   if (result != -1) {
@@ -95,7 +95,7 @@ int fake_close(int fd) {
 
 __attribute__((constructor)) static void ctor() {
   DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
-//  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
+  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
 //  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
 //  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
 }

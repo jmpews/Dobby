@@ -9,8 +9,14 @@ using namespace zz;
 
 void dobby_enable_near_branch_trampoline() {
   RoutingPlugin *plugin = new NearBranchTrampolinePlugin;
-  ExtraInternalPlugin::registerPlugin("near_branch_trampoline", new NearBranchTrampolinePlugin);
+  ExtraInternalPlugin::registerPlugin("near_branch_trampoline", plugin);
   ExtraInternalPlugin::near_branch_trampoline = plugin;
+}
+
+void dobby_disable_near_branch_trampoline() {
+  RoutingPlugin *plugin = (RoutingPlugin *)ExtraInternalPlugin::near_branch_trampoline;
+  delete plugin;
+  ExtraInternalPlugin::near_branch_trampoline = NULL;
 }
 
 #if 0

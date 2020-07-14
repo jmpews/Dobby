@@ -107,7 +107,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 #ifdef CODE_PATCH_WITH_SUBSTRATED
   ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
   if (ret == RT_FAILED)
-    DLOG("Not found <substrated> service, try vm_remap");
+    DLOG("Not found <substrated> service => vm_remap");
 #endif
   if (ret == RT_FAILED) {
     mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);

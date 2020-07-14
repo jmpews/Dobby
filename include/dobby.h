@@ -120,6 +120,7 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
 // bxx branch plugin
 #if defined(__arm64__) || defined(__aarch64__) || defined(__arm__)
 void dobby_enable_near_branch_trampoline();
+void dobby_disable_near_branch_trampoline();
 #endif
 
 #ifdef __cplusplus

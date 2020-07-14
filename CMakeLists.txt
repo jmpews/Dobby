@@ -23,7 +23,7 @@ option(GENERATE_FRAMEWORK "Build framework library" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(NearBranch "Use Near Branch Trampoline" ON)
+option(NearBranch "Enable Near Branch Trampoline" ON)
 
 option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
 
@@ -227,7 +227,7 @@ if (DynamicBinaryInstrument)
 endif ()
 
 if(NearBranch)
-  message(STATUS "[Dobby] Use Near Branch Trampoline")
+  message(STATUS "[Dobby] Enable Near Branch Trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.cc)

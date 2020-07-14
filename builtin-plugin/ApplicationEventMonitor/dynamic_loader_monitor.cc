@@ -23,7 +23,7 @@ void *fake_dlopen(const char *__file, int __mode) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
-    std::cout << "[-] trace handle: " << __file << std::endl;
+    LOG("[-] trace handle: %s\n", __file);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -60,7 +60,7 @@ int fake_dlclose(void *__handle) {
 }
 
 __attribute__((constructor)) static void ctor() {
-//  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
-//  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
-//  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
+  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }

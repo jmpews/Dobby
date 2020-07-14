@@ -43,9 +43,9 @@ static AssemblyCode *GenerateFastForwardTrampoline(addr_t source_address, addr_t
   AssemblyCode *result         = NULL;
   AssemblyCodeChunk *codeChunk = NULL;
 
-  codeChunk = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_TINY_REDIRECT_SIZE, ARM64_B_XXX_RANGE);
+  codeChunk = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_B_XXX_RANGE, ARM64_TINY_REDIRECT_SIZE);
   if (!codeChunk) {
-    FATAL_LOG("Not found near code chunk");
+    FATAL("Not found near code chunk");
     return NULL;
   }
 
