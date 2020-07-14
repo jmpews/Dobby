@@ -12,7 +12,8 @@ class CodeGen : public CodeGenBase {
 public:
   CodeGen(TurboAssembler *turbo_assember) : CodeGenBase(turbo_assember) {
   }
-  void JmpBranch(addr_t address);
+
+  void JmpNearIndirect(uint64_t address);
 };
 
 } // namespace x64

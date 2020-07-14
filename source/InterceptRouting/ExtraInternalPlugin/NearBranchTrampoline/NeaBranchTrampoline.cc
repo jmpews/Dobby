@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-#include "NearExecutableMemoryArena.h"
+#include "NearMemoryArena.h"
 #include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 using namespace zz;

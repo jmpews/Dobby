@@ -5,7 +5,7 @@
 
 #include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.h"
+#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.h"
 #include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 using namespace zz::arm64;
@@ -18,9 +18,9 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
-  uint64_t distance = llabs((int64_t)(from - to));
-  uint64_t adrp_range = ((uint64_t)1 << (2 + 19 + 12 -1));
-  if(distance < adrp_range) {
+  uint64_t distance   = llabs((int64_t)(from - to));
+  uint64_t adrp_range = ((uint64_t)1 << (2 + 19 + 12 - 1));
+  if (distance < adrp_range) {
     // adrp, add, br
     _ AdrpAdd(Register::X(17), from, to);
     _ br(Register::X(17));
@@ -43,8 +43,7 @@ static AssemblyCode *GenerateFastForwardTrampoline(addr_t source_address, addr_t
   AssemblyCode *result         = NULL;
   AssemblyCodeChunk *codeChunk = NULL;
 
-  codeChunk =
-      NearExecutableMemoryArena::AllocateCodeChunk(ARM64_TINY_REDIRECT_SIZE, (addr_t)source_address, ARM64_B_XXX_RANGE);
+  codeChunk = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_TINY_REDIRECT_SIZE, ARM64_B_XXX_RANGE);
   if (!codeChunk) {
     FATAL_LOG("Not found near code chunk");
     return NULL;

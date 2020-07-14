@@ -23,7 +23,7 @@ option(GENERATE_FRAMEWORK "Build framework library" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(NearBranch "Use Near Branch Trampoline, available: aarch64" OFF)
+option(NearBranch "Use Near Branch Trampoline" ON)
 
 option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
 
@@ -170,6 +170,7 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
       source/InstructionRelocation/${arch1}/${ARCH1}IPRelativeOpcodeTable.cc
       )
   endif ()
+  set(NearBranch ON)
 endif ()
 
 if(SYSTEM.Darwin)
@@ -225,11 +226,11 @@ if (DynamicBinaryInstrument)
   endif ()
 endif ()
 
-if(NearBranchTrampoline)
-  message(STATUS "[Dobby] Use Near Branch Trampoline, available: aarch64")
+if(NearBranch)
+  message(STATUS "[Dobby] Use Near Branch Trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
-    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.cc)
+    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.cc)
   if(SYSTEM.Darwin)
     set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
       source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)

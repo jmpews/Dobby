@@ -99,7 +99,11 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 
   // jmp to the origin rest instructions
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpBranch(curr_orig_ip);
+  // TODO: 6 == jmp [RIP + disp32] instruction size
+  uint64_t stub_addr = curr_relo_ip + 6;
+  codegen.JmpNearIndirect(stub_addr);
+  turbo_assembler_.GetCodeBuffer()->Emit64(curr_orig_ip);
+
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->getSize();
   if (relo_len > relocated->raw_instruction_size()) {

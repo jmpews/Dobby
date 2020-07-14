@@ -8,50 +8,67 @@ void MemoryArena::Destory(AssemblyCodeChunk *codeChunk) {
   return;
 }
 
-AssemblyCodeChunk *MemoryArena::AllocateCodeChunk(int inSize) {
-  AssemblyCodeChunk *result = NULL, *codeChunk = NULL;
-  ExecutablePage *page = NULL;
+MemoryChunk *MemoryArena::AllocateChunk(int inSize, MemoryPermission permission) {
+  MemoryChunk *result = NULL;
 
   if (!MemoryArena::page_chunks) {
     MemoryArena::page_chunks = new LiteMutableArray;
   }
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
-  while ((page = reinterpret_cast<ExecutablePage *>(iter->getNextObject())) != NULL) {
-    if (((addr_t)page->cursor + inSize) < ((addr_t)page->address + page->capacity)) {
-      break;
+  PageChunk *page              = NULL;
+  while ((page = reinterpret_cast<PageChunk *>(iter->getNextObject())) != NULL) {
+    if (page->permission == permission) {
+      // check the page remain space is enough for the new chunk
+      if ((page->page_cursor + inSize) < ((addr_t)page->page.address + page->page.length)) {
+        break;
+      }
     }
   }
   delete iter;
 
   // alloc a new executable page.
   if (!page) {
-    int page_size      = OSMemory::PageSize();
-    void *page_address = OSMemory::Allocate(NULL, page_size, MemoryPermission::kReadExecute);
-    CHECK_NOT_NULL(page_address);
+    int pageSize      = OSMemory::PageSize();
+    void *pageAddress = OSMemory::Allocate(NULL, pageSize, permission);
+    if (pageAddress == NULL) {
+      LOG("Failed to alloc page");
+      return NULL;
+    }
 
-    ExecutablePage *newPage = new ExecutablePage;
-    newPage->address        = page_address;
-    newPage->cursor         = newPage->address;
-    newPage->capacity       = page_size;
-    newPage->code_chunks    = new LiteMutableArray(8);
+    PageChunk *newPage    = new PageChunk;
+    newPage->page.address = pageAddress;
+    newPage->page.length  = pageSize;
+    newPage->page_cursor  = (addr_t)pageAddress;
+    newPage->permission = permission;
+    newPage->chunks       = new LiteMutableArray(8);
     MemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
 
+  MemoryChunk *chunk = NULL;
   if (page) {
-    codeChunk          = new AssemblyCodeChunk;
-    codeChunk->address = page->cursor;
-    codeChunk->length    = inSize;
+    chunk          = new MemoryChunk;
+    chunk->address = (void *)page->page_cursor;
+    chunk->length  = inSize;
 
-    page->code_chunks->pushObject(reinterpret_cast<LiteObject *>(codeChunk));
-    page->cursor = (void *)((addr_t)page->cursor + inSize);
+    // update page cursor
+    page->chunks->pushObject(reinterpret_cast<LiteObject *>(chunk));
+    page->page_cursor += inSize;
   }
 
-  result = codeChunk;
+  result = chunk;
   return result;
+}
+
+AssemblyCodeChunk *MemoryArena::AllocateCodeChunk(int inSize) {
+  return MemoryArena::AllocateChunk(inSize, kReadExecute);
+}
+
+WritableDataChunk *MemoryArena::AllocateDataChunk(int inSize) {
+  return MemoryArena::AllocateChunk(inSize, kReadWrite);
 }
 
 // UserMode
 // Search code cave from MemoryLayout
-// MemoryRegion *CodeChunk::SearchCodeCave(uword pos, uword range_size, size_t size) {}
+// MemoryRegion *CodeChunk::SearchCodeCave(uword pos, uword range, size_t size) {}

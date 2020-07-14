@@ -4,7 +4,7 @@
 
 #include "InstructionRelocation/arm/ARMInstructionRelocation.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearExecutableMemoryArena.h"
+#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.h"
 #include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 using namespace zz::arm;

@@ -3,17 +3,17 @@
 namespace zz {
 namespace x64 {
 
-void CodeGen::JmpBranch(addr_t address) {
+void CodeGen::JmpNearIndirect(uint64_t address) {
   TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
 #define _ turbo_assembler_->
 #define __ turbo_assembler_->GetCodeBuffer()->
-  dword offset = (dword)(address - turbo_assembler_->CurrentIP());
+  uint64_t currIP = turbo_assembler_->CurrentIP() + 6;
+  dword offset = (dword)(address - currIP);
 
   // RIP-relative addressing
   __ Emit8(0xFF);
   __ Emit8(0x25);
-  __ Emit32(0x0);
-  __ Emit64(address);
+  __ Emit32(offset);
 }
 
 } // namespace x64

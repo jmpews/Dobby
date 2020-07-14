@@ -19,6 +19,7 @@ LiteObject *LiteMutableArray::getObject(const int index) {
 
 bool LiteMutableArray::setObject(const LiteObject object) {
   UNIMPLEMENTED();
+  return false;
 }
 
 bool LiteMutableArray::pushObject(const LiteObject *object) {

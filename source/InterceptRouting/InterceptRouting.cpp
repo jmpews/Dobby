@@ -57,7 +57,7 @@ void InterceptRouting::GenerateRelocatedCode() {
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
-  DLOG("[%p] relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), relocated->raw_instruction_start());
+  DLOG("%p relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), relocated->raw_instruction_start());
 
 #ifndef PLUGIN_DOBBY_DRILL
   // save original prologue
