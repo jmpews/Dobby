@@ -292,9 +292,9 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
     { // check branch in relocate-code range
       for (size_t i = 0; i < labels->getCount(); i++) {
-        PseudoDataLabel *label = (PseudoDataLabel *)labels->getObject(i);
-        if (dataLabel->address == curr_orig_pc) {
-          FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", dataLabel->address, curr_orig_pc);
+        PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
+        if (pseudoLabel->address == curr_orig_pc) {
+          FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", pseudoLabel->address, curr_orig_pc);
         }
       }
     }
@@ -313,9 +313,9 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 #endif
 
   for (size_t i = 0; i < labels->getCount(); i++) {
-    PseudoDataLabel *label = (PseudoDataLabel *)labels->getObject(i);
-    _ PseudoBind(&(dataLabel->label));
-    _ EmitInt64(dataLabel->address);
+    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
+    _ PseudoBind(&(pseudoLabel->label));
+    _ EmitInt64(pseudoLabel->address);
   }
 
   // Generate executable code

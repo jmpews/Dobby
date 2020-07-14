@@ -58,7 +58,7 @@ public:
   ~PseudoLabel(void) {
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
-      delete item
+      delete item;
     }
 
     instructions_.release();
@@ -93,9 +93,6 @@ public:
       }
       _buffer->RewriteInst(instruction->position_, encoded);
     }
-
-    iter->release();
-    delete iter;
   };
 
   void link_to(int pos, PseudoLabelType type) {

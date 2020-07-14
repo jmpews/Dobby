@@ -83,9 +83,6 @@ public:
       }
       _buffer->RewriteARMInst(instruction->position_, encoded);
     }
-
-    iter->release();
-    delete iter;
   };
 
   // compatible for thumb with int type

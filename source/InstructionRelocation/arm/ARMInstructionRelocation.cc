@@ -544,8 +544,8 @@ void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *rel
   }
 #endif
   // Realize all the Pseudo-Label-Data
-  for (size_t i = 0; i < labels.getCount(); i++) {
-    PseudoDataLabel *label = (PseudoDataLabel *)labels.getObject(i);
+  for (size_t i = 0; i < labels->getCount(); i++) {
+    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
     _ PseudoBind(&(pseudoLabel->label));
     _ EmitAddress(pseudoLabel->address);
   }
