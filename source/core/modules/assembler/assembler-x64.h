@@ -423,6 +423,12 @@ public:
   }
 
   uint64_t CurrentIP();
+
+  void CallFunction(ExternalReference function) {
+    Mov()
+    Mov(TMP0, (uint64_t)function.address());
+    call()
+  }
 };
 
 } // namespace x64

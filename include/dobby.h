@@ -118,7 +118,7 @@ int DobbyInstrument(void *instr_address, DBICallTy dbi_call);
 void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
 
 // bxx branch plugin
-#if defined(__arm64__) || defined(__aarch64__) || defined(__arm__)
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
 void dobby_enable_near_branch_trampoline();
 void dobby_disable_near_branch_trampoline();
 #endif

@@ -32,10 +32,10 @@ option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
 # frida is better choice
-# option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
+option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
 # frida is better choice
-# option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
+# option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
 
 # option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
 
@@ -189,7 +189,7 @@ if(SYSTEM.iOS)
   )
 endif ()
 
-if ((FunctionWrapper OR DynamicBinaryInstrument) AND (NOT (PROCESSOR.X86_64 OR PROCESSOR.X86)))
+if (FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
@@ -213,17 +213,13 @@ if (FunctionWrapper)
 endif ()
 
 if (DynamicBinaryInstrument)
-  if(PROCESSOR.X86_64 OR PROCESSOR.X86)
-    message(STATUS "[!] DynamicBinaryInstrument is not supported at X86/X64 ")
-  else()
-    message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
-      source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
-      )
-  endif ()
+  message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
+    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
+    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
+    )
 endif ()
 
 if(NearBranch)
@@ -295,6 +291,7 @@ endif()
 if(Plugin.ApplicationEventMonitor)
   message(STATUS "[Dobby] Enable Plugin.ApplicationEventMonitor")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/ApplicationEventMonitor/MGCopyAnswerMonitor.cc
     builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
     builtin-plugin/ApplicationEventMonitor/file_operation_monitor.cc
     builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
@@ -357,7 +354,7 @@ if (SYSTEM.Android)
   target_link_libraries(dobby log)
 endif ()
 
-if (SYSTEM.Darwin AND Plugin.ObjectiveC)
+if (SYSTEM.Darwin)
   target_link_libraries(${dobby_name}
     "-framework Foundation")
 endif ()

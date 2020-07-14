@@ -1,8 +1,7 @@
+#include "dobby_internal.h"
+
 #include "core/modules/assembler/assembler.h"
 #include "core/modules/assembler/assembler-x64.h"
-#include "core/arch/x64/registers-x64.h"
-
-#include "Helpers/AssemblyCode.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
@@ -63,7 +62,8 @@ void *get_closure_bridge() {
 
   _ mov(rdi, rsp);
   _ mov(rsi, Address(rsp, -16 * 8));
-  // _ call(IPRelativeAddress(0));
+  _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
+
 
   // ======= RegisterContext Restore =======
 

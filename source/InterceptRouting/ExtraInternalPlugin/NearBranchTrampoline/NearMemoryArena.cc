@@ -104,7 +104,7 @@ int NearMemoryArena::PushMostNearPage(addr_t pos, size_t range, MemoryPermission
   newPage->page.address = (void *)nearPageAddr;
   newPage->page.length  = nearPageAddr;
   newPage->page_cursor  = nearPageAddr;
-  newPage->permission = permission;
+  newPage->permission   = permission;
   newPage->chunks       = new LiteMutableArray(8);
   NearMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
   return RT_SUCCESS;

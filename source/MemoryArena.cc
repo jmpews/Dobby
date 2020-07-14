@@ -40,7 +40,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int inSize, MemoryPermission permission)
     newPage->page.address = pageAddress;
     newPage->page.length  = pageSize;
     newPage->page_cursor  = (addr_t)pageAddress;
-    newPage->permission = permission;
+    newPage->permission   = permission;
     newPage->chunks       = new LiteMutableArray(8);
     MemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;

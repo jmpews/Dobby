@@ -1,11 +1,9 @@
-
 #include "dobby_internal.h"
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
-
-#include "ExecMemory/AssemblyCode.h"
-
+#include "core/modules/assembler/assembler.h"
 #include "core/modules/assembler/assembler-x64.h"
+
+#include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
 extern void closure_trampoline_template();
 
