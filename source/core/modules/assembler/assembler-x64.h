@@ -36,20 +36,33 @@ typedef union _ModRM {
 
 class Immediate {
 public:
-  explicit Immediate(int64_t imm) : value_(imm) {
+  explicit Immediate(int64_t imm) : value_(imm), value_size_(64) {
+    if ((int64_t)(int8_t)imm == imm) {
+      value_size_ = 8;
+    } else if ((int64_t)(int16_t)imm == imm) {
+      value_size_ = 8;
+    } else if ((int64_t)(int32_t)imm == imm) {
+      value_size_ = 32;
+    } else {
+      value_size_ = 64;
+    }
+  }
+
+  explicit Immediate(int64_t imm, int size) : value_(imm), value_size_(size) {
   }
 
   int64_t value() const {
     return value_;
   }
 
-  int value_size() const {
-    UNREACHABLE();
-    return 0;
+  int size() const {
+    return value_size_;
   }
 
 private:
   const int64_t value_;
+
+  int value_size_;
 };
 
 // ===== Operand =====
@@ -87,6 +100,10 @@ public: // Getter and Setter
 
   inline uint8_t rex_w() const {
     return (rex_ & REX_W);
+  }
+
+  uint8_t modrm() {
+    return (encoding_at(0));
   }
 
   uint8_t mod() const {
@@ -270,7 +287,7 @@ public:
   void jmp(Immediate imm);
 
   // refer android_art
-  uint8_t GenREX(bool force, bool w, bool r, bool x, bool b) {
+  uint8_t EmitOptionalRex(bool force, bool w, bool r, bool x, bool b) {
     // REX.WRXB
     // W - 64-bit operand
     // R - MODRM.reg
@@ -297,11 +314,11 @@ public:
   }
 
   void EmitRegisterREX(Register reg) {
-    if (reg.size() != 64)
-      UNIMPLEMENTED();
-    uint8_t rex = GenREX(true, reg.size() == 64, false, false, reg.code() > 7);
-    if (!rex)
-      Emit1(rex);
+    if (reg.size() == 64) {
+      uint8_t rex = GenREX(true, reg.size() == 64, false, false, reg.code() > 7);
+      if (!rex)
+        Emit1(rex);
+    }
   }
 
   void EmitRegisterOperandREX(Register reg, Operand &operand) {
@@ -327,6 +344,10 @@ public:
       buffer_->Emit8((uint8_t)imm.value());
     } else if (imm_size == 32) {
       buffer_->Emit32((uint32_t)imm.value());
+    } else if (imm_size == 64) {
+      buffer_->Emit64((uint64_t)imm.value());
+    } else {
+      UNREACHABLE();
     }
   }
 
@@ -354,7 +375,17 @@ public:
     EmitModRM(0b11, reg1.code(), reg2.code());
   }
 
-  void Emit_OperandEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
+  // ================================================================
+  // Operand Encoding
+
+  // RM or MR
+  void Emit_OpEn_Register_Operand(Register reg, Operand &operand) {
+    EmitModRM_Register(operand.modrm(), dst);
+
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
+  }
+
+  void Emit_OpEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitExtraOpcodeRegister(extra_opcode, reg);
     if (reg.size() == 64)
       EmitImmediate(imm, 32);
@@ -362,50 +393,82 @@ public:
       EmitImmediate(imm, reg.size());
   }
 
-  void Emit_OperandEn_Register_Register(Register reg1, Register reg2) {
+  void Emit_OpEn_Register_Register(Register reg1, Register reg2) {
     EmitRegisterRegister(reg1, reg2);
   }
 
-  void Emit_OperandEn_Register_Operand(Register reg, Operand &operand) {
-    ModRM modRM = *(ModRM *)&operand.encoding_[0];
-    EmitModRM(modRM.Mod, reg.code(), modRM.RM);
-    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
-  }
-
-  void Emit_OperandEn_Operand(uint8_t extra_opcode, Operand &operand) {
+  void Emit_OpEn_Operand(uint8_t extra_opcode, Operand &operand) {
     ModRM modRM = *(ModRM *)&operand.encoding_[0];
     EmitModRM(modRM.Mod, extra_opcode, modRM.RM);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
-  void sub(Register reg, Immediate imm) {
-    EmitRegisterREX(reg);
-    Emit1(0x81);
-    Emit_OperandEn_Register_Immediate(0x5, reg, imm);
+  // ================================================================
+  // ModRM
+
+  void EmitModRM_Register(uint8_t modRM, Register reg) {
+    EmitModRM(ModRM_Mod(modRM), reg.code(), ModRM_RM(modRM));
   }
 
-  void mov(Register dst, Register src) {
+  // ================================================================
+  // Opcode
+  void EmitOpcode(uint8_t opcode) {
+    Emit1(opcode);
+  }
+
+  void EmitOpcode_Register(uint8_t opcode, Register reg) {
+    EmitOpcode(opcode | reg.low_bits());
+  }
+
+  // ================================================================
+
+  void sub(Register dst, Immediate imm) {
+    CHECK_EQ(imm.size(), 64);
+    CHECK_EQ(dst.size(), 64);
     EmitRegisterREX(dst);
-    Emit1(0x8B);
-    Emit_OperandEn_Register_Register(dst, src);
+    Emit1(0x81);
+    EmitModRM_
+  }
+
+  // MOV RAX, 0x320
+  // 48 c7 c0 20 03 00 00 (MI encoding)
+  // 48 b8 20 03 00 00 00 00 00 00 (OI encoding)
+  void mov(Register dst, const Immediate imm) {
+    EmitRegisterREX(dst);
+    EmitOpcode_Register(0xb8, dst);
+    EmitImmediate(imm, imm.size());
   }
 
   void mov(Register dst, Address src) {
     EmitRegisterREX(dst);
-    Emit1(0x8B);
-    Emit_OperandEn_Register_Operand(dst, src);
+    EmitOpcode(0x8B);
+    Emit_OpEn_RM(dst, src);
+
+    Emit_OpEn_Register_Operand(dst, src);
   }
 
   void mov(Address dst, Register src) {
     EmitRegisterOperandREX(src, dst);
     Emit1(0x89);
-    Emit_OperandEn_Register_Operand(src, dst);
+    Emit_OpEn_Register_Operand(src, dst);
+  }
+
+  void mov(Register dst, Register src) {
+    EmitRegisterREX(dst);
+    Emit1(0x8B);
+    Emit_OpEn_Register_Register(dst, src);
+  }
+
+  void sub(Register reg, Immediate imm) {
+    EmitRegisterREX(reg);
+    Emit1(0x81);
+    Emit_OpEn_Register_Immediate(0x5, reg, imm);
   }
 
   void call(Address operand) {
     EmitOperandREX(operand);
     Emit1(0xFF);
-    Emit_OperandEn_Operand(0x2, operand);
+    Emit_OpEn_Operand(0x2, operand);
   }
 
   void pop(Register reg) {
@@ -425,8 +488,7 @@ public:
   uint64_t CurrentIP();
 
   void CallFunction(ExternalReference function) {
-    Mov()
-    Mov(TMP0, (uint64_t)function.address());
+    Mov() Mov(TMP0, (uint64_t)function.address());
     call()
   }
 };

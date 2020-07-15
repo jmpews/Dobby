@@ -110,11 +110,13 @@ public:
   bool is_byte_register() const {
     return reg_code_ <= 3;
   }
+
   // Return the high bit of the register code as a 0 or 1.  Used often
   // when constructing the REX prefix byte.
   int high_bit() const {
     return reg_code_ >> 3;
   }
+
   // Return the 3 low bits of the register code.  Used when encoding registers
   // in modR/M, SIB, and opcode bytes.
   int low_bits() const {
