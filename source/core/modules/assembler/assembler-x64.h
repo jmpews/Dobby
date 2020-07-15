@@ -15,6 +15,9 @@ namespace x64 {
 
 #define IsInt8(imm) ((2 ^ 8) > imm)
 
+// ================================================================
+// PseudoLabel
+
 class PseudoLabel : public Label {
 public:
 };
@@ -32,7 +35,8 @@ typedef union _ModRM {
   };
 } ModRM;
 
-// ===== Immediate =====
+// ================================================================
+// Immediate
 
 class Immediate {
 public:
@@ -65,7 +69,8 @@ private:
   int value_size_;
 };
 
-// ===== Operand =====
+// ================================================================
+// Operand
 
 class Operand {
 public:
@@ -191,7 +196,8 @@ public:
   uint8_t encoding_[6];
 };
 
-// ===== Address =====
+// ================================================================
+// Address
 
 class Address : public Operand {
 public:
@@ -263,7 +269,8 @@ private:
   }
 };
 
-// ===== Assembler =====
+// ================================================================
+// Assembler
 
 class Assembler : public AssemblerBase {
 public:
@@ -351,14 +358,6 @@ public:
     }
   }
 
-  inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
-    uint8_t ModRM = 0;
-    ModRM |= Mod << 6;
-    ModRM |= RegOpcode << 3;
-    ModRM |= RM;
-    Emit1(ModRM);
-  }
-
   //  inline void Emit_Mod_Reg_Mem(uint8_t mod, uint8_t reg, uint8_t M) {
   //
   //  }
@@ -367,30 +366,19 @@ public:
   //    EmitModRM(0b11, extra_opcode, reg_code);
   //  }
 
-  void EmitExtraOpcodeRegister(uint8_t opcode, Register reg) {
-    EmitModRM(0b11, opcode, reg.code());
-  }
-
-  void EmitRegisterRegister(Register reg1, Register reg2) {
-    EmitModRM(0b11, reg1.code(), reg2.code());
-  }
-
   // ================================================================
   // Operand Encoding
 
   // RM or MR
-  void Emit_OpEn_Register_Operand(Register reg, Operand &operand) {
+  void Emit_OpEn_Register_Operand(Register dst, Operand &operand) {
     EmitModRM_Register(operand.modrm(), dst);
 
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
-  void Emit_OpEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
-    EmitExtraOpcodeRegister(extra_opcode, reg);
-    if (reg.size() == 64)
-      EmitImmediate(imm, 32);
-    else
-      EmitImmediate(imm, reg.size());
+  void Emit_OpEn_Register_Immediate(uint8_t opcode, Register reg, Immediate imm) {
+    EmitModRM_Opcode_Register(opcode, reg);
+    EmitImmediate(imm, imm.size());
   }
 
   void Emit_OpEn_Register_Register(Register reg1, Register reg2) {
@@ -405,6 +393,22 @@ public:
 
   // ================================================================
   // ModRM
+
+  inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
+    uint8_t ModRM = 0;
+    ModRM |= Mod << 6;
+    ModRM |= RegOpcode << 3;
+    ModRM |= RM;
+    Emit1(ModRM);
+  }
+
+  void EmitModRM_Opcode_Register(uint8_t opcode, Register reg) {
+    EmitModRM(0b11, opcode, reg.code());
+  }
+
+  void EmitModRM_Register_Register(Register reg1, Register reg2) {
+    EmitModRM(0b11, reg1.code(), reg2.code());
+  }
 
   void EmitModRM_Register(uint8_t modRM, Register reg) {
     EmitModRM(ModRM_Mod(modRM), reg.code(), ModRM_RM(modRM));
@@ -421,13 +425,15 @@ public:
   }
 
   // ================================================================
+  // Instruction
 
   void sub(Register dst, Immediate imm) {
     CHECK_EQ(imm.size(), 64);
     CHECK_EQ(dst.size(), 64);
+
     EmitRegisterREX(dst);
-    Emit1(0x81);
-    EmitModRM_
+    EmitOpcode(0x81);
+    Emit_OpEn_Register_Immediate(0x5, reg, imm);
   }
 
   // MOV RAX, 0x320
@@ -459,12 +465,6 @@ public:
     Emit_OpEn_Register_Register(dst, src);
   }
 
-  void sub(Register reg, Immediate imm) {
-    EmitRegisterREX(reg);
-    Emit1(0x81);
-    Emit_OpEn_Register_Immediate(0x5, reg, imm);
-  }
-
   void call(Address operand) {
     EmitOperandREX(operand);
     Emit1(0xFF);
@@ -478,7 +478,8 @@ public:
   }
 };
 
-// ===== TurboAssembler =====
+// ================================================================
+// TurboAssembler
 
 class TurboAssembler : public Assembler {
 public:

@@ -40,7 +40,8 @@ constexpr Register TMP1 = x16;
 #define Rn(rn) (rn.code() << kRnShift)
 #define Rm(rm) (rm.code() << kRmShift)
 
-// ===== PseudoLabel =====
+// ================================================================
+// PseudoLabel
 
 class PseudoLabel : public Label {
 public:
@@ -117,7 +118,8 @@ private:
   LiteMutableArray instructions_;
 };
 
-// ===== Operand =====
+// ================================================================
+// Operand
 
 class Operand {
 public:
@@ -172,7 +174,8 @@ private:
   int32_t shift_extent_imm_;
 };
 
-// ===== MemOperand =====
+// ================================================================
+// MemOperand
 
 class MemOperand {
 public:
@@ -210,8 +213,6 @@ public:
     }
   }
 
-  // =====
-
   const Register &base() const {
     return base_;
   }
@@ -233,8 +234,6 @@ public:
   unsigned shift_extend_imm() const {
     return shift_extend_imm_;
   }
-
-  // =====
 
   bool IsImmediateOffset() const {
     return (addrmode_ == Offset);
@@ -259,7 +258,8 @@ private:
   int32_t shift_extend_imm_;
 };
 
-// ===== OpEncode =====
+// ================================================================
+// OpEncode
 
 class OpEncode {
 public:
@@ -341,7 +341,8 @@ public:
   }
 };
 
-// ===== Assembler =====
+// ================================================================
+// Assembler
 
 class Assembler : public AssemblerBase {
 public:
@@ -577,12 +578,10 @@ private:
     int32_t combine_fields_op = OpEncode::EncodeLogicalShift(rd, rn, operand);
     Emit(op | LogicalShiftedFixed | combine_fields_op);
   }
-
-private:
-  // void *released_address_;
 };
 
-// ===== TurboAssembler =====
+// ================================================================
+// TurboAssembler
 
 class TurboAssembler : public Assembler {
 public:
