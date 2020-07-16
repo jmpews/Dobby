@@ -64,7 +64,6 @@ void *get_closure_bridge() {
   _ mov(rsi, Address(rsp, -16 * 8));
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
-
   // ======= RegisterContext Restore =======
 
   // general register
@@ -87,6 +86,9 @@ void *get_closure_bridge() {
   _ pop(rax);
 
   __ EmitBuffer(popfq, 1);
+
+  // trick: use the 'carry_data' placeholder, as the return address
+  _ ret();
 
 #endif
   return (void *)closure_bridge;
