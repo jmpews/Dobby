@@ -27,8 +27,8 @@ void *get_closure_bridge() {
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
-  char *pushfq = "\x9c";
-  char *popfq = "\x9c";
+  char *pushfq = (char *)"\x9c";
+  char *popfq = (char *)"\x9c";
 
   TurboAssembler turbo_assembler_(0);
 
@@ -36,7 +36,7 @@ void *get_closure_bridge() {
   __ EmitBuffer(pushfq, 1);
 
   // general register
-  _ sub(rsp, Immediate(16 * 8));
+  _ sub(rsp, Immediate(16 * 8, 64));
   _ mov(Address(rsp, 8 * 0), rax);
   _ mov(Address(rsp, 8 * 1), rbx);
   _ mov(Address(rsp, 8 * 2), rcx);

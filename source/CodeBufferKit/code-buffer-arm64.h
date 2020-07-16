@@ -17,7 +17,7 @@ public:
 public:
   arm64_inst_t LoadInst(int offset);
 
-  void RewriteInst(int offset, arm64_inst_t instr);
+  void FixBindLabel(int offset, arm64_inst_t instr);
 
   void EmitInst(arm64_inst_t instr);
 

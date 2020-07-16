@@ -4,7 +4,7 @@ arm64_inst_t CodeBuffer::LoadInst(int offset) {
   return *reinterpret_cast<int32_t *>(buffer_ + offset);
 }
 
-void CodeBuffer::RewriteInst(int offset, arm64_inst_t instr) {
+void CodeBuffer::FixBindLabel(int offset, arm64_inst_t instr) {
   *reinterpret_cast<arm64_inst_t *>(buffer_ + offset) = instr;
   return;
 }

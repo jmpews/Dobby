@@ -70,11 +70,9 @@ public:
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    CodeBuffer *_buffer;
-    if (buffer)
-      _buffer = buffer;
-    else
+    if(!buffer)
       UNREACHABLE();
+    CodeBuffer *_buffer = buffer;
 
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
@@ -92,7 +90,7 @@ public:
         UNREACHABLE();
         break;
       }
-      _buffer->RewriteInst(instruction->position_, encoded);
+      _buffer->FixBindLabel(instruction->position_, encoded);
     }
   };
 
@@ -112,9 +110,6 @@ private:
 #endif
 
 private:
-#if 0 // NO STL
-  std::vector<PseudoLabelInstruction> instructions_;
-#endif
   LiteMutableArray instructions_;
 };
 
@@ -595,8 +590,8 @@ public:
 
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
-      const int64_t dest = label->pos() - buffer_->getSize();
-      ldr(rt, dest);
+      int offset = label->pos() - buffer_->getSize();
+      ldr(rt, offset);
     } else {
       // record this ldr, and fix later.
       label->link_to(buffer_->getSize(), PseudoLabel::kLdrLiteral);

@@ -231,8 +231,8 @@ public:
 
   void T2_Ldr(Register rt, CustomThumbPseudoLabel *label) {
     if (label->is_bound()) {
-      const int64_t dest = label->pos() - buffer_->getSize();
-      t2_ldr(rt, MemOperand(pc, dest));
+      int offset = label->pos() - buffer_->getSize();
+      t2_ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
       label->link_to(buffer_->getSize(), CustomThumbPseudoLabel::kThumb2Ldr);

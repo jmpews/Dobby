@@ -25,7 +25,7 @@ void Assembler::bind(Label *label) {
       int offset           = bound_pc - linkpos;
       imm26                = bits(offset >> 2, 0, 25);
       int32_t rewrite_inst = (instr & 0xfc000000) | LFT(imm26, 26, 0);
-      buffer_->RewriteInst(linkpos, rewrite_inst);
+      buffer_->FixBindLabel(linkpos, rewrite_inst);
 
       // caculate next label
       imm26                 = bits(instr, 0, 25);

@@ -57,11 +57,9 @@ public:
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    CodeBuffer *_buffer;
-    if (buffer)
-      _buffer = buffer;
-    else
+    if(!buffer)
       UNREACHABLE();
+    CodeBuffer *_buffer = buffer;
 
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
@@ -350,8 +348,8 @@ public:
 
   void Ldr(Register rt, PseudoLabel *label) {
     if (label->is_bound()) {
-      const int64_t dest = label->pos() - buffer_->getSize();
-      ldr(rt, MemOperand(pc, dest));
+      int offset = label->pos() - buffer_->getSize();
+      ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
       label->link_to(buffer_->getSize(), PseudoLabel::kLdrLiteral);

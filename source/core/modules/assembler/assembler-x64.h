@@ -1,25 +1,96 @@
 #ifndef CORE_ASSEMBLER_X64_H
 #define CORE_ASSEMBLER_X64_H
 
+#include "common/headers/common_header.h"
+
 #include "core/arch/x64/constants-x64.h"
 #include "core/arch/x64/registers-x64.h"
-
 #include "core/modules/assembler/assembler.h"
 
 #include "CodeBufferKit/code-buffer-x64.h"
 
-#include "logging/logging.h"
+#include "stdcxx/LiteMutableArray.h"
+#include "stdcxx/LiteIterator.h"
+
+#define IsInt8(imm) ((2 ^ 8) > imm)
+
 
 namespace zz {
 namespace x64 {
 
-#define IsInt8(imm) ((2 ^ 8) > imm)
+constexpr Register VOLATILE_REGISTER = r11;
 
 // ================================================================
 // PseudoLabel
 
 class PseudoLabel : public Label {
 public:
+  enum PseudoLabelType { kDisp32 };
+
+  typedef struct _PseudoLabelInstruction {
+    int position_;
+    PseudoLabelType type_;
+  } PseudoLabelInstruction;
+
+public:
+  PseudoLabel(void) {
+    instructions_.initWithCapacity(8);
+  }
+  ~PseudoLabel(void) {
+    for (size_t i = 0; i < instructions_.getCount(); i++) {
+      PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
+      delete item;
+    }
+
+    instructions_.release();
+  }
+
+  bool has_confused_instructions() {
+    return instructions_.getCount() > 0;
+  }
+
+  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
+    if(!buffer)
+      UNREACHABLE();
+    CodeBuffer *_buffer = buffer;
+
+    for (size_t i = 0; i < instructions_.getCount(); i++) {
+      PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
+
+      int32_t offset       = pos() - instruction->position_;
+      const int32_t inst32 = _buffer->LoadInst(instruction->position_);
+      int32_t encoded      = 0;
+
+      switch (instruction->type_) {
+      case kDisp32: {
+        encoded = inst32 & 0xFF00001F;
+        encoded = encoded | LFT((offset >> 2), 19, 5);
+      } break;
+      default:
+        UNREACHABLE();
+        break;
+      }
+      _buffer->FixBindLabel(instruction->position_, encoded);
+    }
+  };
+
+  void link_to(int pos, PseudoLabelType type) {
+    PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
+    instruction->position_              = pos;
+    instruction->type_                  = type;
+    instructions_.pushObject((LiteObject *)instruction);
+  }
+
+private:
+#if 0
+  // From a design perspective, these fix-function write as callback, maybe beeter.
+  void FixLdr(PseudoLabelInstruction *instruction){
+      // dummy
+  };
+#endif
+
+private:
+  LiteMutableArray instructions_;
 };
 
 #define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
@@ -502,8 +573,19 @@ public:
   uint64_t CurrentIP();
 
   void CallFunction(ExternalReference function) {
-    mov(r12, Immediate((int64_t)function.address(), 64));
-    call(r12);
+    mov(r11, Immediate((int64_t)function.address(), 64));
+    call(r11);
+  }
+
+  void Call(PseudoLabel *label) {
+    if (label->is_bound()) {
+      int offset = label->pos() - buffer_->getSize();
+      call(Address(VOLATILE_REGISTER, offset));
+    } else {
+      // record this ldr, and fix later.
+      label->link_to(buffer_->getSize(), PseudoLabel::kDisp32);
+      call(Address(VOLATILE_REGISTER, 0));
+    }
   }
 };
 
