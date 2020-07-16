@@ -25,22 +25,6 @@ static bool is_thumb2(uint32_t instr) {
   return false;
 }
 
-typedef struct _PseudoDataLabel {
-  PseudoLabel label;
-  uint32_t address;
-} PseudoDataLabel;
-
-typedef struct _CustomThumbPseudoDataLabel {
-  CustomThumbPseudoLabel label;
-  uint32_t address;
-} ThumbPseudoDataLabel;
-
-// TODO: NOT THREAD SAFE!!!
-#if 0
-static std::vector<PseudoDataLabel> labels;
-static std::vector<ThumbPseudoDataLabel> thumb_labels;
-#endif
-
 static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableArray *labels, int32_t instr,
                                    uint32_t from_pc, uint32_t to_pc) {
   bool is_instr_relocated = false;
@@ -71,16 +55,16 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
       }
       break;
     load_literal_fix_scheme:
-      uint32_t target_address          = imm12 + from_pc;
-      Register regRt                   = Register::R(Rt);
-      PseudoDataLabel *pseudoDataLabel = new PseudoDataLabel;
-      pseudoDataLabel->address         = target_address;
+      uint32_t target_address = imm12 + from_pc;
+      Register regRt          = Register::R(Rt);
+
+      PseudoDataLabel *pseudoDataLabel = new PseudoDataLabel(target_address);
+      _ AppendDataLabel(pseudoDataLabel);
+
       // ===
-      _ Ldr(regRt, &pseudoDataLabel->label);
+      _ Ldr(regRt, pseudoDataLabel);
       _ ldr(regRt, MemOperand(regRt));
       // ===
-      // Record the pseudo label to realized at the last.
-      labels->pushObject((LiteObject *)pseudoDataLabel);
       is_instr_relocated = true;
     } while (0);
   }
@@ -117,13 +101,11 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
             break;
 
           Register regRd                   = Register::R(Rd);
-          PseudoDataLabel *pseudoDataLabel = new PseudoDataLabel;
-          pseudoDataLabel->address         = target_address;
+          PseudoDataLabel *pseudoDataLabel = new PseudoDataLabel(target_address);
+          _ AppendDataLabel(pseudoDataLabel);
           // ===
-          _ Ldr(regRd, &pseudoDataLabel->label);
+          _ Ldr(regRd, pseudoDataLabel);
           // ===
-          // Record the pseudo label to realized at the last.
-          labels->pushObject((LiteObject *)pseudoDataLabel);
           is_instr_relocated = true;
         } while (0);
 
@@ -185,8 +167,6 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, LiteMutableA
   }
 }
 
-// =====
-
 // relocate thumb-1 instructions
 static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
                                       int16_t instr, addr32_t from_pc, addr32_t to_pc) {
@@ -205,13 +185,12 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
       uint16_t rewrite_inst = 0;
       rewrite_inst          = (instr & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
 
-      ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-      pseudoDataLabel->address              = val;
+      ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val);
+      _ AppendDataLabel(label);
       // ===
-      _ T2_Ldr(TEMP_REG, &pseudoDataLabel->label);
+      _ T2_Ldr(TEMP_REG, label);
       _ EmitInt16(rewrite_inst);
       // ===
-      thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
       is_instr_relocated = true;
     }
   }
@@ -224,13 +203,13 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     val            = ALIGN_FLOOR(val, 4);
     rt             = bits(instr, 8, 10);
 
-    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-    pseudoDataLabel->address              = val;
+    ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val);
+    _ AppendDataLabel(label);
+
     // ===
-    _ T2_Ldr(Register::R(rt), &pseudoDataLabel->label);
+    _ T2_Ldr(Register::R(rt), label);
     _ t2_ldr(Register::R(rt), MemOperand(Register::R(rt), 0));
     // ===
-    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
     is_instr_relocated = true;
   }
 
@@ -240,14 +219,13 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     uint16_t imm8 = bits(instr, 0, 7);
     val           = from_pc + imm8;
 
-    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-    pseudoDataLabel->address              = val;
+    ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val);
+    _ AppendDataLabel(label);
     // ===
-    _ T2_Ldr(Register::R(rd), &pseudoDataLabel->label);
+    _ T2_Ldr(Register::R(rd), label);
     // ===
     if (pc.code() == rd)
       val += 1;
-    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
     is_instr_relocated = true;
   }
 
@@ -262,17 +240,17 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     uint32_t offset = imm8 << 1;
     val             = from_pc + offset;
 
-    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-    pseudoDataLabel->address              = val + 1;
+    ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val + 1);
+    _ AppendDataLabel(label);
+
     // modify imm8 field
     imm8 = 0x4 >> 1;
     // ===
     _ EmitInt16((instr & 0xfff0) | imm8);
     _ t1_nop();
     _ t2_b(4);
-    _ T2_Ldr(pc, &pseudoDataLabel->label);
+    _ T2_Ldr(pc, label);
     // ===
-    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
     is_instr_relocated = true;
   }
 
@@ -284,17 +262,16 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     val             = from_pc + offset;
     rn              = bits(instr, 0, 2);
 
-    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-    pseudoDataLabel->address              = val + 1;
+    ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val + 1);
+    _ AppendDataLabel(label);
 
     imm5 = bits(0x4 >> 1, 1, 5);
     i    = bit(0x4 >> 1, 6);
     // ===
     _ EmitInt16((instr & 0xfd07) | imm5 << 3 | i << 9);
     _ t2_b(0);
-    _ T2_Ldr(pc, &pseudoDataLabel->label);
+    _ T2_Ldr(pc, label);
     // ===
-    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
     is_instr_relocated = true;
   }
 
@@ -304,12 +281,12 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
     uint32_t offset = imm11 << 1;
     val             = from_pc + offset;
 
-    ThumbPseudoDataLabel *pseudoDataLabel = new ThumbPseudoDataLabel;
-    pseudoDataLabel->address              = val + 1;
+    ThumbPseudoDataLabel *label = new ThumbPseudoDataLabel(val + 1);
+    _ AppendDataLabel(label);
+
     // ===
-    _ T2_Ldr(pc, &pseudoDataLabel->label);
+    _ T2_Ldr(pc, label);
     // ===
-    thumb_labels->pushObject((LiteObject *)pseudoDataLabel);
     is_instr_relocated = true;
   }
 
@@ -495,8 +472,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
   }
 }
 
-// =====
-
 void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   LiteMutableArray *labels = new LiteMutableArray;
 
@@ -536,19 +511,8 @@ void gen_arm_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *rel
   // Get the real branch address
   codegen.LiteralLdrBranch(curr_orig_pc - ARM_PC_OFFSET);
 
-#if 0
   // Realize all the Pseudo-Label-Data
-  for (auto it : labels) {
-    _ PseudoBind(&(it.label));
-    _ Emit(it.address);
-  }
-#endif
-  // Realize all the Pseudo-Label-Data
-  for (size_t i = 0; i < labels->getCount(); i++) {
-    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
-    _ PseudoBind(&(pseudoLabel->label));
-    _ EmitAddress(pseudoLabel->address);
-  }
+  _ RebaseDataLabel();
 
   // Generate executable code
   {
@@ -610,20 +574,8 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
   // Get the real branch address
   _ EmitAddress(curr_orig_pc - Thumb_PC_OFFSET + THUMB_ADDRESS_FLAG);
 
-#if 0
   // Realize all the Pseudo-Label-Data
-  for (auto it : thumb_labels) {
-    _ CustomThumbPseudoBind(&(it.label));
-    _ Emit(it.address);
-  }
-#endif
-
-  // Realize all the Pseudo-Label-Data
-  for (size_t i = 0; i < thumb_labels->getCount(); i++) {
-    ThumbPseudoDataLabel *pseudoLabel = (ThumbPseudoDataLabel *)thumb_labels->getObject(i);
-    _ CustomThumbPseudoBind(&(pseudoLabel->label));
-    _ EmitAddress(pseudoLabel->address);
-  }
+  _ RebaseDataLabel();
 
   // Generate executable code
   {

@@ -29,20 +29,6 @@ enum TestBranchOp {
   TBNZ                = TestBranchFixed | 0x01000000
 };
 
-typedef struct _PseudoDataLabel {
-  PseudoLabel label;
-  uint64_t address;
-
-public:
-  _PseudoDataLabel(uint64_t data) {
-    address = data;
-  }
-} PseudoDataLabel;
-
-PseudoDataLabel *CreatePseudoDataLabel(uint64_t data) {
-  return new PseudoDataLabel(data);
-}
-
 static inline int64_t SignExtend(unsigned long x, int M, int N) {
 #if 0
   char sign_bit      = bit(x, M - 1);

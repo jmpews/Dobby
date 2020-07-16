@@ -57,7 +57,7 @@ public:
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if(!buffer)
+    if (!buffer)
       UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
@@ -96,7 +96,24 @@ protected:
   LiteMutableArray instructions_;
 };
 
-// ===== Operand =====
+class PseudoDataLabel : public PseudoLabel {
+public:
+  explicit PseudoDataLabel(uint32_t data) : data_size_(0) {
+    data_ = data;
+  }
+
+  uint32_t data() {
+    return data_;
+  }
+
+private:
+  uint32_t data_;
+
+  int data_size_;
+};
+
+// ================================================================
+// Operand
 
 class Operand {
 public:
@@ -128,7 +145,8 @@ private:
   friend class EncodeUtility;
 };
 
-// ===== MemOperand =====
+// ================================================================
+// MemOperand
 
 class MemOperand {
 public:
@@ -229,7 +247,8 @@ public:
   }
 };
 
-// ===== Assembler =====
+// ================================================================
+// Assembler
 
 class Assembler : public AssemblerBase {
 public:
@@ -339,7 +358,8 @@ public:
 
 }; // namespace arm
 
-// ===== TurboAssembler =====
+// ================================================================
+// TurboAssembler
 
 class TurboAssembler : public Assembler {
 public:
@@ -376,6 +396,24 @@ public:
 
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
   }
+
+  // ================================================================
+  // PseudoDataLabel
+
+  void RebaseDataLabel() {
+    for (size_t i = 0; i < data_labels_->getCount(); i++) {
+      PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
+      PseudoBind(label);
+      EmitAddress(label->data());
+    }
+  }
+
+  void AppendDataLabel(PseudoDataLabel *label) {
+    data_labels_->pushObject((LiteObject *)label);
+  }
+
+private:
+  LiteMutableArray *data_labels_;
 };
 
 } // namespace arm

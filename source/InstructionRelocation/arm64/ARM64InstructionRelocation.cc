@@ -31,20 +31,6 @@ enum TestBranchOp {
   TBNZ                = TestBranchFixed | 0x01000000
 };
 
-typedef struct _PseudoDataLabel {
-  PseudoLabel label;
-  uint64_t address;
-
-public:
-  _PseudoDataLabel(uint64_t data) {
-    address = data;
-  }
-} PseudoDataLabel;
-
-PseudoDataLabel *CreatePseudoDataLabel(uint64_t data) {
-  return new PseudoDataLabel(data);
-}
-
 static inline int64_t SignExtend(unsigned long x, int M, int N) {
 #if 0
   char sign_bit      = bit(x, M - 1);
@@ -127,9 +113,6 @@ static inline int decode_rd(uint32_t instr) {
 }
 
 void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
-  // std::vector<PseudoDataLabel> labels;
-  LiteMutableArray *labels = new LiteMutableArray;
-
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
@@ -184,12 +167,12 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
     } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
       addr_t branch_address               = decode_imm26_offset(instr) + curr_orig_pc;
-      PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
-      labels->pushObject((LiteObject *)branchAddressLabel);
+      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
+      _ AppendDataLabel(branchAddressLabel);
 
       _ nop();
       {
-        _ Ldr(x17, &branchAddressLabel->label); // should we replace with `Mov` to set  X17 ?
+        _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
         if ((instr & UnconditionalBranchMask) == BL) {
           _ blr(x17);
         } else {
@@ -199,8 +182,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       _ nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
       addr64_t branch_address             = decode_imm14_offset(instr) + curr_orig_pc;
-      PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
-      labels->pushObject((LiteObject *)branchAddressLabel);
+      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
+      _ AppendDataLabel(branchAddressLabel);
 
       arm64_inst_t branch_instr = instr;
 
@@ -216,7 +199,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, &branchAddressLabel->label); // should we replace with `Mov` to set  X17 ?
+          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
           _ br(x17);
         }
       }
@@ -235,14 +218,14 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
-      PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
-      labels->pushObject((LiteObject *)branchAddressLabel);
+      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
+      _ AppendDataLabel(branchAddressLabel);
 
       _ nop();
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, &branchAddressLabel->label); // should we replace with `Mov` to set  X17 ?
+          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
           _ br(x17);
         }
       }
@@ -260,14 +243,14 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
-      PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
-      labels->pushObject((LiteObject *)branchAddressLabel);
+      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
+      _ AppendDataLabel(branchAddressLabel);
 
       _ nop();
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, &branchAddressLabel->label); // should we replace with `Mov` to set  X17 ?
+          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
           _ br(x17);
         }
       }
@@ -289,34 +272,25 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     }
 
     instr = *(arm64_inst_t *)buffer_cursor;
+  }
 
-    { // check branch in relocate-code range
-      for (size_t i = 0; i < labels->getCount(); i++) {
-        PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
+#if 0
+     // check branch in relocate-code range
+    {
+      for (size_t i = 0; i < data_labels->getCount(); i++) {
+        PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)data_labels->getObject(i);
         if (pseudoLabel->address == curr_orig_pc) {
           FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", pseudoLabel->address, curr_orig_pc);
         }
       }
     }
-  }
+#endif
 
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(curr_orig_pc);
 
-// FIXME: remove
-#if 0 // NO STL
-  for (auto it : labels) {
-    _ PseudoBind(&(it.label));
-    _ EmitInt64(it.address);
-  }
-#endif
-
-  for (size_t i = 0; i < labels->getCount(); i++) {
-    PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
-    _ PseudoBind(&(pseudoLabel->label));
-    _ EmitInt64(pseudoLabel->address);
-  }
+  _ RebaseDataLabel();
 
   // Generate executable code
   {

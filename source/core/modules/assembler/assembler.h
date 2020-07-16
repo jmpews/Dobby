@@ -65,6 +65,8 @@ public:
   AssemblerBase(void *address);
 
 public:
+  int ip_offset() const;
+
   int pc_offset() const;
 
   CodeBuffer *GetCodeBuffer();

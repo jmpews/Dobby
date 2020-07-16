@@ -10,7 +10,7 @@ namespace zz {
 namespace arm {
 
 // custom thumb pseudo label for thumb/thumb2
-class CustomThumbPseudoLabel : public PseudoLabel {
+class ThumbPseudoLabel : public PseudoLabel {
 public:
   // thumb1/thumb2 pseudo label type, only support Thumb1-Ldr | Thumb2-Ldr
   enum CustomThumbPseudoLabelType { kThumb1Ldr, kThumb2Ldr };
@@ -77,9 +77,28 @@ public:
   }
 };
 
-class CustomThumbAssembler : public Assembler {
+class ThumbPseudoDataLabel : public ThumbPseudoLabel {
 public:
-  CustomThumbAssembler(void *address) : Assembler(address) {
+  explicit ThumbPseudoDataLabel(uint32_t data) : data_size_(0) {
+    data_ = data;
+  }
+
+  uint32_t data() {
+    return data_;
+  }
+
+private:
+  uint32_t data_;
+
+  int data_size_;
+};
+
+// ================================================================
+// ThumbAssembler
+
+class ThumbAssembler : public Assembler {
+public:
+  ThumbAssembler(void *address) : Assembler(address) {
   }
 
   void EmitInt16(int16_t val) {
@@ -207,12 +226,15 @@ private:
   }
 };
 
-class ThumbTurboAssembler : public CustomThumbAssembler {
+// ================================================================
+// ThumbTurboAssembler
+
+class ThumbTurboAssembler : public ThumbAssembler {
 public:
-  ThumbTurboAssembler(void *address) : CustomThumbAssembler(address) {
+  ThumbTurboAssembler(void *address) : ThumbAssembler(address) {
   }
 
-  void T1_Ldr(Register rt, CustomThumbPseudoLabel *label) {
+  void T1_Ldr(Register rt, ThumbPseudoLabel *label) {
     UNREACHABLE();
 
 // t1_ldr: rt can't be PC register
@@ -223,19 +245,19 @@ public:
       ldr(rt, MemOperand(pc, dest));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_.Size(), CustomThumbPseudoLabel::kThumb1Ldr);
+      label->link_to(buffer_.Size(), ThumbPseudoLabel::kThumb1Ldr);
       ldr(rt, MemOperand(pc, 0));
     }
 #endif
   }
 
-  void T2_Ldr(Register rt, CustomThumbPseudoLabel *label) {
+  void T2_Ldr(Register rt, ThumbPseudoLabel *label) {
     if (label->is_bound()) {
       int offset = label->pos() - buffer_->getSize();
       t2_ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_->getSize(), CustomThumbPseudoLabel::kThumb2Ldr);
+      label->link_to(buffer_->getSize(), ThumbPseudoLabel::kThumb2Ldr);
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
@@ -248,7 +270,7 @@ public:
     }
   }
 
-  void CustomThumbPseudoBind(CustomThumbPseudoLabel *label) {
+  void ThumbPseudoBind(ThumbPseudoLabel *label) {
     const uintptr_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
@@ -257,8 +279,23 @@ public:
     }
   }
 
+  // ================================================================
+  // ThumbPseudoDataLabel
+
+  void RebaseDataLabel() {
+    for (size_t i = 0; i < data_labels_->getCount(); i++) {
+      ThumbPseudoDataLabel *label = (ThumbPseudoDataLabel *)data_labels_->getObject(i);
+      ThumbPseudoBind(label);
+      EmitAddress(label->data());
+    }
+  }
+
+  void AppendDataLabel(ThumbPseudoDataLabel *label) {
+    data_labels_->pushObject((LiteObject *)label);
+  }
+
 private:
-  // void *released_address_;
+  LiteMutableArray *data_labels_;
 };
 
 // Generate the relocated instruction

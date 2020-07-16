@@ -70,7 +70,7 @@ public:
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if(!buffer)
+    if (!buffer)
       UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
@@ -111,6 +111,22 @@ private:
 
 private:
   LiteMutableArray instructions_;
+};
+
+class PseudoDataLabel : public PseudoLabel {
+public:
+  explicit PseudoDataLabel(uint64_t data) : data_size_(0) {
+    data_ = data;
+  }
+
+  uint64_t data() {
+    return data_;
+  }
+
+private:
+  uint64_t data_;
+
+  int data_size_;
 };
 
 // ================================================================
@@ -630,7 +646,23 @@ public:
     add(rd, rd, to_PAGEOFF);
   }
 
+  // ================================================================
+  // PseudoDataLabel
+
+  void RebaseDataLabel() {
+    for (size_t i = 0; i < data_labels_->getCount(); i++) {
+      PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
+      PseudoBind(label);
+      EmitInt64(label->data());
+    }
+  }
+
+  void AppendDataLabel(PseudoDataLabel *label) {
+    data_labels_->pushObject((LiteObject *)label);
+  }
+
 private:
+  LiteMutableArray *data_labels_;
 };
 
 } // namespace arm64

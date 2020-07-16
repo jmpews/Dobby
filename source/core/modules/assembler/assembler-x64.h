@@ -93,6 +93,16 @@ private:
   LiteMutableArray instructions_;
 };
 
+class PseudoDataLabel : public PseudoLabel {
+public:
+  explicit PseudoDataLabel(uint64_t data)  {
+    data_ = data;
+  }
+
+private:
+  uint64_t data_;
+};
+
 #define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
 #define ModRM_RM(byte) (byte & 0b00000111)
@@ -573,20 +583,32 @@ public:
   uint64_t CurrentIP();
 
   void CallFunction(ExternalReference function) {
+#if 0
     mov(r11, Immediate((int64_t)function.address(), 64));
     call(r11);
+#endif
+    call(Address(VOLATILE_REGISTER, 0));
+    PseudoDataLabel *addrLabel = new PseudoDataLabel((uint64_t)function.address());
+    addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32);
+    this->AppendDataLabel(addrLabel);
   }
 
-  void Call(PseudoLabel *label) {
+  void Call(PseudoDataLabel *label) {
     if (label->is_bound()) {
       int offset = label->pos() - buffer_->getSize();
       call(Address(VOLATILE_REGISTER, offset));
     } else {
-      // record this ldr, and fix later.
-      label->link_to(buffer_->getSize(), PseudoLabel::kDisp32);
       call(Address(VOLATILE_REGISTER, 0));
+      label->link_to(ip_offset(), PseudoLabel::kDisp32);
     }
   }
+
+  void AppendDataLabel(PseudoDataLabel *label) {
+    data_labels_->pushObject((LiteObject *)label);
+  }
+
+private:
+  LiteMutableArray *data_labels_;
 };
 
 } // namespace x64

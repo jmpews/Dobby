@@ -45,6 +45,12 @@ AssemblerBase::AssemblerBase(void *address) {
   buffer_           = NULL;
 }
 
+// TODO: mov to x64
+int AssemblerBase::ip_offset() const {
+  return reinterpret_cast<CodeBufferBase *>(buffer_)->getSize();
+}
+
+// TODO: mov to arm / arm64
 int AssemblerBase::pc_offset() const {
   return reinterpret_cast<CodeBufferBase *>(buffer_)->getSize();
 }
