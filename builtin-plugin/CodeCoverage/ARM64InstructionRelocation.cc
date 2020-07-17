@@ -114,9 +114,6 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
   uint64_t curr_relo_pc = to_pc;
   uint32_t instr        = *(uint32_t *)curr_addr;
 
-  // std::vector<PseudoDataLabel> labels;
-  LiteMutableArray *labels = new LiteMutableArray;
-
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 

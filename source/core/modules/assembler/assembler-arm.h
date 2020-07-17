@@ -92,13 +92,13 @@ public:
   }
 
 protected:
-  // std::vector<PseudoLabelInstruction> instructions_;
   LiteMutableArray instructions_;
 };
 
-class PseudoDataLabel : public PseudoLabel {
+// reloc
+class RelocLabelEntry : public PseudoLabel {
 public:
-  explicit PseudoDataLabel(uint32_t data) : data_size_(0) {
+  explicit RelocLabelEntry(uint32_t data) : data_size_(0) {
     data_ = data;
   }
 
@@ -364,6 +364,7 @@ public:
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
+    data_labels_ = NULL;
   }
 
   void Ldr(Register rt, PseudoLabel *label) {
@@ -398,19 +399,19 @@ public:
   }
 
   // ================================================================
-  // PseudoDataLabel
+  // RelocLabelEntry
 
-  void RebaseDataLabel() {
+  void RelocFixup() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
+      RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
       PseudoBind(label);
       EmitAddress(label->data());
     }
   }
 
-  void AppendDataLabel(PseudoDataLabel *label) {
+  void AppendRelocLabelEntry(RelocLabelEntry *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }

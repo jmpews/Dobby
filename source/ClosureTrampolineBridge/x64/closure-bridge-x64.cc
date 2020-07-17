@@ -36,7 +36,7 @@ void *get_closure_bridge() {
   __ EmitBuffer(pushfq, 1);
 
   // general register
-  _ sub(rsp, Immediate(16 * 8, 64));
+  _ sub(rsp, Immediate(16 * 8, 32));
   _ mov(Address(rsp, 8 * 0), rax);
   _ mov(Address(rsp, 8 * 1), rbx);
   _ mov(Address(rsp, 8 * 2), rcx);
@@ -90,6 +90,13 @@ void *get_closure_bridge() {
 
   // trick: use the 'carry_data' placeholder, as the return address
   _ ret();
+
+  _ RelocFixup();
+
+  AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+  closure_bridge     = (void *)code->raw_instruction_start();
+
+  DLOG("Build the closure bridge at %p", closure_bridge);
 
 #endif
   return (void *)closure_bridge;

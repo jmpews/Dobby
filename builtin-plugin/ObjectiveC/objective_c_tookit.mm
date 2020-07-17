@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include <objc/runtime.h>
-#include <UIkit/UIkit.h>
 
 extern "C" {
 #include "helpers/variable_cache.h"

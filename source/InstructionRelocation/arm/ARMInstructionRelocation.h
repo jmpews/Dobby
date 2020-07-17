@@ -77,9 +77,9 @@ public:
   }
 };
 
-class ThumbPseudoDataLabel : public ThumbPseudoLabel {
+class ThumbThumbRelocLabelEntry : public ThumbPseudoLabel {
 public:
-  explicit ThumbPseudoDataLabel(uint32_t data) : data_size_(0) {
+  explicit ThumbThumbRelocLabelEntry(uint32_t data) : data_size_(0) {
     data_ = data;
   }
 
@@ -232,6 +232,7 @@ private:
 class ThumbTurboAssembler : public ThumbAssembler {
 public:
   ThumbTurboAssembler(void *address) : ThumbAssembler(address) {
+    data_labels_ = NULL;
   }
 
   void T1_Ldr(Register rt, ThumbPseudoLabel *label) {
@@ -280,17 +281,17 @@ public:
   }
 
   // ================================================================
-  // ThumbPseudoDataLabel
+  // ThumbThumbRelocLabelEntry
 
-  void RebaseDataLabel() {
+  void RelocFixup() {
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      ThumbPseudoDataLabel *label = (ThumbPseudoDataLabel *)data_labels_->getObject(i);
+      ThumbThumbRelocLabelEntry *label = (ThumbThumbRelocLabelEntry *)data_labels_->getObject(i);
       ThumbPseudoBind(label);
       EmitAddress(label->data());
     }
   }
 
-  void AppendDataLabel(ThumbPseudoDataLabel *label) {
+  void AppendRelocLabelEntry(ThumbThumbRelocLabelEntry *label) {
     data_labels_->pushObject((LiteObject *)label);
   }
 

@@ -167,8 +167,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
     } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
       addr_t branch_address               = decode_imm26_offset(instr) + curr_orig_pc;
-      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
-      _ AppendDataLabel(branchAddressLabel);
+      RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {
@@ -182,8 +182,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       _ nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
       addr64_t branch_address             = decode_imm14_offset(instr) + curr_orig_pc;
-      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
-      _ AppendDataLabel(branchAddressLabel);
+      RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       arm64_inst_t branch_instr = instr;
 
@@ -218,8 +218,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
-      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
-      _ AppendDataLabel(branchAddressLabel);
+      RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {
@@ -243,8 +243,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
-      PseudoDataLabel *branchAddressLabel = new PseudoDataLabel(branch_address);
-      _ AppendDataLabel(branchAddressLabel);
+      RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {
@@ -278,7 +278,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
      // check branch in relocate-code range
     {
       for (size_t i = 0; i < data_labels->getCount(); i++) {
-        PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)data_labels->getObject(i);
+        RelocLabelEntry *pseudoLabel = (RelocLabelEntry *)data_labels->getObject(i);
         if (pseudoLabel->address == curr_orig_pc) {
           FATAL("label(%p) in relo code %p, please enable b-xxx branch plugin.", pseudoLabel->address, curr_orig_pc);
         }
@@ -290,7 +290,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(curr_orig_pc);
 
-  _ RebaseDataLabel();
+  _ RelocFixup();
 
   // Generate executable code
   {

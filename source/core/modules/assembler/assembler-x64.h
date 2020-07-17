@@ -89,14 +89,20 @@ private:
   LiteMutableArray instructions_;
 };
 
-class PseudoDataLabel : public PseudoLabel {
+class RelocLabelEntry : public PseudoLabel {
 public:
-  explicit PseudoDataLabel(uint64_t data) {
+  explicit RelocLabelEntry(uint64_t data) : data_size_(0) {
     data_ = data;
+  }
+
+  uint64_t data() {
+    return data_;
   }
 
 private:
   uint64_t data_;
+
+  int data_size_;
 };
 
 #define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
@@ -364,11 +370,13 @@ public:
     buffer_->Emit8(val);
   }
 
-  void pushfq() {
-    Emit1(0x9C);
+  void Emit(int32_t value) {
+    buffer_->Emit32(value);
   }
 
-  void jmp(Immediate imm);
+  void EmitInt64(int64_t value) {
+    buffer_->Emit64(value);
+  }
 
   // refer android_art
   uint8_t EmitOptionalRex(bool force, bool w, bool r, bool x, bool b) {
@@ -398,18 +406,16 @@ public:
   }
 
   void EmitRegisterREX(Register reg) {
-    if (reg.size() == 64) {
-      uint8_t rex = EmitOptionalRex(true, reg.size() == 64, false, false, reg.code() > 7);
-      if (!rex)
-        Emit1(rex);
-    }
+    uint8_t rex = EmitOptionalRex(false, reg.size() == 64, reg.code() > 7, false, false);
+    if (rex)
+      Emit1(rex);
   }
 
   void EmitRegisterOperandREX(Register reg, Operand &operand) {
     if (reg.size() != 64)
       UNIMPLEMENTED();
     uint8_t rex = operand.rex();
-    rex |= EmitOptionalRex(true, reg.size() == 64, false, false, reg.code() > 7);
+    rex |= EmitOptionalRex(true, reg.size() == 64, reg.code() > 7, false, false);
     if (rex != 0) {
       Emit1(rex);
     }
@@ -446,28 +452,30 @@ public:
     EmitModRM_Update_Register(operand.modrm(), dst);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-
-  void Emit_OpEn_Register_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
-    EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
-    EmitImmediate(imm, imm.size());
+  void Emit_OpEn_Register_RegisterOperand(Register dst, Register src) {
+    EmitModRM_Register_Register(dst, src);
   }
 
-  void Emit_OpEn_Register_Register(Register reg1, Register reg2) {
-    EmitModRM_Register_Register(reg1, reg2);
+
+  void Emit_OpEn_Operand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
+  }
+  void Emit_OpEn_RegisterOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
+    EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
+    EmitImmediate(imm, imm.size());
   }
 
   void Emit_OpEn_Operand(uint8_t extra_opcode, Address &operand) {
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-
-  // Regster is belong to Operand ModRM
-  // ATTENTION: won't use
-  void Emit_OpEn_Operand(uint8_t extra_opcode, Register reg) {
-    Emit_OpEn_Register_Operand(extra_opcode, reg);
+  void Emit_OpEn_RegisterOperand(uint8_t extra_opcode, Register reg) {
+    EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
   }
-  void Emit_OpEn_Register_Operand(uint8_t extra_opcode, Register reg) {
-    EmitModRM_ExtraOpcode_Register(0x2, reg);
+  
+  // Encoding: OI
+  void Emit_OpEn_OpcodeRegister_Immediate(uint8_t opcode, Register dst, Immediate imm) {
+    EmitOpcode_Register(opcode, dst);
+    EmitImmediate(imm, imm.size());
   }
 
   // ================================================================
@@ -491,7 +499,7 @@ public:
 
   // update operand's ModRM
   void EmitModRM_Update_Register(uint8_t modRM, Register reg) {
-    EmitModRM(ModRM_Mod(modRM), reg.code(), ModRM_RM(modRM));
+    EmitModRM(ModRM_Mod(modRM), reg.low_bits(), ModRM_RM(modRM));
   }
 
   // update operand's ModRM
@@ -512,13 +520,18 @@ public:
   // ================================================================
   // Instruction
 
+  void pushfq() {
+    Emit1(0x9C);
+  }
+
+  void jmp(Immediate imm);
+
   void sub(Register dst, Immediate imm) {
-    CHECK_EQ(imm.size(), 64);
     CHECK_EQ(dst.size(), 64);
 
     EmitRegisterREX(dst);
     EmitOpcode(0x81);
-    Emit_OpEn_Register_Immediate(0x5, dst, imm);
+    Emit_OpEn_RegisterOperand_Immediate(0x5, dst, imm);
   }
 
   // MOV RAX, 0x320
@@ -526,8 +539,8 @@ public:
   // 48 b8 20 03 00 00 00 00 00 00 (OI encoding)
   void mov(Register dst, const Immediate imm) {
     EmitRegisterREX(dst);
-    EmitOpcode_Register(0xb8, dst);
-    EmitImmediate(imm, imm.size());
+    // OI encoding
+    Emit_OpEn_OpcodeRegister_Immediate(0xb8, dst, imm);
   }
 
   void mov(Register dst, Address src) {
@@ -538,14 +551,14 @@ public:
 
   void mov(Address dst, Register src) {
     EmitRegisterOperandREX(src, dst);
-    Emit1(0x89);
+    EmitOpcode(0x89);
     Emit_OpEn_Register_Operand(src, dst);
   }
 
   void mov(Register dst, Register src) {
     EmitRegisterREX(dst);
     Emit1(0x8B);
-    Emit_OpEn_Register_Register(dst, src);
+    Emit_OpEn_Register_RegisterOperand(dst, src);
   }
 
   void call(Address operand) {
@@ -557,7 +570,7 @@ public:
   void call(Register reg) {
     EmitRegisterREX(reg);
     EmitOpcode(0xFF);
-    Emit_OpEn_Register_Operand(0x2, reg);
+    Emit_OpEn_RegisterOperand(0x2, reg);
   }
 
   void pop(Register reg) {
@@ -574,6 +587,7 @@ public:
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
+    data_labels_ = NULL;
   }
 
   uint64_t CurrentIP();
@@ -584,12 +598,12 @@ public:
     call(r11);
 #endif
     call(Address(VOLATILE_REGISTER, 0));
-    PseudoDataLabel *addrLabel = new PseudoDataLabel((uint64_t)function.address());
+    RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
     addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32);
-    this->AppendDataLabel(addrLabel);
+    this->AppendRelocLabelEntry(addrLabel);
   }
 
-  void Call(PseudoDataLabel *label) {
+  void Call(RelocLabelEntry *label) {
     if (label->is_bound()) {
       int offset = label->pos() - buffer_->getSize();
       call(Address(VOLATILE_REGISTER, offset));
@@ -600,7 +614,7 @@ public:
   }
 
   // ================================================================
-  // PseudoDataLabel
+  // RelocLabelEntry
 
   void PseudoBind(PseudoLabel *label) {
     const addr_t bound_pc = buffer_->getSize();
@@ -611,17 +625,17 @@ public:
     }
   }
 
-  void RebaseDataLabel() {
+  void RelocFixup() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
+      RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
       PseudoBind(label);
       EmitInt64(label->data());
     }
   }
 
-  void AppendDataLabel(PseudoDataLabel *label) {
+  void AppendRelocLabelEntry(RelocLabelEntry *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }

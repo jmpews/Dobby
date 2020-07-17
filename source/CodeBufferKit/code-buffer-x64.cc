@@ -14,3 +14,9 @@ void CodeBuffer::Emit64(int64_t data) {
   cursor_ += sizeof(int64_t);
   return;
 }
+
+
+void CodeBuffer::FixBindLabel(int offset, int32_t disp) {
+  *reinterpret_cast<uint32_t *>(buffer_ + offset) = disp;
+  return;
+}

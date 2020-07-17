@@ -42,6 +42,6 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
-  UNREACHABLE();
+  LOG("x64 near branch trampoline enable default");
   return NULL;
 }
