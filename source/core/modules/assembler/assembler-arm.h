@@ -401,6 +401,8 @@ public:
   // PseudoDataLabel
 
   void RebaseDataLabel() {
+    if (data_labels_ == NULL)
+      return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
       PseudoBind(label);
@@ -409,6 +411,9 @@ public:
   }
 
   void AppendDataLabel(PseudoDataLabel *label) {
+    if (data_labels_ == NULL) {
+      data_labels_ = new LiteMutableArray(8);
+    }
     data_labels_->pushObject((LiteObject *)label);
   }
 

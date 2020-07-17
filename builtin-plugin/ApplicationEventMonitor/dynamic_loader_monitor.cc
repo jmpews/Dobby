@@ -60,7 +60,7 @@ int fake_dlclose(void *__handle) {
 }
 
 __attribute__((constructor)) static void ctor() {
-//  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
-//  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
-//  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
+  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }

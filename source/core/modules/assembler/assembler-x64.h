@@ -14,7 +14,6 @@
 
 #define IsInt8(imm) ((2 ^ 8) > imm)
 
-
 namespace zz {
 namespace x64 {
 
@@ -50,27 +49,24 @@ public:
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if(!buffer)
+    if (!buffer)
       UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
-      int32_t offset       = pos() - instruction->position_;
-      const int32_t inst32 = _buffer->LoadInst(instruction->position_);
-      int32_t encoded      = 0;
+      int32_t offset = pos() - instruction->position_;
 
       switch (instruction->type_) {
       case kDisp32: {
-        encoded = inst32 & 0xFF00001F;
-        encoded = encoded | LFT((offset >> 2), 19, 5);
+        int disp32_offset = instruction->position_ - sizeof(int32_t);
+        _buffer->FixBindLabel(disp32_offset, offset);
       } break;
       default:
         UNREACHABLE();
         break;
       }
-      _buffer->FixBindLabel(instruction->position_, encoded);
     }
   };
 
@@ -95,7 +91,7 @@ private:
 
 class PseudoDataLabel : public PseudoLabel {
 public:
-  explicit PseudoDataLabel(uint64_t data)  {
+  explicit PseudoDataLabel(uint64_t data) {
     data_ = data;
   }
 
@@ -603,7 +599,32 @@ public:
     }
   }
 
+  // ================================================================
+  // PseudoDataLabel
+
+  void PseudoBind(PseudoLabel *label) {
+    const addr_t bound_pc = buffer_->getSize();
+    label->bind_to(bound_pc);
+    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
+    }
+  }
+
+  void RebaseDataLabel() {
+    if (data_labels_ == NULL)
+      return;
+    for (size_t i = 0; i < data_labels_->getCount(); i++) {
+      PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
+      PseudoBind(label);
+      EmitInt64(label->data());
+    }
+  }
+
   void AppendDataLabel(PseudoDataLabel *label) {
+    if (data_labels_ == NULL) {
+      data_labels_ = new LiteMutableArray(8);
+    }
     data_labels_->pushObject((LiteObject *)label);
   }
 

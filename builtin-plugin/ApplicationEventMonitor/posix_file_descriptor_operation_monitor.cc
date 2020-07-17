@@ -94,8 +94,8 @@ int fake_close(int fd) {
 }
 
 __attribute__((constructor)) static void ctor() {
-//  DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
-//  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
-//  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
-//  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
+  DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
+  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
+  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
+  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
 }

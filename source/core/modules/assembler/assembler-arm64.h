@@ -615,15 +615,6 @@ public:
     }
   }
 
-  void PseudoBind(PseudoLabel *label) {
-    const addr_t bound_pc = buffer_->getSize();
-    label->bind_to(bound_pc);
-    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
-    }
-  }
-
   void Mov(Register rd, uint64_t imm) {
     const uint32_t w0 = Low32Bits(imm);
     const uint32_t w1 = High32Bits(imm);
@@ -647,9 +638,20 @@ public:
   }
 
   // ================================================================
-  // PseudoDataLabel
+  // PseudoLabel
+
+  void PseudoBind(PseudoLabel *label) {
+    const addr_t bound_pc = buffer_->getSize();
+    label->bind_to(bound_pc);
+    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
+    }
+  }
 
   void RebaseDataLabel() {
+    if (data_labels_ == NULL)
+      return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       PseudoDataLabel *label = (PseudoDataLabel *)data_labels_->getObject(i);
       PseudoBind(label);
@@ -658,6 +660,9 @@ public:
   }
 
   void AppendDataLabel(PseudoDataLabel *label) {
+    if (data_labels_ == NULL) {
+      data_labels_ = new LiteMutableArray(8);
+    }
     data_labels_->pushObject((LiteObject *)label);
   }
 
