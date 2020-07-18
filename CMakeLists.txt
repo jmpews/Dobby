@@ -193,6 +193,7 @@ if (FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
+    source/ClosureTrampolineBridge/${arch1}/helper-${arch1}.cc
     source/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
     source/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
 
@@ -218,7 +219,6 @@ if (DynamicBinaryInstrument)
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
-    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/helper-arch/helper-${arch1}.cc
     )
 endif ()
 

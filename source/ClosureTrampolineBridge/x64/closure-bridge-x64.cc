@@ -28,7 +28,7 @@ void *get_closure_bridge() {
 #define __ turbo_assembler_.GetCodeBuffer()->
 
   char *pushfq = (char *)"\x9c";
-  char *popfq = (char *)"\x9c";
+  char *popfq = (char *)"\x9d";
 
   TurboAssembler turbo_assembler_(0);
 
@@ -56,45 +56,49 @@ void *get_closure_bridge() {
 
   // ======= Jump to UnifiedInterface Bridge Handle =======
 
+  // align rsp 16-byte
+  _ sub(rsp, Immediate(8, 32));
+
   // prepare args
   // @rdi: data_address
   // @rsi: RegisterContext stack address
-
   _ mov(rdi, rsp);
-  _ mov(rsi, Address(rsp, -16 * 8));
-
+  _ mov(rsi, Address(rsp, 16 * 8 + 8 + 8));
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
+
+  // align rsp 16-byte
+  _ add(rsp, Immediate(8, 32));
 
   // ======= RegisterContext Restore =======
 
   // general register
 
-  _ pop(r15);
-  _ pop(r14);
-  _ pop(r13);
-  _ pop(r12);
-  _ pop(r11);
-  _ pop(r10);
-  _ pop(r9);
-  _ pop(r8);
-  _ pop(rsi);
-  _ pop(rdi);
-  _ pop(rsp);
-  _ pop(rbp);
-  _ pop(rdx);
-  _ pop(rcx);
-  _ pop(rbx);
   _ pop(rax);
+  _ pop(rbx);
+  _ pop(rcx);
+  _ pop(rdx);
+  _ pop(rbp);
+  _ add(rsp, Immediate(8, 32)); // => pop rsp
+  _ pop(rdi);
+  _ pop(rsi);
+  _ pop(r8);
+  _ pop(r9);
+  _ pop(r10);
+  _ pop(r11);
+  _ pop(r12);
+  _ pop(r13);
+  _ pop(r14);
+  _ pop(r15);
 
   __ EmitBuffer(popfq, 1);
 
-  // trick: use the 'carry_data' placeholder, as the return address
+  // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
   _ RelocFixup();
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-  closure_bridge     = (void *)code->raw_instruction_start();
+  closure_bridge = (void *)code->raw_instruction_start();
 
   DLOG("Build the closure bridge at %p", closure_bridge);
 

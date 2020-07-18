@@ -6,7 +6,7 @@
 #include "dobby_internal.h"
 
 extern "C" {
-void instrument_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
+void instrument_routing_dispatch(RegisterContext *ctx, ClosureTrampolineEntry *entry);
 }
 
 #endif

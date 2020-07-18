@@ -6,11 +6,11 @@
 #include "dobby_internal.h"
 
 extern "C" {
-void intercept_routing_common_bridge_handler(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
+void intercept_routing_common_bridge_handler(RegisterContext *ctx, ClosureTrampolineEntry *entry);
 }
 
-void get_routing_bridge_next_hop(RegisterContext *reg_ctx, void *address);
+void get_routing_bridge_next_hop(RegisterContext *ctx, void *address);
 
-void set_routing_bridge_next_hop(RegisterContext *reg_ctx, void *address);
+void set_routing_bridge_next_hop(RegisterContext *ctx, void *address);
 
 #endif

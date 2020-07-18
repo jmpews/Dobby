@@ -23,14 +23,14 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
 
-  PseudoLabel ClosureTrampolineEntry;
-  PseudoLabel ForwardCode_ClosureBridge;
+  PseudoLabel entry_label;
+  PseudoLabel forward_bridge_label;
 
-  _ Ldr(r12, &ClosureTrampolineEntry);
-  _ Ldr(pc, &ForwardCode_ClosureBridge);
-  _ PseudoBind(&ClosureTrampolineEntry);
+  _ Ldr(r12, &entry_label);
+  _ Ldr(pc, &forward_bridge_label);
+  _ PseudoBind(&entry_label);
   _ EmitAddress((uint32_t)entry);
-  _ PseudoBind(&ForwardCode_ClosureBridge);
+  _ PseudoBind(&forward_bridge_label);
   _ EmitAddress((uint32_t)get_closure_bridge());
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));

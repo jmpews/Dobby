@@ -27,18 +27,16 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
 
-  PseudoLabel ClosureTrampolineEntry;
-  PseudoLabel ForwardCode_ClosureBridge;
+  PseudoLabel entry_label;
+  PseudoLabel forward_bridge_label;
 
-  // ===
-  _ Ldr(x16, &ClosureTrampolineEntry);
-  _ Ldr(x17, &ForwardCode_ClosureBridge);
+  _ Ldr(x16, &entry_label);
+  _ Ldr(x17, &forward_bridge_label);
   _ br(x17);
-  _ PseudoBind(&ClosureTrampolineEntry);
+  _ PseudoBind(&entry_label);
   _ EmitInt64((uint64_t)entry);
-  _ PseudoBind(&ForwardCode_ClosureBridge);
+  _ PseudoBind(&forward_bridge_label);
   _ EmitInt64((uint64_t)get_closure_bridge());
-  // ===
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 

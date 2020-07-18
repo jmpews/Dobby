@@ -26,9 +26,9 @@ void instrument_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry)
   set_routing_bridge_next_hop(reg_ctx, entry->relocated_origin_instructions);
 }
 
-void instrument_routing_dispatch(RegisterContext *reg_ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
+void instrument_routing_dispatch(RegisterContext *ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
   DLOG("Catch prologue dispatch");
   HookEntry *entry = static_cast<HookEntry *>(closure_trampoline_entry->carry_data);
-  instrument_call_forward_handler(reg_ctx, entry);
+  instrument_call_forward_handler(ctx, entry);
   return;
 }

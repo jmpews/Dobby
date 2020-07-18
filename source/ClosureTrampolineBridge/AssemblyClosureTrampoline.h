@@ -16,7 +16,7 @@ typedef struct _ClosureTrampolineEntry {
   uintptr_t size;
 } ClosureTrampolineEntry;
 
-typedef void (*USER_CODE_CALL)(RegisterContext *reg_ctx, ClosureTrampolineEntry *entry);
+typedef void (*USER_CODE_CALL)(RegisterContext *ctx, ClosureTrampolineEntry *entry);
 
 void closure_trampoline_template();
 

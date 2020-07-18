@@ -31,7 +31,7 @@ typedef union _FPReg {
 } FPReg;
 
 typedef struct _RegisterContext {
-  uint64_t dmmpy_0;
+  uint64_t dmmpy_0; // dummy placeholder
 
   union {
     uint64_t x[29];
@@ -71,12 +71,14 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #elif defined(_M_X64) || defined(__x86_64__)
 typedef struct _RegisterContext {
-  uint64_t flags;
+  uint64_t dummy_0; // dummy placeholder => rsp align
+
   union {
     struct {
-      uint64_t r15, r14, r13, r12, r11, r10, r9, r8, rsi, rdi, rsp, rbp, rdx, rcx, rbx, rax;
+      uint64_t rax, rbx, rcx, rdx, rbp, rsp, rdi, rsi, r8, r9, r10, r11, r12, r13, r14, r15;
     } regs;
   } general;
+  uint64_t flags;
 } RegisterContext;
 #endif
 

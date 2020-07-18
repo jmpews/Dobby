@@ -12,7 +12,7 @@
 #include "stdcxx/LiteMutableArray.h"
 #include "stdcxx/LiteIterator.h"
 
-#define IsInt8(imm) ((2 ^ 8) > imm)
+#define IsInt8(imm) (-128 <= imm && imm <= 127)
 
 namespace zz {
 namespace x64 {
@@ -24,7 +24,7 @@ constexpr Register VOLATILE_REGISTER = r11;
 
 class PseudoLabel : public Label {
 public:
-  enum PseudoLabelType { kDisp32 };
+  enum PseudoLabelType { kDisp32_off_9 };
 
   typedef struct _PseudoLabelInstruction {
     int position_;
@@ -59,9 +59,9 @@ public:
       int32_t offset = pos() - instruction->position_;
 
       switch (instruction->type_) {
-      case kDisp32: {
-        int disp32_offset = instruction->position_ - sizeof(int32_t);
-        _buffer->FixBindLabel(disp32_offset, offset);
+      case kDisp32_off_9: {
+        int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
+        _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
       } break;
       default:
         UNREACHABLE();
@@ -378,6 +378,9 @@ public:
     buffer_->Emit64(value);
   }
 
+  // ================================================================
+  // REX
+
   // refer android_art
   uint8_t EmitOptionalRex(bool force, bool w, bool r, bool x, bool b) {
     // REX.WRXB
@@ -405,13 +408,26 @@ public:
     return 0;
   }
 
-  void EmitRegisterREX(Register reg) {
+  void Emit_64REX(uint8_t extra) {
+    uint8_t rex = EmitOptionalRex(false, true, false, false, false);
+    rex |= extra;
+    if (rex)
+      Emit1(rex);
+  }
+
+  void EmitREX_ExtraRegister(Register reg) {
+    uint8_t rex = EmitOptionalRex(false, reg.size() == 64, reg.code() > 7, false, reg.code() > 7);
+    if (rex)
+      Emit1(rex);
+  }
+
+  void EmitREX_Register(Register reg) {
     uint8_t rex = EmitOptionalRex(false, reg.size() == 64, reg.code() > 7, false, false);
     if (rex)
       Emit1(rex);
   }
 
-  void EmitRegisterOperandREX(Register reg, Operand &operand) {
+  void EmitREX_Register_Operand(Register reg, Operand &operand) {
     if (reg.size() != 64)
       UNIMPLEMENTED();
     uint8_t rex = operand.rex();
@@ -421,13 +437,16 @@ public:
     }
   }
 
-  void EmitOperandREX(Operand &operand) {
+  void EmitREX_Operand(Operand &operand) {
     uint8_t rex = operand.rex();
     rex |= REX_PREFIX;
     if (rex != 0) {
       Emit1(rex);
     }
   }
+
+  // ================================================================
+  // Immediate
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
@@ -456,7 +475,6 @@ public:
     EmitModRM_Register_Register(dst, src);
   }
 
-
   void Emit_OpEn_Operand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
   }
   void Emit_OpEn_RegisterOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
@@ -471,7 +489,7 @@ public:
   void Emit_OpEn_RegisterOperand(uint8_t extra_opcode, Register reg) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
   }
-  
+
   // Encoding: OI
   void Emit_OpEn_OpcodeRegister_Immediate(uint8_t opcode, Register dst, Immediate imm) {
     EmitOpcode_Register(opcode, dst);
@@ -529,55 +547,73 @@ public:
   void sub(Register dst, Immediate imm) {
     CHECK_EQ(dst.size(), 64);
 
-    EmitRegisterREX(dst);
+    EmitREX_Register(dst);
     EmitOpcode(0x81);
     Emit_OpEn_RegisterOperand_Immediate(0x5, dst, imm);
+  }
+  
+  void add(Register dst, Immediate imm) {
+    CHECK_EQ(dst.size(), 64);
+
+    EmitREX_Register(dst);
+    EmitOpcode(0x81);
+    Emit_OpEn_RegisterOperand_Immediate(0x0, dst, imm);
   }
 
   // MOV RAX, 0x320
   // 48 c7 c0 20 03 00 00 (MI encoding)
   // 48 b8 20 03 00 00 00 00 00 00 (OI encoding)
   void mov(Register dst, const Immediate imm) {
-    EmitRegisterREX(dst);
+    EmitREX_Register(dst);
     // OI encoding
     Emit_OpEn_OpcodeRegister_Immediate(0xb8, dst, imm);
   }
 
   void mov(Register dst, Address src) {
-    EmitRegisterREX(dst);
+    EmitREX_Register(dst);
     EmitOpcode(0x8B);
     Emit_OpEn_Register_Operand(dst, src);
   }
 
   void mov(Address dst, Register src) {
-    EmitRegisterOperandREX(src, dst);
+    EmitREX_Register_Operand(src, dst);
     EmitOpcode(0x89);
     Emit_OpEn_Register_Operand(src, dst);
   }
 
   void mov(Register dst, Register src) {
-    EmitRegisterREX(dst);
+    EmitREX_Register(dst);
     Emit1(0x8B);
     Emit_OpEn_Register_RegisterOperand(dst, src);
   }
 
   void call(Address operand) {
-    EmitOperandREX(operand);
+    EmitREX_Operand(operand);
     EmitOpcode(0xFF);
     Emit_OpEn_Operand(0x2, operand);
   }
 
+  void call(Immediate imm) {
+    EmitOpcode(0xe8);
+    EmitImmediate(imm, imm.size());
+  }
+
   void call(Register reg) {
-    EmitRegisterREX(reg);
+    EmitREX_Register(reg);
     EmitOpcode(0xFF);
     Emit_OpEn_RegisterOperand(0x2, reg);
   }
 
   void pop(Register reg) {
+    EmitREX_ExtraRegister(reg);
+    EmitOpcode_Register(0x58, reg);
   }
 
   void ret() {
     EmitOpcode(0xc3);
+  }
+  void nop() {
+    EmitOpcode(0x90);
   }
 };
 
@@ -597,20 +633,19 @@ public:
     mov(r11, Immediate((int64_t)function.address(), 64));
     call(r11);
 #endif
-    call(Address(VOLATILE_REGISTER, 0));
+
+    nop();
+    MovRipToRegister(VOLATILE_REGISTER);
+    call(Address(VOLATILE_REGISTER, INT32_MAX));
     RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
-    addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32);
+    addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
     this->AppendRelocLabelEntry(addrLabel);
+    nop();
   }
 
-  void Call(RelocLabelEntry *label) {
-    if (label->is_bound()) {
-      int offset = label->pos() - buffer_->getSize();
-      call(Address(VOLATILE_REGISTER, offset));
-    } else {
-      call(Address(VOLATILE_REGISTER, 0));
-      label->link_to(ip_offset(), PseudoLabel::kDisp32);
-    }
+  void MovRipToRegister(Register dst) {
+    call(Immediate(0, 32));
+    pop(dst);
   }
 
   // ================================================================
