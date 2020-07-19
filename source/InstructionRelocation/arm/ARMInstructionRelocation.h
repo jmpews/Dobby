@@ -284,6 +284,8 @@ public:
   // ThumbThumbRelocLabelEntry
 
   void RelocFixup() {
+      if (data_labels_ == NULL)
+          return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       ThumbThumbRelocLabelEntry *label = (ThumbThumbRelocLabelEntry *)data_labels_->getObject(i);
       ThumbPseudoBind(label);
@@ -292,6 +294,9 @@ public:
   }
 
   void AppendRelocLabelEntry(ThumbThumbRelocLabelEntry *label) {
+    if (data_labels_ == NULL) {
+      data_labels_ = new LiteMutableArray(8);
+    }
     data_labels_->pushObject((LiteObject *)label);
   }
 

@@ -3,10 +3,13 @@
 
 // Memory operand addressing mode.
 enum AddrMode {
-  // Bit encoding P U W.
-  Offset       = 1, // Offset (without writeback to base).
-  PreIndex     = 2, // Pre-indexed addressing with writeback.
-  PostIndex    = 3, // Post-indexed addressing with writeback.
+    // Bit encoding P U W.
+    Offset       = (8 | 4 | 0) << 21, // Offset (without writeback to base).
+    PreIndex     = (8 | 4 | 1) << 21, // Pre-indexed addressing with writeback.
+    PostIndex    = (0 | 4 | 0) << 21, // Post-indexed addressing with writeback.
+    NegOffset    = (8 | 0 | 0) << 21, // Negative offset (without writeback to base).
+    NegPreIndex  = (8 | 0 | 1) << 21, // Negative pre-indexed with writeback.
+    NegPostIndex = (0 | 0 | 0) << 21  // Negative post-indexed with writeback.
 };
 
 enum Condition {
@@ -59,6 +62,10 @@ enum {
   B26 = 1 << 26,
   B27 = 1 << 27,
   B28 = 1 << 28,
+};
+
+enum InstructionFields {
+    kConditionShift = 28,
 };
 
 #endif

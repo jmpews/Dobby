@@ -222,9 +222,9 @@ public:
   // ===
   static inline uint32_t MemOperand(const MemOperand operand) {
     uint32_t encoding = 0;
-    if (operand.rm_.IsValid()) {
+    if (!operand.rm_.IsValid()) {
       if (operand.offset_ < 0) {
-        encoding = (operand.am_ ^ (1 << 23)) | -operand.offset_; // Flip U to adjust sign.
+        encoding = (operand.am_ ^ (1 << 23)) | (- operand.offset_); // Flip U to adjust sign.
       } else {
         encoding = operand.am_ | operand.offset_;
       }
@@ -301,6 +301,7 @@ public:
 
   void ldr(Condition cond, Register rt, const MemOperand &operand) {
     uint32_t encoding = 0x05100000U;
+    encoding |= (cond << kConditionShift);
     encoding |= EncodeUtility::Rt(rt) | EncodeUtility::MemOperand(operand);
     buffer_->EmitARMInst(encoding);
   }
@@ -311,6 +312,7 @@ public:
 
   void str(Condition cond, Register rt, const MemOperand &operand) {
     uint32_t encoding = 0x05000000U;
+    encoding |= (cond << kConditionShift);
     encoding |= EncodeUtility::Rt(rt) | EncodeUtility::MemOperand(operand);
     buffer_->EmitARMInst(encoding);
   }
@@ -321,6 +323,7 @@ public:
 
   void mov(Condition cond, Register rd, const Operand &operand) {
     uint32_t encoding = 0x01a00000U;
+    encoding |= (cond << kConditionShift);
     encoding |= EncodeUtility::Rd(rd) | EncodeUtility::Operand(operand);
     buffer_->EmitARMInst(encoding);
   }
@@ -331,6 +334,7 @@ public:
   }
   void b(Condition cond, int branch_offset) {
     uint32_t encoding = 0xb000000;
+    encoding |= (cond << kConditionShift);
     uint32_t imm24    = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;
     buffer_->EmitARMInst(encoding);
@@ -341,6 +345,7 @@ public:
   }
   void bl(Condition cond, int branch_offset) {
     uint32_t encoding = 0xa000000;
+    encoding |= (cond << kConditionShift);
     uint32_t imm24    = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;
     buffer_->EmitARMInst(encoding);
