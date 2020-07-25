@@ -13,3 +13,4 @@ ColumnLimit: 120
 ReflowComments: false
 AlignConsecutiveAssignments : true
 BreakBeforeBraces: Attach
+SortIncludes : false

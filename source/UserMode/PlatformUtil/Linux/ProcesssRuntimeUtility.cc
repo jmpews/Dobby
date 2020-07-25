@@ -1,15 +1,18 @@
 #include "dobby_internal.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 
-bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
+// ================================================================
+// GetProcessMemoryLayout
+
+static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address > b.address);
 }
 
 std::vector<MemoryRegion> ProcessMemoryLayout;
-std::vector<MemoryRegion> GetProcessMemoryLayout() {
+std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -75,4 +78,32 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
   return ProcessMemoryLayout;
+}
+
+// ================================================================
+// GetProcessModuleMap
+
+std::vector<RuntimeModule> ProcessModuleMap;
+std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
+  dl_iterate_phdr(
+      [](dl_phdr_info *info, size_t size, void *data) {
+        RuntimeModule module = {0};
+        if (info->dlpi_name)
+          strcpy(module.name, info->dlpi_name);
+        module.address = (void *)info->dlpi_addr;
+        ProcessModuleMap.push_back(module);
+        return 0;
+      },
+      NULL);
+
+  return ProcessModuleMap;
+}
+
+RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
+  std::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
+  for (auto module : ProcessModuleMap) {
+    if (strcmp(module.name, name) == 0) {
+      return module;
+    }
+  }
 }

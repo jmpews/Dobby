@@ -89,7 +89,7 @@ void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
     if (image_name != NULL && strcmp(image_name, name_))
       continue;
 
-    uint32_t nlist_count   = 0;
+    uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
     char *string_pool    = 0;
 

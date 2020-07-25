@@ -27,11 +27,14 @@
 #include <sys/types.h>
 
 #include "UserMode/UnifiedInterface/platform-darwin/mach_vm.h"
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
+#include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 
-bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
+// ================================================================
+// GetProcessMemoryLayout
+
+static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address > b.address);
 }
 

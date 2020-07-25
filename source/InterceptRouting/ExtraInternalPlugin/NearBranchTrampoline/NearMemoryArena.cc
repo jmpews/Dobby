@@ -1,8 +1,8 @@
-#include "dobby_internal.h"
-
 #include "./NearMemoryArena.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/GetProcessMemoryLayout.h"
+#include "dobby_internal.h"
+
+#include "UserMode/PlatformUtil/GetProcessMemoryLayout.h"
 
 #include <iostream>
 #include <vector>
