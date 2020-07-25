@@ -117,7 +117,7 @@ typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 int DobbyInstrument(void *instr_address, DBICallTy dbi_call);
 
 // iterate symbol table and find symbol
-void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
+void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
 // bxx branch plugin
 #if defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)

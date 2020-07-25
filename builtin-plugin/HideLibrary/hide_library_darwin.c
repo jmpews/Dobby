@@ -16,7 +16,7 @@
 void *(*removeImageFromAllImages)(const struct mach_header *mh) = NULL;
 
 static void init_miss_symbol() {
-  removeImageFromAllImages = DobbyFindSymbol("dyld", "__Z24removeImageFromAllImagesPK11mach_header");
+  removeImageFromAllImages = DobbySymbolResolver("dyld", "__Z24removeImageFromAllImagesPK11mach_header");
 }
 
 int DobbyHideLibrary(const char *library_name) {

@@ -12,9 +12,13 @@
 #include <set>
 #include <unordered_map>
 
-#include "./dobby_monitor.h"
-
 #include <sys/param.h>
+
+#include "dobby.h"
+
+#include <android/log.h>
+#define LOG_TAG "DobbyExample"
+#define LOG(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 std::unordered_map<int, const char *> posix_file_descriptors;
 
@@ -33,7 +37,7 @@ int fake_open(const char *pathname, int flags, ...) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    LOG("[-] trace open handle: %s\n", pathname);
+    LOG("[-] trace open handle: %s", pathname);
     posix_file_descriptors.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -46,7 +50,7 @@ int fake___open(const char *pathname, int flags, int mode) {
     traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    LOG("[-] trace open handle: %s\n", pathname);
+    LOG("[-] trace open handle: ", pathname);
   }
   int result = orig___open(pathname, flags, mode);
   if (result != -1) {
@@ -70,7 +74,7 @@ ssize_t (*orig_read)(int fd, void *buf, size_t count);
 ssize_t fake_read(int fd, void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG("[-] read: %s, buffer: %p, size: %zu\n", traced_filename, buf, count);
+    LOG("[-] read: %s, buffer: %p, size: %zu", traced_filename, buf, count);
   }
   return orig_read(fd, buf, count);
 }
@@ -79,7 +83,7 @@ ssize_t (*orig_write)(int fd, const void *buf, size_t count);
 ssize_t fake_write(int fd, const void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG("[-] write: %s, buffer: %p, size: %zu\n", traced_filename, buf, count);
+    LOG("[-] write: %s, buffer: %p, size: %zu", traced_filename, buf, count);
   }
   return orig_write(fd, buf, count);
 }
@@ -87,15 +91,18 @@ int (*orig_close)(int fd);
 int fake_close(int fd) {
   const char *traced_filename = get_traced_filename(fd, true);
   if (traced_filename) {
-    LOG("[-] dlclose: %s\n", traced_filename);
+    LOG("[-] close: %s\n", traced_filename);
     free((void *)traced_filename);
   }
   return orig_close(fd);
 }
 
+#if 0
 __attribute__((constructor)) static void ctor() {
+  printf("hello");
   DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
   DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
-//  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
-//  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
+  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
+  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
 }
+#endif

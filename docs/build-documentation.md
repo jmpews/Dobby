@@ -21,7 +21,7 @@ option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr
 
 option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
 
-option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
+option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
 
 option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
@@ -47,7 +47,7 @@ cd Dobby && mkdir build_for_macos_x64 && cd build_for_macos_x64
 
 cmake .. \
 -DCMAKE_BUILD_TYPE=Release \
--DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+-DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 
 make -j4
 ```
@@ -62,7 +62,7 @@ cmake .. \
 -DPLATFORM=OS64 -DARCHS="arm64e" -DCMAKE_SYSTEM_PROCESSOR=arm64e \
 -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
 -DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
--DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+-DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 
 make -j4
 ```

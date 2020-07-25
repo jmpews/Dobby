@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-#include "UserMode/PlatformUtil/GetProcessMemoryLayout.h"
+#include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <iostream>
 #include <vector>

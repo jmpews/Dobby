@@ -28,5 +28,5 @@ void *trick_dlopen(const char *filename, int flag) {
 //  void *handle = trick_dlopen("/apex/com.android.runtime/bin/linker64", RTLD_LAZY);
 
 __attribute__((constructor)) void init_android_restriction_bypass() {
-  DobbySymbolResolver("/apex/com.android.runtime/lib64/bionic/libdl.so", "__dl_g_soinfo_handles_map");
+//  DobbySymbolResolver("/apex/com.android.runtime/lib64/bionic/libdl.so", "__dl_g_soinfo_handles_map");
 }

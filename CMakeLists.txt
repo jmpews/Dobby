@@ -25,7 +25,7 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
-option(Plugin.FindSymbol "Find symbol by [DobbyFindSymbol] " OFF)
+option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
 
 option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
@@ -148,6 +148,9 @@ set(dobby.SOURCE_FILE_LIST
 
   # unified interface
 
+  # platform util
+  source/UserMode/PlatformUtil/${platform2}/ProcesssRuntimeUtility.cc
+
   # user mode - platform interface
   source/UserMode/UnifiedInterface/platform-${platform1}.cc
 
@@ -227,13 +230,6 @@ if(NearBranch)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.cc)
-  if(SYSTEM.Darwin)
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Darwin/GetProcessMemoryLayout.cc)
-  elseif(SYSTEM.Posix)
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/PlatformUtil/Linux/GetProcessMemoryLayout.cc)
-  endif()
 endif()
 
 # add logging library
@@ -256,18 +252,24 @@ set(stdcxx.SOURCE_FILE_LIST
 
 set(dobby.plugin.SOURCE_FILE_LIST
 )
-if(Plugin.FindSymbol)
+if(Plugin.SymbolResolver)
   include_directories(builtin-plugin/SymbolResolver/)
-  if(NOT SYSTEM.Darwin)
-    message(FATAL_ERROR "[!] Plugin.FindSymbol only works on Darwin.")
-  endif()
 
-  message(STATUS "[Dobby] Enable Plugin.FindSymbol")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/SymbolResolver/re/re.c
-    builtin-plugin/SymbolResolver/darwin/dyld_shared_cache_symbol_table_iterator.c
-    builtin-plugin/SymbolResolver/darwin/symbol_table_iterator.c
-  )
+  message(STATUS "[Dobby] Enable Plugin.SymbolResolver")
+  if(SYSTEM.Darwin)
+    set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+      builtin-plugin/SymbolResolver/re/re.c
+      builtin-plugin/SymbolResolver/macho/dyld_shared_cache_symbol_table_iterator.c
+      builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.c
+    )
+  endif()
+  if(SYSTEM.Linux)
+    set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+      builtin-plugin/SymbolResolver/re/re.c
+      builtin-plugin/SymbolResolver/elf/
+      builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
+    )
+  endif()
 endif()
 if(Plugin.HideLibrary)
   if(NOT SYSTEM.Darwin)
@@ -306,7 +308,7 @@ include_directories(
   ./external
   ./external/logging
   ./external/stdcxx
-  builtin-plugin/FindSymbol
+  builtin-plugin/SymbolResolver
   builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC
 )

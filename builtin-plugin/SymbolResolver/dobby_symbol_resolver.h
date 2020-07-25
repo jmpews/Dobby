@@ -1,11 +1,11 @@
-#ifndef DOBBY_FIND_SYMBOL_H
-#define DOBBY_FIND_SYMBOL_H
+#ifndef DOBBY_SYMBOL_RESOLVER_H
+#define DOBBY_SYMBOL_RESOLVER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void *DobbyFindSymbol(const char *image_name, const char *symbol_name);
+void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
 #ifdef __cplusplus
 }

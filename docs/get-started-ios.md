@@ -22,7 +22,7 @@ cmake .. -G Xcode \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
 -DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
--DPlugin.FindSymbol=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+-DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 ```
 
 **drag the `Dobby.xcodeproj` to your project**

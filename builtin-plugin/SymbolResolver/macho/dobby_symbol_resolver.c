@@ -78,7 +78,7 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
   return NULL;
 }
 
-void *DobbyFindSymbol(const char *image_name, const char *symbol_name_pattern) {
+void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {

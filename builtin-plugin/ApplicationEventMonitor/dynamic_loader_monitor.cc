@@ -1,3 +1,5 @@
+
+
 #include <stdlib.h> /* getenv */
 #include <stdio.h>
 #include <string.h>
@@ -8,22 +10,38 @@
 #include <set>
 #include <unordered_map>
 
-#include "./dobby_monitor.h"
-
 #include <dlfcn.h>
 #include <sys/param.h>
+
+#include "dobby.h"
+
+#include <android/log.h>
+#define LOG_TAG "DobbyExample"
+#define LOG(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 
 void *(*orig_dlopen)(const char *__file, int __mode);
 void *fake_dlopen(const char *__file, int __mode) {
-
   void *result = orig_dlopen(__file, __mode);
-  if (__file && result != NULL) {
+  if (result != NULL) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
-    LOG("[-] trace handle: %s\n", __file);
+    LOG("[-] trace handle: ", __file);
+    traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
+  }
+  return result;
+}
+
+void *(*orig_loader_dlopen)(const char *filename, int flags, const void *caller_addr);
+void *fake_loader_dlopen(const char *filename, int flags, const void *caller_addr) {
+  void *result = orig_loader_dlopen(filename, flags, caller_addr);
+  if (result != NULL) {
+    char *traced_filename = (char *)malloc(MAXPATHLEN);
+    // FIXME: strncpy
+    strcpy(traced_filename, filename);
+    LOG("[-] trace handle: %s", filename);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -59,8 +77,17 @@ int fake_dlclose(void *__handle) {
   return orig_dlclose(__handle);
 }
 
+#if 0
 __attribute__((constructor)) static void ctor() {
-//  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
-//  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
-//  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
+#if 0
+    DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+#else
+    void *dl = dlopen("libdl.so", RTLD_LAZY);
+    void* __loader_dlopen = dlsym(dl, "__loader_dlopen");
+    DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+#endif
+
+    DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+    DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }
+#endif
