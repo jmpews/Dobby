@@ -263,10 +263,9 @@ if(Plugin.SymbolResolver)
       builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.c
     )
   endif()
-  if(SYSTEM.Linux)
+  if(SYSTEM.Linux OR SYSTEM.Android)
     set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
       builtin-plugin/SymbolResolver/re/re.c
-      builtin-plugin/SymbolResolver/elf/
       builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
     )
   endif()

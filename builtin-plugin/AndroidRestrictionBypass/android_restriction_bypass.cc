@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "dobby_symbol_resolver.h"
+
 #include <android/log.h>
 #define LOG_TAG "DobbyExample"
 #define LOG(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
@@ -28,5 +30,5 @@ void *trick_dlopen(const char *filename, int flag) {
 //  void *handle = trick_dlopen("/apex/com.android.runtime/bin/linker64", RTLD_LAZY);
 
 __attribute__((constructor)) void init_android_restriction_bypass() {
-//  DobbySymbolResolver("/apex/com.android.runtime/lib64/bionic/libdl.so", "__dl_g_soinfo_handles_map");
+  DobbySymbolResolver("libdl.so", "__loader_dlopen");
 }

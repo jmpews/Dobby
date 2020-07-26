@@ -16,14 +16,14 @@ public:
   // ================================================================
   // Process Memory
 
-  std::vector<MemoryRegion> GetProcessMemoryLayout();
+  static std::vector<MemoryRegion> GetProcessMemoryLayout();
 
   // ================================================================
   // Process Module
 
-  std::vector<RuntimeModule> GetProcessModuleMap();
+  static std::vector<RuntimeModule> GetProcessModuleMap();
 
-  RuntimeModule GetProcessModule(const char *name);
+  static RuntimeModule GetProcessModule(const char *name);
 };
 
 #endif
