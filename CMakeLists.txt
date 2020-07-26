@@ -258,15 +258,14 @@ if(Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable Plugin.SymbolResolver")
   if(SYSTEM.Darwin)
     set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/SymbolResolver/re/re.c
       builtin-plugin/SymbolResolver/macho/dyld_shared_cache_symbol_table_iterator.c
       builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.c
     )
   endif()
   if(SYSTEM.Linux OR SYSTEM.Android)
     set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/SymbolResolver/re/re.c
       builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
+      builtin-plugin/AndroidRestriction/android_restriction.cc
     )
   endif()
 endif()
@@ -304,9 +303,13 @@ include_directories(
   .
   ./source
   ./source/UserMode
+
   ./external
   ./external/logging
   ./external/stdcxx
+
+  builtin-plugin
+  builtin-plugin/AndroidRestriction
   builtin-plugin/SymbolResolver
   builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC

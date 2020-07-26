@@ -11,14 +11,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <unordered_map>
-#include <vector>
-
-#include <android/log.h>
-
 #include "dobby_symbol_resolver.h"
 #include "common/headers/common_header.h"
+
 #include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
+
+#include "AndroidRestriction/android_restriction.h"
+
+#include <vector>
 
 static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_size_ptr) {
   int fd             = open(file_path, O_RDONLY, 0);
@@ -139,74 +139,19 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   return result;
 }
 
-std::vector<void *> linker_solist;
-
-std::vector<void *> get_linker_solist() {
-  if (!linker_solist.empty()) {
-    linker_solist.clear();
-  }
-
-#if __LP64__
-  char *linker_path = "/system/bin/linker64";
-#else
-  char *linker_path = "/system/bin/linker";
-#endif
-
-  static void *(*solist_get_head)() = NULL;
-  if (!solist_get_head)
-    solist_get_head = (void *(*)())resolve_elf_internal_symbol(linker_path, "__dl__Z15solist_get_headv");
-
-  static void *(*solist_get_somain)() = NULL;
-  if (!solist_get_somain)
-    solist_get_somain = (void *(*)())resolve_elf_internal_symbol(linker_path, "__dl__Z17solist_get_somainv");
-
-  static addr_t *solist_head = NULL;
-  if (!solist_head)
-    solist_head = (addr_t *)solist_get_head();
-
-  static addr_t somain = NULL;
-  if (!somain)
-    somain = (addr_t)solist_get_somain();
-
-    // Generate the name for an offset.
-#define PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
-#define STRUCT_OFFSET PARAM_OFFSET
-  int STRUCT_OFFSET(solist, next) = 0;
-  for (size_t i = 0; i < 16; i++) {
-    if (*(addr_t *)((addr_t)solist_head + i * 8) == somain) {
-      STRUCT_OFFSET(solist, next) = i * 8;
-      break;
-    }
-  }
-
-  linker_solist.push_back(solist_head);
-
-  addr_t sonext = NULL;
-  sonext        = *(addr_t *)((addr_t)solist_head + STRUCT_OFFSET(solist, next));
-  while (sonext) {
-    linker_solist.push_back((void *)sonext);
-    sonext = *(addr_t *)((addr_t)sonext + STRUCT_OFFSET(solist, next));
-  }
-
-  return linker_solist;
-}
-
-static char *get_realpath(void *soinfo) {
-  static char *(*_get_realpath)(void *) = NULL;
-  if(!_get_realpath)
-    _get_realpath = (char *(*)(void *))resolve_elf_internal_symbol("linker64", "__dl__ZNK6soinfo12get_realpathEv");
-  return _get_realpath(soinfo);
-}
-
+// impl at "android_restriction.cc"
+extern std::vector<void *> linker_get_solist();
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result = NULL;
 
-  auto solist = get_linker_solist();
+  auto solist = linker_get_solist();
   for (auto soinfo : solist) {
-    DLOG("DobbySymbolResolver::dlsym: %s", get_realpath(soinfo));
-    result = dlsym(soinfo, symbol_name_pattern);
-    if (result)
-      return result;
+    if(image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
+      DLOG("DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
+      result = dlsym(soinfo, symbol_name_pattern);
+      if (result)
+        return result;
+    }
   }
 
   result = resolve_elf_internal_symbol(image_name, symbol_name_pattern);

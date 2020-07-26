@@ -15,9 +15,7 @@
 
 #include "dobby.h"
 
-#include <android/log.h>
-#define LOG_TAG "DobbyExample"
-#define LOG(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#include "common/headers/common_header.h"
 
 std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 
