@@ -105,10 +105,12 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
     if (file_mem)
       get_syms((ElfW(Ehdr) *)file_mem, &symtab, &strtab, &count);
-    if (symtab && strtab) {
+
+    if (symtab && strtab)
       result = iterateSymbolTable(symbol_name, symtab, strtab, count);
+
+    if (result)
       result = (void *)((addr_t)result + (addr_t)module.load_address);
-    }
 
     if (file_mem)
       file_unmap(file_mem, file_mem_size);
@@ -124,10 +126,12 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
       if (file_mem)
         get_syms((ElfW(Ehdr) *)file_mem, &symtab, &strtab, &count);
-      if (symtab && strtab) {
+
+      if (symtab && strtab)
         result = iterateSymbolTable(symbol_name, symtab, strtab, count);
+
+      if (result)
         result = (void *)((addr_t)result + (addr_t)module.load_address);
-      }
 
       if (file_mem)
         file_unmap(file_mem, file_mem_size);
@@ -146,7 +150,7 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name_patter
 
   auto solist = linker_get_solist();
   for (auto soinfo : solist) {
-    if(image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
+    if (image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
       DLOG("DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
       result = dlsym(soinfo, symbol_name_pattern);
       if (result)
