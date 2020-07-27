@@ -13,6 +13,8 @@ char *linker_soinfo_get_realpath(soinfo_t soinfo);
 
 void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo));
 
+void linker_disable_namespace_restriction();
+
 #ifdef __cplusplus
 }
 #endif

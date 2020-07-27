@@ -77,12 +77,12 @@ int fake_dlclose(void *__handle) {
 
 #if 0
 __attribute__((constructor)) static void ctor() {
-#if 0
-    DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
-#else
-    void *dl = dlopen("libdl.so", RTLD_LAZY);
+#if defined(__ANDROID__)
+  void *dl = dlopen("libdl.so", RTLD_LAZY);
     void* __loader_dlopen = dlsym(dl, "__loader_dlopen");
     DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+#else
+    DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
 #endif
 
     DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);

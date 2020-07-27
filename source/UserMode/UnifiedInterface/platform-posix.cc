@@ -28,7 +28,7 @@
 #endif
 
 #if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-#define LOG_TAG "Dobby"
+#define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
 #endif
 
@@ -129,7 +129,7 @@ void OSPrint::Print(const char *format, ...) {
 
 void OSPrint::VPrint(const char *format, va_list args) {
 #if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
+  __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, format, args);
 #else
   vprintf(format, args);
 #endif

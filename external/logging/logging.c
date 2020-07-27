@@ -74,9 +74,9 @@ int custom_log(const char *fmt, ...) {
 
   if (!_syslog_enabled && !_file_log_enabled) {
 #if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-#define LOG_TAG "Dobby"
+#define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
-    __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, fmt, args);
+    __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, args);
 #else
     vprintf(fmt, args);
 #endif

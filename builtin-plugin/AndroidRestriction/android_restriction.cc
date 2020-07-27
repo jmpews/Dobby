@@ -26,7 +26,7 @@ void *trick_dlopen(const char *filename, int flag) {
     __loader_dlopen = (__loader_dlopen_t)DobbySymbolResolver(NULL, "__loader_dlopen");
 
   // fake caller address
-  return __loader_dlopen(filename, flag, (void *)__loader_dlopen);
+  return __loader_dlopen(filename, flag, (void *)open);
 }
 
 std::vector<soinfo_t> linker_solist;
@@ -94,4 +94,25 @@ void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo)) {
     if (ret != 0)
       break;
   }
+}
+typedef void *android_namespace_t;
+android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
+  static android_namespace_t (*_get_primary_namespace)(soinfo_t) = NULL;
+  if (!_get_primary_namespace)
+    _get_primary_namespace = (android_namespace_t (*)(soinfo_t))resolve_elf_internal_symbol("linker64", "__dl__ZN6soinfo21get_primary_namespaceEv");
+  return _get_primary_namespace(soinfo);
+}
+
+static int iterate_soinfo_cb(soinfo_t soinfo) {
+  android_namespace_t ns = NULL;
+  ns = linker_soinfo_get_primary_namespace(soinfo);
+  // set is_isolated_ as false
+  *(uint8_t *)((addr_t)ns + 0x8) = false;
+  DLOG("lib: %s", linker_soinfo_get_realpath(soinfo));
+  std::vector<std::string> paths = {"/system/lib64", "/sytem/lib", "/sytem/bin"};
+  *(std::vector<std::string> **)((addr_t)ns + 0x10) = std::move(paths);
+  return 0;
+}
+void linker_disable_namespace_restriction() {
+  linker_iterate_soinfo(iterate_soinfo_cb);
 }
