@@ -21,7 +21,7 @@ cmake .. -G Xcode \
 -DENABLE_VISIBILITY=1 \
 -DDEPLOYMENT_TARGET=9.3 \
 -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
--DDynamicBinaryInstrument=ON -DNearBranchTrampoline=ON \
+-DDynamicBinaryInstrument=ON -DNearBranch=ON \
 -DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 ```
 

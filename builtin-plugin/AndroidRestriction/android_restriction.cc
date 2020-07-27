@@ -43,11 +43,11 @@ std::vector<soinfo_t> linker_get_solist() {
 
   static soinfo_t (*solist_get_head)() = NULL;
   if (!solist_get_head)
-    solist_get_head = (soinfo_t (*)())resolve_elf_internal_symbol(linker_path, "__dl__Z15solist_get_headv");
+    solist_get_head = (soinfo_t(*)())resolve_elf_internal_symbol(linker_path, "__dl__Z15solist_get_headv");
 
   static soinfo_t (*solist_get_somain)() = NULL;
   if (!solist_get_somain)
-    solist_get_somain = (soinfo_t (*)())resolve_elf_internal_symbol(linker_path, "__dl__Z17solist_get_somainv");
+    solist_get_somain = (soinfo_t(*)())resolve_elf_internal_symbol(linker_path, "__dl__Z17solist_get_somainv");
 
   static addr_t *solist_head = NULL;
   if (!solist_head)
@@ -99,18 +99,22 @@ typedef void *android_namespace_t;
 android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
   static android_namespace_t (*_get_primary_namespace)(soinfo_t) = NULL;
   if (!_get_primary_namespace)
-    _get_primary_namespace = (android_namespace_t (*)(soinfo_t))resolve_elf_internal_symbol("linker64", "__dl__ZN6soinfo21get_primary_namespaceEv");
+    _get_primary_namespace = (android_namespace_t(*)(soinfo_t))resolve_elf_internal_symbol(
+        "linker64", "__dl__ZN6soinfo21get_primary_namespaceEv");
   return _get_primary_namespace(soinfo);
 }
 
+void linker_namespace_set_ld_library_paths(android_namespace_t ns, std::vector<std::string> &&library_paths) {
+  *(std::vector<std::string> *)((addr_t)ns + 0x10) = std::move(library_paths);
+}
 static int iterate_soinfo_cb(soinfo_t soinfo) {
   android_namespace_t ns = NULL;
-  ns = linker_soinfo_get_primary_namespace(soinfo);
+  ns                     = linker_soinfo_get_primary_namespace(soinfo);
   // set is_isolated_ as false
   *(uint8_t *)((addr_t)ns + 0x8) = false;
   DLOG("lib: %s", linker_soinfo_get_realpath(soinfo));
   std::vector<std::string> paths = {"/system/lib64", "/sytem/lib", "/sytem/bin"};
-  *(std::vector<std::string> **)((addr_t)ns + 0x10) = std::move(paths);
+  linker_namespace_set_ld_library_paths(ns, paths);
   return 0;
 }
 void linker_disable_namespace_restriction() {
