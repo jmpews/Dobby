@@ -11,6 +11,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 #include "dobby.h"
 #include "dobby_symbol_resolver.h"
@@ -25,6 +26,14 @@ const char *LINKER_PATH = (char *)"/system/bin/linker64";
 #else
 const char *LINKER_PATH = (char *)"/system/bin/linker";
 #endif
+
+#include <sys/system_properties.h>
+static int get_android_system_version() {
+  char os_version_str[PROP_VALUE_MAX+1];
+  __system_property_get("ro.build.version.release", os_version_str);
+  int os_version_int = atoi(os_version_str);
+  return os_version_int;
+}
 
 void *linker_dlopen(const char *filename, int flag) {
   typedef void *(*__loader_dlopen_t)(const char *filename, int flags, const void *caller_addr);
@@ -107,18 +116,33 @@ android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
 
 static int iterate_soinfo_cb(soinfo_t soinfo) {
   android_namespace_t ns = NULL;
-  ns                     = linker_soinfo_get_primary_namespace(soinfo);
+  ns = linker_soinfo_get_primary_namespace(soinfo);
   DLOG("lib: %s", linker_soinfo_get_realpath(soinfo));
 
   // set is_isolated_ as false
-  *(uint8_t *)((addr_t)ns + 0x8) = false;
+  // no need for this actually
+  int STRUCT_OFFSET(android_namespace_t, is_isolated_) = 0x8;
+  *(uint8_t *) ((addr_t) ns + STRUCT_OFFSET(android_namespace_t, is_isolated_)) = false;
 
-  if(*(void **)((addr_t)ns + 0x10)) {
-    LOG("lib already hack");
+
+  std::vector<std::string> ld_library_paths = {"/system/lib64", "/sytem/lib"};
+  if (get_android_system_version() >= 10) {
+    ld_library_paths.push_back("/apex/com.android.runtime/lib64");
+    ld_library_paths.push_back("/apex/com.android.runtime/lib");
   }
-  std::vector<std::string> ld_library_paths        = {"/system/lib64", "/sytem/lib"};
-  *(std::vector<std::string> *)((addr_t)ns + 0x10) = std::move(ld_library_paths);
+  int STRUCT_OFFSET(android_namespace_t, ld_library_paths_) = 0x10;
+  if(*(void **)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_))) {
+    std::vector<std::string> orig_ld_library_paths = *(std::vector<std::string> *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_));
+    orig_ld_library_paths.insert(orig_ld_library_paths.end(),ld_library_paths.begin(), ld_library_paths.end());
 
+    // remove duplicates
+    {
+      std::set<std::string> paths(orig_ld_library_paths.begin(), orig_ld_library_paths.end());
+      orig_ld_library_paths.assign(paths.begin(), paths.end());
+    }
+  } else {
+    *(std::vector<std::string> *) ((addr_t) ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_)) = std::move(ld_library_paths);
+  }
   return 0;
 }
 
@@ -132,11 +156,12 @@ bool linker_namespace_is_is_accessible(android_namespace_t ns, const std::string
 void linker_disable_namespace_restriction() {
   linker_iterate_soinfo(iterate_soinfo_cb);
 
-//  void *linker_namespace_is_is_accessible_ptr =
-//      resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZN19android_namespace_t13is_accessibleERKNSt3__112basic_"
-//                                               "stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE");
-//  DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
-//            (void **)&orig_linker_namespace_is_is_accessible);
+  // no need for this actually
+  void *linker_namespace_is_is_accessible_ptr =
+      resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZN19android_namespace_t13is_accessibleERKNSt3__112basic_"
+                                               "stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE");
+  DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
+            (void **)&orig_linker_namespace_is_is_accessible);
 
   LOG("disable namespace restriction done");
 }
