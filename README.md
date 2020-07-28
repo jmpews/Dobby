@@ -17,11 +17,31 @@ cd Dobby/example/
 mkdir build; cd build; cmake ..
 ```
 
+#### iOS ARM64E
+
 ```
 void *posix_spawn_ptr = __builtin_ptrauth_strip((void *)posix_spawn, ptrauth_key_asia);
 void *fake_posix_spawn_ptr = __builtin_ptrauth_strip((void *)fake_posix_spawn, ptrauth_key_asia);
+
 DobbyHook((void *)posix_spawn_ptr, (void *)fake_posix_spawn_ptr, (void **)&orig_posix_spawn);
+
 *(void **)&orig_posix_spawn = (void *)ptrauth_sign_unauthenticated((void *)orig_posix_spawn, ptrauth_key_asia, 0);
+```
+
+#### Android Linker Restriction
+
+```
+# impl at SymbolResolver/elf/dobby_symbol_resolver.cc
+void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
+DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+```
+
+```
+# impl at AndroidRestriction/android_restriction.cc
+linker_disable_namespace_restriction();
+void *handle = NULL;
+handle       = dlopen(lib, RTLD_LAZY);
+vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 ```
 
 ## Documentation

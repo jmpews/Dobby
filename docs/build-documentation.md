@@ -13,19 +13,16 @@ option(GENERATE_SHARED "Build shared library" ON)
 
 option(GENERATE_FRAMEWORK "Build framework library" ON)
 
-option(DLOG "Enable debug log" OFF)
-
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
-option(NearBranch "Use Near Branch, for aarch64, [b xxx] branch, instead of [ldr x17, #label; br x17; .long xxx .long xxx]" OFF)
-
-option(Plugin.Gollum "Bundle Gollum exploit framework" OFF)
+option(NearBranch "Enable Near Branch Trampoline" ON)
 
 option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
 
 option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
 option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+
 ```
 
 ## Build for host
@@ -59,7 +56,7 @@ cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64
 
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DPLATFORM=OS64 -DARCHS="arm64e" -DCMAKE_SYSTEM_PROCESSOR=arm64e \
+-DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
 -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
 -DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
 

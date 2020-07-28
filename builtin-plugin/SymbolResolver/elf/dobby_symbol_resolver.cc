@@ -1,6 +1,3 @@
-// https: //github.com/jankopanski/interceptor/blob/8765758d3c6daf312cedece1fa0a9545bf700bb4/interceptor.c
-// https://github.com/liuyx/dd_dlopen/blob/9631286163fd7eaa7651322d4302ecea8f290d43/dd_dlopen.cpp
-
 #include <elf.h>
 #include <jni.h>
 #include <string>

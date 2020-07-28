@@ -60,3 +60,19 @@ void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 
 DobbyInstrument((void *)malloc, malloc_handler)
 ```
+
+## Android Linker Restriction
+
+```
+# impl at SymbolResolver/elf/dobby_symbol_resolver.cc
+void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
+DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+```
+
+```
+# impl at AndroidRestriction/android_restriction.cc
+linker_disable_namespace_restriction();
+void *handle = NULL;
+handle       = dlopen(lib, RTLD_LAZY);
+vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
+```

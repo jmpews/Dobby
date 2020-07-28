@@ -1,5 +1,3 @@
-
-
 #include <stdlib.h> /* getenv */
 #include <stdio.h>
 #include <string.h>
@@ -75,17 +73,20 @@ int fake_dlclose(void *__handle) {
   return orig_dlclose(__handle);
 }
 
-#if 0
+#if 1
 __attribute__((constructor)) static void ctor() {
 #if defined(__ANDROID__)
-  void *dl = dlopen("libdl.so", RTLD_LAZY);
-    void* __loader_dlopen = dlsym(dl, "__loader_dlopen");
-    DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+#if 0
+  void *dl              = dlopen("libdl.so", RTLD_LAZY);
+  void *__loader_dlopen = dlsym(dl, "__loader_dlopen");
+#endif
+  void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
+  DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
 #else
-    DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
 #endif
 
-    DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
-    DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
+  DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
+  DobbyHook((void *)dlclose, (void *)fake_dlclose, (void **)&orig_dlclose);
 }
 #endif
