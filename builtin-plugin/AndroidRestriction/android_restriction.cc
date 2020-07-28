@@ -7,7 +7,8 @@
 #include <link.h>
 #include <sys/mman.h>
 
-#include <fcntl.h> // open
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <unordered_map>
 #include <vector>
@@ -42,7 +43,8 @@ void *linker_dlopen(const char *filename, int flag) {
     __loader_dlopen = (__loader_dlopen_t)DobbySymbolResolver(NULL, "__loader_dlopen");
 
   // fake caller address
-  return __loader_dlopen(filename, flag, (void *)open);
+  void *open_ptr = dlsym(RTLD_DEFAULT, "open");
+  return __loader_dlopen(filename, flag, (const void *)open_ptr);
 }
 
 std::vector<soinfo_t> linker_solist;
