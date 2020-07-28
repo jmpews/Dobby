@@ -29,7 +29,7 @@ const char *LINKER_PATH = (char *)"/system/bin/linker";
 
 #include <sys/system_properties.h>
 static int get_android_system_version() {
-  char os_version_str[PROP_VALUE_MAX+1];
+  char os_version_str[PROP_VALUE_MAX + 1];
   __system_property_get("ro.build.version.release", os_version_str);
   int os_version_int = atoi(os_version_str);
   return os_version_int;
@@ -97,14 +97,14 @@ char *linker_soinfo_get_realpath(soinfo_t soinfo) {
   return _get_realpath(soinfo);
 }
 
-void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo)) {
-  auto solist = linker_get_solist();
-  for (auto it = solist.begin(); it != solist.end(); it++) {
-    int ret = cb(*it);
-    if (ret != 0)
-      break;
-  }
+uintptr_t linker_soinfo_to_handle(soinfo_t soinfo) {
+  static uintptr_t (*_linker_soinfo_to_handle)(soinfo_t) = NULL;
+  if (!_linker_soinfo_to_handle)
+    _linker_soinfo_to_handle =
+        (uintptr_t(*)(soinfo_t))resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZN6soinfo9to_handleEv");
+  return _linker_soinfo_to_handle(soinfo);
 }
+
 typedef void *android_namespace_t;
 android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
   static android_namespace_t (*_get_primary_namespace)(soinfo_t) = NULL;
@@ -114,16 +114,24 @@ android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
   return _get_primary_namespace(soinfo);
 }
 
+void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo)) {
+  auto solist = linker_get_solist();
+  for (auto it = solist.begin(); it != solist.end(); it++) {
+    int ret = cb(*it);
+    if (ret != 0)
+      break;
+  }
+}
+
 static int iterate_soinfo_cb(soinfo_t soinfo) {
   android_namespace_t ns = NULL;
-  ns = linker_soinfo_get_primary_namespace(soinfo);
+  ns                     = linker_soinfo_get_primary_namespace(soinfo);
   DLOG("lib: %s", linker_soinfo_get_realpath(soinfo));
 
   // set is_isolated_ as false
   // no need for this actually
-  int STRUCT_OFFSET(android_namespace_t, is_isolated_) = 0x8;
-  *(uint8_t *) ((addr_t) ns + STRUCT_OFFSET(android_namespace_t, is_isolated_)) = false;
-
+  int STRUCT_OFFSET(android_namespace_t, is_isolated_)                        = 0x8;
+  *(uint8_t *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, is_isolated_)) = false;
 
   std::vector<std::string> ld_library_paths = {"/system/lib64", "/sytem/lib"};
   if (get_android_system_version() >= 10) {
@@ -131,9 +139,10 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
     ld_library_paths.push_back("/apex/com.android.runtime/lib");
   }
   int STRUCT_OFFSET(android_namespace_t, ld_library_paths_) = 0x10;
-  if(*(void **)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_))) {
-    std::vector<std::string> orig_ld_library_paths = *(std::vector<std::string> *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_));
-    orig_ld_library_paths.insert(orig_ld_library_paths.end(),ld_library_paths.begin(), ld_library_paths.end());
+  if (*(void **)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_))) {
+    std::vector<std::string> orig_ld_library_paths =
+        *(std::vector<std::string> *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_));
+    orig_ld_library_paths.insert(orig_ld_library_paths.end(), ld_library_paths.begin(), ld_library_paths.end());
 
     // remove duplicates
     {
@@ -141,7 +150,8 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
       orig_ld_library_paths.assign(paths.begin(), paths.end());
     }
   } else {
-    *(std::vector<std::string> *) ((addr_t) ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_)) = std::move(ld_library_paths);
+    *(std::vector<std::string> *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, ld_library_paths_)) =
+        std::move(ld_library_paths);
   }
   return 0;
 }

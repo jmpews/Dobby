@@ -150,9 +150,10 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name_patter
 
   auto solist = linker_get_solist();
   for (auto soinfo : solist) {
+    uintptr_t handle = linker_soinfo_to_handle(soinfo);
     if (image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
       DLOG("DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
-      result = dlsym(soinfo, symbol_name_pattern);
+      result = dlsym((void *)handle, symbol_name_pattern);
       if (result)
         return result;
     }
