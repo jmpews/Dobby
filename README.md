@@ -17,6 +17,14 @@ cd Dobby/example/
 mkdir build; cd build; cmake ..
 ```
 
+#### [Build Installation](docs/build-documentation.md)
+
+#### [Getting Started with iOS](docs/get-started-ios.md)
+
+#### [Getting Started with Android](docs/get-started-android.md)
+
+## Quick demo
+
 #### iOS ARM64E
 
 ```

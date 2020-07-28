@@ -1,67 +1,55 @@
 # Getting Started
 
+## create native project and update CMakeLists.txt
+
+```
+set(DobbyHome D:/TimeDisk/Workspace/Project.wrk/Dobby)
+include_directories(
+  ${DobbyHome}/include
+  ${DobbyHome}/source
+  ${DobbyHome}/builtin-plugin
+  ${DobbyHome}/builtin-plugin/AndroidRestriction
+  ${DobbyHome}/builtin-plugin/SymbolResolver
+  ${DobbyHome}/external/logging
+)
+add_library( # Sets the name of the library.
+  native-lib
+  # Sets the library as a shared library.
+  SHARED
+
+  ${DobbyHome}/builtin-plugin/AndroidRestriction/android_restriction_demo.cc
+
+  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
+  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
+
+  # Provides a relative path to your source file(s).
+  native-lib.cpp)
+
+macro(SET_OPTION option value)
+  set(${option} ${value} CACHE INTERNAL "" FORCE)
+endmacro()
+
+SET_OPTION(DOBBY_DEBUG ON)
+SET_OPTION(GENERATE_SHARED OFF)
+SET_OPTION(DynamicBinaryInstrument ON)
+SET_OPTION(NearBranch ON)
+SET_OPTION(Plugin.SymbolResolver ON)
+add_subdirectory(D:/TimeDisk/Workspace/Project.wrk/Dobby dobby)
+```
+
 ## replace hook function
 
-```
-extern "C" {
-  extern int DobbyHook(void *function_address, void *replace_call, void **origin_call);
-}
+ref source `builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc`
 
-size_t (*origin_fread)(void * ptr, size_t size, size_t nitems, FILE * stream);
-
-size_t (fake_fread)(void * ptr, size_t size, size_t nitems, FILE * stream) {
-    // Do What you Want.
-    return origin_fread(ptr, size, nitems, stream);
-}
-
-DobbyHook((void *)fread, (void *)fake_fread, (void **)&origin_fread);
-```
+ref source `builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc`
 
 ## instrument function
 
-```
-
-uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
-  uintptr_t result;
-#if defined(_M_X64) || defined(__x86_64__)
-#if defined(_WIN32)
-  result = reg_ctx->general.regs.rcx;
-#else
-  result = reg_ctx->general.regs.rdi;
-#endif
-#elif defined(__arm64__) || defined(__aarch64__)
-  result = reg_ctx->general.regs.x0;
-#elif defined(__arm__)
-  result = reg_ctx->general.regs.r0;
-#else
-#error "Not Support Architecture."
-#endif
-  return result;
-}
-
-void format_integer_manually(char *buf, uint64_t integer) {
-  int tmp = 0;
-  for (tmp = integer; tmp > 0; tmp = (tmp >> 4)) {
-    buf += (tmp % 16);
-    buf--;
-  }
-}
-
-// [ATTENTION]:
-// printf will call 'malloc' internally, and will crash in a loop.
-// so, use 'puts' is a better choice.
-void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  size_t size_ = 0;
-  size_        = getCallFirstArg(reg_ctx);
-  char *buffer = "[-] function malloc first arg: 0x00000000.\n";
-  format_integer_manually(strchr(buffer, '.') - 1, size_);
-  puts(buffer);
-}
-
-DobbyInstrument((void *)malloc, malloc_handler)
-```
+ref source `builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc`
 
 ## Android Linker Restriction
+
+ref source `builtin-plugin/AndroidRestriction/android_restriction_demo.cc`
 
 ```
 # impl at SymbolResolver/elf/dobby_symbol_resolver.cc

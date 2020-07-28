@@ -61,7 +61,7 @@ void malloc_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 DobbyInstrument((void *)malloc, malloc_handler)
 ```
 
-## hook pac function
+## replace pac function
 
 ```
 void *posix_spawn_ptr = __builtin_ptrauth_strip((void *)posix_spawn, ptrauth_key_asia);

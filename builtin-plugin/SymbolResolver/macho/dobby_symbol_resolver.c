@@ -14,8 +14,6 @@
 
 #include "shared_cache_internal.h"
 
-#include "re/re.h"
-
 void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, char **string_pool,
                               uint32_t *nlist_count) {
   segment_command_t *curr_seg_cmd;
@@ -64,13 +62,10 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
       uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
       char *tmp_symbol_name  = string_pool + strtab_offset;
       // TODO: what you want !!!
-      if (0 && re_match(name_pattern, tmp_symbol_name) != -1) {
-        return (void *)(nlist_array[i].n_value);
-      }
 #if 0 // DEBUG
       printf("> %s", tmp_symbol_name);
 #endif
-      if (1 && strcmp(name_pattern, tmp_symbol_name) == 0) {
+      if (strcmp(name_pattern, tmp_symbol_name) == 0) {
         return (void *)(nlist_array[i].n_value);
       }
     }
