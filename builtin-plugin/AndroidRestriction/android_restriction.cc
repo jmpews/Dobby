@@ -22,18 +22,28 @@
 // impl at "dobby_symbol_resolver.cc"
 extern void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_name);
 
-#if __LP64__
-const char *LINKER_PATH = (char *)"/system/bin/linker64";
-#else
-const char *LINKER_PATH = (char *)"/system/bin/linker";
-#endif
-
 #include <sys/system_properties.h>
 static int get_android_system_version() {
   char os_version_str[PROP_VALUE_MAX + 1];
   __system_property_get("ro.build.version.release", os_version_str);
   int os_version_int = atoi(os_version_str);
   return os_version_int;
+}
+
+static char *get_android_linker_path() {
+#if __LP64__
+  if (get_android_system_version() >= 10) {
+    return "/apex/com.android.runtime/bin/linker64";
+  } else {
+    return "/system/bin/linker64";
+  }
+#else
+  if (get_android_system_version() >= 10) {
+    return "/apex/com.android.runtime/bin/linker";
+  } else {
+    return "/system/bin/linker";
+  }
+#endif
 }
 
 void *linker_dlopen(const char *filename, int flag) {
@@ -55,11 +65,13 @@ std::vector<soinfo_t> linker_get_solist() {
 
   static soinfo_t (*solist_get_head)() = NULL;
   if (!solist_get_head)
-    solist_get_head = (soinfo_t(*)())resolve_elf_internal_symbol(LINKER_PATH, "__dl__Z15solist_get_headv");
+    solist_get_head =
+        (soinfo_t(*)())resolve_elf_internal_symbol(get_android_linker_path(), "__dl__Z15solist_get_headv");
 
   static soinfo_t (*solist_get_somain)() = NULL;
   if (!solist_get_somain)
-    solist_get_somain = (soinfo_t(*)())resolve_elf_internal_symbol(LINKER_PATH, "__dl__Z17solist_get_somainv");
+    solist_get_somain =
+        (soinfo_t(*)())resolve_elf_internal_symbol(get_android_linker_path(), "__dl__Z17solist_get_somainv");
 
   static addr_t *solist_head = NULL;
   if (!solist_head)
@@ -73,9 +85,9 @@ std::vector<soinfo_t> linker_get_solist() {
 #define PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
 #define STRUCT_OFFSET PARAM_OFFSET
   int STRUCT_OFFSET(solist, next) = 0;
-  for (size_t i = 0; i < 16; i++) {
-    if (*(addr_t *)((addr_t)solist_head + i * 8) == somain) {
-      STRUCT_OFFSET(solist, next) = i * 8;
+  for (size_t i = 0; i < 1024 / sizeof(void *); i++) {
+    if (*(addr_t *)((addr_t)solist_head + i * sizeof(void *)) == somain) {
+      STRUCT_OFFSET(solist, next) = i * sizeof(void *);
       break;
     }
   }
@@ -95,7 +107,8 @@ std::vector<soinfo_t> linker_get_solist() {
 char *linker_soinfo_get_realpath(soinfo_t soinfo) {
   static char *(*_get_realpath)(soinfo_t) = NULL;
   if (!_get_realpath)
-    _get_realpath = (char *(*)(soinfo_t))resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZNK6soinfo12get_realpathEv");
+    _get_realpath =
+        (char *(*)(soinfo_t))resolve_elf_internal_symbol(get_android_linker_path(), "__dl__ZNK6soinfo12get_realpathEv");
   return _get_realpath(soinfo);
 }
 
@@ -103,7 +116,7 @@ uintptr_t linker_soinfo_to_handle(soinfo_t soinfo) {
   static uintptr_t (*_linker_soinfo_to_handle)(soinfo_t) = NULL;
   if (!_linker_soinfo_to_handle)
     _linker_soinfo_to_handle =
-        (uintptr_t(*)(soinfo_t))resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZN6soinfo9to_handleEv");
+        (uintptr_t(*)(soinfo_t))resolve_elf_internal_symbol(get_android_linker_path(), "__dl__ZN6soinfo9to_handleEv");
   return _linker_soinfo_to_handle(soinfo);
 }
 
@@ -112,7 +125,7 @@ android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
   static android_namespace_t (*_get_primary_namespace)(soinfo_t) = NULL;
   if (!_get_primary_namespace)
     _get_primary_namespace = (android_namespace_t(*)(soinfo_t))resolve_elf_internal_symbol(
-        LINKER_PATH, "__dl__ZN6soinfo21get_primary_namespaceEv");
+        get_android_linker_path(), "__dl__ZN6soinfo21get_primary_namespaceEv");
   return _get_primary_namespace(soinfo);
 }
 
@@ -169,9 +182,9 @@ void linker_disable_namespace_restriction() {
   linker_iterate_soinfo(iterate_soinfo_cb);
 
   // no need for this actually
-  void *linker_namespace_is_is_accessible_ptr =
-      resolve_elf_internal_symbol(LINKER_PATH, "__dl__ZN19android_namespace_t13is_accessibleERKNSt3__112basic_"
-                                               "stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE");
+  void *linker_namespace_is_is_accessible_ptr = resolve_elf_internal_symbol(
+      get_android_linker_path(), "__dl__ZN19android_namespace_t13is_accessibleERKNSt3__112basic_"
+                                 "stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE");
   DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
             (void **)&orig_linker_namespace_is_is_accessible);
 

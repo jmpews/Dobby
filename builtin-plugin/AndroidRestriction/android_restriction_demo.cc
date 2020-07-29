@@ -17,7 +17,7 @@ __attribute__((constructor)) static void ctor() {
 
   void *vm = NULL;
 
-  vm = DobbySymbolResolver("/system/lib64/libandroid_runtime.so", "_ZN7android14AndroidRuntime7mJavaVME");
+  vm = DobbySymbolResolver(lib, "_ZN7android14AndroidRuntime7mJavaVME");
   LOG("DobbySymbolResolver::vm %p", vm);
 
 #if 0
