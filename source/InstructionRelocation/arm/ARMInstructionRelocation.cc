@@ -340,7 +340,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
 
     // B-T4 AKA b.w
     if ((op3 & 0b101) == 0b001) {
-      int S     = sbits(inst1, 10, 10);
+      int S     = bit(inst1, 10);
       int J1    = bit(inst2, 13);
       int J2    = bit(inst2, 11);
       int imm10 = bits(inst1, 0, 9);
@@ -348,7 +348,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, Lite
       int i1    = !(J1 ^ S);
       int i2    = !(J2 ^ S);
 
-      int32_t label = (S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
+      int32_t label = (-S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
       addr32_t val  = from_pc + label;
 
       // ===

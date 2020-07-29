@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <stdarg.h>
 
+#include <dlfcn.h>
+
 #include <iostream>
 #include <fstream>
 
@@ -96,10 +98,16 @@ int fake_close(int fd) {
 
 #if 0
 __attribute__((constructor)) static void ctor() {
-  printf("hello");
-  DobbyHook((void *)open, (void *)fake_open, (void **)&orig_open);
-  DobbyHook((void *)write, (void *)fake_write, (void **)&orig_write);
-  DobbyHook((void *)read, (void *)fake_read, (void **)&orig_read);
-  DobbyHook((void *)close, (void *)fake_close, (void **)&orig_close);
+  void *open_ptr = dlsym(RTLD_DEFAULT, "open");
+  DobbyHook((void *)open_ptr, (void *)fake_open, (void **)&orig_open);
+
+  void *write_ptr = dlsym(RTLD_DEFAULT, "write");
+  DobbyHook((void *)write_ptr, (void *)fake_write, (void **)&orig_write);
+
+  void *read_ptr = dlsym(RTLD_DEFAULT, "read");
+  DobbyHook((void *)read_ptr, (void *)fake_read, (void **)&orig_read);
+
+  void *close_ptr = dlsym(RTLD_DEFAULT, "close");
+  DobbyHook((void *)close_ptr, (void *)fake_close, (void **)&orig_close);
 }
 #endif
