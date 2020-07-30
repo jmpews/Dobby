@@ -13,7 +13,7 @@ namespace arm {
 class ThumbPseudoLabel : public PseudoLabel {
 public:
   // thumb1/thumb2 pseudo label type, only support Thumb1-Ldr | Thumb2-Ldr
-  enum CustomThumbPseudoLabelType { kThumb1Ldr, kThumb2Ldr };
+  enum CustomThumbPseudoLabelType { kThumb1Ldr, kThumb2LiteralLdr };
 
   // fix the instruction which not link to the label yet.
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
@@ -25,7 +25,6 @@ public:
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
       // instruction offset to label
-      int32_t offset            = pos() - instruction->position_ - Thumb_PC_OFFSET;
       const thumb2_inst_t instr = _buffer->LoadThumb2Inst(instruction->position_);
       const thumb1_inst_t inst1 = _buffer->LoadThumb1Inst(instruction->position_);
       const thumb1_inst_t inst2 = _buffer->LoadThumb1Inst(instruction->position_ + sizeof(thumb1_inst_t));
@@ -34,7 +33,8 @@ public:
       case kThumb1Ldr: {
         UNREACHABLE();
       } break;
-      case kThumb2Ldr: {
+      case kThumb2LiteralLdr: {
+        int32_t offset = pos() - ALIGN(instruction->position_, 4) - Thumb_PC_OFFSET;
         uint32_t imm12 = offset;
         CHECK(imm12 < (1 << 12));
         uint16_t encoding = inst2 & 0xf000;
@@ -60,7 +60,7 @@ public:
       case kThumb1Ldr: {
         UNREACHABLE();
       } break;
-      case kThumb2Ldr: {
+      case kThumb2LiteralLdr: {
         uint32_t imm12 = offset;
         CHECK(imm12 < (1 << 12));
         uint16_t encoding = inst2 & 0xf000;
@@ -258,7 +258,7 @@ public:
       t2_ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(buffer_->getSize(), ThumbPseudoLabel::kThumb2Ldr);
+      label->link_to(buffer_->getSize(), ThumbPseudoLabel::kThumb2LiteralLdr);
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
@@ -284,8 +284,8 @@ public:
   // ThumbThumbRelocLabelEntry
 
   void RelocFixup() {
-      if (data_labels_ == NULL)
-          return;
+    if (data_labels_ == NULL)
+      return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       ThumbThumbRelocLabelEntry *label = (ThumbThumbRelocLabelEntry *)data_labels_->getObject(i);
       ThumbPseudoBind(label);
