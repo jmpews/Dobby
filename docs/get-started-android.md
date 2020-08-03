@@ -30,7 +30,7 @@ macro(SET_OPTION option value)
 endmacro()
 
 SET_OPTION(DOBBY_DEBUG ON)
-SET_OPTION(GENERATE_SHARED OFF)
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
 SET_OPTION(DynamicBinaryInstrument ON)
 SET_OPTION(NearBranch ON)
 SET_OPTION(Plugin.SymbolResolver ON)
@@ -51,7 +51,7 @@ ref source `builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.c
 
 ref source `builtin-plugin/AndroidRestriction/android_restriction_demo.cc`
 
-```
+```c++
 # impl at SymbolResolver/elf/dobby_symbol_resolver.cc
 void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
 DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);

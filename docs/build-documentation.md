@@ -9,9 +9,9 @@ git clone --depth 1 git@github.com:jmpews/Dobby.git
 ## Cmake build options
 
 ```
-option(GENERATE_SHARED "Build shared library" ON)
+option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(GENERATE_FRAMEWORK "Build framework library" ON)
+option(Darwin.GenerateFramework "Build framework library" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
 
@@ -19,9 +19,9 @@ option(NearBranch "Enable Near Branch Trampoline" ON)
 
 option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
 
-option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
+option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
-option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
 ```
 
@@ -44,7 +44,7 @@ cd Dobby && mkdir build_for_macos_x64 && cd build_for_macos_x64
 
 cmake .. \
 -DCMAKE_BUILD_TYPE=Release \
--DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+-DPlugin.SymbolResolver=ON -DPlugin.Darwin.HideLibrary=ON -DPlugin.Darwin.ObjectiveC=ON
 
 make -j4
 ```
@@ -58,7 +58,7 @@ cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
 -DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
 -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
--DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.HideLibrary=ON -DPlugin.ObjectiveC=ON
+-DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.Darwin.HideLibrary=ON -DPlugin.Darwin.ObjectiveC=ON -DDarwin.GenerateFramework=ON
 
 make -j4
 ```
@@ -128,7 +128,7 @@ macro(SET_OPTION option value)
 endmacro()
 
 SET_OPTION(DOBBY_DEBUG ON)
-SET_OPTION(GENERATE_SHARED OFF)
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
 SET_OPTION(DynamicBinaryInstrument ON)
 SET_OPTION(NearBranch ON)
 SET_OPTION(Plugin.SymbolResolver ON)

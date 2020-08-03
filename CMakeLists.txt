@@ -17,29 +17,26 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # ===== Handle Option =====
-option(GENERATE_SHARED "Build shared library" ON)
+option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(GENERATE_FRAMEWORK "Build framework library" ON)
-
-option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
+option(DOBBY_DEBUG "Enable debug logging" OFF)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
-option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
+option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
-option(Plugin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
+option(DBI.FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-option(Plugin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+option(Darwin.GenerateFramework"Build darwin framework library" ON)
+
+option(Plugin.SymbolResolver "resolve symbol by [DobbySymbolResolver] " ON)
 
 # frida is better choice
 option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
-# frida is better choice
-# option(Plugin.SensitiveFunction "Auto monitor sensitive function" OFF)
+option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
-# option(FunctionWrapper "Enable  Function Wrapper, Add PreCall and PostCall for the origin function" OFF)
-
-# option(CLOSURE_BRIDGE_TEMPLATE "Enable closure bridge assembly template" OFF)
+option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
 # Use native assembly bridge to replace the runtime codegen
 # if (CLOSURE_BRIDGE_TEMPLATE)
@@ -53,8 +50,16 @@ if (DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-  message(STATUS "[Dobby] Enable Debug Mode")
+  message(STATUS "[Dobby] Enable debug logging")
 endif ()
+
+# Enable full floating point register pack
+# for arm64, allow access q8 - q31
+if(DBI.FullFloatingPointRegisterPack)
+  add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
+  message(STATUS "[Dobby] Save and pack all floating-point registers")
+endif ()
+
 
 if (SYSTEM.iOS)
   # -lstdc++
@@ -269,20 +274,20 @@ if(Plugin.SymbolResolver)
     )
   endif()
 endif()
-if(Plugin.HideLibrary)
+if(Plugin.Darwin.HideLibrary)
   if(NOT SYSTEM.Darwin)
-    message(FATAL_ERROR "[!] Plugin.HideLibrary only works on Darwin.")
+    message(FATAL_ERROR "[!] Plugin.Darwin.HideLibrary only works on Darwin.")
   endif()
-  message(STATUS "[Dobby] Enable Plugin.HideLibrary")
+  message(STATUS "[Dobby] Enable Plugin.Darwin.HideLibrary")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/HideLibrary/hide_library_darwin.c
   )
 endif()
-if(Plugin.ObjectiveC)
+if(Plugin.Darwin.ObjectiveC)
   if(NOT SYSTEM.Darwin)
-    message(FATAL_ERROR "[!] Plugin.ObjectiveC only works on Darwin.")
+    message(FATAL_ERROR "[!] Plugin.Darwin.ObjectiveC only works on Darwin.")
   endif()
-  message(STATUS "[Dobby] Enable Plugin.ObjectiveC")
+  message(STATUS "[Dobby] Enable Plugin.Darwin.ObjectiveC")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     external/helpers/variable_cache.c
     builtin-plugin/ObjectiveC/objective_c_tookit.mm
@@ -321,11 +326,11 @@ set(dobby.HEADER_FILE_LIST
 
 set(dobby_name dobby)
 
-if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
+if(SYSTEM.iOS AND Darwin.GenerateFramework)
   set(dobby_name Dobby)
 endif()
 
-if (GENERATE_SHARED)
+if (DOBBY_GENERATE_SHARED)
   add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 else ()
   add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
@@ -333,7 +338,7 @@ endif ()
 
 target_include_directories(${dobby_name} PUBLIC include)
 
-if(SYSTEM.iOS AND GENERATE_FRAMEWORK)
+if(SYSTEM.iOS AND Darwin.GenerateFramework)
   # set framework property
   set_target_properties(Dobby PROPERTIES
     FRAMEWORK TRUE

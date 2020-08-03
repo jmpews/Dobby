@@ -24,7 +24,7 @@ void *fake_dlopen(const char *__file, int __mode) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
-    LOG("[-] trace handle: ", __file);
+    LOG("[-] dlopen handle: %s", __file);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -37,7 +37,7 @@ void *fake_loader_dlopen(const char *filename, int flags, const void *caller_add
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, filename);
-    LOG("[-] trace handle: %s", filename);
+    LOG("[-] dlopen handle: %s", filename);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -58,7 +58,7 @@ void *(*orig_dlsym)(void *__handle, const char *__symbol);
 void *fake_dlsym(void *__handle, const char *__symbol) {
   const char *traced_filename = get_traced_filename(__handle, false);
   if (traced_filename) {
-    LOG("[-] dlsym: %s, symbol: %s\n", traced_filename, __symbol);
+    LOG("[-] dlsym: %s, symbol: %s", traced_filename, __symbol);
   }
   return orig_dlsym(__handle, __symbol);
 }
@@ -67,13 +67,13 @@ int (*orig_dlclose)(void *__handle);
 int fake_dlclose(void *__handle) {
   const char *traced_filename = get_traced_filename(__handle, true);
   if (traced_filename) {
-    LOG("[-] dlclose: %s\n", traced_filename);
+    LOG("[-] dlclose: %s", traced_filename);
     free((void *)traced_filename);
   }
   return orig_dlclose(__handle);
 }
 
-#if 1
+#if 0
 __attribute__((constructor)) static void ctor() {
 #if defined(__ANDROID__)
 #if 0

@@ -90,7 +90,7 @@ int (*orig_close)(int fd);
 int fake_close(int fd) {
   const char *traced_filename = get_traced_filename(fd, true);
   if (traced_filename) {
-    LOG("[-] close: %s\n", traced_filename);
+    LOG("[-] close: %s", traced_filename);
     free((void *)traced_filename);
   }
   return orig_close(fd);

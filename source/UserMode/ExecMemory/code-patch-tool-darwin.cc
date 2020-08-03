@@ -24,23 +24,30 @@
 #include <mach/mach.h>
 #include "bootstrap.h"
 #include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
+
+#define KERN_ERROR_RETURN(err, failure)                                                                                \
+  do {                                                                                                                 \
+    if (err != KERN_SUCCESS) {                                                                                         \
+      FATAL_LOG("error message: %s", mach_error_string(err));                                                          \
+      return failure;                                                                                                  \
+    }                                                                                                                  \
+  } while (0);
+
 static mach_port_t substrated_server_port = MACH_PORT_NULL;
+
 mach_port_t connect_mach_service(const char *name) {
-  mach_port_t port;
+  mach_port_t port = MACH_PORT_NULL;
   kern_return_t kr;
 
-  if (!MACH_PORT_VALID(bootstrap_port)) {
-    task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
-  }
+  kr = task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
+  KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
 
-  if (!MACH_PORT_VALID(bootstrap_port)) {
-    return MACH_PORT_NULL;
-  }
+  DLOG("bootstrap port %d", bootstrap_port);
 
   kr = bootstrap_look_up(bootstrap_port, (char *)name, &port);
-  if (kr != KERN_SUCCESS) {
-    port = MACH_PORT_NULL;
-  }
+  KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
+
+  substrated_server_port = port;
 
   return port;
 }
@@ -53,7 +60,8 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
     return -1;
 
   kern_return_t kr;
-  kr = substrated_mark(substrated_server_port, mach_task_self(), (mach_vm_address_t)buffer, size, (mach_vm_address_t *)&address);
+  kr = substrated_mark(substrated_server_port, mach_task_self(), (mach_vm_address_t)buffer, size,
+                       (mach_vm_address_t *)&address);
   if (kr != KERN_SUCCESS) {
     DLOG("Code patch with substrated failed");
     return -1;
