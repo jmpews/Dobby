@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_X64)
+
 #include "./X64InstructionRelocation.h"
 
 #include "dobby_internal.h"
@@ -142,3 +145,5 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     relocated->reInitWithAddressRange((addr_t)codeChunk->address, (int)codeChunk->length);
   }
 }
+
+#endif

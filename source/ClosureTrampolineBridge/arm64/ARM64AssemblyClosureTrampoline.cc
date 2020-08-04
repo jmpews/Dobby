@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM64)
+
 #include "dobby_internal.h"
 
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
@@ -37,3 +40,5 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   entry->size          = code->raw_instruction_size();
   return entry;
 }
+
+#endif

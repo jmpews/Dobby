@@ -1,3 +1,5 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM)
 
 #include "core/modules/assembler/assembler-arm.h"
 #include "core/modules/codegen/codegen-arm.h"
@@ -55,3 +57,5 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
   return NULL;
 }
+
+#endif

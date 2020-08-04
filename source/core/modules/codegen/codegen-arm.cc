@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM)
+
 #include "core/modules/codegen/codegen-arm.h"
 
 namespace zz {
@@ -12,3 +15,5 @@ void CodeGen::LiteralLdrBranch(uint32_t address) {
 
 } // namespace arm
 } // namespace zz
+
+#endif

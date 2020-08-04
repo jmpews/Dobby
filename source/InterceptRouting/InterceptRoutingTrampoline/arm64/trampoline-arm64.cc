@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM64)
+
 #include "dobby_internal.h"
 
 #include "core/modules/assembler/assembler-arm64.h"
@@ -83,3 +86,5 @@ CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t s
   result = turbo_assembler_.GetCodeBuffer()->copy();
   return result;
 }
+
+#endif

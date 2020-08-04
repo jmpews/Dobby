@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if TARGET_ARCH_ARM64
+
 #include "core/modules/assembler/assembler-arm64.h"
 
 namespace zz {
@@ -80,3 +83,5 @@ int Assembler::LinkAndGetByteOffsetTo(Label *label) {
 
 } // namespace arm64
 } // namespace zz
+
+#endif

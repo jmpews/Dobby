@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM)
+
 #include "./ARMInstructionRelocation.h"
 
 #include "dobby_internal.h"
@@ -601,3 +604,5 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     gen_arm_relocate_code(buffer, origin, relocated);
   }
 }
+
+#endif

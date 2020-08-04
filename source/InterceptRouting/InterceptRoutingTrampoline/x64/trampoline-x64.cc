@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_X64)
+
 #include "dobby_internal.h"
 
 #include "core/modules/assembler/assembler-x64.h"
@@ -45,3 +48,5 @@ CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t s
   LOG("x64 near branch trampoline enable default");
   return NULL;
 }
+
+#endif

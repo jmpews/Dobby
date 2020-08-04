@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
+
 #include "./X86OpcodoDecodeTable.h"
 
 // clang-format on
@@ -595,3 +598,5 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {{0x00, 2, OpEn_MR, OpSz_8, ImmSz_0, _
                                            {0xFE, 2, OpEn_M, OpSz_8, ImmSz_0, _DecodeOpEn_M},
                                            {0xFF, 2, OpEn_M, OpSz_16 | OpSz_32, ImmSz_0, _DecodeOpEn_M},
                                            {0, 0, 0, 0, 0}};
+
+#endif

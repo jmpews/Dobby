@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM64)
+
 #include "dobby_internal.h"
 
 #include "core/modules/assembler/assembler.h"
@@ -148,3 +151,5 @@ void *get_closure_bridge() {
 #endif
   return (void *)closure_bridge;
 }
+
+#endif

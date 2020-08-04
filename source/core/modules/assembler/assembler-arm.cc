@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if TARGET_ARCH_ARM
+
 #include "core/modules/assembler/assembler-arm.h"
 
 namespace zz {
@@ -13,3 +16,5 @@ void Assembler::EmitAddress(uint32_t value) {
 
 } // namespace arm
 } // namespace zz
+
+#endif

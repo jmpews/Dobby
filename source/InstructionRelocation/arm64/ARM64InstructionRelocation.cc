@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_ARM64)
+
 #include "./ARM64InstructionRelocation.h"
 
 #include "dobby_internal.h"
@@ -300,3 +303,5 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     delete code;
   }
 }
+
+#endif

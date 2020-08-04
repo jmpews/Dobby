@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if TARGET_ARCH_X64
+
 #include "core/modules/assembler/assembler-x64.h"
 
 using namespace zz::x64;
@@ -10,3 +13,5 @@ void Assembler::jmp(Immediate imm) {
 uint64_t TurboAssembler::CurrentIP() {
   return pc_offset() + (addr_t)realized_address_;
 }
+
+#endif

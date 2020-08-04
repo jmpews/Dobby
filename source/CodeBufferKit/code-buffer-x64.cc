@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_X64)
+
 #include "./code-buffer-x64.h"
 
 void CodeBuffer::Emit32(int32_t data) {
@@ -20,3 +23,5 @@ void CodeBuffer::FixBindLabel(int offset, int32_t disp) {
   *reinterpret_cast<uint32_t *>(buffer_ + offset) = disp;
   return;
 }
+
+#endif

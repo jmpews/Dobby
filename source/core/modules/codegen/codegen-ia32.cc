@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_IA32)
+
 #include "core/modules/codegen/codegen-x64.h"
 
 namespace zz {
@@ -18,3 +21,5 @@ void CodeGen::JmpBranch(addr_t address) {
 
 } // namespace x64
 } // namespace zz
+
+#endif

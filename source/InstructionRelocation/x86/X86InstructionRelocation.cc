@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_IA32)
+
 #include "InstructionRelocation/x64/X64InstructionRelocation.h"
 
 #include "dobby_internal.h"
@@ -121,3 +124,5 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, 
 
   return code;
 }
+
+#endif
