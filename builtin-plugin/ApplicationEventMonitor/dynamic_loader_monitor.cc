@@ -73,7 +73,7 @@ int fake_dlclose(void *__handle) {
   return orig_dlclose(__handle);
 }
 
-#if 0
+#if 1
 __attribute__((constructor)) static void ctor() {
 #if defined(__ANDROID__)
 #if 0

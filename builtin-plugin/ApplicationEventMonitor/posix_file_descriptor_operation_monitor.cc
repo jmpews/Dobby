@@ -96,7 +96,7 @@ int fake_close(int fd) {
   return orig_close(fd);
 }
 
-#if 0
+#if 1
 __attribute__((constructor)) static void ctor() {
   void *open_ptr = dlsym(RTLD_DEFAULT, "open");
   DobbyHook((void *)open_ptr, (void *)fake_open, (void **)&orig_open);

@@ -72,8 +72,16 @@ void *get_closure_bridge() {
   // save {x0}
   _ sub(SP, SP, 2 * 8);
   _ str(x0, MEM(SP, 8));
+
+  // save origin sp
+  _ add(x0, SP, 2 * 8 + 30 * 8 + 8 * 16);
+#if defined(FULL_FLOATING_POINT_REGISTER_PACK)
+  _ add(x0, x0, 24 * 16);
+#endif
+  _ sub(SP, SP, 2 * 8);
+  _ str(x0, MEM(SP, 8));
 #else
-// Ignore, refer: closure_bridge_template
+// refer: closure_bridge_template
 #endif
 
   _ mov(x0, SP);
@@ -81,6 +89,10 @@ void *get_closure_bridge() {
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // ======= RegisterContext Restore =======
+
+  // restore sp placeholder stack
+  _ add(SP, SP, 2 * 8);
+
   // restore x0
   _ ldr(X(0), MEM(SP, 8));
   _ add(SP, SP, 2 * 8);

@@ -32,8 +32,10 @@ void *get_closure_bridge() {
 
   TurboAssembler turbo_assembler_(0);
 
-  // flags register
+  // save flags register
   __ EmitBuffer(pushfq, 1);
+  // align rsp 16-byte
+  _ sub(rsp, Immediate(8, 32));
 
   // general register
   _ sub(rsp, Immediate(16 * 8, 32));
@@ -54,10 +56,13 @@ void *get_closure_bridge() {
   _ mov(Address(rsp, 8 * 14), r14);
   _ mov(Address(rsp, 8 * 15), r15);
 
-  // ======= Jump to UnifiedInterface Bridge Handle =======
+  // save origin sp
+  _ mov(rax, rsp);
+  _ add(rax, 8 + 8 + 16 * 8);
+  _ sub(rsp, Immediate(2 * 8, 32));
+  _ mov(Address(rsp, 8), rax);
 
-  // align rsp 16-byte
-  _ sub(rsp, Immediate(8, 32));
+  // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
   // @rdi: data_address
@@ -66,13 +71,12 @@ void *get_closure_bridge() {
   _ mov(rsi, Address(rsp, 16 * 8 + 8 + 8));
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
-  // align rsp 16-byte
-  _ add(rsp, Immediate(8, 32));
-
   // ======= RegisterContext Restore =======
 
-  // general register
+  // restore sp placeholder stack
+  _ add(rsp, Immediate(2 * 8, 32));
 
+  // general register
   _ pop(rax);
   _ pop(rbx);
   _ pop(rcx);
@@ -90,6 +94,9 @@ void *get_closure_bridge() {
   _ pop(r14);
   _ pop(r15);
 
+  // align rsp 16-byte
+  _ add(rsp, Immediate(8, 32));
+  // restore flags register
   __ EmitBuffer(popfq, 1);
 
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address

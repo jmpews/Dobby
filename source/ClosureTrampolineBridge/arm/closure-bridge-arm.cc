@@ -41,6 +41,11 @@ void *get_closure_bridge() {
   _ str(r1, MemOperand(sp, 1 * 4));
   _ str(r0, MemOperand(sp, 0 * 4));
 
+  // store sp
+  _ add(r0, sp, Operand(14 * 4));
+  _ sub(sp, sp, Operand(8));
+  _ str(r0, MemOperand(sp, 4));
+
   _ sub(sp, sp, Operand(8));
 
   _ mov(r0, Operand(sp));
@@ -48,6 +53,9 @@ void *get_closure_bridge() {
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // dummy stack align
+  _ add(sp, sp, Operand(8));
+
+  // restore sp placeholder stack
   _ add(sp, sp, Operand(8));
 
   _ ldr(r0, MemOperand(sp, 4, PostIndex));
