@@ -609,6 +609,11 @@ public:
     EmitOpcode_Register(0x58, reg);
   }
 
+  void push(Register reg) {
+    EmitREX_ExtraRegister(reg);
+    EmitOpcode_Register(0x50, reg);
+  }
+
   void ret() {
     EmitOpcode(0xc3);
   }
@@ -637,9 +642,11 @@ public:
     nop();
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
-    RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
-    addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
-    this->AppendRelocLabelEntry(addrLabel);
+    {
+      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
+      addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
+      this->AppendRelocLabelEntry(addrLabel);
+    }
     nop();
   }
 

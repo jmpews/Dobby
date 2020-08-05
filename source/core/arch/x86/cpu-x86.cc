@@ -1,3 +1,6 @@
+#include "common/macros/platform_macro.h"
+#if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
+
 #include "./cpu-x86.h"
 #include "stdcxx/LiteMemOpt.h"
 
@@ -92,3 +95,5 @@ X86CpuInfo::X86CpuInfo() {
   }
 #endif
 }
+
+#endif

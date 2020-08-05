@@ -61,7 +61,7 @@ void *get_closure_bridge() {
 
   // save origin sp
   _ mov(rax, rsp);
-  _ add(rax, 8 + 8 + 16 * 8);
+  _ add(rax, Immediate(8 + 8 + 8 + 16 * 8, 32));
   _ sub(rsp, Immediate(2 * 8, 32));
   _ mov(Address(rsp, 8), rax);
 
@@ -71,8 +71,32 @@ void *get_closure_bridge() {
   // @rdi: data_address
   // @rsi: RegisterContext stack address
   _ mov(rdi, rsp);
-  _ mov(rsi, Address(rsp, 16 * 8 + 8 + 8));
+  _ mov(rsi, Address(rsp, 8 + 8 + 16 * 8 + 2 * 8));
+
+  // [!!!] As we can't detect the sp is aligned or not, check if need stack align
+  {
+    //  mov rax, rsp
+    __ EmitBuffer((void *)"\x48\x89\xE0", 3);
+    //  and rax, 0xF
+    __ EmitBuffer((void *)"\x48\x83\xE0\x0F", 4);
+    //  cmp rax, 0x0
+    __ EmitBuffer((void *)"\x48\x83\xF8\x00", 4);
+    // jnz [stack_align_call_bridge]
+    __ EmitBuffer((void *)"\x75\x15", 2);
+  }
+
+  // LABEL: call_bridge
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
+
+  // jmp [restore_stack_register]
+  __ EmitBuffer((void *)"\xE9\x12\x00\x00\x00", 5);
+
+  // LABEL: stack_align_call_bridge
+  // push rax
+  __ EmitBuffer((void *)"\x50", 1);
+  _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
+  // pop rax
+  __ EmitBuffer((void *)"\x58", 1);
 
   // ======= RegisterContext Restore =======
 

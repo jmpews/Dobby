@@ -81,7 +81,7 @@ typedef struct _RegisterContext {
 #elif defined(_M_X64) || defined(__x86_64__)
 typedef struct _RegisterContext {
   uint64_t dummy_0;
-  uint64_t sp;
+  uint64_t rsp;
 
   union {
     struct {
