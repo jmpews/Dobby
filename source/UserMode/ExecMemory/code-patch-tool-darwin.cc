@@ -20,7 +20,8 @@
 
 #include "logging/check_logging.h"
 
-#ifdef CODE_PATCH_WITH_SUBSTRATED
+#include "common/macros/platform_macro.h"
+#if defined(CODE_PATCH_WITH_SUBSTRATED) && defined(TARGET_ARCH_ARM64)
 #include <mach/mach.h>
 #include "bootstrap.h"
 #include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
@@ -114,7 +115,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_WRITE);
 
   int ret = RT_FAILED;
-#ifdef CODE_PATCH_WITH_SUBSTRATED
+#if defined(CODE_PATCH_WITH_SUBSTRATED)  && defined(TARGET_ARCH_ARM64)
   ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
   if (ret == RT_FAILED)
     DLOG("Not found <substrated> service => vm_remap");
