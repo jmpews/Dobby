@@ -28,7 +28,7 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
 option(DBI.FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-option(Darwin.GenerateFramework"Build darwin framework library" ON)
+option(Darwin.GenerateFramework "Build darwin framework library" ON)
 
 option(Plugin.SymbolResolver "resolve symbol by [DobbySymbolResolver] " ON)
 
@@ -40,83 +40,86 @@ option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
 # Use native assembly bridge to replace the runtime codegen
-# if (CLOSURE_BRIDGE_TEMPLATE)
+# if(CLOSURE_BRIDGE_TEMPLATE)
 #   SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 #   enable_language(ASM)
 #   add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
-# endif ()
+# endif()
 
 # Enable debug will log more infomation
-if (DOBBY_DEBUG)
+if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   message(STATUS "[Dobby] Enable debug logging")
-endif ()
+endif()
 
 # Enable full floating point register pack
 # for arm64, allow access q8 - q31
 if(DBI.FullFloatingPointRegisterPack)
   add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
   message(STATUS "[Dobby] Save and pack all floating-point registers")
-endif ()
+endif()
 
 
-if (SYSTEM.iOS)
+if(SYSTEM.iOS)
   # -lstdc++
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-elseif (SYSTEM.Android)
+elseif(SYSTEM.Android)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,--gc-sections")
-elseif (SYSTEM.Linux)
+elseif(SYSTEM.Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif ()
+endif()
 
-if (COMPILER.Clang)
+if(COMPILER.Clang)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=default")
-  if (PROCESSOR.ARM)
+  if(PROCESSOR.ARM)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
-  elseif (PROCESSOR.AARCH64)
+  elseif(PROCESSOR.AARCH64)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
-  endif ()
-endif ()
+  endif()
+endif()
 
-# Set Prefix
-if (PROCESSOR.ARM)
+# arch prefix
+if(PROCESSOR.ARM)
   set(ARCH1 ARM)
   set(arch1 arm)
   set(core_arch arm)
-elseif (PROCESSOR.AARCH64)
+elseif(PROCESSOR.AARCH64)
   set(ARCH1 ARM64)
   set(arch1 arm64)
   set(core_arch arm64)
-elseif (PROCESSOR.X86)
+elseif(PROCESSOR.X86)
   set(ARCH1 X86)
   set(arch1 x86)
   set(core_arch ia32)
-elseif (PROCESSOR.X86_64)
+elseif(PROCESSOR.X86_64)
   set(ARCH1 X64)
   set(arch1 x64)
   set(core_arch x64)
-else ()
+else()
+endif()
 
-endif ()
-
-if (SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
+# system prefix
+if(SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
   set(platform1 posix)
   set(platform2 Darwin)
-elseif (SYSTEM.Linux OR SYSTEM.Android)
+elseif(SYSTEM.Linux OR SYSTEM.Android)
   set(platform1 posix)
   set(platform2 Linux)
-elseif (SYSTEM.Windows)
+elseif(SYSTEM.Windows)
   set(platform1 windows)
   set(platform2 Windows)
-else ()
+else()
+endif()
 
-endif ()
+if(CMAKE_GENERATOR STREQUAL Xcode)
+  include(cmake/dobby.xcode.source.cmake)
+endif()
 
-set(dobby.SOURCE_FILE_LIST
+set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # cpu
   source/core/arch/CpuFeature.cc
   source/core/arch/CpuRegister.cc
@@ -180,7 +183,7 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
       )
   endif ()
   set(NearBranch ON)
-endif ()
+endif()
 
 if(SYSTEM.Darwin)
   include_directories(
@@ -196,9 +199,10 @@ if(SYSTEM.iOS)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
   )
-endif ()
+endif()
 
-if (FunctionWrapper OR DynamicBinaryInstrument)
+
+if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
@@ -211,25 +215,20 @@ if (FunctionWrapper OR DynamicBinaryInstrument)
     source/UserMode/Thread/PlatformThread.cc
     source/UserMode/Thread/platform-thread-${platform1}.cc
     )
-endif ()
+endif()
 
-if (FunctionWrapper)
+if(FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
-  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/function-wrapper.cc
-    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/FunctionWrapperExport.cc
-    source/InterceptRouting/InterceptRoutingPlugin/FunctionWrapper/intercept_routing_handler.cc
-    )
-endif ()
+endif()
 
-if (DynamicBinaryInstrument)
+if(DynamicBinaryInstrument)
   message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
     source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
     )
-endif ()
+endif()
 
 if(NearBranch)
   message(STATUS "[Dobby] Enable Near Branch Trampoline")
@@ -248,12 +247,12 @@ set(logging.SOURCE_FILE_LIST
 # add stdcxx library
 # add_subdirectory(external/stdcxx)
 set(stdcxx.SOURCE_FILE_LIST
+  external/stdcxx/LiteObject.cc
+  external/stdcxx/LiteMemOpt.cc
   external/stdcxx/LiteCollection.cc
   external/stdcxx/LiteIterator.cc
-  external/stdcxx/LiteMemOpt.cc
   external/stdcxx/LiteMutableArray.cc
   external/stdcxx/LiteMutableBuffer.cc
-  external/stdcxx/LiteObject.cc
   )
 
 set(dobby.plugin.SOURCE_FILE_LIST
@@ -327,19 +326,19 @@ set(dobby.HEADER_FILE_LIST
 
 set(dobby_name dobby)
 
-if(SYSTEM.iOS AND Darwin.GenerateFramework)
+if(SYSTEM.Darwin AND Darwin.GenerateFramework)
   set(dobby_name Dobby)
 endif()
 
-if (DOBBY_GENERATE_SHARED)
+if(DOBBY_GENERATE_SHARED)
   add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
-else ()
+else()
   add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
-endif ()
+endif()
 
 target_include_directories(${dobby_name} PUBLIC include)
 
-if(SYSTEM.iOS AND Darwin.GenerateFramework)
+if(SYSTEM.Darwin AND Darwin.GenerateFramework)
   # set framework property
   set_target_properties(Dobby PROPERTIES
     FRAMEWORK TRUE
@@ -360,11 +359,11 @@ if(SYSTEM.iOS AND Darwin.GenerateFramework)
   #   )
 endif()
 
-if (SYSTEM.Android)
+if(SYSTEM.Android)
   target_link_libraries(dobby log)
-endif ()
+endif()
 
-if (SYSTEM.Darwin)
+if(SYSTEM.Darwin)
   target_link_libraries(${dobby_name}
     "-framework Foundation")
-endif ()
+endif()
