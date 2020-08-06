@@ -42,10 +42,12 @@ mach_port_t connect_mach_service(const char *name) {
   kr = task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
   KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
 
-  DLOG("bootstrap port %d", bootstrap_port);
-
   kr = bootstrap_look_up(bootstrap_port, (char *)name, &port);
-  KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
+#if defined(DOBBY_DEBUG)
+  if (kr != KERN_SUCCESS) {
+    FATAL_LOG("error message: %s", mach_error_string(kr));
+  }
+#endif
 
   substrated_server_port = port;
 
