@@ -20,7 +20,7 @@ std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 void *(*orig_dlopen)(const char *__file, int __mode);
 void *fake_dlopen(const char *__file, int __mode) {
   void *result = orig_dlopen(__file, __mode);
-  if (result != NULL) {
+  if (result != NULL && __file) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);

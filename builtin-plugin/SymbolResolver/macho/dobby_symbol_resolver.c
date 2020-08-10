@@ -14,6 +14,8 @@
 
 #include "shared_cache_internal.h"
 
+#include "logging/logging.h"
+
 void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, char **string_pool,
                               uint32_t *nlist_count) {
   segment_command_t *curr_seg_cmd;
@@ -60,13 +62,17 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
   for (uint32_t i = 0; i < nlist_count; i++) {
     if (nlist_array[i].n_value) {
       uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
-      char *tmp_symbol_name  = string_pool + strtab_offset;
-      // TODO: what you want !!!
-#if 0 // DEBUG
-      printf("> %s", tmp_symbol_name);
+      char *symbol_name  = string_pool + strtab_offset;
+#if 0
+      LOG("> %s", symbol_name);
 #endif
-      if (strcmp(name_pattern, tmp_symbol_name) == 0) {
+      if (strcmp(name_pattern, symbol_name) == 0) {
         return (void *)(nlist_array[i].n_value);
+      }
+      if(symbol_name[0] == '_') {
+        if (strcmp(name_pattern, &symbol_name[1]) == 0) {
+          return (void *)(nlist_array[i].n_value);
+        }
       }
     }
   }
@@ -77,12 +83,17 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name_patter
   void *result    = NULL;
   int image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {
-    const struct mach_header *header = _dyld_get_image_header(i);
-    uintptr_t slide                  = _dyld_get_image_vmaddr_slide(i);
-    const char *name_                = _dyld_get_image_name(i);
-    name_                            = strrchr(name_, '/') + 1;
-    if (image_name != NULL && strcmp(image_name, name_))
+    const struct mach_header *header = NULL;
+    header                           = _dyld_get_image_header(i);
+    uintptr_t slide                  = 0;
+    slide                            = _dyld_get_image_vmaddr_slide(i);
+    const char *path                 = NULL;
+    path                             = _dyld_get_image_name(i);
+
+    if (image_name != NULL && strstr(path, image_name) == NULL)
       continue;
+
+    DLOG("resolve image: %s", path);
 
     uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
@@ -90,17 +101,22 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name_patter
 
     if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
       get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
-    else
-      get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
-
     result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
-    result = (void *)((uintptr_t)result + slide);
-    if (result)
+    if(result) {
+      result = (void *)((uintptr_t)result + slide);
       break;
+    }
+    
+    get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+    result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
+    if (result) {
+      result = (void *)((uintptr_t)result + slide);
+      break;
+    }
   }
 
   struct mach_header *dyld_header = NULL;
-  if (strcmp(image_name, "dyld") == 0) {
+  if (image_name != NULL && strcmp(image_name, "dyld") == 0) {
     task_dyld_info_data_t task_dyld_info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
@@ -117,7 +133,8 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name_patter
     get_syms_in_single_image((mach_header_t *)dyld_header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
 
     result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
-    result = (void *)((uintptr_t)result + (uintptr_t)dyld_header);
+    if(result)
+      result = (void *)((uintptr_t)result + (uintptr_t)dyld_header);
   }
 
   return result;
