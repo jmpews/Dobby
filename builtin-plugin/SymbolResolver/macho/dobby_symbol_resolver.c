@@ -1,4 +1,3 @@
-
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
@@ -13,6 +12,8 @@
 #include <string.h>
 
 #include "shared_cache_internal.h"
+
+#include "common/headers/common_header.h"
 
 #include "logging/logging.h"
 
@@ -79,7 +80,7 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
   return NULL;
 }
 
-void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
+PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result    = NULL;
   int image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {

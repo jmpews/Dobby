@@ -46,7 +46,7 @@ static char *get_android_linker_path() {
 #endif
 }
 
-void *linker_dlopen(const char *filename, int flag) {
+PUBLIC void *linker_dlopen(const char *filename, int flag) {
   typedef void *(*__loader_dlopen_t)(const char *filename, int flags, const void *caller_addr);
   static __loader_dlopen_t __loader_dlopen = NULL;
   if (!__loader_dlopen)

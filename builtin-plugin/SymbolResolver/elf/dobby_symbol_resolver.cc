@@ -142,7 +142,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
 // impl at "android_restriction.cc"
 extern std::vector<void *> linker_get_solist();
-void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
+PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result = NULL;
 
   auto solist = linker_get_solist();

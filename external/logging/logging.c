@@ -11,6 +11,13 @@
 #include <syslog.h>
 #endif
 
+#if defined(_WIN32)
+#define PUBLIC
+#else
+#define PUBLIC __attribute__((visibility("default")))
+#define INTERNAL __attribute__((visibility("internal")))
+#endif
+
 static int _syslog_enabled = 0;
 void switch_to_syslog(void) {
   _syslog_enabled = 1;
@@ -24,9 +31,9 @@ void switch_to_file_log(const char *path) {
   _file_log_enabled = 1;
   log_file_path     = strdup(path);
 
-  #if 0
+#if 0
   log_file_fd = open(log_file_path, O_WRONLY | O_CREAT | O_APPEND, 0666);
-  #endif
+#endif
   log_file_stream = fopen(log_file_path, "a+");
 }
 
@@ -44,7 +51,7 @@ static int check_log_file_available() {
   return 0;
 }
 
-int custom_log(const char *fmt, ...) {
+PUBLIC int custom_log(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
 #pragma clang diagnostic ignored "-Wformat"
