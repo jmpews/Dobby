@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(Dobby)
+enable_language(ASM)
 
 include(cmake/Util.cmake)
 include(cmake/Globals.cmake)
@@ -50,7 +51,6 @@ option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnCo
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   message(STATUS "[Dobby] Enable debug logging")
 endif()
 
@@ -65,22 +65,29 @@ endif()
 if(SYSTEM.iOS)
   # -lstdc++
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip")
 elseif(SYSTEM.Android)
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,--gc-sections")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,--gc-sections")
 elseif(SYSTEM.Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
 if(COMPILER.Clang)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=default")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyHook -Wl,-exported_symbol,_DobbyInstrument -Wl,-exported_symbol,_DobbySymbolResolver")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_dobby_enable_near_branch_trampoline -Wl,-exported_symbol,_dobby_disable_near_branch_trampoline")
   if(PROCESSOR.ARM)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7")
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7 -x assembler-with-cpp")
   elseif(PROCESSOR.AARCH64)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64")
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64 -x assembler-with-cpp")
   endif()
 endif()
+
+# refer apple ld
+# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-unexported_symbol -Wl,_DobbyHook -Wl,-unexported_symbol -Wl,_DobbyInstrument -Wl,-unexported_symbol -Wl,_DobbySymbolResolver -Wl,-unexported_symbol -Wl,_svc_0x80_stub -Wl,-unexported_symbol -Wl,_svc_mprotect")
+# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip -Wl,-exported_symbol,_main")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # arch prefix
 if(PROCESSOR.ARM)
@@ -302,6 +309,12 @@ if(Plugin.ApplicationEventMonitor)
     builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
     builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
   )
+endif()
+
+if(Plugin.HideSystemCall)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/HideSystemCall/syscall.darwin.S
+    )
 endif()
 
 include_directories(
