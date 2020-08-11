@@ -59,9 +59,12 @@ void mmap_dyld_shared_cache() {
   mmap_shared_cache = mmap(0, mmap_shared_cache_header->localSymbolsOffset + mmap_shared_cache_header->localSymbolsSize,
                            PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
   
+  if(mmap_shared_cache == MAP_FAILED)
+    FATAL("mmap shared cache failed");
+  
 #ifndef DOBBY_DEBUG
   // remove unused memory
-  munmap(mmap_shared_cache, mmap_shared_cache_header->localSymbolsOffset);
+  // munmap(mmap_shared_cache, mmap_shared_cache_header->localSymbolsOffset);
 #endif
 
   g_mmap_shared_cache_header = mmap_shared_cache_header;
