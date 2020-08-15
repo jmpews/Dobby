@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 # ===== Handle Option =====
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(DOBBY_DEBUG "Enable debug logging" OFF)
+option(DOBBY_DEBUG "Enable debug logging" ON)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
@@ -31,7 +31,9 @@ option(DBI.FullFloatingPointRegisterPack "Save and pack all floating-point regis
 
 option(Darwin.GenerateFramework "Build darwin framework library" ON)
 
-option(Plugin.SymbolResolver "resolve symbol by [DobbySymbolResolver] " ON)
+option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
+
+option(Plugin.LinkerLoadCallback "Register image load callback " ON)
 
 # frida is better choice
 option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
@@ -322,6 +324,12 @@ endif()
 if(Plugin.HideSystemCall)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/HideSystemCall/syscall.darwin.S
+    )
+endif()
+
+if(Plugin.LinkerLoadCallback)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/LinkerImageLoadCallback/linker_load_callback.cc
     )
 endif()
 

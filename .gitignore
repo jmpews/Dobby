@@ -1,6 +1,7 @@
 .DS_Store
 .idea
-cmake-build-*
+cmake-build*
+xcode-build*
 
 CMakeLists.txt.user
 CMakeCache.txt

@@ -17,8 +17,8 @@
 
 std::unordered_map<void *, const char *> traced_dlopen_handle_list;
 
-void *(*orig_dlopen)(const char *__file, int __mode);
-void *fake_dlopen(const char *__file, int __mode) {
+static void *(*orig_dlopen)(const char *__file, int __mode);
+static void *fake_dlopen(const char *__file, int __mode) {
   void *result = orig_dlopen(__file, __mode);
   if (result != NULL && __file) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
@@ -30,8 +30,8 @@ void *fake_dlopen(const char *__file, int __mode) {
   return result;
 }
 
-void *(*orig_loader_dlopen)(const char *filename, int flags, const void *caller_addr);
-void *fake_loader_dlopen(const char *filename, int flags, const void *caller_addr) {
+static void *(*orig_loader_dlopen)(const char *filename, int flags, const void *caller_addr);
+static void *fake_loader_dlopen(const char *filename, int flags, const void *caller_addr) {
   void *result = orig_loader_dlopen(filename, flags, caller_addr);
   if (result != NULL) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
@@ -54,8 +54,8 @@ static const char *get_traced_filename(void *handle, bool removed) {
   return NULL;
 }
 
-void *(*orig_dlsym)(void *__handle, const char *__symbol);
-void *fake_dlsym(void *__handle, const char *__symbol) {
+static void *(*orig_dlsym)(void *__handle, const char *__symbol);
+static void *fake_dlsym(void *__handle, const char *__symbol) {
   const char *traced_filename = get_traced_filename(__handle, false);
   if (traced_filename) {
     LOG("[-] dlsym: %s, symbol: %s", traced_filename, __symbol);
@@ -63,8 +63,8 @@ void *fake_dlsym(void *__handle, const char *__symbol) {
   return orig_dlsym(__handle, __symbol);
 }
 
-int (*orig_dlclose)(void *__handle);
-int fake_dlclose(void *__handle) {
+static int (*orig_dlclose)(void *__handle);
+static int fake_dlclose(void *__handle) {
   const char *traced_filename = get_traced_filename(__handle, true);
   if (traced_filename) {
     LOG("[-] dlclose: %s", traced_filename);
