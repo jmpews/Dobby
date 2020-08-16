@@ -1,4 +1,4 @@
-#if defined(_POSIX_VERSION)
+#if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #include <syslog.h>
 

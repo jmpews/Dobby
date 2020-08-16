@@ -83,7 +83,7 @@ __attribute__((constructor)) static void ctor() {
   void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
   DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
 #else
-  DobbyHook((void *)dlopen, (void *)fake_dlopen, (void **)&orig_dlopen);
+  DobbyHook((void *)DobbySymbolResolver(NULL, "dlopen"), (void *)fake_dlopen, (void **)&orig_dlopen);
 #endif
 
   DobbyHook((void *)dlsym, (void *)fake_dlsym, (void **)&orig_dlsym);
