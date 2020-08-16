@@ -56,16 +56,13 @@ void mmap_dyld_shared_cache() {
   // auto align
   mmap_shared_cache_header = get_shared_cache_load_addr();
 
-  mmap_shared_cache = mmap(0, mmap_shared_cache_header->localSymbolsOffset + mmap_shared_cache_header->localSymbolsSize,
-                           PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
+  mmap_shared_cache = mmap(0, mmap_shared_cache_header->localSymbolsSize,
+                           PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_shared_cache_header->localSymbolsOffset);
+  mmap_shared_cache = (addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset;
   
   if(mmap_shared_cache == MAP_FAILED)
     FATAL("mmap shared cache failed");
-  
-#ifndef DOBBY_DEBUG
-  // remove unused memory
-  // munmap(mmap_shared_cache, mmap_shared_cache_header->localSymbolsOffset);
-#endif
+
 
   g_mmap_shared_cache_header = mmap_shared_cache_header;
   g_mmap_shared_cache        = mmap_shared_cache;
@@ -111,7 +108,7 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
 
   static struct dyld_cache_local_symbols_info *localsInfo = NULL;
   localsInfo =
-      (struct dyld_cache_local_symbols_info *)((addr_t)g_mmap_shared_cache + g_mmap_shared_cache->localSymbolsOffset);
+      (struct dyld_cache_local_symbols_info *)((addr_t)g_mmap_shared_cache + header->localSymbolsOffset);
 
   static struct dyld_cache_local_symbols_entry *entries = NULL;
   entries = (struct dyld_cache_local_symbols_entry *)((char *)localsInfo + localsInfo->entriesOffset);
@@ -125,7 +122,7 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
       localNlistCount          = entries[i].nlistCount;
       localNlists              = &localNlists[localNlistStart];
       
-#if defined(DOBBY_DEBUG)
+#if defined(DOBBY_DEBUG) && 0
       static struct dyld_cache_image_info *imageInfos = NULL;
       imageInfos = (struct dyld_cache_image_info *)((addr_t)g_mmap_shared_cache + g_mmap_shared_cache->imagesOffset);
       char *image_name = (char *)g_mmap_shared_cache + imageInfos[i].pathFileOffset;
