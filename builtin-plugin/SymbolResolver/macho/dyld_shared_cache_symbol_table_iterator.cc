@@ -13,7 +13,11 @@
 
 #include "logging/logging.h"
 
-extern int __shared_region_check_np(uint64_t *startaddress);
+#define LOG_TAG "DobbySymbolResolverCache"
+
+extern "C" {
+int __shared_region_check_np(uint64_t *startaddress);
+}
 
 static pthread_once_t mmap_dyld_shared_cache_once = PTHREAD_ONCE_INIT;
 
@@ -54,15 +58,16 @@ void mmap_dyld_shared_cache() {
   struct dyld_cache_header *mmap_shared_cache;
 
   // auto align
-  mmap_shared_cache_header = get_shared_cache_load_addr();
+  mmap_shared_cache_header = (struct dyld_cache_header *)get_shared_cache_load_addr();
 
-  mmap_shared_cache = mmap(0, mmap_shared_cache_header->localSymbolsSize,
-                           PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_shared_cache_header->localSymbolsOffset);
-  mmap_shared_cache = (addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset;
-  
-  if(mmap_shared_cache == MAP_FAILED)
+  mmap_shared_cache =
+      (struct dyld_cache_header *)mmap(0, mmap_shared_cache_header->localSymbolsSize, PROT_READ, MAP_FILE | MAP_PRIVATE,
+                                       fd, mmap_shared_cache_header->localSymbolsOffset);
+  mmap_shared_cache =
+      (struct dyld_cache_header *)((addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset);
+
+  if (mmap_shared_cache == MAP_FAILED)
     FATAL("mmap shared cache failed");
-
 
   g_mmap_shared_cache_header = mmap_shared_cache_header;
   g_mmap_shared_cache        = mmap_shared_cache;
@@ -97,7 +102,7 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
                                    uint32_t *nlist_count_ptr) {
   pthread_once(&mmap_dyld_shared_cache_once, mmap_dyld_shared_cache);
 
-  addr_t cache_base_address        = get_shared_cache_load_addr();
+  addr_t cache_base_address        = (addr_t)get_shared_cache_load_addr();
   struct dyld_cache_header *header = (struct dyld_cache_header *)cache_base_address;
 
   uint64_t textOffsetInCache = (uint64_t)image_header - (uint64_t)header;
@@ -107,8 +112,7 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
   const char *localStrings = NULL;
 
   static struct dyld_cache_local_symbols_info *localsInfo = NULL;
-  localsInfo =
-      (struct dyld_cache_local_symbols_info *)((addr_t)g_mmap_shared_cache + header->localSymbolsOffset);
+  localsInfo = (struct dyld_cache_local_symbols_info *)((addr_t)g_mmap_shared_cache + header->localSymbolsOffset);
 
   static struct dyld_cache_local_symbols_entry *entries = NULL;
   entries = (struct dyld_cache_local_symbols_entry *)((char *)localsInfo + localsInfo->entriesOffset);
@@ -121,7 +125,7 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
       uint32_t localNlistStart = entries[i].nlistStartIndex;
       localNlistCount          = entries[i].nlistCount;
       localNlists              = &localNlists[localNlistStart];
-      
+
 #if defined(DOBBY_DEBUG) && 0
       static struct dyld_cache_image_info *imageInfos = NULL;
       imageInfos = (struct dyld_cache_image_info *)((addr_t)g_mmap_shared_cache + g_mmap_shared_cache->imagesOffset);

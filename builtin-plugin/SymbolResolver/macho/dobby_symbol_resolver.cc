@@ -13,98 +13,133 @@
 
 #include "shared_cache_internal.h"
 
+#include "dobby_symbol_resolver.h"
 #include "common/headers/common_header.h"
 
 #include "logging/logging.h"
 
-static uint64_t dyld_read_uleb128(const uint8_t **p_ptr) {
+#define LOG_TAG "DobbySymbolResolver"
+
+static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {
   uint64_t result  = 0;
   int bit          = 0;
   const uint8_t *p = *p_ptr;
   do {
+    if (p == end) {
+      // diag.error("malformed uleb128");
+      break;
+    }
     uint64_t slice = *p & 0x7f;
 
     if (bit > 63) {
-      FATAL("uleb128 too big for uint64");
+      // diag.error("uleb128 too big for uint64");
       break;
     } else {
       result |= (slice << bit);
       bit += 7;
     }
   } while (*p++ & 0x80);
-  
+
   *p_ptr = p;
   return result;
 }
 
-uint64_t iterate_exported_symbol(const uint8_t *exports, const char *name) {
-  const char *s;
-  const uint8_t *p;
-
-  s = name;
-  p = exports;
-  while (p != NULL) {
-    int64_t terminal_size;
-    const uint8_t *children;
-    uint8_t child_count, i;
-    uint64_t node_offset;
-
-    terminal_size = dyld_read_uleb128(&p);
-
-    if (*s == '\0' && terminal_size != 0) {
-      /* Skip flags. */
-      dyld_read_uleb128(&p);
-
-      /* Assume it's a plain export. */
-      return dyld_read_uleb128(&p);
+// dyld
+// bool MachOLoaded::findExportedSymbol
+ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
+  uint32_t visitedNodeOffsets[128];
+  int visitedNodeOffsetCount                   = 0;
+  visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
+  const uint8_t *p                             = start;
+  while (p < end) {
+    uint64_t terminalSize = *p++;
+    if (terminalSize > 127) {
+      // except for re-export-with-rename, all terminal sizes fit in one byte
+      --p;
+      terminalSize = dyld_read_uleb128(&p, end);
     }
-
-    children    = p + terminal_size;
-    child_count = *children++;
-    p           = children;
-    node_offset = 0;
-    for (i = 0; i != child_count; i++) {
-      const char *symbol_cur;
-      bool matching_edge;
-
-      symbol_cur    = s;
-      matching_edge = true;
-      while (*p != '\0') {
-        if (matching_edge) {
-          if (*p != *symbol_cur)
-            matching_edge = false;
-          symbol_cur++;
+    if ((*symbol == '\0') && (terminalSize != 0)) {
+      // skip flag == EXPORT_SYMBOL_FLAGS_REEXPORT
+      dyld_read_uleb128(&p, end);
+      return (void *)dyld_read_uleb128(&p, end);
+    }
+    const uint8_t *children = p + terminalSize;
+    if (children > end) {
+      //diag.error("malformed trie node, terminalSize=0x%llX extends past end of trie\n", terminalSize);
+      return NULL;
+    }
+    uint8_t childrenRemaining = *children++;
+    p                         = children;
+    uint64_t nodeOffset       = 0;
+    for (; childrenRemaining > 0; --childrenRemaining) {
+      const char *ss = symbol;
+      bool wrongEdge = false;
+      // scan whole edge to get to next edge
+      // if edge is longer than target symbol name, don't read past end of symbol name
+      char c = *p;
+      while (c != '\0') {
+        if (!wrongEdge) {
+          if (c != *ss)
+            wrongEdge = true;
+          ++ss;
         }
-        p++;
+        ++p;
+        c = *p;
       }
-      p++;
-
-      if (matching_edge) {
-        node_offset = dyld_read_uleb128(&p);
-        s           = symbol_cur;
-        break;
+      if (wrongEdge) {
+        // advance to next child
+        ++p; // skip over zero terminator
+        // skip over uleb128 until last byte is found
+        while ((*p & 0x80) != 0)
+          ++p;
+        ++p; // skip over last byte of uleb128
+        if (p > end) {
+          // diag.error("malformed trie node, child node extends past end of trie\n");
+          return NULL;
+        }
       } else {
-        dyld_read_uleb128(&p);
+        // the symbol so far matches this edge (child)
+        // so advance to the child's node
+        ++p;
+        nodeOffset = dyld_read_uleb128(&p, end);
+        if ((nodeOffset == 0) || (&start[nodeOffset] > end)) {
+          // diag.error("malformed trie child, nodeOffset=0x%llX out of range\n", nodeOffset);
+          return NULL;
+        }
+        symbol = ss;
+        break;
       }
     }
-
-    if (node_offset != 0)
-      p = exports + node_offset;
-    else
-      p = NULL;
+    if (nodeOffset != 0) {
+      if (nodeOffset > (uint64_t)(end - start)) {
+        // diag.error("malformed trie child, nodeOffset=0x%llX out of range\n", nodeOffset);
+        return NULL;
+      }
+      for (int i = 0; i < visitedNodeOffsetCount; ++i) {
+        if (visitedNodeOffsets[i] == nodeOffset) {
+          // diag.error("malformed trie child, cycle to nodeOffset=0x%llX\n", nodeOffset);
+          return NULL;
+        }
+      }
+      visitedNodeOffsets[visitedNodeOffsetCount++] = (uint32_t)nodeOffset;
+      if (visitedNodeOffsetCount >= 128) {
+        // diag.error("malformed trie too deep\n");
+        return NULL;
+      }
+      p = &start[nodeOffset];
+    } else
+      p = end;
   }
-
-  return 0;
+  return NULL;
 }
 
-void *iterate_exported_syms(mach_header_t *header, const char *symbol_name) {
+void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
   segment_command_t *curr_seg_cmd;
   struct dyld_info_command *dyld_info_cmd = NULL;
   segment_command_t *text_segment, *data_segment, *linkedit_segment;
 
-  uintptr_t cur = (uintptr_t)header + sizeof(mach_header_t);
-  for (int i = 0; i < header->ncmds; i++, cur += curr_seg_cmd->cmdsize) {
-    curr_seg_cmd = (segment_command_t *)cur;
+  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+  for (int i = 0; i < header->ncmds; i++) {
     switch (curr_seg_cmd->cmd) {
     case LC_SEGMENT_ARCH_DEPENDENT: {
       if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
@@ -120,6 +155,7 @@ void *iterate_exported_syms(mach_header_t *header, const char *symbol_name) {
     default:
       break;
     };
+    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
   if (!linkedit_segment) {
@@ -133,7 +169,17 @@ void *iterate_exported_syms(mach_header_t *header, const char *symbol_name) {
   if (exports == NULL)
     return (void *)0;
 
-  void *off = iterate_exported_symbol(exports, symbol_name);
+  void *off = (void *)walk_exported_trie((const uint8_t *)exports,
+                                         (const uint8_t *)exports + dyld_info_cmd->export_size, symbol_name);
+  if (off == (void *)0) {
+    if (symbol_name[0] != '_' && strlen(&symbol_name[1]) >= 1) {
+      char _symbol_name[1024] = {0};
+      _symbol_name[0]         = '_';
+      strcpy(&_symbol_name[1], symbol_name);
+      off = (void *)walk_exported_trie((const uint8_t *)exports, (const uint8_t *)exports + dyld_info_cmd->export_size,
+                                       _symbol_name);
+    }
+  }
   return off;
 }
 
@@ -144,9 +190,8 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, cha
   struct symtab_command *symtab_cmd     = NULL;
   struct dysymtab_command *dysymtab_cmd = NULL;
 
-  uintptr_t cur = (uintptr_t)header + sizeof(mach_header_t);
-  for (int i = 0; i < header->ncmds; i++, cur += curr_seg_cmd->cmdsize) {
-    curr_seg_cmd = (segment_command_t *)cur;
+  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+  for (int i = 0; i < header->ncmds; i++) {
     if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
       if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
         linkedit_segment = curr_seg_cmd;
@@ -160,6 +205,7 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, cha
     } else if (curr_seg_cmd->cmd == LC_DYSYMTAB) {
       dysymtab_cmd = (struct dysymtab_command *)curr_seg_cmd;
     }
+    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
   if (!symtab_cmd || !linkedit_segment) {
@@ -232,10 +278,10 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
       result = (void *)((uintptr_t)result + slide);
       break;
     }
-    
-    result = iterate_exported_syms((mach_header_t *) header, symbol_name_pattern);
+
+    result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern);
     if (result) {
-      result = (void *)((uintptr_t)result + slide);
+      result = (void *)((uintptr_t)result + (uintptr_t)header);
       break;
     }
   }
@@ -265,13 +311,12 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
   return result;
 }
 
-#if 1
+#if defined(DOBBY_DEBUG) && 1
 __attribute__((constructor)) static void ctor() {
-  const struct mach_header *header = NULL;
-  header                           = _dyld_get_image_header(0);
+  mach_header_t *header = NULL;
+  header                = (mach_header_t *)_dyld_get_image_header(0);
   
-  void *addr = iterate_exported_syms(header, "_main");
+  void *addr = (void *)((addr_t)iterate_exported_symbol(header, "_mainxx") + (addr_t)header);
   LOG("export %p", addr);
-
 }
 #endif

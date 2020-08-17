@@ -14,12 +14,18 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
   DLOG("Initialize DobbyHook => %p => %p", function_address, replace_call);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
-  if (interceptor->FindHookEntry(function_address)) {
-    FATAL_LOG("function %s already been hooked.", function_address);
-    return RS_FAILED;
+  
+  // check if we already hook
+  HookEntry *entry = interceptor->FindHookEntry(function_address);
+  if(entry) {
+    FunctionInlineReplaceRouting *route = (FunctionInlineReplaceRouting *)entry->route;
+    if(route->GetTrampolineTarget() == replace_call) {
+      FATAL("function %s already been hooked.", function_address);
+      return RS_FAILED;
+    }
   }
 
-  HookEntry *entry        = new HookEntry();
+  entry        = new HookEntry();
   entry->id               = interceptor->entries->getCount();
   entry->type             = kFunctionInlineHook;
   entry->function_address = function_address;

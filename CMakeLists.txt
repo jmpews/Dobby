@@ -286,8 +286,8 @@ if(Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable Plugin.SymbolResolver")
   if(SYSTEM.Darwin)
     set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/SymbolResolver/macho/dyld_shared_cache_symbol_table_iterator.c
-      builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.c
+      builtin-plugin/SymbolResolver/macho/dyld_shared_cache_symbol_table_iterator.cc
+      builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.cc
     )
   endif()
   if(SYSTEM.Linux OR SYSTEM.Android)

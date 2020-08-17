@@ -19,6 +19,8 @@
 #include "dobby.h"
 #include "common/headers/common_header.h"
 
+#define LOG_TAG "PosixFileOperationMonitor"
+
 std::unordered_map<int, const char *> posix_file_descriptors;
 
 int (*orig_open)(const char *pathname, int flags, ...);

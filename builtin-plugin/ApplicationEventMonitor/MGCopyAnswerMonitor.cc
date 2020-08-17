@@ -3,6 +3,8 @@
 #include <dlfcn.h>
 #include <CoreFoundation/CoreFoundation.h>
 
+#define LOG_TAG "MGCopyAnswer"
+
 static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
   uintptr_t result;
 #if defined(_M_X64) || defined(__x86_64__)

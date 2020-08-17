@@ -6,6 +6,8 @@
 
 #include <dlfcn.h>
 
+#define LOG_TAG "AndroidLinkerRestriction"
+
 __attribute__((constructor)) static void ctor() {
   const char *lib = NULL;
 
@@ -28,7 +30,7 @@ __attribute__((constructor)) static void ctor() {
 #else
   void *handle = NULL;
   handle       = linker_dlopen(lib, RTLD_LAZY);
-  vm = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
+  vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 #endif
   LOG("vm %p", vm);
 }

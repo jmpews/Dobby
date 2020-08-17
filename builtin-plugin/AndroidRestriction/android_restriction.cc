@@ -19,6 +19,8 @@
 
 #include "common/headers/common_header.h"
 
+#define LOG_TAG "AndroidLinkerRestriction"
+
 // impl at "dobby_symbol_resolver.cc"
 extern void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_name);
 

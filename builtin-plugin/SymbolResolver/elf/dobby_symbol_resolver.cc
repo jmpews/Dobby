@@ -17,6 +17,8 @@
 
 #include <vector>
 
+#define LOG_TAG "DobbySymbolResolver"
+
 static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_size_ptr) {
   int fd             = open(file_path, O_RDONLY, 0);
   uint8_t *mmap_data = NULL;
