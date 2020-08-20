@@ -97,7 +97,7 @@ void InterceptRouting::Commit() {
 #endif
 
   this->Active();
-  DLOG("InterceptRouting: >>>>> end <<<<<");
+  DLOG("================ InterceptRouting End ================");
 }
 
 #if 0

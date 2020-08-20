@@ -13,7 +13,7 @@
 class DynamicBinaryInstrumentRouting : public X64InterceptRouting {
 public:
   DynamicBinaryInstrumentRouting(HookEntry *entry, void *handler) : X64InterceptRouting(entry) {
-    DLOG("DynamicBinaryInstrumentRouting: >>>>> start <<<<<");
+    DLOG("================ DynamicBinaryInstrumentRouting Start ================");
     this->handler = handler;
   }
 
