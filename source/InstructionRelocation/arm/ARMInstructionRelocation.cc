@@ -171,31 +171,74 @@ static void ARMRelocateSingleInstr(TurboAssembler &turbo_assembler, int32_t inst
 
 // relocate thumb-1 instructions
 static void Thumb1RelocateSingleInstr(ThumbTurboAssembler &turbo_assembler, LiteMutableArray *thumb_labels,
-                                      int16_t instr, addr32_t from_pc, addr32_t to_pc) {
+                                      int16_t instr, addr32_t from_pc, addr32_t to_pc, addr32_t *execute_state_changed_pc_ptr) {
   bool is_instr_relocated = false;
   uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t offset = 0;
 
+
+  int32_t op0 = 0, op1 = 0;
+  op0 = bits(instr, 10, 15);
   // [F3.2.3 Special data instructions and branch and exchange]
-  // [Add, subtract, compare, move (two high registers)]
-  if ((instr & 0xfc00) == 0x4400) {
-    int rs = bits(instr, 3, 6);
-    // rs is PC register
-    if (rs == 15) {
-      val = from_pc;
+  if (op0 == 0b010001) {
+    op0 = bits(instr, 8, 9);
+    // [Add, subtract, compare, move (two high registers)]
+    if (op0 != 0b11) {
+      int rs = bits(instr, 3, 6);
+      // rs is PC register
+      if (rs == 15) {
+        val = from_pc;
 
-      uint16_t rewrite_inst = 0;
-      rewrite_inst          = (instr & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
+        uint16_t rewrite_inst = 0;
+        rewrite_inst = (instr & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
 
-      ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
-      _ AppendRelocLabelEntry(label);
-      // ===
-      _ T2_Ldr(TEMP_REG, label);
-      _ EmitInt16(rewrite_inst);
-      // ===
-      is_instr_relocated = true;
+        ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+        _ AppendRelocLabelEntry(label);
+        // ===
+        _ T2_Ldr(TEMP_REG, label);
+        _ EmitInt16(rewrite_inst);
+        // ===
+        is_instr_relocated = true;
+      }
+    }
+
+    // Branch and exchange
+    if(op0 == 0b11) {
+      int32_t L = bit(instr, 7);
+      // BX
+      if(L == 0b0) {
+        rm = bits(instr, 3, 6);
+        if(rm == pc.code()) {
+          val = from_pc + 4;
+          ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+          _ AppendRelocLabelEntry(label);
+          // ===
+          _ T2_Ldr(pc, label);
+          // ===
+          *execute_state_changed_pc_ptr = val;
+        }
+      }
+      // BLX
+      if(L == 0b1) {
+        if(rm == pc.code()) {
+          val = from_pc + 4;
+          ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+          _ AppendRelocLabelEntry(label);
+          // ===
+          int label_branch_off = 4, label_continue_off = 4;
+          _ t2_bl(label_branch_off);
+          _ t2_b(label_continue_off);
+          // Label: branch
+          _ T2_Ldr(pc, label);
+          // Label: continue
+          // ===
+          *execute_state_changed_pc_ptr = val;
+        }
+      }
     }
   }
+
+
 
   // ldr literal
   if ((instr & 0xf800) == 0x4800) {
@@ -538,6 +581,8 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
   int predefined_relocate_size = origin->raw_instruction_size();
   DLOG("Thumb relocate %d start >>>>>", predefined_relocate_size);
 
+  addr32_t execute_state_changed_pc = 0;
+
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     // align nop
     _ t1_nop();
@@ -552,8 +597,13 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
       curr_orig_pc += Thumb2_INST_LEN;
       buffer_cursor += Thumb2_INST_LEN;
     } else {
-      Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc);
+      Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc, &execute_state_changed_pc);
       DLOG("Relocate thumb1 instr: 0x%x", (uint16_t)instr);
+
+      // execute state changed
+      if(execute_state_changed_pc != 0) {
+
+      }
 
       // Move to next instruction
       curr_orig_pc += Thumb1_INST_LEN;
@@ -561,7 +611,7 @@ void gen_thumb_relocate_code(void *buffer, AssemblyCode *origin, AssemblyCode *r
     }
 
     {
-      // 1 orignal instrution => ? relocated instruction
+      // 1 original instruction => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;

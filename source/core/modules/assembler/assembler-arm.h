@@ -251,6 +251,9 @@ public:
 // Assembler
 
 class Assembler : public AssemblerBase {
+  enum ExecuteState { ARMExecuteState, ThumbExecuteState };
+private:
+  ExecuteState execute_state_;
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(64);
@@ -262,8 +265,15 @@ public:
   }
 
 public:
+  void SetExecuteState(ExecuteState state) {
+    execute_state_ = state;
+  }
+  ExecuteState GetExecuteState() {
+    return execute_state_;
+  }
+
   void CommitRealizeAddress(void *address) {
-    DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
+    CHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
     AssemblerBase::CommitRealizeAddress(address);
   }
 
@@ -271,6 +281,7 @@ public:
 
   void EmitAddress(uint32_t value);
 
+public:
   void sub(Register rd, Register rn, const Operand &operand) {
     sub(AL, rd, rn, operand);
   }
