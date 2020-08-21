@@ -40,6 +40,8 @@
 #define PTR_PREFIX "l"
 #elif defined(__arm__)
 #define PTR_PREFIX ""
+#elif defined(_M_IX86) || defined(__i386__)
+#define PTR_PREFIX ""
 #elif defined(_M_X64) || defined(__x86_64__)
 #define PTR_PREFIX "l"
 #else

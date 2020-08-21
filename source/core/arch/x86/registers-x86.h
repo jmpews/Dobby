@@ -1,7 +1,7 @@
 #ifndef ARCH_IA32_REGISTERS
 #define ARCH_IA32_REGISTERS
 
-#include "core/arch/x64/constants-x64.h"
+#include "core/arch/x86/constants-x86.h"
 #include "core/arch/Cpu.h"
 
 namespace zz {
@@ -66,7 +66,6 @@ typedef CPURegister Register;
 #define DEFINE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 32, CPURegister::kDefault);
 GENERAL_REGISTERS(DEFINE_REGISTER)
 #undef DEFINE_REGISTER
-constexpr Register no_reg = Register::no_reg();
 
 #define DOUBLE_REGISTERS(V)                                                                                            \
   V(xmm0)                                                                                                              \

@@ -1,17 +1,17 @@
-#ifndef INSTRUCTION_RELOCATION_X64_H
-#define INSTRUCTION_RELOCATION_X64_H
+#ifndef INSTRUCTION_RELOCATION_X86_H
+#define INSTRUCTION_RELOCATION_X86_H
 
-#include "ExecMemory/AssemblyCode.h"
+#include "common/headers/common_header.h"
 
-#include "core/arch/x64/constants-x64.h"
+#include "Helpers/AssemblyCode.h"
 
 namespace zz {
-namespace x64 {
+namespace x86 {
 
 // Generate the relocated instruction
 AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 
-} // namespace x64
+} // namespace x86
 } // namespace zz
 
 #endif

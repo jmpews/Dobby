@@ -1,8 +1,13 @@
-
 #ifndef TYPES_HEADER_H
 #define TYPES_HEADER_H
 
 #include <stdint.h>
+
+#ifndef __addr_32_64_t_defined
+#define __addr_32_64_t_defined
+typedef uint32_t addr32_t;
+typedef uint64_t addr64_t;
+#endif
 
 #ifndef __addr_t_defined
 #define __addr_t_defined

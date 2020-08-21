@@ -10,6 +10,9 @@ public:
 
   CodeBuffer(int size) : CodeBufferBase(size) {
   }
+
+public:
+  void Emit32(int32_t data);
 };
 
 #endif

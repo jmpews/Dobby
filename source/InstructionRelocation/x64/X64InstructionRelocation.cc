@@ -20,8 +20,8 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
-  uint64_t curr_orig_ip = origin->raw_instruction_start();
-  uint64_t curr_relo_ip = relocated->raw_instruction_start();
+  addr64_t curr_orig_ip = origin->raw_instruction_start();
+  addr64_t curr_relo_ip = relocated->raw_instruction_start();
 
   addr_t buffer_cursor = (addr_t)buffer;
 
@@ -34,7 +34,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
-    decodeItem->DecodeHandler(&instr, (uint64_t)buffer_cursor);
+    decodeItem->DecodeHandler(&instr, buffer_cursor);
 
     // Jcc Relocate OpcodeEncoding=D and rel8
     // Solution:
@@ -103,10 +103,9 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
   // jmp to the origin rest instructions
   CodeGen codegen(&turbo_assembler_);
   // TODO: 6 == jmp [RIP + disp32] instruction size
-  uint64_t stub_addr = curr_relo_ip + 6;
+  addr64_t stub_addr = curr_relo_ip + 6;
   codegen.JmpNearIndirect(stub_addr);
   turbo_assembler_.GetCodeBuffer()->Emit64(curr_orig_ip);
-
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->getSize();
   if (relo_len > relocated->raw_instruction_size()) {
@@ -128,8 +127,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   // pre-alloc code chunk
   AssemblyCodeChunk *codeChunk = NULL;
 
-  int relo_code_chunk_size = 32;
-  const int chunk_size_step      = 16;
+  int relo_code_chunk_size  = 32;
+  const int chunk_size_step = 16;
 
   if (relocated->raw_instruction_start() == 0) {
     codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);

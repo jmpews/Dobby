@@ -1,15 +1,15 @@
 #include "common/macros/platform_macro.h"
-#if defined(TARGET_ARCH_X64)
+#if defined(TARGET_ARCH_IA32)
 
 #include "dobby_internal.h"
 
 #include "core/modules/assembler/assembler.h"
-#include "core/modules/assembler/assembler-x64.h"
+#include "core/modules/assembler/assembler-ia32.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
 using namespace zz;
-using namespace zz::x64;
+using namespace zz::x86;
 
 static void *closure_bridge = NULL;
 
@@ -30,57 +30,46 @@ void *get_closure_bridge() {
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
-  char *pushfq = (char *)"\x9c";
-  char *popfq = (char *)"\x9d";
+  char *pushfd = (char *)"\x9c";
+  char *popfd = (char *)"\x9d";
 
   TurboAssembler turbo_assembler_(0);
 
   // save flags register
-  __ EmitBuffer(pushfq, 1);
+  __ EmitBuffer(pushfd, 1);
   // align rsp 16-byte
-  _ sub(rsp, Immediate(8, 32));
+  _ sub(esp, Immediate(4, 32));
 
   // general register
-  _ sub(rsp, Immediate(16 * 8, 32));
-  _ mov(Address(rsp, 8 * 0), rax);
-  _ mov(Address(rsp, 8 * 1), rbx);
-  _ mov(Address(rsp, 8 * 2), rcx);
-  _ mov(Address(rsp, 8 * 3), rdx);
-  _ mov(Address(rsp, 8 * 4), rbp);
-  _ mov(Address(rsp, 8 * 5), rsp);
-  _ mov(Address(rsp, 8 * 6), rdi);
-  _ mov(Address(rsp, 8 * 7), rsi);
-  _ mov(Address(rsp, 8 * 8), r8);
-  _ mov(Address(rsp, 8 * 9), r9);
-  _ mov(Address(rsp, 8 * 10), r10);
-  _ mov(Address(rsp, 8 * 11), r11);
-  _ mov(Address(rsp, 8 * 12), r12);
-  _ mov(Address(rsp, 8 * 13), r13);
-  _ mov(Address(rsp, 8 * 14), r14);
-  _ mov(Address(rsp, 8 * 15), r15);
+  _ sub(esp, Immediate(8 * 4, 32));
+  _ mov(Address(esp, 8 * 0), eax);
+  _ mov(Address(esp, 8 * 1), ebx);
+  _ mov(Address(esp, 8 * 2), ecx);
+  _ mov(Address(esp, 8 * 3), edx);
+  _ mov(Address(esp, 8 * 4), ebp);
+  _ mov(Address(esp, 8 * 5), esp);
+  _ mov(Address(esp, 8 * 6), edi);
+  _ mov(Address(esp, 8 * 7), esi);
 
   // save origin sp
-  _ mov(rax, rsp);
-  _ add(rax, Immediate(8 + 8 + 8 + 16 * 8, 32));
-  _ sub(rsp, Immediate(2 * 8, 32));
-  _ mov(Address(rsp, 8), rax);
+  _ mov(eax, esp);
+  _ add(eax, Immediate(4 + 4 + 4 + 8 * 4, 32));
+  _ sub(esp, Immediate(2 * 4, 32));
+  _ mov(Address(esp, 8), eax);
 
   // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
-  // @rdi: data_address
-  // @rsi: RegisterContext stack address
-  _ mov(rdi, rsp);
-  _ mov(rsi, Address(rsp, 8 + 8 + 16 * 8 + 2 * 8));
+
 
   // [!!!] As we can't detect the sp is aligned or not, check if need stack align
   {
-    //  mov rax, rsp
-    __ EmitBuffer((void *)"\x48\x89\xE0", 3);
-    //  and rax, 0xF
-    __ EmitBuffer((void *)"\x48\x83\xE0\x0F", 4);
-    //  cmp rax, 0x0
-    __ EmitBuffer((void *)"\x48\x83\xF8\x00", 4);
+    //  mov eax, esp
+    __ EmitBuffer((void *)"\x89\xE0", 2);
+    //  and eax, 0x7
+    __ EmitBuffer((void *)"\x83\xE0\x07", 3);
+    //  cmp eax, 0x0
+    __ EmitBuffer((void *)"\x83\xF8\x00", 3);
     // jnz [stack_align_call_bridge]
     __ EmitBuffer((void *)"\x75\x15", 2);
   }
@@ -92,39 +81,31 @@ void *get_closure_bridge() {
   __ EmitBuffer((void *)"\xE9\x12\x00\x00\x00", 5);
 
   // LABEL: stack_align_call_bridge
-  // push rax
+  // push eax
   __ EmitBuffer((void *)"\x50", 1);
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
-  // pop rax
+  // pop eax
   __ EmitBuffer((void *)"\x58", 1);
 
   // ======= RegisterContext Restore =======
 
   // restore sp placeholder stack
-  _ add(rsp, Immediate(2 * 8, 32));
+  _ add(esp, Immediate(2 * 4, 32));
 
   // general register
-  _ pop(rax);
-  _ pop(rbx);
-  _ pop(rcx);
-  _ pop(rdx);
-  _ pop(rbp);
-  _ add(rsp, Immediate(8, 32)); // => pop rsp
-  _ pop(rdi);
-  _ pop(rsi);
-  _ pop(r8);
-  _ pop(r9);
-  _ pop(r10);
-  _ pop(r11);
-  _ pop(r12);
-  _ pop(r13);
-  _ pop(r14);
-  _ pop(r15);
+  _ pop(eax);
+  _ pop(ebx);
+  _ pop(ecx);
+  _ pop(edx);
+  _ pop(ebp);
+  _ add(esp, Immediate(4, 32)); // => pop rsp
+  _ pop(edi);
+  _ pop(esi);
 
   // align rsp 16-byte
-  _ add(rsp, Immediate(8, 32));
+  _ add(esp, Immediate(4, 32));
   // restore flags register
-  __ EmitBuffer(popfq, 1);
+  __ EmitBuffer(popfd, 1);
 
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
