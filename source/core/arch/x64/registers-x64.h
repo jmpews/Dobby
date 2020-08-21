@@ -77,11 +77,7 @@ enum RegisterCode {
 
 class CPURegister : public RegisterBase {
 public:
-  enum RegisterType {
-    kDefault,
-
-    kInvalid
-  };
+  enum RegisterType { kDefault, kInvalid };
 
   constexpr CPURegister(int code, int size, RegisterType type) : RegisterBase(code), reg_size_(size), reg_type_(type) {
   }
@@ -133,8 +129,6 @@ private:
 };
 
 typedef CPURegister Register;
-
-typedef Register CPURegister;
 
 #define DECLARE_REGISTER(R) constexpr Register R = Register::Create(kRegCode_##R, 64, CPURegister::kDefault);
 GENERAL_REGISTERS(DECLARE_REGISTER)
@@ -204,10 +198,7 @@ enum DoubleRegisterCode {
 
 class XMMRegister : public RegisterBase {
 public:
-  enum RegisterType {
-
-    kInvalid
-  };
+  enum RegisterType { kInvalid };
 
   constexpr XMMRegister(int code) : RegisterBase(code) {
   }

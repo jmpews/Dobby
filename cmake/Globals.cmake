@@ -14,6 +14,28 @@ endif (UNIX)
 message(STATUS "")
 message(STATUS "********* build-environment-detected ***********")
 
+
+# The Compilter ID
+set(COMPILER.undetected 1)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  set(COMPILER.Clang 1)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(COMPILER.Gcc 1)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(COMPILER.MSVC 1)
+else()
+  set(COMPILER.undetected 0)
+endif()
+message(STATUS "\tCompiler: \t ${CMAKE_CXX_COMPILER_ID}")
+
+if(MSVC)
+  string(TOLOWER ${MSVC_CXX_ARCHITECTURE_ID} CMAKE_SYSTEM_PROCESSOR)
+  set(CMAKE_SYSTEM_PROCESSOR ${MSVC_CXX_ARCHITECTURE_ID})
+endif()
+
+string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} CMAKE_SYSTEM_PROCESSOR)
+
 # The Processor
 set(PROCESSOR.undetected 1)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
@@ -60,21 +82,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Darwin")
 else()
   set(SYSTEM.undetected 0)
 endif()
-message(STATUS "\tSystem:\t\t ${CMAKE_SYSTEM_NAME}")
-
-# The Compilter ID
-set(COMPILER.undetected 1)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  set(COMPILER.Clang 1)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(COMPILER.Gcc 1)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  set(COMPILER.MSVC 1)
-else()
-  set(COMPILER.undetected 0)
-endif()
-message(STATUS "\tCompiler:\t ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "\tSystem:   \t ${CMAKE_SYSTEM_NAME}")
 
 message(STATUS "***************************************")
 message(STATUS "")

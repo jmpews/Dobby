@@ -33,7 +33,7 @@ option(Darwin.GenerateFramework "Build darwin framework library" ON)
 
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
-option(Plugin.LinkerLoadCallback "Register image load callback " ON)
+option(Plugin.LinkerLoadCallback "Register image load callback " OFF)
 
 # frida is better choice
 option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)

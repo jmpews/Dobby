@@ -78,14 +78,6 @@ public:
   }
 
 private:
-#if 0
-  // From a design perspective, these fix-function write as callback, maybe beeter.
-  void FixLdr(PseudoLabelInstruction *instruction){
-      // dummy
-  };
-#endif
-
-private:
   LiteMutableArray instructions_;
 };
 
@@ -551,7 +543,7 @@ public:
     EmitOpcode(0x81);
     Emit_OpEn_RegisterOperand_Immediate(0x5, dst, imm);
   }
-  
+
   void add(Register dst, Immediate imm) {
     CHECK_EQ(dst.size(), 64);
 
