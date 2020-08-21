@@ -101,6 +101,9 @@ public:
   ThumbAssembler(void *address) : Assembler(address) {
   }
 
+  ThumbAssembler(void *address, CodeBuffer *buffer) : Assembler(address, buffer) {
+  }
+
   void EmitInt16(int16_t val) {
     buffer_->Emit16(val);
   }
@@ -235,6 +238,10 @@ public:
     data_labels_ = NULL;
   }
 
+  ThumbTurboAssembler(void *address, CodeBuffer *buffer) : ThumbAssembler(address, buffer) {
+    data_labels_ = NULL;
+  }
+
   void T1_Ldr(Register rt, ThumbPseudoLabel *label) {
     UNREACHABLE();
 
@@ -298,6 +305,10 @@ public:
       data_labels_ = new LiteMutableArray(8);
     }
     data_labels_->pushObject((LiteObject *)label);
+  }
+
+  LiteMutableArray *GetLabels() {
+    return data_labels_;
   }
 
 private:
