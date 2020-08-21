@@ -106,7 +106,6 @@ __attribute__((constructor)) static void ctor() {
 
   DobbyHook((void *)DobbySymbolResolver(NULL, "read"), (void *)fake_read, (void **)&orig_read);
 
-  void *close_ptr = dlsym(RTLD_DEFAULT, "close");
   DobbyHook((void *)DobbySymbolResolver(NULL, "close"), (void *)fake_close, (void **)&orig_close);
 }
 #endif

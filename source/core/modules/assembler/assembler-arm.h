@@ -250,13 +250,19 @@ public:
 // ================================================================
 // Assembler
 
+enum ExecuteState { ARMExecuteState, ThumbExecuteState };
+
 class Assembler : public AssemblerBase {
-  enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 private:
   ExecuteState execute_state_;
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(64);
+    DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
+  }
+
+  Assembler(void *address, CodeBuffer *buffer) : AssemblerBase(address) {
+    buffer_ = buffer;
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
@@ -380,6 +386,10 @@ public:
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
+    data_labels_ = NULL;
+  }
+
+  TurboAssembler(void *address, CodeBuffer *buffer) : Assembler(address, buffer) {
     data_labels_ = NULL;
   }
 
