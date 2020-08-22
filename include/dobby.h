@@ -82,7 +82,7 @@ typedef struct _RegisterContext {
 typedef struct _RegisterContext {
   union {
     struct {
-      uint32_t eax, ebx, ecx, edx, bp, sp, edi, esi;
+      uint32_t eax, ebx, ecx, edx, ebp, esp, edi, esi;
     } regs;
   } general;
 

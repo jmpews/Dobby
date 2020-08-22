@@ -1,17 +1,16 @@
 #include "common/macros/platform_macro.h"
-#if defined(TARGET_ARCH_X64)
+#if defined(TARGET_ARCH_IA32)
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler.h"
-#include "core/modules/assembler/assembler-x64.h"
+#include "core/modules/assembler/assembler-ia32.h"
 
 #include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
 
 extern void closure_trampoline_template();
 
 using namespace zz;
-using namespace zz::x64;
+using namespace zz::x86;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
 

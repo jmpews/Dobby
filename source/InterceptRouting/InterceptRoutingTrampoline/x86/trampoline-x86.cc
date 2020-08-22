@@ -1,17 +1,17 @@
 #include "common/macros/platform_macro.h"
-#if defined(TARGET_ARCH_X64)
+#if defined(TARGET_ARCH_IA32)
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler-x64.h"
-#include "core/modules/codegen/codegen-x64.h"
+#include "core/modules/assembler/assembler-ia32.h"
+#include "core/modules/codegen/codegen-ia32.h"
 
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
+#include "InstructionRelocation/x86/X86InstructionRelocation.h"
 
 #include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.h"
 #include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
-using namespace zz::x64;
+using namespace zz::x86;
 
 static void **AllocIndirectStub(addr_t branch_address) {
   WritableDataChunk *forwardStub = NULL;
@@ -45,7 +45,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
-  LOG("x64 near branch trampoline enable default");
+  LOG("x86 near branch trampoline enable default");
   return NULL;
 }
 

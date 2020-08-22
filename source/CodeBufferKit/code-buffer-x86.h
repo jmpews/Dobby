@@ -12,6 +12,8 @@ public:
   }
 
 public:
+  void FixBindLabel(int offset, int32_t disp);
+
   void Emit32(int32_t data);
 };
 
