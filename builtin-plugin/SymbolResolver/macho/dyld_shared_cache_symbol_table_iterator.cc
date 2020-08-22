@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include <pthread.h> // pthread_once
 
@@ -13,6 +14,7 @@
 
 #include "logging/logging.h"
 
+#undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolverCache"
 
 extern "C" {

@@ -46,8 +46,9 @@ __attribute__((constructor)) static void ctor() {
     linker_load_callback_array = new std::vector<linker_load_callback_t>();
     
 #if defined(__ANDROID__)
-  DobbyHook((void *)DobbySymbolResolver(NULL, "__loader_dlopen"), (void *)fake_loader_dlopen,
-            (void **)&orig_loader_dlopen);
+  void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
+  LOG("__loader_dlopen: %p", __loader_dlopen);
+  DobbyHook(__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
 #else
   DobbyHook((void *)DobbySymbolResolver(NULL, "dlopen"), (void *)fake_dlopen, (void **)&orig_dlopen);
 #endif
