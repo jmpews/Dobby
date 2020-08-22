@@ -635,29 +635,17 @@ void gen_thumb_relocate_code(ThumbTurboAssembler *turbo_assembler_, void *buffer
       }
     }
   }
-
-  // Branch to the rest of instructions
-  _ t2_ldr(pc, MemOperand(pc, 0));
-  // Get the real branch address
-  _ EmitAddress(curr_orig_pc - Thumb_PC_OFFSET + THUMB_ADDRESS_FLAG);
-
-  // Realize all the Pseudo-Label-Data
-  _ RelocFixup();
-
-  // Generate executable code
-  {
-    AssemblyCode *code = NULL;
-    code               = AssemblyCode::FinalizeFromTurboAssember(turbo_assembler_);
-    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
-    delete code;
-  }
 }
 
 void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   CodeBuffer *code_buffer = new CodeBuffer(64);
 
   ThumbTurboAssembler thumb_turbo_assembler_(0, code_buffer);
+#define thumb_ thumb_turbo_assembler_.
   TurboAssembler arm_turbo_assembler_(0, code_buffer);
+#define arm_ arm_turbo_assembler_.
+
+  Assembler *curr_assembler_ = NULL;
 
   addr32_t origin_code_start = origin->raw_instruction_start();
   int origin_code_size = origin->raw_instruction_size();
@@ -665,12 +653,14 @@ relocate_remain:
   bool is_thumb = origin_code_start % 2;
 
   if (is_thumb) {
+    curr_assembler_ = &thumb_turbo_assembler_;
+
     buffer = (void *)((addr_t)buffer - THUMB_ADDRESS_FLAG);
 
     // remove thumb address flag
     origin->reInitWithAddressRange(origin_code_start - THUMB_ADDRESS_FLAG, origin_code_size);
 
-    addr32_t execute_state_changed_pc;
+    addr32_t execute_state_changed_pc = 0;
     gen_thumb_relocate_code(&thumb_turbo_assembler_, buffer, origin, relocated, &execute_state_changed_pc);
     if(thumb_turbo_assembler_.GetExecuteState() == ARMExecuteState) {
       // relocate interrupt as execute state changed
@@ -683,16 +673,37 @@ relocate_remain:
       }
     }
 
-    // copy the relocate buffer
-    arm_turbo_assembler_.GetCodeBuffer()->EmitBuffer(thumb_turbo_assembler_.GetCodeBuffer()->getRawBuffer(), thumb_turbo_assembler_.GetCodeBuffer()->getSize());
-
     // add thumb address flag
     relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
                                       relocated->raw_instruction_size());
   }
   else {
+    curr_assembler_ = &arm_turbo_assembler_;
     gen_arm_relocate_code(&arm_turbo_assembler_, buffer, origin, relocated);
   }
+
+  // Realize all the Pseudo-Label-Data
+  thumb_turbo_assembler_.RelocFixup();
+
+  // Realize all the Pseudo-Label-Data
+  arm_turbo_assembler_.RelocFixup();
+
+  if(curr_assembler_ == &thumb_turbo_assembler_) {
+    // Branch to the rest of instructions
+    thumb_ t2_ldr(pc, MemOperand(pc, 0));
+    // Get the real branch address
+    thumb_ EmitAddress(curr_orig_pc - Thumb_PC_OFFSET + THUMB_ADDRESS_FLAG);
+  }
+
+  // Generate executable code
+  {
+    AssemblyCode *code = NULL;
+    code               = AssemblyCode::FinalizeFromTurboAssember(curr_assembler_);
+    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    delete code;
+  }
+
+
 }
 
 #endif
