@@ -77,14 +77,18 @@ public:
   }
 };
 
-class ThumbThumbRelocLabelEntry : public ThumbPseudoLabel {
+class ThumbRelocLabelEntry : public ThumbPseudoLabel {
 public:
-  explicit ThumbThumbRelocLabelEntry(uint32_t data) : data_size_(0) {
+  explicit ThumbRelocLabelEntry(uint32_t data) : data_size_(0) {
     data_ = data;
   }
 
   uint32_t data() {
     return data_;
+  }
+
+  uint32_t fixup_data(uint32_t data) {
+    data_ = data;
   }
 
 private:
@@ -288,19 +292,19 @@ public:
   }
 
   // ================================================================
-  // ThumbThumbRelocLabelEntry
+  // ThumbRelocLabelEntry
 
-  void RelocFixup() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      ThumbThumbRelocLabelEntry *label = (ThumbThumbRelocLabelEntry *)data_labels_->getObject(i);
+      ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *)data_labels_->getObject(i);
       ThumbPseudoBind(label);
       EmitAddress(label->data());
     }
   }
 
-  void AppendRelocLabelEntry(ThumbThumbRelocLabelEntry *label) {
+  void AppendRelocLabelEntry(ThumbRelocLabelEntry *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }

@@ -14,6 +14,12 @@
 using namespace zz;
 using namespace zz::arm;
 
+typedef struct ReloMapEntry {
+  addr32_t orig_instr;
+  addr32_t relocated_instr;
+  int relocated_code_len;
+} ReloMapEntry;
+
 static bool is_thumb2(uint32_t instr) {
   uint16_t inst1, inst2;
   inst1 = instr & 0x0000ffff;
@@ -28,7 +34,8 @@ static bool is_thumb2(uint32_t instr) {
   return false;
 }
 
-static void ARMRelocateSingleInstr(TurboAssembler *turbo_assembler, int32_t instr, uint32_t from_pc, uint32_t to_pc) {
+static void ARMRelocateSingleInstr(TurboAssembler *turbo_assembler, int32_t instr, addr32_t from_pc, addr32_t to_pc,
+                                   addr32_t *execute_state_changed_pc_ptr) {
   bool is_instr_relocated = false;
 #define _ turbo_assembler->
   // top level encoding
@@ -192,7 +199,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
         uint16_t rewrite_inst = 0;
         rewrite_inst          = (instr & 0xff87) | LFT((TEMP_REG.code()), 4, 3);
 
-        ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+        ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
         _ AppendRelocLabelEntry(label);
         // ===
         _ T2_Ldr(TEMP_REG, label);
@@ -209,8 +216,8 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       if (L == 0b0) {
         rm = bits(instr, 3, 6);
         if (rm == pc.code()) {
-          val                              = from_pc + 4;
-          ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+          val                         = from_pc + 4;
+          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
           _ AppendRelocLabelEntry(label);
           // ===
           _ T2_Ldr(pc, label);
@@ -221,8 +228,8 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       // BLX
       if (L == 0b1) {
         if (rm == pc.code()) {
-          val                              = from_pc + 4;
-          ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+          val                         = from_pc + 4;
+          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
           _ AppendRelocLabelEntry(label);
           // ===
           int label_branch_off = 4, label_continue_off = 4;
@@ -246,7 +253,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     val            = ALIGN_FLOOR(val, 4);
     rt             = bits(instr, 8, 10);
 
-    ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
     _ AppendRelocLabelEntry(label);
 
     // ===
@@ -262,7 +269,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint16_t imm8 = bits(instr, 0, 7);
     val           = from_pc + imm8;
 
-    ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
     _ AppendRelocLabelEntry(label);
     // ===
     _ T2_Ldr(Register::R(rd), label);
@@ -283,7 +290,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint32_t offset = imm8 << 1;
     val             = from_pc + offset;
 
-    ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
     _ AppendRelocLabelEntry(label);
 
     // modify imm8 field
@@ -305,7 +312,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     val             = from_pc + offset;
     rn              = bits(instr, 0, 2);
 
-    ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
     _ AppendRelocLabelEntry(label);
 
     imm5 = bits(0x4 >> 1, 1, 5);
@@ -324,7 +331,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint32_t offset = imm11 << 1;
     val             = from_pc + offset;
 
-    ThumbThumbRelocLabelEntry *label = new ThumbThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
     _ AppendRelocLabelEntry(label);
 
     // ===
@@ -515,7 +522,8 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
   }
 }
 
-void gen_arm_relocate_code(TurboAssembler *turbo_assembler_, void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+void gen_arm_relocate_code(LiteMutableArray *relo_map, TurboAssembler *turbo_assembler_, void *buffer,
+                           AssemblyCode *origin, AssemblyCode *relocated, addr32_t *execute_state_changed_pc_ptr) {
 #undef _
 #define _ turbo_assembler_->
   addr32_t curr_orig_pc = origin->raw_instruction_start() + ARM_PC_OFFSET;
@@ -526,15 +534,32 @@ void gen_arm_relocate_code(TurboAssembler *turbo_assembler_, void *buffer, Assem
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
+  addr32_t execute_state_changed_pc = 0;
+
   while (buffer_cursor < ((addr_t)buffer + predefined_relocate_size)) {
     int last_relo_offset = turbo_assembler_->GetCodeBuffer()->getSize();
 
-    ARMRelocateSingleInstr(turbo_assembler_, instr, curr_orig_pc, curr_relo_pc);
+    ARMRelocateSingleInstr(turbo_assembler_, instr, curr_orig_pc, curr_relo_pc, execute_state_changed_pc_ptr);
     DLOG("Relocate arm instr: 0x%x", instr);
+
+    {
+      // 1 orignal instrution => ? relocated instruction
+      int relo_offset = turbo_assembler_->GetCodeBuffer()->getSize();
+      int relo_len    = relo_offset - last_relo_offset;
+
+      ReloMapEntry *map =
+          new ReloMapEntry{.orig_instr = curr_orig_pc, .relocated_instr = curr_relo_pc, .relocated_code_len = relo_len};
+      relo_map->pushObject(reinterpret_cast<LiteObject *>(map));
+    }
 
     // Move to next instruction
     curr_orig_pc += ARM_INST_LEN;
     buffer_cursor += ARM_INST_LEN;
+
+    // execute state changed
+    if (execute_state_changed_pc != 0 && curr_orig_pc >= execute_state_changed_pc) {
+      break;
+    }
 
     {
       // 1 orignal instrution => ? relocated instruction
@@ -542,28 +567,18 @@ void gen_arm_relocate_code(TurboAssembler *turbo_assembler_, void *buffer, Assem
       int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;
     }
+
     instr = *(arm_inst_t *)buffer_cursor;
   }
 
-  // Branch to the rest of instructions
-  CodeGen codegen(turbo_assembler_);
-  // Get the real branch address
-  codegen.LiteralLdrBranch(curr_orig_pc - ARM_PC_OFFSET);
-
-  // Realize all the Pseudo-Label-Data
-  _ RelocFixup();
-
-  // Generate executable code
-  {
-    AssemblyCode *code = NULL;
-    code               = AssemblyCode::FinalizeFromTurboAssember(turbo_assembler_);
-    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
-    delete code;
+  bool is_relocate_interrupted = buffer_cursor < ((addr_t)buffer + predefined_relocate_size);
+  if (is_relocate_interrupted) {
+    *execute_state_changed_pc_ptr = execute_state_changed_pc;
   }
 }
 
-void gen_thumb_relocate_code(ThumbTurboAssembler *turbo_assembler_, void *buffer, AssemblyCode *origin,
-                             AssemblyCode *relocated, addr32_t *execute_state_changed_pc_ptr) {
+void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *turbo_assembler_, void *buffer,
+                             AssemblyCode *origin, AssemblyCode *relocated, addr32_t *execute_state_changed_pc_ptr) {
   LiteMutableArray *thumb_labels = new LiteMutableArray;
 
 #define _ turbo_assembler_->
@@ -587,24 +602,38 @@ void gen_thumb_relocate_code(ThumbTurboAssembler *turbo_assembler_, void *buffer
     if (is_thumb2(instr)) {
       Thumb2RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
                                 curr_relo_pc);
-      DLOG("Relocate thumb2 instr: 0x%x", instr);
 
-      // Move to next instruction
-      curr_orig_pc += Thumb2_INST_LEN;
-      buffer_cursor += Thumb2_INST_LEN;
+      DLOG("Relocate thumb2 instr: 0x%x", instr);
     } else {
       Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc,
                                 &execute_state_changed_pc);
-      DLOG("Relocate thumb1 instr: 0x%x", (uint16_t)instr);
 
-      // Move to next instruction
-      curr_orig_pc += Thumb1_INST_LEN;
-      buffer_cursor += Thumb1_INST_LEN;
+      DLOG("Relocate thumb1 instr: 0x%x", (uint16_t)instr);
 
       // execute state changed
       if (execute_state_changed_pc != 0 && curr_orig_pc >= execute_state_changed_pc) {
         break;
       }
+    }
+
+    {
+      // 1 orignal instrution => ? relocated instruction
+      int relo_offset = turbo_assembler_->GetCodeBuffer()->getSize();
+      int relo_len    = relo_offset - last_relo_offset;
+
+      ReloMapEntry *map =
+          new ReloMapEntry{.orig_instr = curr_orig_pc, .relocated_instr = curr_relo_pc, .relocated_code_len = relo_len};
+      relo_map->pushObject(reinterpret_cast<LiteObject *>(map));
+    }
+
+    if (is_thumb2(instr)) {
+      // Move to next instruction
+      curr_orig_pc += Thumb2_INST_LEN;
+      buffer_cursor += Thumb2_INST_LEN;
+    } else {
+      // Move to next instruction
+      curr_orig_pc += Thumb1_INST_LEN;
+      buffer_cursor += Thumb1_INST_LEN;
     }
 
     {
@@ -625,13 +654,52 @@ void gen_thumb_relocate_code(ThumbTurboAssembler *turbo_assembler_, void *buffer
   bool is_relocate_interrupted = buffer_cursor < ((addr_t)buffer + predefined_relocate_size);
   if (is_relocate_interrupted) {
     *execute_state_changed_pc_ptr = execute_state_changed_pc;
+  }
+}
 
-    // check branch in relocate-code range
-    LiteMutableArray *labels = turbo_assembler_->GetLabels();
+static addr32_t get_orig_instr_relocated_addr(LiteMutableArray *relo_map, addr32_t orig_pc) {
+  for (size_t i = 0; i < relo_map->getCount(); i++) {
+    ReloMapEntry *relo_entry = (ReloMapEntry *)relo_map->getObject(i);
+    if (relo_entry->orig_instr == orig_pc) {
+      return relo_entry->relocated_instr;
+    }
+  }
+  return 0;
+}
+
+static void reloc_label_fixup(AssemblyCode *origin, LiteMutableArray *relo_map,
+                              ThumbTurboAssembler *thumb_turbo_assembler, TurboAssembler *arm_turbo_assembler) {
+
+  addr32_t origin_instr_start = origin->raw_instruction_start();
+  addr32_t origin_instr_end   = origin_instr_start + origin->raw_instruction_size();
+
+  LiteMutableArray *labels = NULL;
+  labels                   = thumb_turbo_assembler->GetLabels();
+  if(labels) {
     for (size_t i = 0; i < labels->getCount(); i++) {
-      ThumbThumbRelocLabelEntry *label = (ThumbThumbRelocLabelEntry *)labels->getObject(i);
-      if ((addr32_t)label->data() == execute_state_changed_pc) {
-        LOG("thumb branch and change execute state to arm");
+      ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *) labels->getObject(i);
+      addr32_t val = label->data();
+
+      if (val >= origin_instr_start && val < origin_instr_end) {
+        DLOG("found thumb instr branch in to origin code");
+        addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
+        fixup_val += (addr_t) thumb_turbo_assembler->GetRealizeAddress();
+        label->fixup_data(fixup_val);
+      }
+    }
+  }
+
+  labels = arm_turbo_assembler->GetLabels();
+  if(labels) {
+    for (size_t i = 0; i < labels->getCount(); i++) {
+      RelocLabelEntry *label = (RelocLabelEntry *) labels->getObject(i);
+      addr32_t val = label->data();
+
+      if (val >= origin_instr_start && val < origin_instr_end) {
+        DLOG("found arm instr branch in to origin code");
+        addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
+        fixup_val += (addr_t) arm_turbo_assembler->GetRealizeAddress();
+        label->fixup_data(fixup_val);
       }
     }
   }
@@ -648,10 +716,14 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   Assembler *curr_assembler_ = NULL;
 
   addr32_t origin_code_start = origin->raw_instruction_start();
-  int origin_code_size = origin->raw_instruction_size();
-relocate_remain:
-  bool is_thumb = origin_code_start % 2;
+  int origin_code_size       = origin->raw_instruction_size();
 
+  LiteMutableArray relo_map(8);
+
+relocate_remain:
+  addr32_t execute_state_changed_pc = 0;
+
+  bool is_thumb = origin_code_start % 2;
   if (is_thumb) {
     curr_assembler_ = &thumb_turbo_assembler_;
 
@@ -660,50 +732,78 @@ relocate_remain:
     // remove thumb address flag
     origin->reInitWithAddressRange(origin_code_start - THUMB_ADDRESS_FLAG, origin_code_size);
 
-    addr32_t execute_state_changed_pc = 0;
-    gen_thumb_relocate_code(&thumb_turbo_assembler_, buffer, origin, relocated, &execute_state_changed_pc);
-    if(thumb_turbo_assembler_.GetExecuteState() == ARMExecuteState) {
+    gen_thumb_relocate_code(&relo_map, &thumb_turbo_assembler_, buffer, origin, relocated, &execute_state_changed_pc);
+    if (thumb_turbo_assembler_.GetExecuteState() == ARMExecuteState) {
       // relocate interrupt as execute state changed
-      if(execute_state_changed_pc < origin_code_start + origin_code_size) {
+      if (execute_state_changed_pc < origin_code_start + origin_code_size) {
         // re-init the origin
         int relocate_remain_size = origin_code_start + origin_code_size - execute_state_changed_pc;
-        origin_code_start = execute_state_changed_pc;
-        origin_code_size = relocate_remain_size;
+        origin_code_start        = execute_state_changed_pc;
+        origin_code_size         = relocate_remain_size;
         goto relocate_remain;
       }
     }
-
-    // add thumb address flag
-    relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
-                                      relocated->raw_instruction_size());
-  }
-  else {
+  } else {
     curr_assembler_ = &arm_turbo_assembler_;
-    gen_arm_relocate_code(&arm_turbo_assembler_, buffer, origin, relocated);
+    gen_arm_relocate_code(&relo_map, &arm_turbo_assembler_, buffer, origin, relocated, &execute_state_changed_pc);
+    if (arm_turbo_assembler_.GetExecuteState() == ThumbExecuteState) {
+      // relocate interrupt as execute state changed
+      if (execute_state_changed_pc < origin_code_start + origin_code_size) {
+        // re-init the origin
+        int relocate_remain_size = origin_code_start + origin_code_size - execute_state_changed_pc;
+        origin_code_start        = execute_state_changed_pc + THUMB_ADDRESS_FLAG;
+        origin_code_size         = relocate_remain_size;
+        goto relocate_remain;
+      }
+    }
   }
 
-  // Realize all the Pseudo-Label-Data
-  thumb_turbo_assembler_.RelocFixup();
-
-  // Realize all the Pseudo-Label-Data
-  arm_turbo_assembler_.RelocFixup();
-
-  if(curr_assembler_ == &thumb_turbo_assembler_) {
+  addr32_t rest_instr_addr = origin->raw_instruction_start() + origin->raw_instruction_size();
+  if (curr_assembler_ == &thumb_turbo_assembler_) {
     // Branch to the rest of instructions
     thumb_ t2_ldr(pc, MemOperand(pc, 0));
     // Get the real branch address
-    thumb_ EmitAddress(curr_orig_pc - Thumb_PC_OFFSET + THUMB_ADDRESS_FLAG);
+    thumb_ EmitAddress(rest_instr_addr + THUMB_ADDRESS_FLAG);
+  } else {
+    // Branch to the rest of instructions
+    CodeGen codegen(&arm_turbo_assembler_);
+    // Get the real branch address
+    codegen.LiteralLdrBranch(rest_instr_addr);
   }
+
+  // Realize all the Pseudo-Label-Data
+  thumb_turbo_assembler_.RelocBind();
+
+  // Realize all the Pseudo-Label-Data
+  arm_turbo_assembler_.RelocBind();
 
   // Generate executable code
   {
+
+    CodeBufferBase *codeBuffer = NULL;
+    codeBuffer                  = reinterpret_cast<CodeBufferBase *>(curr_assembler_->GetCodeBuffer());
+    int buffer_size            = codeBuffer->getSize();
+
+    // assembler without specific memory address
+    AssemblyCodeChunk *codeChunk = MemoryArena::AllocateCodeChunk(buffer_size);
+
+    thumb_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
+    arm_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
+
+    // fixup the instr branch into trampoline(has been modified)
+    reloc_label_fixup(origin, &relo_map, &thumb_turbo_assembler_, &arm_turbo_assembler_);
+
     AssemblyCode *code = NULL;
     code               = AssemblyCode::FinalizeFromTurboAssember(curr_assembler_);
     relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
     delete code;
   }
 
-
+  if (curr_assembler_ == &thumb_turbo_assembler_) {
+    // add thumb address flag
+    relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
+                                      relocated->raw_instruction_size());
+  }
 }
 
 #endif
