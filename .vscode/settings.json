@@ -3,13 +3,14 @@
   "files.autoSaveDelay": 3000,
   "editor.formatOnSave": true,
   "cmake.environment": {
-    "CFLAGS": "-DIOS -arch arm64 -miphoneos-version-min=6.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.PlatformInterface/Developer/SDKs/iPhoneOS.sdk"
+    "ANDROID_NDK": "/Users/jmpews/Library/Android/sdk/ndk-bundle"
   },
   "cmake.configureArgs": [
-    "-DSHARED=ON",
-    "-DPLATFORM=iOS",
-    "-DARCH=arm64",
-    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    "-DCMAKE_SYSTEM_NAME=Android",
+    "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
+    "-DCMAKE_ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk/21.3.6528147",
+    "-DCMAKE_SYSTEM_VERSION=16",
+    "-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang"
   ],
   "cmake.buildArgs": [],
   "cmake.buildToolArgs": [],
