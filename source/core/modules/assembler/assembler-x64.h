@@ -658,7 +658,7 @@ public:
     }
   }
 
-  void RelocFixup() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
@@ -673,6 +673,10 @@ public:
       data_labels_ = new LiteMutableArray(8);
     }
     data_labels_->pushObject((LiteObject *)label);
+  }
+
+  LiteMutableArray *GetLabels() {
+    return data_labels_;
   }
 
 private:

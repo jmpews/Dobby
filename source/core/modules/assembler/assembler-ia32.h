@@ -293,7 +293,6 @@ public:
 
   // This addressing mode does not exist.
   Address(Register base, Register index, ScaleFactor scale, Register r);
-
 };
 
 // ================================================================
@@ -523,7 +522,7 @@ public:
     }
   }
 
-  void RelocFixup() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {

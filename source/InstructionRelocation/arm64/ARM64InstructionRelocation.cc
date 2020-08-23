@@ -293,7 +293,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(curr_orig_pc);
 
-  _ RelocFixup();
+  _ RelocBind();
 
   // Generate executable code
   {

@@ -650,7 +650,7 @@ public:
     }
   }
 
-  void RelocFixup() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {

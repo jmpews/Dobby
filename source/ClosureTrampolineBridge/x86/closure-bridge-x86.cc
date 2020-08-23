@@ -61,7 +61,6 @@ void *get_closure_bridge() {
 
   // prepare args
 
-
   // [!!!] As we can't detect the sp is aligned or not, check if need stack align
   {
     //  mov eax, esp
@@ -110,7 +109,7 @@ void *get_closure_bridge() {
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
-  _ RelocFixup();
+  _ RelocBind();
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   closure_bridge = (void *)code->raw_instruction_start();

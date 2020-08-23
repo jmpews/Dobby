@@ -106,6 +106,10 @@ public:
     return data_;
   }
 
+  uint32_t fixup_data(uint32_t data) {
+    data_ = data;
+  }
+
 private:
   uint32_t data_;
 
@@ -224,7 +228,7 @@ public:
     uint32_t encoding = 0;
     if (!operand.rm_.IsValid()) {
       if (operand.offset_ < 0) {
-        encoding = (operand.am_ ^ (1 << 23)) | (- operand.offset_); // Flip U to adjust sign.
+        encoding = (operand.am_ ^ (1 << 23)) | (-operand.offset_); // Flip U to adjust sign.
       } else {
         encoding = operand.am_ | operand.offset_;
       }
@@ -255,6 +259,7 @@ enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 class Assembler : public AssemblerBase {
 private:
   ExecuteState execute_state_;
+
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(64);
@@ -352,7 +357,7 @@ public:
   void b(Condition cond, int branch_offset) {
     uint32_t encoding = 0xb000000;
     encoding |= (cond << kConditionShift);
-    uint32_t imm24    = bits(branch_offset >> 2, 0, 23);
+    uint32_t imm24 = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;
     buffer_->EmitARMInst(encoding);
   }
@@ -363,7 +368,7 @@ public:
   void bl(Condition cond, int branch_offset) {
     uint32_t encoding = 0xa000000;
     encoding |= (cond << kConditionShift);
-    uint32_t imm24    = bits(branch_offset >> 2, 0, 23);
+    uint32_t imm24 = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;
     buffer_->EmitARMInst(encoding);
   }
@@ -427,7 +432,7 @@ public:
   // ================================================================
   // RelocLabelEntry
 
-  void RelocFixup() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
@@ -442,6 +447,10 @@ public:
       data_labels_ = new LiteMutableArray(8);
     }
     data_labels_->pushObject((LiteObject *)label);
+  }
+
+  LiteMutableArray *GetLabels() {
+    return data_labels_;
   }
 
 private:
