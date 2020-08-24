@@ -266,13 +266,20 @@ public:
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
+  // shared_ptr is better choice
+  // but we can't use it at kernelspace
   Assembler(void *address, CodeBuffer *buffer) : AssemblerBase(address) {
     buffer_ = buffer;
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   ~Assembler() {
-    buffer_->release();
+    if(buffer_)
+      delete buffer_;
+  }
+
+  void ClearCodeBuffer() {
+    buffer_ = NULL;
   }
 
 public:

@@ -305,7 +305,8 @@ public:
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
-    delete buffer_;
+    if(buffer_)
+      delete buffer_;
   }
 
 public:

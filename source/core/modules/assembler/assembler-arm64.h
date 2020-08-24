@@ -362,7 +362,8 @@ public:
     DLOG("Initialize assembler code buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
-    buffer_->release();
+    if(buffer_)
+      delete buffer_;
   }
 
 public:

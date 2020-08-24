@@ -675,30 +675,30 @@ static void reloc_label_fixup(AssemblyCode *origin, LiteMutableArray *relo_map,
 
   LiteMutableArray *labels = NULL;
   labels                   = thumb_turbo_assembler->GetLabels();
-  if(labels) {
+  if (labels) {
     for (size_t i = 0; i < labels->getCount(); i++) {
-      ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *) labels->getObject(i);
-      addr32_t val = label->data();
+      ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *)labels->getObject(i);
+      addr32_t val                = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG("found thumb instr branch in to origin code");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t) thumb_turbo_assembler->GetRealizeAddress();
+        fixup_val += (addr_t)thumb_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);
       }
     }
   }
 
   labels = arm_turbo_assembler->GetLabels();
-  if(labels) {
+  if (labels) {
     for (size_t i = 0; i < labels->getCount(); i++) {
-      RelocLabelEntry *label = (RelocLabelEntry *) labels->getObject(i);
-      addr32_t val = label->data();
+      RelocLabelEntry *label = (RelocLabelEntry *)labels->getObject(i);
+      addr32_t val           = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG("found arm instr branch in to origin code");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t) arm_turbo_assembler->GetRealizeAddress();
+        fixup_val += (addr_t)arm_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);
       }
     }
@@ -779,13 +779,8 @@ relocate_remain:
 
   // Generate executable code
   {
-
-    CodeBufferBase *codeBuffer = NULL;
-    codeBuffer                  = reinterpret_cast<CodeBufferBase *>(curr_assembler_->GetCodeBuffer());
-    int buffer_size            = codeBuffer->getSize();
-
     // assembler without specific memory address
-    AssemblyCodeChunk *codeChunk = MemoryArena::AllocateCodeChunk(buffer_size);
+    AssemblyCodeChunk *codeChunk = MemoryArena::AllocateCodeChunk(code_buffer->getSize());
 
     thumb_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
     arm_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
@@ -803,6 +798,14 @@ relocate_remain:
     // add thumb address flag
     relocated->reInitWithAddressRange(relocated->raw_instruction_start() + THUMB_ADDRESS_FLAG,
                                       relocated->raw_instruction_size());
+  }
+
+  // clean
+  {
+    thumb_turbo_assembler_.ClearCodeBuffer();
+    arm_turbo_assembler_.ClearCodeBuffer();
+
+    delete code_buffer;
   }
 }
 
