@@ -24,6 +24,8 @@ public:
 
   thumb2_inst_t LoadThumb2Inst(int offset);
 
+  void RewriteAddr(int offset, addr32_t addr);
+
   void RewriteARMInst(int offset, arm_inst_t instr);
 
   void RewriteThumb1Inst(int offset, thumb1_inst_t instr);

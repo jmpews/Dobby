@@ -17,6 +17,11 @@ thumb2_inst_t CodeBuffer::LoadThumb2Inst(int offset) {
   return *reinterpret_cast<thumb2_inst_t *>(buffer_ + offset);
 };
 
+void CodeBuffer::RewriteAddr(int offset, addr32_t addr) {
+  *reinterpret_cast<addr32_t *>(buffer_ + offset) = addr;
+  return;
+}
+
 void CodeBuffer::RewriteARMInst(int offset, arm_inst_t instr) {
   *reinterpret_cast<arm_inst_t *>(buffer_ + offset) = instr;
   return;

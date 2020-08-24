@@ -445,10 +445,8 @@ public:
     }
   }
 
-  void RelocBindFixup(PseudoLabel *label) {
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(this->GetCodeBuffer());
-    }
+  void RelocBindFixup(RelocLabelEntry *label) {
+    buffer_->RewriteAddr(label->pos(), label->data());
   }
 
   void RelocBind() {

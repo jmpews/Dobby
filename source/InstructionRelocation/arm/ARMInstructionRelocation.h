@@ -279,8 +279,8 @@ public:
   }
 
   void AlignThumbNop() {
-    int pc_offset = this->GetCodeBuffer()->getSize();
-    if (pc_offset % Thumb2_INST_LEN) {
+    addr32_t pc = this->GetCodeBuffer()->getSize() + (addr32_t)GetRealizeAddress();
+    if (pc % Thumb2_INST_LEN) {
       t1_nop();
     } else {
     }
@@ -289,9 +289,8 @@ public:
   // ================================================================
   // ThumbRelocLabelEntry
 
-
   void ThumbPseudoBind(ThumbPseudoLabel *label) {
-    if(label->is_unused() == true) {
+    if (label->is_unused() == true) {
       const addr32_t bound_pc = buffer_->getSize();
       label->bind_to(bound_pc);
     }
@@ -301,10 +300,8 @@ public:
     }
   }
 
-  void RelocBindFixup(ThumbPseudoLabel *label) {
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(this->GetCodeBuffer());
-    }
+  void RelocBindFixup(ThumbRelocLabelEntry *label) {
+    buffer_->RewriteAddr(label->pos(), label->data());
   }
 
   void RelocBind() {
