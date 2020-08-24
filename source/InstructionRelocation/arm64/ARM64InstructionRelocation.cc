@@ -276,7 +276,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     }
 #endif
 
-    curr_relo_pc = relocated->raw_instruction_start() + turbo_assembler_->pc_offset();
+    curr_relo_pc = relocated->raw_instruction_start() + turbo_assembler_.pc_offset();
 
     instr = *(arm64_inst_t *)buffer_cursor;
   }
