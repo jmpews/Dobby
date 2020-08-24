@@ -267,12 +267,16 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     curr_orig_pc += 4;
     buffer_cursor += 4;
 
+#if 0
     {
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len    = relo_offset - last_relo_offset;
       curr_relo_pc += relo_len;
     }
+#endif
+
+    curr_relo_pc = relocated->raw_instruction_start() + turbo_assembler_->pc_offset();
 
     instr = *(arm64_inst_t *)buffer_cursor;
   }
@@ -289,6 +293,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     }
 #endif
 
+  // TODO: if last instr is unlink branch, skip
   // Branch to the rest of instructions
   CodeGen codegen(&turbo_assembler_);
   codegen.LiteralLdrBranch(curr_orig_pc);

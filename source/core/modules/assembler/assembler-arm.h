@@ -29,6 +29,8 @@ namespace arm {
 
 constexpr Register TMP0 = r12;
 
+constexpr Register VOLATILE_REGISTER = r12;
+
 // ===== PseudoLabel =====
 
 class PseudoLabel : public Label {
@@ -106,7 +108,7 @@ public:
     return data_;
   }
 
-  uint32_t fixup_data(uint32_t data) {
+  void fixup_data(uint32_t data) {
     data_ = data;
   }
 
@@ -262,19 +264,21 @@ private:
 
 public:
   Assembler(void *address) : AssemblerBase(address) {
-    buffer_ = new CodeBuffer(64);
+    execute_state_ = ARMExecuteState;
+    buffer_        = new CodeBuffer(64);
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   // shared_ptr is better choice
   // but we can't use it at kernelspace
   Assembler(void *address, CodeBuffer *buffer) : AssemblerBase(address) {
-    buffer_ = buffer;
+    execute_state_ = ARMExecuteState;
+    buffer_        = buffer;
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   ~Assembler() {
-    if(buffer_)
+    if (buffer_)
       delete buffer_;
   }
 
@@ -416,15 +420,6 @@ public:
     }
   }
 
-  void PseudoBind(PseudoLabel *label) {
-    const uint32_t bound_pc = buffer_->getSize();
-    label->bind_to(bound_pc);
-    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(this->GetCodeBuffer());
-    }
-  }
-
   void CallFunction(ExternalReference function) {
     // trick: use bl to replace lr register
     bl(0);
@@ -438,6 +433,23 @@ public:
 
   // ================================================================
   // RelocLabelEntry
+
+  void PseudoBind(PseudoLabel *label) {
+    if (label->is_unused() == true) {
+      const uint32_t bound_pc = buffer_->getSize();
+      label->bind_to(bound_pc);
+    }
+    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(this->GetCodeBuffer());
+    }
+  }
+
+  void RelocBindFixup(PseudoLabel *label) {
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(this->GetCodeBuffer());
+    }
+  }
 
   void RelocBind() {
     if (data_labels_ == NULL)

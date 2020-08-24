@@ -87,12 +87,15 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
     curr_orig_ip += instr.len;
     buffer_cursor += instr.len;
 
+#if 0
     {
       // 1 orignal instrution => ? relocated instruction
       int relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
       int relo_len    = relo_offset - last_relo_offset;
       curr_relo_ip += relo_len;
     }
+#endif
+    curr_relo_ip = relocated->raw_instruction_start() + turbo_assembler_->pc_offset();
 
     opcode1 = *(byte_t *)buffer_cursor;
 

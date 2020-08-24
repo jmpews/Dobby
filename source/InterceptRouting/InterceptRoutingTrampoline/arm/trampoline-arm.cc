@@ -26,6 +26,8 @@ CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
 #undef _
 #define _ thumb_turbo_assembler_.
 
+  if(from % 4)
+    _ t1_nop();
   _ t2_ldr(pc, MemOperand(pc, 0));
   _ EmitAddress(to);
 

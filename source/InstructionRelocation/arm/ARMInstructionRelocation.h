@@ -87,7 +87,7 @@ public:
     return data_;
   }
 
-  uint32_t fixup_data(uint32_t data) {
+  void fixup_data(uint32_t data) {
     data_ = data;
   }
 
@@ -103,9 +103,11 @@ private:
 class ThumbAssembler : public Assembler {
 public:
   ThumbAssembler(void *address) : Assembler(address) {
+    this->SetExecuteState(ThumbExecuteState);
   }
 
   ThumbAssembler(void *address, CodeBuffer *buffer) : Assembler(address, buffer) {
+    this->SetExecuteState(ThumbExecuteState);
   }
 
   void EmitInt16(int16_t val) {
@@ -156,6 +158,7 @@ private:
     uint32_t U, imm12;
     int32_t offset = x.offset();
 
+#if 0
     // literal ldr, base = ALIGN(pc, 4)
     if (rt.Is(pc)) {
       // TODO: convert to `GetRealizeAddress()` ???
@@ -164,6 +167,7 @@ private:
         t1_nop();
       }
     }
+#endif
 
     if (offset > 0) {
       U     = B7;
@@ -282,17 +286,26 @@ public:
     }
   }
 
+  // ================================================================
+  // ThumbRelocLabelEntry
+
+
   void ThumbPseudoBind(ThumbPseudoLabel *label) {
-    const uintptr_t bound_pc = buffer_->getSize();
-    label->bind_to(bound_pc);
+    if(label->is_unused() == true) {
+      const addr32_t bound_pc = buffer_->getSize();
+      label->bind_to(bound_pc);
+    }
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
       label->link_confused_instructions(this->GetCodeBuffer());
     }
   }
 
-  // ================================================================
-  // ThumbRelocLabelEntry
+  void RelocBindFixup(ThumbPseudoLabel *label) {
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(this->GetCodeBuffer());
+    }
+  }
 
   void RelocBind() {
     if (data_labels_ == NULL)
