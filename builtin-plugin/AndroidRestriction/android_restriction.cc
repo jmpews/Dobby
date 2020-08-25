@@ -19,6 +19,7 @@
 
 #include "common/headers/common_header.h"
 
+#undef LOG_TAG
 #define LOG_TAG "AndroidLinkerRestriction"
 
 // impl at "dobby_symbol_resolver.cc"

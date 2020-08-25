@@ -311,7 +311,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
   return result;
 }
 
-#if defined(DOBBY_DEBUG) && 1
+#if defined(DOBBY_DEBUG) && 0
 __attribute__((constructor)) static void ctor() {
   mach_header_t *header = NULL;
   header                = (mach_header_t *)_dyld_get_image_header(0);
