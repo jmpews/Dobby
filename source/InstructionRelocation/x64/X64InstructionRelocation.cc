@@ -95,7 +95,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
       curr_relo_ip += relo_len;
     }
 #endif
-    curr_relo_ip = relocated->raw_instruction_start() + turbo_assembler_->pc_offset();
+    curr_relo_ip = relocated->raw_instruction_start() + turbo_assembler_.ip_offset();
 
     opcode1 = *(byte_t *)buffer_cursor;
 
