@@ -39,7 +39,7 @@ static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
 }
 
 std::vector<MemoryRegion> ProcessMemoryLayout;
-std::vector<MemoryRegion> GetProcessMemoryLayout() {
+std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -75,7 +75,7 @@ std::vector<MemoryRegion> GetProcessMemoryLayout() {
         continue;
       }
       MemoryRegion region = {(void *)addr, static_cast<size_t>(size), permission};
-      DLOG("%p - %p", addr, addr + size);
+      // LOG("%p - %p", addr, addr + size);
       ProcessMemoryLayout.push_back(region);
     }
 

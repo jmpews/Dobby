@@ -12,7 +12,7 @@ public:
 
   static AssemblyCodeChunk *AllocateCodeChunk(addr_t position, size_t range, int inSize);
 
-  static int PushMostNearPage(addr_t position, size_t range, MemoryPermission permission);
+  static int PushPage(addr_t page_addr, MemoryPermission permission);
 
   static void Destory(MemoryChunk *chunk);
 
