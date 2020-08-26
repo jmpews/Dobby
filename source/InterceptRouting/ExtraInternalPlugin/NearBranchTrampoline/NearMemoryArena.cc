@@ -80,9 +80,23 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, int range, int in_size)
     if (region.permission == kReadExecute || region.permission == kRead) {
       if (((addr_t)region.address + region.length) <= max_page_addr) {
         if ((addr_t)region.address >= min_page_addr) {
+#if defined(__APPLE__)
+          if(*(uint32_t *)region.address == 0xfeedfacf)
+            continue;
+#endif
           char *blank_memory = (char *)malloc(in_size);
           memset(blank_memory, 0, in_size);
+#if defined(__arm__) || defined(__aarch64__)
+          in_size += (4 - 1);
           blank_chunk_addr = (uint8_t *)memmem(region.address, region.length, blank_memory, in_size);
+          if(blank_chunk_addr) {
+            int off = 4 - ((addr_t)blank_chunk_addr % 4);
+            blank_chunk_addr += off;
+          }
+#else
+          blank_chunk_addr = (uint8_t *)memmem(region.address, region.length, blank_memory, in_size);
+#endif
+
           if (blank_chunk_addr)
             break;
         }

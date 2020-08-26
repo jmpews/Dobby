@@ -6,7 +6,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#if defined(_POSIX_VERSION)
+#if defined(_POSIX_VERSION) || defined(__APPLE__)
 #include <unistd.h>
 #include <syslog.h>
 #endif
@@ -18,7 +18,7 @@
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
-static int _syslog_enabled = 0;
+static int _syslog_enabled = 1;
 void switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
@@ -55,7 +55,7 @@ PUBLIC int custom_log(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
 #pragma clang diagnostic ignored "-Wformat"
-#if defined(_POSIX_VERSION)
+#if defined(_POSIX_VERSION) || defined(__APPLE__)
   if (_syslog_enabled) {
     vsyslog(LOG_ERR, fmt, args);
   }
