@@ -35,7 +35,7 @@
 // GetProcessMemoryLayout
 
 static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
-  return (a.address > b.address);
+  return (a.address < b.address);
 }
 
 std::vector<MemoryRegion> ProcessMemoryLayout;
@@ -61,7 +61,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       }
     }
 
-    if (0 && submap_info.is_submap) {
+    if (submap_info.is_submap) {
       depth++;
     } else {
       MemoryPermission permission;
@@ -75,7 +75,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
         continue;
       }
       MemoryRegion region = {(void *)addr, static_cast<size_t>(size), permission};
-      // LOG("%p - %p", addr, addr + size);
+      LOG("%p - %p", addr, addr + size);
       ProcessMemoryLayout.push_back(region);
     }
 
