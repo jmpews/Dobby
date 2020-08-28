@@ -6,12 +6,12 @@
 set(DobbyHome D:/TimeDisk/Workspace/Project.wrk/Dobby)
 include_directories(
   ${DobbyHome}/include
-  ${DobbyHome}/source
   ${DobbyHome}/builtin-plugin
-  ${DobbyHome}/builtin-plugin/AndroidRestriction
   ${DobbyHome}/builtin-plugin/SymbolResolver
+  ${DobbyHome}/builtin-plugin/AndroidRestriction
   ${DobbyHome}/external/logging
 )
+
 add_library( # Sets the name of the library.
   native-lib
   # Sets the library as a shared library.
@@ -28,13 +28,12 @@ add_library( # Sets the name of the library.
 macro(SET_OPTION option value)
   set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
-
 SET_OPTION(DOBBY_DEBUG ON)
 SET_OPTION(DOBBY_GENERATE_SHARED OFF)
 SET_OPTION(DynamicBinaryInstrument ON)
 SET_OPTION(NearBranch ON)
 SET_OPTION(Plugin.SymbolResolver ON)
-add_subdirectory(D:/TimeDisk/Workspace/Project.wrk/Dobby dobby)
+add_subdirectory(${DobbyHome} dobby)
 ```
 
 ## replace hook function
@@ -51,7 +50,7 @@ ref source `builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.c
 
 ref source `builtin-plugin/AndroidRestriction/android_restriction_demo.cc`
 
-```c++
+```c
 # impl at SymbolResolver/elf/dobby_symbol_resolver.cc
 void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
 DobbyHook((void *)__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);

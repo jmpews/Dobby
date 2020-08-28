@@ -11,18 +11,19 @@ git clone --depth 1 git@github.com:jmpews/Dobby.git
 ```
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(Darwin.GenerateFramework "Build framework library" ON)
-
-option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" OFF)
+option(DOBBY_DEBUG "Enable debug logging" ON)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
-option(Plugin.SymbolResolver "Find symbol by [DobbySymbolResolver] " OFF)
+option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
-option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
+option(DBI.FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
+option(Darwin.GenerateFramework "Build darwin framework library" ON)
 
+option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
+
+option(Plugin.LinkerLoadCallback "Register image load callback " OFF)
 ```
 
 ## Build for host
@@ -57,8 +58,7 @@ cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
 -DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
--DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
--DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.Darwin.HideLibrary=ON -DPlugin.Darwin.ObjectiveC=ON -DDarwin.GenerateFramework=ON
+-DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3
 
 make -j4
 ```
@@ -76,15 +76,12 @@ cd Dobby && mkdir build_for_android_arm64 && cd build_for_android_arm64
 
 cmake .. \
 -DCMAKE_BUILD_TYPE=Release \
--DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="arm64-v8a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
--DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON
+-DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="arm64-v8a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang
 
 make -j4
 ```
 
 #### Manual build for Android ARM
-
->SymbolResolver need CMAKE_SYSTEM_VERSION=21
 
 ```
 export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
@@ -92,8 +89,7 @@ export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
 cd Dobby && mkdir build_for_android_arm && cd build_for_android_arm
 
 -DCMAKE_BUILD_TYPE=Release \
--DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="armeabi-v7a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang 
--DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON
+-DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="armeabi-v7a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=16 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang 
 
 make -j4
 ```
@@ -104,12 +100,12 @@ make -j4
 set(DobbyHome D:/TimeDisk/Workspace/Project.wrk/Dobby)
 include_directories(
   ${DobbyHome}/include
-  ${DobbyHome}/source
   ${DobbyHome}/builtin-plugin
-  ${DobbyHome}/builtin-plugin/AndroidRestriction
   ${DobbyHome}/builtin-plugin/SymbolResolver
+  ${DobbyHome}/builtin-plugin/AndroidRestriction
   ${DobbyHome}/external/logging
 )
+
 add_library( # Sets the name of the library.
   native-lib
   # Sets the library as a shared library.
@@ -126,11 +122,10 @@ add_library( # Sets the name of the library.
 macro(SET_OPTION option value)
   set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
-
 SET_OPTION(DOBBY_DEBUG ON)
 SET_OPTION(DOBBY_GENERATE_SHARED OFF)
 SET_OPTION(DynamicBinaryInstrument ON)
 SET_OPTION(NearBranch ON)
 SET_OPTION(Plugin.SymbolResolver ON)
-add_subdirectory(D:/TimeDisk/Workspace/Project.wrk/Dobby dobby)
+add_subdirectory(${DobbyHome} dobby)
 ```
