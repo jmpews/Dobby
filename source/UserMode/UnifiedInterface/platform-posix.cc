@@ -27,7 +27,7 @@
 #include <mach/vm_statistics.h>
 #endif
 
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
+#if defined(__ANDROID__)
 #define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
 #endif
@@ -66,7 +66,7 @@ void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   int prot = GetProtectionFromMemoryPermission(access);
 
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if(address != NULL) {
+  if (address != NULL) {
     flags = flags | MAP_FIXED;
   }
   void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
@@ -128,7 +128,7 @@ void OSPrint::Print(const char *format, ...) {
 }
 
 void OSPrint::VPrint(const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
+#if defined(__ANDROID__)
   __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, format, args);
 #else
   vprintf(format, args);
@@ -143,7 +143,7 @@ void OSPrint::PrintError(const char *format, ...) {
 }
 
 void OSPrint::VPrintError(const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
+#if defined(__ANDROID__)
   __android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
 #else
   vfprintf(stderr, format, args);

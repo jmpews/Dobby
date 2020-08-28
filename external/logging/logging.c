@@ -18,7 +18,7 @@
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
-static int _syslog_enabled = 1;
+static int _syslog_enabled = 0;
 void switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
@@ -80,7 +80,7 @@ PUBLIC int custom_log(const char *fmt, ...) {
   }
 
   if (!_syslog_enabled && !_file_log_enabled) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
+#if defined(__ANDROID__)
 #define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
     __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, args);
