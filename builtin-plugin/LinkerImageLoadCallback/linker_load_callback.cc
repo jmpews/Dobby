@@ -32,6 +32,8 @@ static void *fake_loader_dlopen(const char *filename, int flags, const void *cal
 }
 
 PUBLIC void dobby_register_image_load_callback(linker_load_callback_t func) {
+  if(linker_load_callback_array == NULL)
+    linker_load_callback_array = new std::vector<linker_load_callback_t>();
   linker_load_callback_array->push_back(func);
 }
 
