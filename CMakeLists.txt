@@ -303,7 +303,7 @@ if(Plugin.Darwin.HideLibrary)
   endif()
   message(STATUS "[Dobby] Enable Plugin.Darwin.HideLibrary")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/HideLibrary/hide_library_darwin.c
+    builtin-plugin/HideLibrary/hide_library_darwin.cc
   )
 endif()
 if(Plugin.Darwin.ObjectiveC)
