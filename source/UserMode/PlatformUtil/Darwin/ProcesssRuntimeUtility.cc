@@ -86,3 +86,38 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
   return ProcessMemoryLayout;
 }
+
+// ================================================================
+// GetProcessModuleMap
+
+std::vector<RuntimeModule> ProcessModuleMap;
+std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
+  if (!ProcessMemoryLayout.empty()) {
+    ProcessMemoryLayout.clear();
+  }
+  int image_count = _dyld_image_count();
+  for (size_t i = 0; i < image_count; i++) {
+    const struct mach_header *header = NULL;
+    header = _dyld_get_image_header(i);
+    const char *path = NULL;
+    path = _dyld_get_image_name(i);
+
+    RuntimeModule module = {0};
+    {
+      strncpy(module.path, path, sizeof(module.path));
+      module.load_address = (void *) header;
+    }
+    ProcessModuleMap.push_back(module);
+  }
+  return ProcessModuleMap;
+}
+
+RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
+  std::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
+  for (auto module : ProcessModuleMap) {
+    if (strstr(module.path, name) != 0) {
+      return module;
+    }
+  }
+  return RuntimeModule{0};
+}
