@@ -46,7 +46,7 @@ static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {
 
 // dyld
 // bool MachOLoaded::findExportedSymbol
- void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
+void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
   uint32_t visitedNodeOffsets[128];
   int visitedNodeOffsetCount                   = 0;
   visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
@@ -150,7 +150,7 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
     } break;
     case LC_DYLD_INFO:
     case LC_DYLD_INFO_ONLY: {
-      dyld_info_cmd = (typeof(dyld_info_cmd))curr_seg_cmd;
+      dyld_info_cmd = (__typeof__(dyld_info_cmd))curr_seg_cmd;
     } break;
     default:
       break;
@@ -315,7 +315,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 __attribute__((constructor)) static void ctor() {
   mach_header_t *header = NULL;
   header                = (mach_header_t *)_dyld_get_image_header(0);
-  
+
   void *addr = (void *)((addr_t)iterate_exported_symbol(header, "_mainxx") + (addr_t)header);
   LOG("export %p", addr);
 }

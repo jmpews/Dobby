@@ -17,9 +17,11 @@
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolverCache"
 
+#if 0
 extern "C" {
 int __shared_region_check_np(uint64_t *startaddress);
 }
+#endif
 
 static pthread_once_t mmap_dyld_shared_cache_once = PTHREAD_ONCE_INIT;
 
@@ -32,9 +34,8 @@ void *get_shared_cache_load_addr() {
   static void *shared_cache_load_addr = 0;
   if (shared_cache_load_addr)
     return shared_cache_load_addr;
-#if __i386__
   if (syscall(294, &shared_cache_load_addr) == 0) {
-#else
+#if 0
   if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) == 0) {
 #endif
     return shared_cache_load_addr;

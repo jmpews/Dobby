@@ -11,7 +11,7 @@
 #include "dobby_symbol_resolver.h"
 #include "common/headers/common_header.h"
 
-#include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include "AndroidRestriction/android_restriction.h"
 
