@@ -33,8 +33,12 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
     }
 
     // assembler without specific memory address
-    AssemblyCodeChunk *codeChunk = MemoryArena::AllocateCodeChunk(buffer_size);
-    address                      = codeChunk->address;
+    AssemblyCodeChunk *codeChunk;
+    codeChunk = MemoryArena::AllocateCodeChunk(buffer_size);
+    if (codeChunk == nullptr)
+      return nullptr;
+
+    address = codeChunk->address;
     assembler->CommitRealizeAddress(codeChunk->address);
     delete codeChunk;
   }
@@ -63,7 +67,7 @@ AssemblyCode *AssemblyCode::FinalizeFromCodeBuffer(void *address, CodeBufferBase
 
 void AssemblyCode::initWithAddressRange(addr_t address, int size) {
   range_.address = (void *)address;
-  range_.length = size;
+  range_.length  = size;
 }
 
 void AssemblyCode::reInitWithAddressRange(addr_t address, int size) {

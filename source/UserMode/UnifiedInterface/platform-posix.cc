@@ -101,9 +101,8 @@ bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) 
     // This is advisory; ignore errors and continue execution.
     // ReclaimInaccessibleMemory(address, size);
   }
-
   if (ret) {
-    FATAL("[!] %s\n", ((const char *)strerror(errno)));
+    ERROR_LOG("mprotect failed");
   }
 
 // For accounting purposes, we want to call MADV_FREE_REUSE on macOS after

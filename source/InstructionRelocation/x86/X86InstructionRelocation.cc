@@ -98,7 +98,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->getSize();
   if (relo_len > relocated->raw_instruction_size()) {
-    LOG("pre-alloc code chunk not enough");
+    DLOG("pre-alloc code chunk not enough");
     return RT_FAILED;
   }
 
@@ -121,6 +121,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
   if (relocated->raw_instruction_start() == 0) {
     codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
+    if (codeChunk == nullptr)
+      goto failed;
     relocated->reInitWithAddressRange((addr_t)codeChunk->address, (int)codeChunk->length);
   }
 
@@ -128,9 +130,14 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     // free the codeChunk
     MemoryArena::Destory(codeChunk);
 
+    goto failed;
+
     relo_code_chunk_size += chunk_size_step;
     codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
     relocated->reInitWithAddressRange((addr_t)codeChunk->address, (int)codeChunk->length);
   }
+
+failed:
+  relocated->reInitWithAddressRange(0, 0);
 }
 #endif

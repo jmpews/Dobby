@@ -353,7 +353,7 @@ public:
     DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
-    if(buffer_)
+    if (buffer_)
       delete buffer_;
   }
 
@@ -537,7 +537,7 @@ public:
   void jmp(Immediate imm);
 
   void sub(Register dst, Immediate imm) {
-    CHECK_EQ(dst.size(), 64);
+    DCHECK_EQ(dst.size(), 64);
 
     EmitREX_Register(dst);
     EmitOpcode(0x81);
@@ -545,7 +545,7 @@ public:
   }
 
   void add(Register dst, Immediate imm) {
-    CHECK_EQ(dst.size(), 64);
+    DCHECK_EQ(dst.size(), 64);
 
     EmitREX_Register(dst);
     EmitOpcode(0x81);

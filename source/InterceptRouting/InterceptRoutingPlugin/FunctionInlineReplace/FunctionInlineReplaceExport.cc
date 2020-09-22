@@ -8,24 +8,26 @@
 #include "function-inline-replace.h"
 
 PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_call) {
-  if (!function_address)
-    FATAL("function address is 0x0");
+  if (!function_address) {
+    ERROR_LOG("function address is 0x0");
+    return RS_FAILED;
+  }
 
   DLOG("Initialize DobbyHook => %p => %p", function_address, replace_call);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
-  
+
   // check if we already hook
   HookEntry *entry = interceptor->FindHookEntry(function_address);
-  if(entry) {
+  if (entry) {
     FunctionInlineReplaceRouting *route = (FunctionInlineReplaceRouting *)entry->route;
-    if(route->GetTrampolineTarget() == replace_call) {
-      FATAL("function %s already been hooked.", function_address);
+    if (route->GetTrampolineTarget() == replace_call) {
+      ERROR_LOG("function %s already been hooked.", function_address);
       return RS_FAILED;
     }
   }
 
-  entry        = new HookEntry();
+  entry                   = new HookEntry();
   entry->id               = interceptor->entries->getCount();
   entry->type             = kFunctionInlineHook;
   entry->function_address = function_address;

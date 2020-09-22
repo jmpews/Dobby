@@ -3,20 +3,24 @@
 
 #include "logging.h"
 
+typedef enum {
+  LOG_LEVEL_FATAL   = 0,
+  LOG_LEVEL_ERROR   = 1,
+  LOG_LEVEL_WARNING = 2,
+  LOG_LEVEL_DEBUG   = 3,
+  LOG_LEVEL_VERBOSE = 4
+} LogLevel;
+
 class Logger {
 public:
-  static void LogFatal(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    printf("[!] FATAL: ");
-    vprintf(fmt, args);
-    va_end(args);
-  }
+  void setLogLevel(LogLevel level);
+
+  void log(LogLevel level, const char *tag, const char *fmt, ...);
+
+  void LogFatal(const char *fmt, ...);
 
 private:
-  static char *tag_;
-  static char *file_;
-  static int level_;
+  LogLevel log_level_;
 };
 
 #endif

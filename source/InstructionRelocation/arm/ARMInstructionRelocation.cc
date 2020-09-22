@@ -832,7 +832,10 @@ relocate_remain:
   // Generate executable code
   {
     // assembler without specific memory address
-    AssemblyCodeChunk *codeChunk = MemoryArena::AllocateCodeChunk(code_buffer->getSize());
+    AssemblyCodeChunk *codeChunk;
+    codeChunk = MemoryArena::AllocateCodeChunk(code_buffer->getSize());
+    if (codeChunk == nullptr)
+      return nullptr;
 
     thumb_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
     arm_turbo_assembler_.CommitRealizeAddress(codeChunk->address);

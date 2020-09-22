@@ -295,7 +295,7 @@ public:
   }
 
   void CommitRealizeAddress(void *address) {
-    CHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
+    DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
     AssemblerBase::CommitRealizeAddress(address);
   }
 

@@ -5,13 +5,11 @@
 #include "dobby_internal.h"
 
 __attribute__((constructor)) static void ctor() {
-#if defined(DOBBY_DEBUG)
-  LOG("================================");
-  LOG("Dobby");
-  LOG("================================");
+  DLOG("================================");
+  DLOG("Dobby");
+  DLOG("================================");
 
-  LOG("dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
-#endif
+  DLOG("dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
 }
 
 #endif

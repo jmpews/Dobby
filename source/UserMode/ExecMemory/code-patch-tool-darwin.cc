@@ -29,7 +29,7 @@
 #define KERN_ERROR_RETURN(err, failure)                                                                                \
   do {                                                                                                                 \
     if (err != KERN_SUCCESS) {                                                                                         \
-      FATAL_LOG("error message: %s", mach_error_string(err));                                                          \
+      ERROR_LOG("error message: %s", mach_error_string(err));                                                          \
       return failure;                                                                                                  \
     }                                                                                                                  \
   } while (0);
@@ -46,7 +46,7 @@ mach_port_t connect_mach_service(const char *name) {
   kr = bootstrap_look_up(bootstrap_port, (char *)name, &port);
 #if defined(DOBBY_DEBUG)
   if (kr != KERN_SUCCESS) {
-    FATAL_LOG("error message: %s", mach_error_string(kr));
+    ERROR_LOG("error message: %s", mach_error_string(kr));
   }
 #endif
 
@@ -115,7 +115,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   mprotect((void *)remap_page, page_size, PROT_READ | PROT_WRITE);
 
   int ret = RT_FAILED;
-#if defined(CODE_PATCH_WITH_SUBSTRATED)  && defined(TARGET_ARCH_ARM64)
+#if defined(CODE_PATCH_WITH_SUBSTRATED) && defined(TARGET_ARCH_ARM64)
   ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
   if (ret == RT_FAILED)
     DLOG("Not found <substrated> service => vm_remap");
@@ -141,7 +141,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 #endif
 
   addr_t clear_start = (addr_t)page_align_address + offset;
-  CHECK_EQ(clear_start, (addr_t)address);
+  DCHECK_EQ(clear_start, (addr_t)address);
 
   ClearCache((void *)address, (void *)((addr_t)address + size));
   return kMemoryOperationSuccess;

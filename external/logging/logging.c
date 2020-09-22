@@ -52,19 +52,19 @@ static int check_log_file_available() {
 }
 
 PUBLIC int custom_log(const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
+  va_list ap;
+  va_start(ap, fmt);
 #pragma clang diagnostic ignored "-Wformat"
 #if defined(_POSIX_VERSION) || defined(__APPLE__)
   if (_syslog_enabled) {
-    vsyslog(LOG_ERR, fmt, args);
+    vsyslog(LOG_ERR, fmt, ap);
   }
 #endif
   if (_file_log_enabled) {
     if (check_log_file_available()) {
 #define MAX_PRINT_BUFFER_SIZE 1024
       char buffer[MAX_PRINT_BUFFER_SIZE] = {0};
-      vsnprintf(buffer, MAX_PRINT_BUFFER_SIZE - 1, fmt, args);
+      vsnprintf(buffer, MAX_PRINT_BUFFER_SIZE - 1, fmt, ap);
       if (fwrite(buffer, sizeof(char), strlen(buffer) + 1, log_file_stream) == -1) {
         // log_file_fd invalid
         log_file_stream = NULL;
@@ -75,7 +75,7 @@ PUBLIC int custom_log(const char *fmt, ...) {
       }
       fflush(log_file_stream);
     } else {
-      vprintf(fmt, args);
+      vprintf(fmt, ap);
     }
   }
 
@@ -83,13 +83,13 @@ PUBLIC int custom_log(const char *fmt, ...) {
 #if defined(__ANDROID__)
 #define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
-    __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, args);
+    __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, ap);
 #else
-    vprintf(fmt, args);
+    vprintf(fmt, ap);
 #endif
   }
 
 #pragma clang diagnostic warning "-Wformat"
-  va_end(args);
+  va_end(ap);
   return 0;
 }

@@ -46,11 +46,11 @@ LiteMutableBuffer *LiteMutableBuffer::copy() {
 #endif
 
 void LiteMutableBuffer::release() {
-  if(this->buffer_ != NULL) {
+  if (this->buffer_ != NULL) {
     LiteMemOpt::free(this->buffer_, this->capacity_);
     this->buffer_ = NULL;
     return;
   }
 
-  FATAL("double free occured");
+  ERROR_LOG("double free occured");
 }

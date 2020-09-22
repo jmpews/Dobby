@@ -50,8 +50,12 @@ option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnCo
 # endif()
 
 # Enable debug will log more infomation
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(DOBBY_DEBUG ON)
+endif()
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
+  add_definitions(-DLOGGING_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   message(STATUS "[Dobby] Enable debug logging")
 endif()

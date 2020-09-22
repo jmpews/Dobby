@@ -32,7 +32,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int inSize, MemoryPermission permission)
     int pageSize      = OSMemory::PageSize();
     void *pageAddress = OSMemory::Allocate(NULL, pageSize, permission);
     if (pageAddress == NULL) {
-      LOG("Failed to alloc page");
+      ERROR_LOG("Failed to alloc page");
       return NULL;
     }
 

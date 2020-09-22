@@ -16,9 +16,10 @@ using namespace zz::x86;
 static void **AllocIndirectStub(addr_t branch_address) {
   WritableDataChunk *forwardStub = NULL;
 
-  forwardStub = NearMemoryArena::AllocateDataChunk((addr_t)branch_address, (size_t)2 * 1024 * 1024 * 1024, (int)sizeof(void *));
-  if (!forwardStub) {
-    FATAL_LOG("Not found near forward stub");
+  forwardStub =
+      NearMemoryArena::AllocateDataChunk((addr_t)branch_address, (size_t)2 * 1024 * 1024 * 1024, (int)sizeof(void *));
+  if (forwardStub == nullptr) {
+    ERROR_LOG("Not found near forward stub");
     return NULL;
   }
 
@@ -35,7 +36,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 
   // branch
   void **branch_stub = AllocIndirectStub(from);
-  *branch_stub = (void *)to;
+  *branch_stub       = (void *)to;
 
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpNearIndirect((uint64_t)branch_stub);
@@ -45,7 +46,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
-  LOG("x86 near branch trampoline enable default");
+  DLOG("x86 near branch trampoline enable default");
   return NULL;
 }
 

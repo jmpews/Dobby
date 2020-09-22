@@ -47,19 +47,21 @@ void InterceptRouting::GenerateRelocatedCode() {
 #endif
   // generate the relocated code
   int trampoline_len = trampoline_buffer_->getSize();
-  origin = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
-  this->origin_ = origin;
+  origin             = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
+  this->origin_      = origin;
 
   AssemblyCode *relocated = NULL;
   relocated               = AssemblyCode::FinalizeFromAddress(0, 0);
   GenRelocateCode(relocate_buffer, origin, relocated);
+  if (relocated->raw_instruction_start() == 0)
+    return;
   this->relocated_ = relocated;
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
-  DLOG("%p relocate %d bytes, to %p", entry_->target_address, relocated->raw_instruction_size(), relocated->raw_instruction_start());
+  DLOG("relocate %d bytes to %p", relocated->raw_instruction_size(), relocated->raw_instruction_start());
 
-#ifndef PLUGIN_DOBBY_DRILL
+#if defined(PLUGIN_DOBBY_DRILL)
   // save original prologue
   _memcpy(entry_->origin_instructions.data, relocate_buffer, this->origin_->raw_instruction_size());
   entry_->origin_instructions.size    = this->origin_->raw_instruction_size();

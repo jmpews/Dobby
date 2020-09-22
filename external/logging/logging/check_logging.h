@@ -12,7 +12,7 @@
   } while (0)
 #define CHECK(condition) CHECK_WITH_MSG(condition, #condition)
 
-#ifdef DEBUG
+#ifdef LOGGING_DEBUG
 
 #define DCHECK_WITH_MSG(condition, message)                                                                            \
   do {                                                                                                                 \
@@ -61,7 +61,7 @@
 #define CHECK_NULL(val) CHECK((val) == NULL)
 #define CHECK_NOT_NULL(val) CHECK((val) != NULL)
 
-#ifdef DEBUG
+#ifdef LOGGING_DEBUG
 #define DCHECK_EQ(lhs, rhs) DCHECK_OP(EQ, ==, lhs, rhs)
 #define DCHECK_NE(lhs, rhs) DCHECK_OP(NE, !=, lhs, rhs)
 #define DCHECK_GT(lhs, rhs) DCHECK_OP(GT, >, lhs, rhs)
