@@ -20,14 +20,14 @@
 
 #include "logging/check_logging.h"
 #include "logging/logging.h"
-#include "PlatformUnifiedInterface/Platform.h"
+#include "UnifiedInterface/platform.h"
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
 #include <mach/vm_statistics.h>
 #endif
 
-#if defined(__ANDROID__)
+#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
 #define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>
 #endif
@@ -42,7 +42,43 @@ const int kMmapFd = -1;
 
 const int kMmapFdOffset = 0;
 
-int GetProtectionFromMemoryPermission(MemoryPermission access) {
+
+// ================================================================
+// base :: Thread 
+
+using namespace base;
+
+typedef struct thread_package_t {
+  pthread_t thread;
+} thread_package_t;
+
+Thread::Thread(const char *name) {
+  thread_package_ = new thread_package_t;
+
+  strncpy(thread_name_, name, FILENAME_MAX - 1);
+}
+
+static void set_thread_name(const char *name) {
+#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+  pthread_set_name_np(pthread_self(), name);
+#elif defined(__APPLE__)
+  pthread_setname_np(name);
+#endif
+}
+static void *thread_handler_wrapper(void *ctx) {
+  Thread *t = (Thread *)ctx;
+  set_thread_name(t->name());
+  t->Run();
+  return nullptr;
+}
+void Thread::Start() {
+  pthread_create(&((thread_package_t *)thread_package_)->thread, nullptr, thread_handler_wrapper, this);
+}
+
+// ================================================================
+// base :: OSMemory
+
+static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   switch (access) {
   case MemoryPermission::kNoAccess:
     return PROT_NONE;
@@ -91,7 +127,7 @@ bool OSMemory::Release(void *address, int size) {
 }
 
 // static
-bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
+bool OSMemory::SetPermission(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
@@ -101,8 +137,9 @@ bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) 
     // This is advisory; ignore errors and continue execution.
     // ReclaimInaccessibleMemory(address, size);
   }
+
   if (ret) {
-    ERROR_LOG("mprotect failed");
+    FATAL("[!] %s\n", ((const char *)strerror(errno)));
   }
 
 // For accounting purposes, we want to call MADV_FREE_REUSE on macOS after
@@ -119,6 +156,9 @@ bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) 
   return ret == 0;
 }
 
+// ================================================================
+// base :: OSPrint
+
 void OSPrint::Print(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -127,7 +167,7 @@ void OSPrint::Print(const char *format, ...) {
 }
 
 void OSPrint::VPrint(const char *format, va_list args) {
-#if defined(__ANDROID__)
+#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
   __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, format, args);
 #else
   vprintf(format, args);
@@ -142,7 +182,7 @@ void OSPrint::PrintError(const char *format, ...) {
 }
 
 void OSPrint::VPrintError(const char *format, va_list args) {
-#if defined(__ANDROID__)
+#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
   __android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
 #else
   vfprintf(stderr, format, args);

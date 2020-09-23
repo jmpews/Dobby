@@ -176,7 +176,7 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
 
 bool (*orig_linker_namespace_is_is_accessible)(android_namespace_t ns, const std::string &file);
 bool linker_namespace_is_is_accessible(android_namespace_t ns, const std::string &file) {
-  LOG("check %s", file.c_str());
+  DLOG("check %s", file.c_str());
   return true;
   return orig_linker_namespace_is_is_accessible(ns, file);
 }
@@ -191,5 +191,5 @@ void linker_disable_namespace_restriction() {
   DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
             (void **)&orig_linker_namespace_is_is_accessible);
 
-  LOG("disable namespace restriction done");
+  DLOG("disable namespace restriction done");
 }

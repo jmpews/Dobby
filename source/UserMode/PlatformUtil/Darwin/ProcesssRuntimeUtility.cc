@@ -26,8 +26,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "UserMode/UnifiedInterface/platform-darwin/mach_vm.h"
-#include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
+#include "UnifiedInterface/platform-darwin/mach_vm.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 
@@ -75,11 +75,13 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
         continue;
       }
       MemoryRegion region = {(void *)addr, static_cast<size_t>(size), permission};
-      // LOG("%p - %p", addr, addr + size);
+#if 0
+      LOG("%p - %p", addr, addr + size);
+#endif
       ProcessMemoryLayout.push_back(region);
-
-      addr += size;
     }
+
+    addr += size;
   }
 
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
@@ -98,14 +100,14 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   int image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = NULL;
-    header = _dyld_get_image_header(i);
-    const char *path = NULL;
-    path = _dyld_get_image_name(i);
+    header                           = _dyld_get_image_header(i);
+    const char *path                 = NULL;
+    path                             = _dyld_get_image_name(i);
 
     RuntimeModule module = {0};
     {
       strncpy(module.path, path, sizeof(module.path));
-      module.load_address = (void *) header;
+      module.load_address = (void *)header;
     }
     ProcessModuleMap.push_back(module);
   }

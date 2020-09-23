@@ -32,24 +32,24 @@ static void *fake_loader_dlopen(const char *filename, int flags, const void *cal
 }
 
 PUBLIC void dobby_register_image_load_callback(linker_load_callback_t func) {
-  if(linker_load_callback_array == NULL)
+  if (linker_load_callback_array == NULL)
     linker_load_callback_array = new std::vector<linker_load_callback_t>();
   linker_load_callback_array->push_back(func);
 }
 
 #if defined(DOBBY_DEBUG) && 1
 static void monitor_linker_load(const char *image_name, void *handle) {
-  LOG("load %s at %p", image_name, handle);
+  DLOG("load %s at %p", image_name, handle);
 }
 #endif
 
 __attribute__((constructor)) static void ctor() {
-  if(linker_load_callback_array == NULL)
+  if (linker_load_callback_array == NULL)
     linker_load_callback_array = new std::vector<linker_load_callback_t>();
-    
+
 #if defined(__ANDROID__)
   void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
-  LOG("__loader_dlopen: %p", __loader_dlopen);
+  DLOG("__loader_dlopen: %p", __loader_dlopen);
   DobbyHook(__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
 #else
   DobbyHook((void *)DobbySymbolResolver(NULL, "dlopen"), (void *)fake_dlopen, (void **)&orig_dlopen);

@@ -18,6 +18,7 @@
 
 #include "logging/logging.h"
 
+#undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
 
 static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {

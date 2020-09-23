@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "piertotum_internal.h"
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
@@ -68,7 +68,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      ERROR_LOG("/proc/self/maps parse failed!");
+      FATAL("/proc/self/maps parse failed!");
       return ProcessMemoryLayout;
     }
 
@@ -142,7 +142,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      ERROR_LOG("/proc/self/maps parse failed!");
+      FATAL("/proc/self/maps parse failed!");
       return ProcessModuleMap;
     }
 

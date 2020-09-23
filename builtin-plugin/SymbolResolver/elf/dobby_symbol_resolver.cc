@@ -29,7 +29,7 @@ static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_si
     struct stat s;
     int rt = fstat(fd, &s);
     if (rt != 0) {
-      LOG("mmap failed");
+      ERROR_LOG("mmap failed");
       goto finished;
     }
     file_size = s.st_size;
@@ -38,7 +38,8 @@ static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_si
   // auto align
   mmap_data = (uint8_t *)mmap(0, file_size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
   if (mmap_data == MAP_FAILED) {
-    LOG("mmap failed");
+    ERROR_LOG("mmap failed");
+    goto finished;
   }
 
 finished:
@@ -50,8 +51,10 @@ finished:
 
 static void file_unmap(void *data, size_t data_size) {
   int ret = munmap(data, data_size);
-  if (ret != 0)
-    LOG("munmap failed");
+  if (ret != 0) {
+    ERROR_LOG("munmap failed");
+    return;
+  }
 }
 
 static void get_syms(ElfW(Ehdr) * header, ElfW(Sym) * *symtab_ptr, char **strtab_ptr, int *count_ptr) {

@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "piertotum_internal.h"
 
 #include <stdio.h>
 
@@ -22,7 +22,7 @@ void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, size % PageSize());
 
   void *result = VirtualAlloc(address, size, MEM_COMMIT | MEM_RESERVE, PAGE_NOACCESS);
-  OSMemory::SetPermissions(result, size, kReadWriteExecute);
+  OSMemory::SetPermission(result, size, kReadWriteExecute);
   if (result == nullptr)
     return nullptr;
 
@@ -46,7 +46,7 @@ bool OSMemory::Release(void *address, int size) {
   return OSMemory::Free(address, size);
 }
 
-bool OSMemory::SetPermissions(void *address, int size, MemoryPermission access) {
+bool OSMemory::SetPermission(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 

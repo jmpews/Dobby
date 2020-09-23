@@ -1,7 +1,7 @@
 #include <core/arch/Cpu.h>
 
-#include "PlatformUnifiedInterface//ExecMemory/ClearCacheTool.h"
-#include "PlatformUnifiedInterface/Platform.h"
+#include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
+#include "UnifiedInterface//platform.h"
 
 #include <unistd.h>
 

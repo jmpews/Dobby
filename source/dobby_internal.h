@@ -3,8 +3,6 @@
 
 #include "dobby.h"
 
-#include "PlatformUnifiedInterface/Platform.h"
-
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
@@ -13,7 +11,7 @@
 #include "stdcxx/LiteMutableBuffer.h"
 #include "stdcxx/LiteIterator.h"
 
-#include "PlatformUnifiedInterface/Platform.h"
+#include "UnifiedInterface/platform.h"
 #include "PlatformUnifiedInterface/StdMemory.h"
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 #include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"

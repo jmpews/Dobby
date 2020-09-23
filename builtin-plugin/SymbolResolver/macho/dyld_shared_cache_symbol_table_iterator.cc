@@ -54,7 +54,8 @@ void mmap_dyld_shared_cache() {
     fd = open(cache_file_path, O_RDONLY, 0);
   }
   if (fd == -1) {
-    FATAL("open %s failed", cache_file_path);
+    ERROR_LOG("open %s failed", cache_file_path);
+    return;
   }
 
   struct dyld_cache_header *mmap_shared_cache_header;
@@ -69,8 +70,10 @@ void mmap_dyld_shared_cache() {
   mmap_shared_cache =
       (struct dyld_cache_header *)((addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset);
 
-  if (mmap_shared_cache == MAP_FAILED)
-    FATAL("mmap shared cache failed");
+  if (mmap_shared_cache == MAP_FAILED) {
+    ERROR_LOG("mmap shared cache failed");
+    return;
+  }
 
   g_mmap_shared_cache_header = mmap_shared_cache_header;
   g_mmap_shared_cache        = mmap_shared_cache;
