@@ -1,0 +1,17 @@
+name: Xcode Auto Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  job_prepare:
+    runs-on: macOS-latest
+    steps:
+    - name: checkout master
+      uses: actions/checkout@master
+    - name: cmake build
+      run: 
+        cmake .. -G Ninja -DCMAKE_MAKE_PROGRAM=Ninja
+        ninja Dobby
