@@ -6,10 +6,13 @@ include(cmake/Util.cmake)
 include(cmake/Globals.cmake)
 include(cmake/Macros.cmake)
 include(cmake/XcodeGenerator.cmake)
+include(cmake/AutoFiles.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
+
+AutoFiles("." "CmakeSource" "\\.(cc|cpp|c|h)$")
 
 # :< You Shall Not Pass!
 if(0)
@@ -74,7 +77,7 @@ if(SYSTEM.Darwin)
   if (NOT DOBBY_DEBUG)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_custom_log")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyHook -Wl,-exported_symbol,_DobbyInstrument -Wl,-exported_symbol,_DobbySymbolResolver")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyBuildVersion -Wl,-exported_symbol,_DobbyHook -Wl,-exported_symbol,_DobbyInstrument -Wl,-exported_symbol,_DobbySymbolResolver")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_dobby_enable_near_branch_trampoline -Wl,-exported_symbol,_dobby_disable_near_branch_trampoline")
   endif()
 elseif(SYSTEM.Android)
@@ -362,6 +365,24 @@ include_directories(
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
 )
+
+# add build version
+string(TIMESTAMP TODAY "%Y%m%d")
+set(VERSION_REVISION "-${TODAY}")
+if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  execute_process(
+    COMMAND git rev-parse --short --verify HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE VERSION_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if(VERSION_COMMIT_HASH)
+    set(VERSION_REVISION "${VERSION_REVISION}-${VERSION_COMMIT_HASH}")
+  endif()
+endif()
+set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
+message(STATUS "Version: ${DOBBY_BUILD_VERSION}")
+add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 
 set(dobby_name dobby)
 

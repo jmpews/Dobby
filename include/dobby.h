@@ -133,6 +133,9 @@ typedef void (*PostCallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
 int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 #endif
 
+// return dobby build date
+const char *DobbyBuildVersion();
+
 // replace function
 int DobbyHook(void *function_address, void *replace_call, void **origin_call);
 
@@ -149,9 +152,12 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 // [!!! READ ME !!!]
 // for arm, Arm64, dobby will use b xxx instead of ldr absolute indirect branch
 // for x64, dobby always use absolute indirect jump
-#if defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
+#if defined(__arm__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
+
 void dobby_enable_near_branch_trampoline();
+
 void dobby_disable_near_branch_trampoline();
+
 #endif
 
 // register linker load image callback
