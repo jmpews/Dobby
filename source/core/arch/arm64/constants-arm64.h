@@ -99,7 +99,7 @@ enum LoadRegLiteralOp {
   LoadRegLiteralFixedMask = 0x3B000000,
   LoadRegLiteralMask      = 0xFF000000,
 
-#define LoadRegLiteralSub(opc, V) LoadRegLiteralFixed | LFT(opc, 2, 30) | LFT(V, 1, 26)
+#define LoadRegLiteralSub(opc, V) LoadRegLiteralFixed | LeftShift(opc, 2, 30) | LeftShift(V, 1, 26)
   OPT_W(LDR, literal) = LoadRegLiteralSub(0b00, 0),
   OPT_X(LDR, literal) = LoadRegLiteralSub(0b01, 0),
   OPT(LDRSW, literal) = LoadRegLiteralSub(0b10, 0),
@@ -141,7 +141,7 @@ enum LoadRegLiteralOp {
 
 // Load/store
 enum LoadStoreOp {
-#define LoadStoreOpSub(size, V, opc)     LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+#define LoadStoreOpSub(size, V, opc)     LeftShift(size, 2, 30) | LeftShift(V, 1, 26) | LeftShift(opc, 2, 22)
 #define LOAD_STORE(opname, size, V, opc) OP(opname) = LoadStoreOpSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE)
 #undef LOAD_STORE
@@ -154,7 +154,7 @@ enum LoadStoreRegisterOffsetOp {
   LoadStoreRegisterOffsetMask      = 0xFFE00C00,
 
 #define LoadStoreRegisterOffsetOpSub(size, V, opc)                                                                     \
-  LoadStoreRegisterOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+  LoadStoreRegisterOffsetFixed | LeftShift(size, 2, 30) | LeftShift(V, 1, 26) | LeftShift(opc, 2, 22)
 #define LOAD_STORE_REGISTER_OFFSET(opname, size, V, opc)                                                               \
   OPT(opname, register) = LoadStoreRegisterOffsetOpSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE_REGISTER_OFFSET)
@@ -168,7 +168,7 @@ enum LoadStoreUnscaledOffsetOp {
   LoadStoreUnscaledOffsetMask      = 0xFFE00C00,
 
 #define LoadStoreUnscaledOffsetOpSub(size, V, opc)                                                                     \
-  LoadStoreUnscaledOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+  LoadStoreUnscaledOffsetFixed | LeftShift(size, 2, 30) | LeftShift(V, 1, 26) | LeftShift(opc, 2, 22)
 #define LOAD_STORE_UNSCALED(opname, size, V, opc) OPT(opname, unscaled) = LoadStoreUnscaledOffsetOpSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE_UNSCALED)
 #undef LOAD_STORE_UNSCALED
@@ -181,7 +181,7 @@ enum LoadStoreUnsignedOffset {
   LoadStoreUnsignedOffsetMask      = 0xFFC00000,
 
 #define LoadStoreUnsignedOffsetSub(size, V, opc)                                                                       \
-  LoadStoreUnsignedOffsetFixed | LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+  LoadStoreUnsignedOffsetFixed | LeftShift(size, 2, 30) | LeftShift(V, 1, 26) | LeftShift(opc, 2, 22)
 #define LOAD_STORE_UNSIGNED_OFFSET(opname, size, V, opc)                                                               \
   OPT(opname, unsigned) = LoadStoreUnsignedOffsetSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE_UNSIGNED_OFFSET)
@@ -206,7 +206,7 @@ enum LoadStoreUnsignedOffset {
 // clang-format on
 
 enum LoadStorePairOp {
-#define LoadStorePairOpSub(opc, V, L)      LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairOpSub(opc, V, L)      LeftShift(opc, 2, 30) | LeftShift(V, 1, 26) | LeftShift(L, 1, 22)
 #define LOAD_STORE_PAIR(opname, opc, V, L) OP(opname) = LoadStorePairOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR)
 #undef LOAD_STORE_PAIR
@@ -217,7 +217,8 @@ enum LoadStorePairOffsetOp {
   LoadStorePairOffsetFixedMask = 0x3B800000,
   LoadStorePairOffsetMask      = 0xFFC00000,
 
-#define LoadStorePairOffsetOpSub(opc, V, L)       LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairOffsetOpSub(opc, V, L)                                                                            \
+  LoadStorePairOffsetFixed | LeftShift(opc, 2, 30) | LeftShift(V, 1, 26) | LeftShift(L, 1, 22)
 #define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, offset) = LoadStorePairOffsetOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_OFFSET)
 #undef LOAD_STORE_PAIR_OFFSET
@@ -228,7 +229,8 @@ enum LoadStorePairPostIndexOp {
   LoadStorePairPostIndexFixedMask = 0x3B800000,
   LoadStorePairPostIndexMask      = 0xFFC00000,
 
-#define LoadStorePairPostOpSub(opc, V, L)             LoadStorePairPostIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairPostOpSub(opc, V, L)                                                                              \
+  LoadStorePairPostIndexFixed | LeftShift(opc, 2, 30) | LeftShift(V, 1, 26) | LeftShift(L, 1, 22)
 #define LOAD_STORE_PAIR_POST_INDEX(opname, opc, V, L) OPT(opname, post) = LoadStorePairPostOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_POST_INDEX)
 #undef LOAD_STORE_PAIR_POST_INDEX
@@ -239,7 +241,8 @@ enum LoadStorePairPreIndexOp {
   LoadStorePairPreIndexFixedMask = 0x3B800000,
   LoadStorePairPreIndexMask      = 0xFFC00000,
 
-#define LoadStorePairPreOpSub(opc, V, L)             LoadStorePairPreIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairPreOpSub(opc, V, L)                                                                               \
+  LoadStorePairPreIndexFixed | LeftShift(opc, 2, 30) | LeftShift(V, 1, 26) | LeftShift(L, 1, 22)
 #define LOAD_STORE_PAIR_PRE_INDEX(opname, opc, V, L) OPT(opname, pre) = LoadStorePairPreOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_PRE_INDEX)
 #undef LOAD_STORE_PAIR_PRE_INDEX
@@ -265,7 +268,7 @@ enum MoveWideImmediateOp {
   OP(MOVZ) = 0x40000000,
   OP(MOVK) = 0x60000000,
 
-#define MoveWideImmediateOpSub(sf, opc) MoveWideImmediateFixed | LFT(sf, 1, 31) | LFT(opc, 2, 29)
+#define MoveWideImmediateOpSub(sf, opc) MoveWideImmediateFixed | LeftShift(sf, 1, 31) | LeftShift(opc, 2, 29)
   OP_W(MOVN) = MoveWideImmediateFixed | MOVN,
   OP_X(MOVN) = MoveWideImmediateFixed | MOVN | SixtyFourBits,
   OP_W(MOVZ) = MoveWideImmediateFixed | MOVZ,
@@ -281,7 +284,8 @@ enum AddSubImmediateOp {
   AddSubImmediateFixedMask = 0x1F000000,
   AddSubImmediateMask      = 0xFF000000,
 
-#define AddSubImmediateOpSub(sf, op, S) AddSubImmediateFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+#define AddSubImmediateOpSub(sf, op, S)                                                                                \
+  AddSubImmediateFixed | LeftShift(sf, 1, 31) | LeftShift(op, 1, 30) | LeftShift(S, 1, 29)
   OPT_W(ADD, imm)  = AddSubImmediateOpSub(0, 0, 0),
   OPT_W(ADDS, imm) = AddSubImmediateOpSub(0, 0, 1),
   OPT_W(SUB, imm)  = AddSubImmediateOpSub(0, 1, 0),
@@ -297,7 +301,8 @@ enum AddSubShiftedOp {
   AddSubShiftedFixedMask = 0x1F200000,
   AddSubShiftedMask      = 0xFF200000,
 
-#define AddSubShiftedOpSub(sf, op, S) AddSubShiftedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+#define AddSubShiftedOpSub(sf, op, S)                                                                                  \
+  AddSubShiftedFixed | LeftShift(sf, 1, 31) | LeftShift(op, 1, 30) | LeftShift(S, 1, 29)
   OPT_W(ADD, shift)  = AddSubShiftedOpSub(0, 0, 0),
   OPT_W(ADDS, shift) = AddSubShiftedOpSub(0, 0, 1),
   OPT_W(SUB, shift)  = AddSubShiftedOpSub(0, 1, 0),
@@ -313,7 +318,8 @@ enum AddSubExtendedOp {
   AddSubExtendedFixedMask = 0x1F200000,
   AddSubExtendedMask      = 0xFFE00000,
 
-#define AddSubExtendedOpSub(sf, op, S) AddSubExtendedFixed | LFT(sf, 1, 31) | LFT(op, 1, 30) | LFT(S, 1, 29)
+#define AddSubExtendedOpSub(sf, op, S)                                                                                 \
+  AddSubExtendedFixed | LeftShift(sf, 1, 31) | LeftShift(op, 1, 30) | LeftShift(S, 1, 29)
   OPT_W(ADD, extend)  = AddSubExtendedOpSub(0, 0, 0),
   OPT_W(ADDS, extend) = AddSubExtendedOpSub(0, 0, 1),
   OPT_W(SUB, extend)  = AddSubExtendedOpSub(0, 1, 0),

@@ -27,8 +27,6 @@ static void **AllocIndirectStub(addr_t branch_address) {
 }
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
-  CodeBufferBase *result = NULL;
-
   DLOG("Generate trampoline => %p", to);
 
   TurboAssembler turbo_assembler_((void *)from);
@@ -41,7 +39,8 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpNearIndirect((uint64_t)branch_stub);
 
-  result = turbo_assembler_.GetCodeBuffer()->copy();
+  CodeBufferBase *result = NULL;
+  result                 = turbo_assembler_.GetCodeBuffer()->copy();
   return result;
 }
 

@@ -205,7 +205,7 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
         val = from_pc;
 
         uint16_t rewrite_inst = 0;
-        rewrite_inst          = (instr & 0xff87) | LFT((VOLATILE_REGISTER.code()), 4, 3);
+        rewrite_inst          = (instr & 0xff87) | LeftShift((VOLATILE_REGISTER.code()), 4, 3);
 
         ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
         _                     AppendRelocLabelEntry(label);
@@ -835,7 +835,7 @@ relocate_remain:
     AssemblyCodeChunk *codeChunk;
     codeChunk = MemoryArena::AllocateCodeChunk(code_buffer->getSize());
     if (codeChunk == nullptr)
-      return nullptr;
+      return;
 
     thumb_turbo_assembler_.CommitRealizeAddress(codeChunk->address);
     arm_turbo_assembler_.CommitRealizeAddress(codeChunk->address);

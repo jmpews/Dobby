@@ -27,7 +27,7 @@ namespace arm {
 // Thumb instructions address is odd
 #define THUMB_ADDRESS_FLAG 1
 
-constexpr Register TMP0 = r12;
+constexpr Register TMP_REG_0 = r12;
 
 constexpr Register VOLATILE_REGISTER = r12;
 

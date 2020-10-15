@@ -8,8 +8,8 @@
 #define ASSERT(X)
 
 // left/right shift
-#define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
-#define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
+#define LeftShift(a, b, c)  ((a & ((1 << b) - 1)) << c)
+#define RightShift(a, b, c) ((a >> c) & ((1 << b) - 1))
 
 // align
 #ifndef ALIGN

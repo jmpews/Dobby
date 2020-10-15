@@ -138,11 +138,11 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 #define MEM(reg, offset) MemOperand(reg, offset)
       _ nop(); // for debug
       {
-        _ Mov(X(17), memory_address); // should we replace with `Ldr` to set  X17 ?
+        _ Mov(TMP_REG_0, memory_address); // should we replace with `Ldr` to set  X17 ?
         if (opc == 0b00)
-          _ ldr(W(rt), MEM(X(17), 0));
+          _ ldr(W(rt), MEM(TMP_REG_0, 0));
         else if (opc == 0b01)
-          _ ldr(X(rt), MEM(X(17), 0));
+          _ ldr(X(rt), MEM(TMP_REG_0, 0));
         else {
           UNIMPLEMENTED();
         }
@@ -175,11 +175,11 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
       _ nop();
       {
-        _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
+        _ Ldr(TMP_REG_0, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
         if ((instr & UnconditionalBranchMask) == BL) {
-          _ blr(x17);
+          _ blr(TMP_REG_0);
         } else {
-          _ br(x17);
+          _ br(TMP_REG_0);
         }
       }
       _ nop();
@@ -202,8 +202,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
-          _ br(x17);
+          _ Ldr(TMP_REG_0, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
+          _ br(TMP_REG_0);
         }
       }
       _ nop();
@@ -228,8 +228,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
-          _ br(x17);
+          _ Ldr(TMP_REG_0, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
+          _ br(TMP_REG_0);
         }
       }
       _ nop();
@@ -253,8 +253,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       {
         _ Emit(branch_instr);
         {
-          _ Ldr(x17, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
-          _ br(x17);
+          _ Ldr(TMP_REG_0, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
+          _ br(TMP_REG_0);
         }
       }
       _ nop();

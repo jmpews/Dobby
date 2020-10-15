@@ -227,12 +227,12 @@ private:
       UNIMPLEMENTED();
     }
 
-    EmitInt16(0xf000 | LFT(signbit, 1, 10) | LFT(imm10, 10, 0));
+    EmitInt16(0xf000 | LeftShift(signbit, 1, 10) | LeftShift(imm10, 10, 0));
     if (link) {
-      // Not use LFT(1, 1, 14), and use B14 for accelerate
-      EmitInt16(0x9000 | LFT(j1, 1, 13) | (LFT(j2, 1, 11)) | LFT(imm11, 11, 0) | B14);
+      // Not use LeftShift(1, 1, 14), and use B14 for accelerate
+      EmitInt16(0x9000 | LeftShift(j1, 1, 13) | (LeftShift(j2, 1, 11)) | LeftShift(imm11, 11, 0) | B14);
     } else {
-      EmitInt16(0x9000 | LFT(j1, 1, 13) | (LFT(j2, 1, 11)) | LFT(imm11, 11, 0));
+      EmitInt16(0x9000 | LeftShift(j1, 1, 13) | (LeftShift(j2, 1, 11)) | LeftShift(imm11, 11, 0));
     }
   }
 };

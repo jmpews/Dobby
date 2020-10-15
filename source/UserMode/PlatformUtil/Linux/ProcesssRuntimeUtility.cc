@@ -1,5 +1,3 @@
-#include "piertotum_internal.h"
-
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <elf.h>

@@ -15,8 +15,8 @@ using namespace zz::arm64;
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
   ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
 // use assembler and codegen modules instead of template_code
-// _ ldr(Register::X(16), OFFSETOF(ClosureTrampolineEntry, carry_data));
-// _ ldr(Register::X(17), OFFSETOF(ClosureTrampolineEntry, carry_handler));
+// _ ldr(TMP_REG_1, OFFSETOF(ClosureTrampolineEntry, carry_data));
+// _ ldr(TMP_REG_0, OFFSETOF(ClosureTrampolineEntry, carry_handler));
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
@@ -24,9 +24,9 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   PseudoLabel entry_label;
   PseudoLabel forward_bridge_label;
 
-  _ Ldr(x16, &entry_label);
-  _ Ldr(x17, &forward_bridge_label);
-  _ br(x17);
+  _ Ldr(TMP_REG_1, &entry_label);
+  _ Ldr(TMP_REG_0, &forward_bridge_label);
+  _ br(TMP_REG_0);
   _ PseudoBind(&entry_label);
   _ EmitInt64((uint64_t)entry);
   _ PseudoBind(&forward_bridge_label);

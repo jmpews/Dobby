@@ -88,7 +88,7 @@ void *get_closure_bridge() {
 #endif
 
   _ mov(x0, SP);
-  _ mov(x1, TMP1);
+  _ mov(x1, TMP_REG_1);
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // ======= RegisterContext Restore =======
@@ -141,7 +141,7 @@ void *get_closure_bridge() {
   // _ brk(0); // for debug
 
   // branch to next hop, @modify by `xxx_routing_dispatch`
-  _ br(x16);
+  _ br(TMP_REG_1);
 
   AssemblyCode *code = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
   closure_bridge     = (void *)code->raw_instruction_start();

@@ -13,10 +13,12 @@ typedef uint32_t  addr32_t;
 typedef uint64_t  addr64_t;
 
 #if defined(__arm64__) || defined(__aarch64__)
-#define Tx(type) type##arm64
-#define TX()     type##ARM64
-#define xT()     arm64##type
-#define XT()     ARM64##type
+
+#define ARM64_TMP_REG_NDX_0 16
+
+#define ARM64_TMP_REG_NDX_1 17
+
+// float register
 typedef union _FPReg {
   __int128_t q;
   struct {
@@ -31,6 +33,7 @@ typedef union _FPReg {
   } f;
 } FPReg;
 
+// register context
 typedef struct _RegisterContext {
   uint64_t dmmpy_0; // dummy placeholder
   uint64_t sp;
@@ -59,10 +62,6 @@ typedef struct _RegisterContext {
   } floating;
 } RegisterContext;
 #elif defined(__arm__)
-#define Tx(type) type##arm
-#define TX()     type##ARM
-#define xT()     arm##type
-#define XT()     ARM##type
 typedef struct _RegisterContext {
   uint32_t dummy_0;
   uint32_t dummy_1;
