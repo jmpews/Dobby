@@ -3,39 +3,39 @@
 
 // Memory operand addressing mode.
 enum AddrMode {
-    // Bit encoding P U W.
-    Offset       = (8 | 4 | 0) << 21, // Offset (without writeback to base).
-    PreIndex     = (8 | 4 | 1) << 21, // Pre-indexed addressing with writeback.
-    PostIndex    = (0 | 4 | 0) << 21, // Post-indexed addressing with writeback.
-    NegOffset    = (8 | 0 | 0) << 21, // Negative offset (without writeback to base).
-    NegPreIndex  = (8 | 0 | 1) << 21, // Negative pre-indexed with writeback.
-    NegPostIndex = (0 | 0 | 0) << 21  // Negative post-indexed with writeback.
+  // Bit encoding P U W.
+  Offset       = (8 | 4 | 0) << 21, // Offset (without writeback to base).
+  PreIndex     = (8 | 4 | 1) << 21, // Pre-indexed addressing with writeback.
+  PostIndex    = (0 | 4 | 0) << 21, // Post-indexed addressing with writeback.
+  NegOffset    = (8 | 0 | 0) << 21, // Negative offset (without writeback to base).
+  NegPreIndex  = (8 | 0 | 1) << 21, // Negative pre-indexed with writeback.
+  NegPostIndex = (0 | 0 | 0) << 21  // Negative post-indexed with writeback.
 };
 
 enum Condition {
-  EQ                  = 0,  // equal
-  NE                  = 1,  // not equal
-  CS                  = 2,  // carry set/unsigned higher or same
-  CC                  = 3,  // carry clear/unsigned lower
-  MI                  = 4,  // minus/negative
-  PL                  = 5,  // plus/positive or zero
-  VS                  = 6,  // overflow
-  VC                  = 7,  // no overflow
-  HI                  = 8,  // unsigned higher
-  LS                  = 9,  // unsigned lower or same
-  GE                  = 10, // signed greater than or equal
-  LT                  = 11, // signed less than
-  GT                  = 12, // signed greater than
-  LE                  = 13, // signed less than or equal
-  AL                  = 14, // always (unconditional)
+  EQ = 0,  // equal
+  NE = 1,  // not equal
+  CS = 2,  // carry set/unsigned higher or same
+  CC = 3,  // carry clear/unsigned lower
+  MI = 4,  // minus/negative
+  PL = 5,  // plus/positive or zero
+  VS = 6,  // overflow
+  VC = 7,  // no overflow
+  HI = 8,  // unsigned higher
+  LS = 9,  // unsigned lower or same
+  GE = 10, // signed greater than or equal
+  LT = 11, // signed less than
+  GT = 12, // signed greater than
+  LE = 13, // signed less than or equal
+  AL = 14, // always (unconditional)
 
 };
 
 enum Shift {
-  LSL       = 0, // Logical shift left
-  LSR       = 1, // Logical shift right
-  ASR       = 2, // Arithmetic shift right
-  ROR       = 3, // Rotate right
+  LSL = 0, // Logical shift left
+  LSR = 1, // Logical shift right
+  ASR = 2, // Arithmetic shift right
+  ROR = 3, // Rotate right
 };
 
 enum {
@@ -65,7 +65,7 @@ enum {
 };
 
 enum InstructionFields {
-    kConditionShift = 28,
+  kConditionShift = 28,
 };
 
 #endif

@@ -86,7 +86,7 @@ std::vector<soinfo_t> linker_get_solist() {
 
     // Generate the name for an offset.
 #define PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
-#define STRUCT_OFFSET PARAM_OFFSET
+#define STRUCT_OFFSET                PARAM_OFFSET
   int STRUCT_OFFSET(solist, next) = 0;
   for (size_t i = 0; i < 1024 / sizeof(void *); i++) {
     if (*(addr_t *)((addr_t)solist_head + i * sizeof(void *)) == somain) {
@@ -123,7 +123,7 @@ uintptr_t linker_soinfo_to_handle(soinfo_t soinfo) {
   return _linker_soinfo_to_handle(soinfo);
 }
 
-typedef void *android_namespace_t;
+typedef void *      android_namespace_t;
 android_namespace_t linker_soinfo_get_primary_namespace(soinfo_t soinfo) {
   static android_namespace_t (*_get_primary_namespace)(soinfo_t) = NULL;
   if (!_get_primary_namespace)

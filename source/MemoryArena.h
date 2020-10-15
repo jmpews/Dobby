@@ -9,15 +9,14 @@ typedef MemoryRange MemoryChunk;
 typedef MemoryChunk AssemblyCodeChunk, WritableDataChunk;
 
 typedef struct {
-  MemoryChunk page;
-  addr_t page_cursor;
-  MemoryPermission permission;
+  MemoryChunk       page;
+  addr_t            page_cursor;
+  MemoryPermission  permission;
   LiteMutableArray *chunks;
 } PageChunk;
 
 class MemoryArena {
 public:
-
   static MemoryChunk *AllocateChunk(int inSize, MemoryPermission permission);
 
   static WritableDataChunk *AllocateDataChunk(int inSize);

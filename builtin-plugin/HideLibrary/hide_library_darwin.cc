@@ -71,7 +71,7 @@ int dobby_hide_library_internal(const char *library_name) {
 }
 
 static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  if(remove_image_array == nullptr)
+  if (remove_image_array == nullptr)
     return;
   for (auto name : *remove_image_array) {
     dobby_hide_library_internal(name);

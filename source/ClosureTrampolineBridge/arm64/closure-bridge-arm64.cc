@@ -25,25 +25,25 @@ void *get_closure_bridge() {
   closure_bridge = closure_bridge_template;
 // otherwise, use the Assembler build the closure_bridge
 #else
-#define _ turbo_assembler_.
-#define MEM(reg, offset) MemOperand(reg, offset)
+#define _                              turbo_assembler_.
+#define MEM(reg, offset)               MemOperand(reg, offset)
 #define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
   TurboAssembler turbo_assembler_(0);
 
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-  _ sub(SP, SP, 24 * 16);
-  _ stp(Q(30), Q(31), MEM(SP, 22 * 16));
-  _ stp(Q(28), Q(29), MEM(SP, 20 * 16));
-  _ stp(Q(26), Q(27), MEM(SP, 18 * 16));
-  _ stp(Q(24), Q(25), MEM(SP, 16 * 16));
-  _ stp(Q(22), Q(23), MEM(SP, 14 * 16));
-  _ stp(Q(20), Q(21), MEM(SP, 12 * 16));
-  _ stp(Q(18), Q(19), MEM(SP, 10 * 16));
-  _ stp(Q(16), Q(17), MEM(SP, 8 * 16));
-  _ stp(Q(14), Q(15), MEM(SP, 6 * 16));
-  _ stp(Q(12), Q(13), MEM(SP, 4 * 16));
-  _ stp(Q(10), Q(11), MEM(SP, 2 * 16));
-  _ stp(Q(8), Q(9), MEM(SP, 0 * 16));
+  _              sub(SP, SP, 24 * 16);
+  _              stp(Q(30), Q(31), MEM(SP, 22 * 16));
+  _              stp(Q(28), Q(29), MEM(SP, 20 * 16));
+  _              stp(Q(26), Q(27), MEM(SP, 18 * 16));
+  _              stp(Q(24), Q(25), MEM(SP, 16 * 16));
+  _              stp(Q(22), Q(23), MEM(SP, 14 * 16));
+  _              stp(Q(20), Q(21), MEM(SP, 12 * 16));
+  _              stp(Q(18), Q(19), MEM(SP, 10 * 16));
+  _              stp(Q(16), Q(17), MEM(SP, 8 * 16));
+  _              stp(Q(14), Q(15), MEM(SP, 6 * 16));
+  _              stp(Q(12), Q(13), MEM(SP, 4 * 16));
+  _              stp(Q(10), Q(11), MEM(SP, 2 * 16));
+  _              stp(Q(8), Q(9), MEM(SP, 0 * 16));
 #endif
 
   // save {q0-q7}

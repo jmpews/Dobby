@@ -21,7 +21,8 @@ void FunctionWrapperRouting::BuildPreCallRouting() {
   DLOG("Create pre call closure trampoline to 'prologue_routing_dispatch' at %p", cte->address);
 }
 
-// Add post_call(epilogue) handler before `Return` of the origin function, as implementation is replace the origin `Return Address` of the function.
+// Add post_call(epilogue) handler before `Return` of the origin function, as implementation is replace the origin
+// `Return Address` of the function.
 void FunctionWrapperRouting::BuildPostCallRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline_entry;

@@ -77,7 +77,7 @@ bool LiteMutableArray::initIterator(void *inIterator) const {
 
 bool LiteMutableArray::getNextObjectForIterator(void *inIterator, LiteObject **ret) const {
   unsigned int *iterator = (unsigned int *)inIterator;
-  unsigned int index     = (*iterator)++;
+  unsigned int  index    = (*iterator)++;
 
   if (index < this->count) {
     *ret = (const_cast<LiteObject *>(this->array[index]));

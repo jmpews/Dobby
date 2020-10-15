@@ -29,16 +29,16 @@
 #include <mach-o/nlist.h>
 
 #if defined(__LP64__)
-typedef struct mach_header_64 mach_header_t;
+typedef struct mach_header_64     mach_header_t;
 typedef struct segment_command_64 segment_command_t;
-typedef struct section_64 section_t;
-typedef struct nlist_64 nlist_t;
+typedef struct section_64         section_t;
+typedef struct nlist_64           nlist_t;
 #define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT_64
 #else
-typedef struct mach_header mach_header_t;
+typedef struct mach_header     mach_header_t;
 typedef struct segment_command segment_command_t;
-typedef struct section section_t;
-typedef struct nlist nlist_t;
+typedef struct section         section_t;
+typedef struct nlist           nlist_t;
 #define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT
 #endif
 
@@ -47,13 +47,13 @@ namespace zz {
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
 #else
-const int kMmapFd = -1;
+const int                      kMmapFd = -1;
 #endif
 
 const int kMmapFdOffset = 0;
 
 static addr_t g_aarch64_b_source = 0;
-void register_aarch64_b_source(addr_t address) {
+void          register_aarch64_b_source(addr_t address) {
   g_aarch64_b_source = address;
 }
 
@@ -65,16 +65,16 @@ bool memory_chunk_comparator(MemoryChunk chunk_a, MemoryChunk chunk_b) {
 }
 
 std::vector<MemoryChunk *> ProcessMemoryMap;
-void dump_process_memory_region() {
+void                       dump_process_memory_region() {
   if (!ProcessMemoryMap.empty()) {
     ProcessMemoryMap.clear();
   }
 
   struct vm_region_submap_short_info_64 submap_info;
-  mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
-  mach_vm_address_t addr       = 0;
-  mach_vm_size_t size          = 0;
-  natural_t depth              = 0;
+  mach_msg_type_number_t                count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  mach_vm_address_t                     addr  = 0;
+  mach_vm_size_t                        size  = 0;
+  natural_t                             depth = 0;
   while (true) {
     count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     kern_return_t kr =

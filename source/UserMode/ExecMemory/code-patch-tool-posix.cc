@@ -9,9 +9,9 @@
 #if !defined(__APPLE__)
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
-  int page_size                = (int)sysconf(_SC_PAGESIZE);
+  int       page_size          = (int)sysconf(_SC_PAGESIZE);
   uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);
-  int offset                   = (uintptr_t)address - page_align_address;
+  int       offset             = (uintptr_t)address - page_align_address;
 
 #if defined(__ANDROID__) || defined(__linux__)
 

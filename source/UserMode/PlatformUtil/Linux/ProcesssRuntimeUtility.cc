@@ -46,14 +46,14 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
         break;
     }
 
-    addr_t region_start;
-    addr_t region_end;
-    addr_t region_offset;
-    char permissions[5] = {'\0'}; // Ensure NUL-terminated string.
-    uint8_t dev_major   = 0;
-    uint8_t dev_minor   = 0;
-    long inode          = 0;
-    int path_index      = 0;
+    addr_t  region_start;
+    addr_t  region_end;
+    addr_t  region_offset;
+    char    permissions[5] = {'\0'}; // Ensure NUL-terminated string.
+    uint8_t dev_major      = 0;
+    uint8_t dev_minor      = 0;
+    long    inode          = 0;
+    int     path_index     = 0;
 
     // Sample format from man 5 proc:
     //
@@ -120,14 +120,14 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
         break;
     }
 
-    addr_t region_start;
-    addr_t region_end;
-    addr_t region_offset;
-    char permissions[5] = {'\0'}; // Ensure NUL-terminated string.
-    uint8_t dev_major   = 0;
-    uint8_t dev_minor   = 0;
-    long inode          = 0;
-    int path_index      = 0;
+    addr_t  region_start;
+    addr_t  region_end;
+    addr_t  region_offset;
+    char    permissions[5] = {'\0'}; // Ensure NUL-terminated string.
+    uint8_t dev_major      = 0;
+    uint8_t dev_minor      = 0;
+    long    inode          = 0;
+    int     path_index     = 0;
 
     // Sample format from man 5 proc:
     //

@@ -121,7 +121,7 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
     int off = turbo_assembler_.GetCodeBuffer()->getSize();
 
     if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
-      addr_t branch_address               = decode_imm14_offset(instr) + curr_orig_pc;
+      addr_t           branch_address     = decode_imm14_offset(instr) + curr_orig_pc;
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
       labels->pushObject((LiteObject *)branchAddressLabel);
 
@@ -131,8 +131,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
-      uint32_t imm14 = offset >> 2;
+      int64_t  offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
+      uint32_t imm14  = offset >> 2;
       set_bits(branch_instr, 5, 18, imm14);
 
       _ nop();
@@ -154,8 +154,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 4 * 3;
-      uint32_t imm19 = offset >> 2;
+      int64_t  offset = 4 * 3;
+      uint32_t imm19  = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
@@ -180,8 +180,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
       cond      = cond ^ 1;
       set_bits(branch_instr, 0, 3, cond);
 
-      int64_t offset = 4 * 3;
-      uint32_t imm19 = offset >> 2;
+      int64_t  offset = 4 * 3;
+      uint32_t imm19  = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       PseudoDataLabel *branchAddressLabel = CreatePseudoDataLabel(branch_address);
@@ -222,8 +222,8 @@ AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size_ptr, addr_t from_
 
   for (size_t i = 0; i < labels->getCount(); i++) {
     PseudoDataLabel *pseudoLabel = (PseudoDataLabel *)labels->getObject(i);
-    _ PseudoBind(&(pseudoLabel->label));
-    _ EmitInt64(pseudoLabel->address);
+    _                PseudoBind(&(pseudoLabel->label));
+    _                EmitInt64(pseudoLabel->address);
   }
 
   // Generate executable code

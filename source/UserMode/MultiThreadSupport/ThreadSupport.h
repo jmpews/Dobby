@@ -32,7 +32,7 @@ public:
 
   // Pop stack frame
   static StackFrame *PopStackFrame() {
-    CallStack *callstack   = ThreadSupport::CurrentThreadCallStack();
+    CallStack * callstack  = ThreadSupport::CurrentThreadCallStack();
     StackFrame *stackframe = callstack->stackframes.back();
     callstack->stackframes.pop_back();
     return stackframe;
@@ -45,7 +45,7 @@ public:
   };
 
   static void *GetStackFrameContextValue(StackFrame *stackframe, char *key) {
-    std::map<char *, void *> kv_context = stackframe->kv_context;
+    std::map<char *, void *>           kv_context = stackframe->kv_context;
     std::map<char *, void *>::iterator it;
     it = kv_context.find(key);
     if (it != kv_context.end()) {

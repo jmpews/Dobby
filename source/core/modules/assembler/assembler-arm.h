@@ -16,11 +16,11 @@ namespace zz {
 namespace arm {
 
 // ARM design had a 3-stage pipeline (fetch-decode-execute)
-#define ARM_PC_OFFSET 8
+#define ARM_PC_OFFSET   8
 #define Thumb_PC_OFFSET 4
 
 // define instruction length
-#define ARM_INST_LEN 4
+#define ARM_INST_LEN    4
 #define Thumb1_INST_LEN 2
 #define Thumb2_INST_LEN 4
 
@@ -66,9 +66,9 @@ public:
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
-      int32_t offset       = pos() - instruction->position_;
-      const int32_t inst32 = _buffer->LoadARMInst(instruction->position_);
-      int32_t encoded      = 0;
+      int32_t       offset  = pos() - instruction->position_;
+      const int32_t inst32  = _buffer->LoadARMInst(instruction->position_);
+      int32_t       encoded = 0;
 
       switch (instruction->type_) {
       case kLdrLiteral: {
@@ -143,7 +143,7 @@ private:
   Register rs_;
 
   Shift shift_;
-  int shift_imm_;
+  int   shift_imm_;
 
   uint32_t imm_;
 
@@ -200,7 +200,7 @@ private:
   int32_t offset_; // valid if rm_ == no_reg
 
   Shift shift_;
-  int shift_imm_; // valid if rm_ != no_reg && rs_ == no_reg
+  int   shift_imm_; // valid if rm_ != no_reg && rs_ == no_reg
 
   AddrMode am_; // bits P, U, and W
 

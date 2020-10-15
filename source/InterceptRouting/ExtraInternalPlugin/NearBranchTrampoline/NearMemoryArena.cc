@@ -39,8 +39,8 @@ static addr_t search_near_blank_page(addr_t pos, int range) {
       if (region_start >= min_page_addr) {
         // sepcial-bank
         if (assumePageAddr == min_page_addr && i != 0) {
-          MemoryRegion prev_region = memory_layout[i - 1];
-          addr_t prev_region_end   = (addr_t)prev_region.address + prev_region.length;
+          MemoryRegion prev_region     = memory_layout[i - 1];
+          addr_t       prev_region_end = (addr_t)prev_region.address + prev_region.length;
           // check if have blank cave page
           if (region_start > prev_region_end) {
             assumePageAddr = min_page_addr > prev_region_end ? min_page_addr : prev_region_end;
@@ -81,7 +81,7 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, int range, int in_size)
       if (((addr_t)region.address + region.length) <= max_page_addr) {
         if ((addr_t)region.address >= min_page_addr) {
 #if defined(__APPLE__)
-          if(*(uint32_t *)region.address == 0xfeedfacf)
+          if (*(uint32_t *)region.address == 0xfeedfacf)
             continue;
 #endif
           char *blank_memory = (char *)malloc(in_size);
@@ -89,7 +89,7 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, int range, int in_size)
 #if defined(__arm__) || defined(__aarch64__)
           in_size += (4 - 1);
           blank_chunk_addr = (uint8_t *)memmem(region.address, region.length, blank_memory, in_size);
-          if(blank_chunk_addr) {
+          if (blank_chunk_addr) {
             int off = 4 - ((addr_t)blank_chunk_addr % 4);
             blank_chunk_addr += off;
           }
@@ -135,7 +135,7 @@ MemoryChunk *NearMemoryArena::AllocateChunk(addr_t position, size_t range, int i
 
 search_once_more:
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(NearMemoryArena::page_chunks);
-  PageChunk *page              = NULL;
+  PageChunk *             page = NULL;
   while ((page = reinterpret_cast<PageChunk *>(iter->getNextObject())) != NULL) {
     if (page->permission == permission) {
       if (llabs((intptr_t)(page->page_cursor - position)) < range) {

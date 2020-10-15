@@ -45,10 +45,10 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   }
 
   struct vm_region_submap_short_info_64 submap_info;
-  mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
-  mach_vm_address_t addr       = 0;
-  mach_vm_size_t size          = 0;
-  natural_t depth              = 0;
+  mach_msg_type_number_t                count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  mach_vm_address_t                     addr  = 0;
+  mach_vm_size_t                        size  = 0;
+  natural_t                             depth = 0;
   while (true) {
     count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     kern_return_t kr =

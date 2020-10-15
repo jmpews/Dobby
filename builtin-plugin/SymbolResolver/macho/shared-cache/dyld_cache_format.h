@@ -28,7 +28,7 @@
 #include <uuid/uuid.h>
 
 struct dyld_cache_header {
-  char magic[16];                // e.g. "dyld_v0    i386"
+  char     magic[16];            // e.g. "dyld_v0    i386"
   uint32_t mappingOffset;        // file offset to first dyld_cache_mapping_info
   uint32_t mappingCount;         // number of dyld_cache_mapping_info entries
   uint32_t imagesOffset;         // file offset to first dyld_cache_image_info
@@ -40,7 +40,7 @@ struct dyld_cache_header {
   uint64_t slideInfoSize;        // size of kernel slid info
   uint64_t localSymbolsOffset;   // file offset of where local symbols are stored
   uint64_t localSymbolsSize;     // size of local symbols information
-  uint8_t uuid[16];              // unique value for each shared cache file
+  uint8_t  uuid[16];             // unique value for each shared cache file
   uint64_t cacheType;            // 0 for development, 1 for production
   uint32_t branchPoolsOffset;    // file offset to table of uint64_t pool addresses
   uint32_t branchPoolsCount;     // number of uint64_t entries
@@ -139,7 +139,7 @@ struct dyld_cache_accelerator_dof {
 };
 
 struct dyld_cache_image_text_info {
-  uuid_t uuid;
+  uuid_t   uuid;
   uint64_t loadAddress; // unslid address of start of __TEXT
   uint32_t textSegmentSize;
   uint32_t pathOffset; // offset from start of cache file
@@ -234,10 +234,10 @@ struct dyld_cache_slide_info2 {
   // uint16_t    page_starts[page_starts_count];
   // uint16_t    page_extras[page_extras_count];
 };
-#define DYLD_CACHE_SLIDE_PAGE_ATTRS 0xC000          // high bits of uint16_t are flags
-#define DYLD_CACHE_SLIDE_PAGE_ATTR_EXTRA 0x8000     // index is into extras array (not starts array)
+#define DYLD_CACHE_SLIDE_PAGE_ATTRS          0xC000 // high bits of uint16_t are flags
+#define DYLD_CACHE_SLIDE_PAGE_ATTR_EXTRA     0x8000 // index is into extras array (not starts array)
 #define DYLD_CACHE_SLIDE_PAGE_ATTR_NO_REBASE 0x4000 // page has no rebasing
-#define DYLD_CACHE_SLIDE_PAGE_ATTR_END 0x8000       // last chain entry for page
+#define DYLD_CACHE_SLIDE_PAGE_ATTR_END       0x8000 // last chain entry for page
 
 // The version 3 of the slide info uses a different compression scheme. Since
 // only interior pointers (pointers that point within the cache) are rebased
@@ -386,7 +386,7 @@ struct dyld_cache_slide_info4 {
   // uint16_t    page_extras[page_extras_count];
 };
 #define DYLD_CACHE_SLIDE4_PAGE_NO_REBASE 0xFFFF // page has no rebasing
-#define DYLD_CACHE_SLIDE4_PAGE_INDEX 0x7FFF     // mask of page_starts[] values
+#define DYLD_CACHE_SLIDE4_PAGE_INDEX     0x7FFF // mask of page_starts[] values
 #define DYLD_CACHE_SLIDE4_PAGE_USE_EXTRA 0x8000 // index is into extras array (not a chain start offset)
 #define DYLD_CACHE_SLIDE4_PAGE_EXTRA_END 0x8000 // last chain entry for page
 
@@ -405,9 +405,9 @@ struct dyld_cache_local_symbols_entry {
   uint32_t nlistCount;      // number of local symbols for this dylib
 };
 
-#define MACOSX_DYLD_SHARED_CACHE_DIR "/private/var/db/dyld/"
-#define IPHONE_DYLD_SHARED_CACHE_DIR "/System/Library/Caches/com.apple.dyld/"
-#define DYLD_SHARED_CACHE_BASE_NAME "dyld_shared_cache_"
+#define MACOSX_DYLD_SHARED_CACHE_DIR      "/private/var/db/dyld/"
+#define IPHONE_DYLD_SHARED_CACHE_DIR      "/System/Library/Caches/com.apple.dyld/"
+#define DYLD_SHARED_CACHE_BASE_NAME       "dyld_shared_cache_"
 #define DYLD_SHARED_CACHE_DEVELOPMENT_EXT ".development"
 
 static const uint64_t kDyldSharedCacheTypeDevelopment = 0;

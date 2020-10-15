@@ -31,7 +31,7 @@ enum InstructionFields {
 
 };
 
-#define OP(op) op
+#define OP(op)   op
 #define OP_W(op) op##_w
 #define OP_X(op) op##_x
 #define OP_B(op) op##_b
@@ -40,7 +40,7 @@ enum InstructionFields {
 #define OP_D(op) op##_d
 #define OP_Q(op) op##_q
 
-#define OPT(op, attribute) op##_##attribute
+#define OPT(op, attribute)   op##_##attribute
 #define OPT_W(op, attribute) op##_w_##attribute
 #define OPT_X(op, attribute) op##_x_##attribute
 #define OPT_B(op, attribute) op##_b_##attribute
@@ -141,7 +141,7 @@ enum LoadRegLiteralOp {
 
 // Load/store
 enum LoadStoreOp {
-#define LoadStoreOpSub(size, V, opc) LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
+#define LoadStoreOpSub(size, V, opc)     LFT(size, 2, 30) | LFT(V, 1, 26) | LFT(opc, 2, 22)
 #define LOAD_STORE(opname, size, V, opc) OP(opname) = LoadStoreOpSub(size, V, opc)
   LOAD_STORE_OP_LIST(LOAD_STORE)
 #undef LOAD_STORE
@@ -206,7 +206,7 @@ enum LoadStoreUnsignedOffset {
 // clang-format on
 
 enum LoadStorePairOp {
-#define LoadStorePairOpSub(opc, V, L) LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairOpSub(opc, V, L)      LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR(opname, opc, V, L) OP(opname) = LoadStorePairOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR)
 #undef LOAD_STORE_PAIR
@@ -217,7 +217,7 @@ enum LoadStorePairOffsetOp {
   LoadStorePairOffsetFixedMask = 0x3B800000,
   LoadStorePairOffsetMask      = 0xFFC00000,
 
-#define LoadStorePairOffsetOpSub(opc, V, L) LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairOffsetOpSub(opc, V, L)       LoadStorePairOffsetFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_OFFSET(opname, opc, V, L) OPT(opname, offset) = LoadStorePairOffsetOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_OFFSET)
 #undef LOAD_STORE_PAIR_OFFSET
@@ -228,7 +228,7 @@ enum LoadStorePairPostIndexOp {
   LoadStorePairPostIndexFixedMask = 0x3B800000,
   LoadStorePairPostIndexMask      = 0xFFC00000,
 
-#define LoadStorePairPostOpSub(opc, V, L) LoadStorePairPostIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairPostOpSub(opc, V, L)             LoadStorePairPostIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_POST_INDEX(opname, opc, V, L) OPT(opname, post) = LoadStorePairPostOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_POST_INDEX)
 #undef LOAD_STORE_PAIR_POST_INDEX
@@ -239,7 +239,7 @@ enum LoadStorePairPreIndexOp {
   LoadStorePairPreIndexFixedMask = 0x3B800000,
   LoadStorePairPreIndexMask      = 0xFFC00000,
 
-#define LoadStorePairPreOpSub(opc, V, L) LoadStorePairPreIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
+#define LoadStorePairPreOpSub(opc, V, L)             LoadStorePairPreIndexFixed | LFT(opc, 2, 30) | LFT(V, 1, 26) | LFT(L, 1, 22)
 #define LOAD_STORE_PAIR_PRE_INDEX(opname, opc, V, L) OPT(opname, pre) = LoadStorePairPreOpSub(opc, V, L)
   LOAD_STORE_PAIR_OP_LIST(LOAD_STORE_PAIR_PRE_INDEX)
 #undef LOAD_STORE_PAIR_PRE_INDEX

@@ -42,9 +42,8 @@ const int kMmapFd = -1;
 
 const int kMmapFdOffset = 0;
 
-
 // ================================================================
-// base :: Thread 
+// base :: Thread
 
 using namespace base;
 

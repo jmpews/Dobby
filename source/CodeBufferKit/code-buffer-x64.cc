@@ -10,14 +10,12 @@ void CodeBuffer::Emit32(int32_t data) {
   return;
 }
 
-
 void CodeBuffer::Emit64(int64_t data) {
   ensureCapacity(getSize() + sizeof(int64_t));
   *reinterpret_cast<int64_t *>(getCursor()) = data;
   cursor_ += sizeof(int64_t);
   return;
 }
-
 
 void CodeBuffer::FixBindLabel(int offset, int32_t disp) {
   *reinterpret_cast<uint32_t *>(buffer_ + offset) = disp;

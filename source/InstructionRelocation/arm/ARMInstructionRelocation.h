@@ -34,8 +34,8 @@ public:
         UNREACHABLE();
       } break;
       case kThumb2LiteralLdr: {
-        int32_t offset = pos() - ALIGN(instruction->position_, 4) - Thumb_PC_OFFSET;
-        uint32_t imm12 = offset;
+        int32_t  offset = pos() - ALIGN(instruction->position_, 4) - Thumb_PC_OFFSET;
+        uint32_t imm12  = offset;
         CHECK(imm12 < (1 << 12));
         uint16_t encoding = inst2 & 0xf000;
         encoding          = encoding | imm12;
@@ -154,9 +154,9 @@ public:
 
 private:
   void EmitThumb2LoadLiteral(Register rt, const MemOperand x) {
-    bool add = true;
+    bool     add = true;
     uint32_t U, imm12;
-    int32_t offset = x.offset();
+    int32_t  offset = x.offset();
 
 #if 0
     // literal ldr, base = ALIGN(pc, 4)

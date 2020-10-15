@@ -20,7 +20,7 @@ public:
     initWithCapacity(count);
   }
 
-  virtual LiteObject *getObject(const int  index);
+  virtual LiteObject *getObject(const int index);
 
   virtual bool setObject(const LiteObject object);
 

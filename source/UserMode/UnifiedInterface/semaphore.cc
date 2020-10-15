@@ -24,18 +24,20 @@ Semaphore::Semaphore(int count) {
   DCHECK(native_handle_);
 }
 
-Semaphore::~Semaphore() { dispatch_release(native_handle_); }
+Semaphore::~Semaphore() {
+  dispatch_release(native_handle_);
+}
 
-void Semaphore::Signal() { dispatch_semaphore_signal(native_handle_); }
+void Semaphore::Signal() {
+  dispatch_semaphore_signal(native_handle_);
+}
 
 void Semaphore::Wait() {
   dispatch_semaphore_wait(native_handle_, DISPATCH_TIME_FOREVER);
 }
 
-
-bool Semaphore::WaitFor(const TimeDelta& rel_time) {
-  dispatch_time_t timeout =
-      dispatch_time(DISPATCH_TIME_NOW, rel_time.InNanoseconds());
+bool Semaphore::WaitFor(const TimeDelta &rel_time) {
+  dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, rel_time.InNanoseconds());
   return dispatch_semaphore_wait(native_handle_, timeout) == 0;
 }
 
@@ -47,7 +49,6 @@ Semaphore::Semaphore(int count) {
   DCHECK_EQ(0, result);
   USE(result);
 }
-
 
 Semaphore::~Semaphore() {
   int result = sem_destroy(&native_handle_);
@@ -65,31 +66,31 @@ void Semaphore::Signal() {
   }
 }
 
-
 void Semaphore::Wait() {
   while (true) {
     int result = sem_wait(&native_handle_);
-    if (result == 0) return;  // Semaphore was signalled.
+    if (result == 0)
+      return; // Semaphore was signalled.
     // Signal caused spurious wakeup.
     DCHECK_EQ(-1, result);
     DCHECK_EQ(EINTR, errno);
   }
 }
 
-
-bool Semaphore::WaitFor(const TimeDelta& rel_time) {
+bool Semaphore::WaitFor(const TimeDelta &rel_time) {
   // Compute the time for end of timeout.
-  const Time time = Time::NowFromSystemTime() + rel_time;
-  const struct timespec ts = time.ToTimespec();
+  const Time            time = Time::NowFromSystemTime() + rel_time;
+  const struct timespec ts   = time.ToTimespec();
 
   // Wait for semaphore signalled or timeout.
   while (true) {
     int result = sem_timedwait(&native_handle_, &ts);
-    if (result == 0) return true;  // Semaphore was signalled.
+    if (result == 0)
+      return true; // Semaphore was signalled.
 #if V8_LIBC_GLIBC && !V8_GLIBC_PREREQ(2, 4)
     if (result > 0) {
       // sem_timedwait in glibc prior to 2.3.4 returns the errno instead of -1.
-      errno = result;
+      errno  = result;
       result = -1;
     }
 #endif
@@ -111,7 +112,6 @@ Semaphore::Semaphore(int count) {
   DCHECK_NOT_NULL(native_handle_);
 }
 
-
 Semaphore::~Semaphore() {
   BOOL result = CloseHandle(native_handle_);
   DCHECK(result);
@@ -125,15 +125,13 @@ void Semaphore::Signal() {
   USE(result);
 }
 
-
 void Semaphore::Wait() {
   DWORD result = WaitForSingleObject(native_handle_, INFINITE);
   DCHECK(result == WAIT_OBJECT_0);
   USE(result);
 }
 
-
-bool Semaphore::WaitFor(const TimeDelta& rel_time) {
+bool Semaphore::WaitFor(const TimeDelta &rel_time) {
   TimeTicks now = TimeTicks::Now();
   TimeTicks end = now + rel_time;
   while (true) {
@@ -146,8 +144,7 @@ bool Semaphore::WaitFor(const TimeDelta& rel_time) {
       DCHECK(result == WAIT_TIMEOUT);
       now = TimeTicks::Now();
     } else {
-      DWORD result = WaitForSingleObject(
-          native_handle_, (msec < 0) ? 0 : static_cast<DWORD>(msec));
+      DWORD result = WaitForSingleObject(native_handle_, (msec < 0) ? 0 : static_cast<DWORD>(msec));
       if (result == WAIT_TIMEOUT) {
         return false;
       }
@@ -157,7 +154,7 @@ bool Semaphore::WaitFor(const TimeDelta& rel_time) {
   }
 }
 
-#endif  // V8_OS_MACOSX
+#endif // V8_OS_MACOSX
 
-}  // namespace base
-}  // namespace v8
+} // namespace base
+} // namespace v8

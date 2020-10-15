@@ -21,13 +21,13 @@
 #define LOG_TAG "DobbySymbolResolver"
 
 static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_size_ptr) {
-  int fd             = open(file_path, O_RDONLY, 0);
+  int      fd        = open(file_path, O_RDONLY, 0);
   uint8_t *mmap_data = NULL;
-  size_t file_size   = 0;
+  size_t   file_size = 0;
 
   {
     struct stat s;
-    int rt = fstat(fd, &s);
+    int         rt = fstat(fd, &s);
     if (rt != 0) {
       ERROR_LOG("mmap failed");
       goto finished;
@@ -96,13 +96,13 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
   ElfW(Sym) *symtab = NULL;
   char *strtab      = NULL;
-  int count         = 0;
+  int   count       = 0;
 
   if (library_name) {
     RuntimeModule module = ProcessRuntimeUtility::GetProcessModule(library_name);
 
-    uint8_t *file_mem    = NULL;
-    size_t file_mem_size = 0;
+    uint8_t *file_mem      = NULL;
+    size_t   file_mem_size = 0;
     if (module.load_address)
       file_mmap(module.path, &file_mem, &file_mem_size);
 
@@ -122,8 +122,8 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   if (!result) {
     std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
     for (auto module : ProcessModuleMap) {
-      uint8_t *file_mem    = NULL;
-      size_t file_mem_size = 0;
+      uint8_t *file_mem      = NULL;
+      size_t   file_mem_size = 0;
       if (module.load_address)
         file_mmap(module.path, &file_mem, &file_mem_size);
 
@@ -148,7 +148,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
 // impl at "android_restriction.cc"
 extern std::vector<void *> linker_get_solist();
-PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
+PUBLIC void *              DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result = NULL;
 
   auto solist = linker_get_solist();

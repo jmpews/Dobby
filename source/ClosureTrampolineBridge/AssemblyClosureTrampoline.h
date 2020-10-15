@@ -10,9 +10,9 @@ extern "C" {
 #endif //__cplusplus
 
 typedef struct _ClosureTrampolineEntry {
-  void *carry_handler;
-  void *carry_data;
-  void *address;
+  void *    carry_handler;
+  void *    carry_data;
+  void *    address;
   uintptr_t size;
 } ClosureTrampolineEntry;
 

@@ -43,7 +43,8 @@ AssemblyCode *AssemblyCode::FinalizeFromTurboAssember(AssemblerBase *assembler) 
     delete codeChunk;
   }
 
-  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative instructions
+  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
+  // instructions
   CodePatch(address, codeBuffer->getRawBuffer(), codeBuffer->getSize());
 
   result = FinalizeFromAddress((addr_t)address, codeBuffer->getSize());

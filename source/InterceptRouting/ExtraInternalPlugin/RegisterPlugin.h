@@ -27,7 +27,6 @@ public:
 
   // @Return: if false will continue to iter next plugin
   virtual bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst) = 0;
-
 };
 
 #endif

@@ -7,8 +7,8 @@
 
 class LiteObject {
 public:
-  virtual ~LiteObject() {
-    
+  virtual ~LiteObject(){
+
   };
 
 public:

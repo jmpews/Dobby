@@ -39,11 +39,11 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 #define ARM64_TINY_REDIRECT_SIZE (4 * 4)
-#define ARM64_B_XXX_RANGE ((1 << 25) << 2) // signed
+#define ARM64_B_XXX_RANGE        ((1 << 25) << 2) // signed
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough, build the transfer to forward the b branch, if
 static AssemblyCode *GenerateFastForwardTrampoline(addr_t source_address, addr_t target_address) {
-  AssemblyCode *result         = NULL;
+  AssemblyCode *     result    = NULL;
   AssemblyCodeChunk *codeChunk = NULL;
 
   codeChunk = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_B_XXX_RANGE, ARM64_TINY_REDIRECT_SIZE);
@@ -79,7 +79,7 @@ CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t s
       return NULL;
     // trampoline => fast_forward_trampoline
     addr_t fast_forward_trampoline_addr = fast_forward_trampoline->raw_instruction_start();
-    _ b(fast_forward_trampoline_addr - src);
+    _      b(fast_forward_trampoline_addr - src);
   }
 
   // free the original trampoline

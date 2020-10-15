@@ -21,7 +21,7 @@ void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 
   // run the `pre_call` before execute origin function which has been relocated(fixed)
   if (route->pre_call) {
-    PreCallTy pre_call;
+    PreCallTy     pre_call;
     HookEntryInfo entry_info;
     entry_info.hook_id        = entry->id;
     entry_info.target_address = entry->target_address;
@@ -48,7 +48,7 @@ void post_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
 
   // run the `post_call`, and access all the register value, as the origin function done,
   if (route->post_call) {
-    PostCallTy post_call;
+    PostCallTy    post_call;
     HookEntryInfo entry_info;
     entry_info.hook_id        = entry->id;
     entry_info.target_address = entry->target_address;

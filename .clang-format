@@ -12,4 +12,5 @@ AlignConsecutiveDeclarations: true
 
 # default is true
 ReflowComments: true
-SortIncludes : true
+SortIncludes : false
+AllowShortFunctionsOnASingleLine: false

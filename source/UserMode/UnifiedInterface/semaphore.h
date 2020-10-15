@@ -12,9 +12,9 @@
 #endif
 
 #if V8_OS_MACOSX
-#include <dispatch/dispatch.h>  // NOLINT
+#include <dispatch/dispatch.h> // NOLINT
 #elif V8_OS_POSIX
-#include <semaphore.h>  // NOLINT
+#include <semaphore.h> // NOLINT
 #endif
 
 namespace v8 {
@@ -33,7 +33,7 @@ class TimeDelta;
 // count becomes non-zero.
 
 class V8_BASE_EXPORT Semaphore final {
- public:
+public:
   explicit Semaphore(int count);
   ~Semaphore();
 
@@ -47,7 +47,7 @@ class V8_BASE_EXPORT Semaphore final {
   // Like Wait() but returns after rel_time time has passed. If the timeout
   // happens the return value is false and the counter is unchanged. Otherwise
   // the semaphore counter is decremented and true is returned.
-  bool WaitFor(const TimeDelta& rel_time) V8_WARN_UNUSED_RESULT;
+  bool WaitFor(const TimeDelta &rel_time) V8_WARN_UNUSED_RESULT;
 
 #if V8_OS_MACOSX
   using NativeHandle = dispatch_semaphore_t;
@@ -57,19 +57,18 @@ class V8_BASE_EXPORT Semaphore final {
   using NativeHandle = HANDLE;
 #endif
 
-  NativeHandle& native_handle() {
+  NativeHandle &native_handle() {
     return native_handle_;
   }
-  const NativeHandle& native_handle() const {
+  const NativeHandle &native_handle() const {
     return native_handle_;
   }
 
- private:
+private:
   NativeHandle native_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Semaphore);
 };
-
 
 // POD Semaphore initialized lazily (i.e. the first time Pointer() is called).
 // Usage:
@@ -81,22 +80,19 @@ class V8_BASE_EXPORT Semaphore final {
 //   }
 //
 
-template <int N>
-struct CreateSemaphoreTrait {
-  static Semaphore* Create() {
+template <int N> struct CreateSemaphoreTrait {
+  static Semaphore *Create() {
     return new Semaphore(N);
   }
 };
 
-template <int N>
-struct LazySemaphore {
-  using typename LazyDynamicInstance<Semaphore, CreateSemaphoreTrait<N>,
-                                     ThreadSafeInitOnceTrait>::type;
+template <int N> struct LazySemaphore {
+  using typename LazyDynamicInstance<Semaphore, CreateSemaphoreTrait<N>, ThreadSafeInitOnceTrait>::type;
 };
 
 #define LAZY_SEMAPHORE_INITIALIZER LAZY_DYNAMIC_INSTANCE_INITIALIZER
 
-}  // namespace base
-}  // namespace v8
+} // namespace base
+} // namespace v8
 
-#endif  // V8_BASE_PLATFORM_SEMAPHORE_H_
+#endif // V8_BASE_PLATFORM_SEMAPHORE_H_

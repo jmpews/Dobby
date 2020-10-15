@@ -28,8 +28,8 @@
 
 typedef struct _InstructionBackupArray {
   void *address;
-  int size;
-  char data[64];
+  int   size;
+  char  data[64];
 } InstructionBackupArray;
 
 typedef struct _HookEntry {

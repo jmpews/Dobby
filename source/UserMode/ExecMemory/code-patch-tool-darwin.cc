@@ -37,7 +37,7 @@
 static mach_port_t substrated_server_port = MACH_PORT_NULL;
 
 mach_port_t connect_mach_service(const char *name) {
-  mach_port_t port = MACH_PORT_NULL;
+  mach_port_t   port = MACH_PORT_NULL;
   kern_return_t kr;
 
   kr = task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
@@ -76,9 +76,9 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
 _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   kern_return_t kr;
 
-  int page_size             = (int)sysconf(_SC_PAGESIZE);
+  int    page_size          = (int)sysconf(_SC_PAGESIZE);
   addr_t page_align_address = ALIGN_FLOOR(address, page_size);
-  int offset                = static_cast<int>((addr_t)address - page_align_address);
+  int    offset             = static_cast<int>((addr_t)address - page_align_address);
 
   static mach_port_t self_port = mach_task_self();
 #ifdef __APPLE__
@@ -123,7 +123,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   if (ret == RT_FAILED) {
     mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
     mach_vm_address_t dest_page_address_ = (mach_vm_address_t)page_align_address;
-    vm_prot_t curr_protection, max_protection;
+    vm_prot_t         curr_protection, max_protection;
     kr = mach_vm_remap(self_port, &dest_page_address_, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_port,
                        (mach_vm_address_t)remap_page, TRUE, &curr_protection, &max_protection, VM_INHERIT_COPY);
     if (kr != KERN_SUCCESS) {

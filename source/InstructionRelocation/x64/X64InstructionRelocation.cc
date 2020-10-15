@@ -17,7 +17,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
   turbo_assembler_.CommitRealizeAddress((void *)relocated->raw_instruction_start());
-#define _ turbo_assembler_.
+#define _  turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
   addr64_t curr_orig_ip = origin->raw_instruction_start();
@@ -25,8 +25,8 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 
   addr_t buffer_cursor = (addr_t)buffer;
 
-  byte_t opcode1      = *(byte_t *)buffer_cursor;
-  InstrMnemonic instr = {0};
+  byte_t        opcode1 = *(byte_t *)buffer_cursor;
+  InstrMnemonic instr   = {0};
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
@@ -42,9 +42,9 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
     if (instr.instr.opcode1 >= 0x70 && instr.instr.opcode1 <= 0x7F) {
       int orig_offset = *(byte_t *)&instr.instr.Immediate;
       int offset      = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __ Emit8(0x0F);
-      __ Emit8(opcode1);
-      __ Emit32(offset);
+      __  Emit8(0x0F);
+      __  Emit8(opcode1);
+      __  Emit32(offset);
     } else if (instr.instr.opcode1 >= 0xE0 && instr.instr.opcode1 <= 0xE2) {
       // LOOP/LOOPcc
       UNIMPLEMENTED();
@@ -56,14 +56,14 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
       byte_t orig_offset = *(byte_t *)&instr.instr.Immediate;
       // FIXME: security cast
       byte_t offset = (byte_t)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __ Emit8(0xE9);
-      __ Emit32(offset);
+      __     Emit8(0xE9);
+      __     Emit32(offset);
     } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
       // JMP/CALL rel32
       dword orig_offset = *(dword *)&instr.instr.Immediate;
       dword offset      = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __ Emit8(instr.instr.opcode1);
-      __ Emit32(offset);
+      __    Emit8(instr.instr.opcode1);
+      __    Emit32(offset);
     } else if (instr.flag & kIPRelativeAddress) {
       // IP-Relative Address
       dword orig_disp = *(dword *)(buffer_cursor + instr.instr.DisplacementOffset);
@@ -130,8 +130,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   // pre-alloc code chunk
   AssemblyCodeChunk *codeChunk = NULL;
 
-  int relo_code_chunk_size  = 32;
-  const int chunk_size_step = 16;
+  int       relo_code_chunk_size = 32;
+  const int chunk_size_step      = 16;
 
   if (relocated->raw_instruction_start() == 0) {
     codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);

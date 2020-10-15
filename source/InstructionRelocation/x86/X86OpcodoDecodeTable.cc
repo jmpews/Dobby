@@ -87,13 +87,13 @@ void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
 #define REX_X(byte) ((byte & 0b00000010) >> 1)
 #define REX_B(byte) ((byte & 0b00000001) >> 0)
 
-#define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
+#define ModRM_Mod(byte)       ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
-#define ModRM_RM(byte) (byte & 0b00000111)
+#define ModRM_RM(byte)        (byte & 0b00000111)
 
 #define SIB_Scale(sib) ((sib & 0b11000000) >> 6)
 #define SIB_Index(sib) ((sib & 0b00111000) >> 3)
-#define SIB_Base(sib) ((sib & 0b00000111) >> 0)
+#define SIB_Base(sib)  ((sib & 0b00000111) >> 0)
 
 #define REX_SIB_Base(rex, sib) ((REX_B(rex) << 3) | SIB_Base(sib))
 

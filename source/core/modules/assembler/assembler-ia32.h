@@ -26,7 +26,7 @@ public:
   enum PseudoLabelType { kDisp32_off_9 };
 
   typedef struct _PseudoLabelInstruction {
-    int position_;
+    int             position_;
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
@@ -96,9 +96,9 @@ private:
   int data_size_;
 };
 
-#define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
+#define ModRM_Mod(byte)       ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
-#define ModRM_RM(byte) (byte & 0b00000111)
+#define ModRM_RM(byte)        (byte & 0b00000111)
 
 typedef union _ModRM {
   byte_t ModRM;

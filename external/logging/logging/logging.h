@@ -80,6 +80,6 @@ extern "C" {
 #endif
 
 #define UNIMPLEMENTED() FATAL("%s\n", "unimplemented code!!!")
-#define UNREACHABLE() FATAL("%s\n", "unreachable code!!!")
+#define UNREACHABLE()   FATAL("%s\n", "unreachable code!!!")
 
 #endif

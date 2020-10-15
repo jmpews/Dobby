@@ -16,7 +16,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int inSize, MemoryPermission permission)
   }
 
   LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
-  PageChunk *page              = NULL;
+  PageChunk *             page = NULL;
   while ((page = reinterpret_cast<PageChunk *>(iter->getNextObject())) != NULL) {
     if (page->permission == permission) {
       // check the page remain space is enough for the new chunk
@@ -29,7 +29,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int inSize, MemoryPermission permission)
 
   // alloc a new executable page.
   if (!page) {
-    int pageSize      = OSMemory::PageSize();
+    int   pageSize    = OSMemory::PageSize();
     void *pageAddress = OSMemory::Allocate(NULL, pageSize, permission);
     if (pageAddress == NULL) {
       ERROR_LOG("Failed to alloc page");

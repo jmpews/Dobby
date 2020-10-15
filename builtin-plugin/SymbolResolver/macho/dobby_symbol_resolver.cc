@@ -22,9 +22,9 @@
 #define LOG_TAG "DobbySymbolResolver"
 
 static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {
-  uint64_t result  = 0;
-  int bit          = 0;
-  const uint8_t *p = *p_ptr;
+  uint64_t       result = 0;
+  int            bit    = 0;
+  const uint8_t *p      = *p_ptr;
   do {
     if (p == end) {
       // diag.error("malformed uleb128");
@@ -49,7 +49,7 @@ static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {
 // bool MachOLoaded::findExportedSymbol
 void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
   uint32_t visitedNodeOffsets[128];
-  int visitedNodeOffsetCount                   = 0;
+  int      visitedNodeOffsetCount              = 0;
   visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
   const uint8_t *p                             = start;
   while (p < end) {
@@ -66,15 +66,15 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
     }
     const uint8_t *children = p + terminalSize;
     if (children > end) {
-      //diag.error("malformed trie node, terminalSize=0x%llX extends past end of trie\n", terminalSize);
+      // diag.error("malformed trie node, terminalSize=0x%llX extends past end of trie\n", terminalSize);
       return NULL;
     }
     uint8_t childrenRemaining = *children++;
     p                         = children;
     uint64_t nodeOffset       = 0;
     for (; childrenRemaining > 0; --childrenRemaining) {
-      const char *ss = symbol;
-      bool wrongEdge = false;
+      const char *ss        = symbol;
+      bool        wrongEdge = false;
       // scan whole edge to get to next edge
       // if edge is longer than target symbol name, don't read past end of symbol name
       char c = *p;
@@ -135,9 +135,9 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
 }
 
 void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
-  segment_command_t *curr_seg_cmd;
+  segment_command_t *       curr_seg_cmd;
   struct dyld_info_command *dyld_info_cmd = NULL;
-  segment_command_t *text_segment, *data_segment, *linkedit_segment;
+  segment_command_t *       text_segment, *data_segment, *linkedit_segment;
 
   curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
@@ -186,9 +186,9 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
 
 void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, char **string_pool,
                               uint32_t *nlist_count) {
-  segment_command_t *curr_seg_cmd;
-  segment_command_t *text_segment, *data_segment, *linkedit_segment;
-  struct symtab_command *symtab_cmd     = NULL;
+  segment_command_t *      curr_seg_cmd;
+  segment_command_t *      text_segment, *data_segment, *linkedit_segment;
+  struct symtab_command *  symtab_cmd   = NULL;
   struct dysymtab_command *dysymtab_cmd = NULL;
 
   curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
@@ -215,9 +215,9 @@ void get_syms_in_single_image(mach_header_t *header, uintptr_t *nlist_array, cha
 
   uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
-  nlist_t *symtab         = (nlist_t *)(linkedit_base + symtab_cmd->symoff);
-  char *strtab            = (char *)(linkedit_base + symtab_cmd->stroff);
-  uint32_t symtab_count   = symtab_cmd->nsyms;
+  nlist_t * symtab        = (nlist_t *)(linkedit_base + symtab_cmd->symoff);
+  char *    strtab        = (char *)(linkedit_base + symtab_cmd->stroff);
+  uint32_t  symtab_count  = symtab_cmd->nsyms;
 
   *nlist_count = symtab_count;
   *nlist_array = (uintptr_t)symtab;
@@ -228,7 +228,7 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
   for (uint32_t i = 0; i < nlist_count; i++) {
     if (nlist_array[i].n_value) {
       uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
-      char *symbol_name      = string_pool + strtab_offset;
+      char *   symbol_name   = string_pool + strtab_offset;
 #if 0
       LOG("> %s", symbol_name);
 #endif
@@ -246,8 +246,8 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
 }
 
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
-  void *result    = NULL;
-  int image_count = _dyld_image_count();
+  void *result      = NULL;
+  int   image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = NULL;
     header                           = _dyld_get_image_header(i);
@@ -263,7 +263,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
     uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
-    char *string_pool    = 0;
+    char *   string_pool = 0;
 
     if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
       get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
@@ -289,7 +289,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
   struct mach_header *dyld_header = NULL;
   if (image_name != NULL && strcmp(image_name, "dyld") == 0) {
-    task_dyld_info_data_t task_dyld_info;
+    task_dyld_info_data_t  task_dyld_info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
       return NULL;
@@ -301,7 +301,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
     uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
-    char *string_pool    = 0;
+    char *   string_pool = 0;
     get_syms_in_single_image((mach_header_t *)dyld_header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
 
     result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);

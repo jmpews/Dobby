@@ -122,8 +122,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
   uint64_t curr_orig_pc = origin->raw_instruction_start();
   uint64_t curr_relo_pc = relocated->raw_instruction_start();
 
-  addr_t buffer_cursor = (addr_t)buffer;
-  arm64_inst_t instr   = *(arm64_inst_t *)buffer_cursor;
+  addr_t       buffer_cursor = (addr_t)buffer;
+  arm64_inst_t instr         = *(arm64_inst_t *)buffer_cursor;
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
@@ -131,8 +131,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     if ((instr & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) { // ldr x0, #16
-      int rt                  = decode_rt(instr);
-      char opc                = bits(instr, 30, 31);
+      int      rt             = decode_rt(instr);
+      char     opc            = bits(instr, 30, 31);
       addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
 
 #define MEM(reg, offset) MemOperand(reg, offset)
@@ -151,7 +151,7 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
     } else if ((instr & PCRelAddressingFixedMask) == PCRelAddressingFixed) {
       int rd = decode_rd(instr);
 
-      int64_t imm              = 0;
+      int64_t  imm             = 0;
       addr64_t runtime_address = 0;
       if ((instr & PCRelAddressingMask) == ADR) {
         imm             = decode_immhi_immlo_offset(instr);
@@ -169,9 +169,9 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       _ nop();
 
     } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
-      addr_t branch_address               = decode_imm26_offset(instr) + curr_orig_pc;
+      addr_t           branch_address     = decode_imm26_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _ AppendRelocLabelEntry(branchAddressLabel);
+      _                AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {
@@ -184,9 +184,9 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       }
       _ nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
-      addr64_t branch_address             = decode_imm14_offset(instr) + curr_orig_pc;
+      addr64_t         branch_address     = decode_imm14_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _ AppendRelocLabelEntry(branchAddressLabel);
+      _                AppendRelocLabelEntry(branchAddressLabel);
 
       arm64_inst_t branch_instr = instr;
 
@@ -194,8 +194,8 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
-      uint32_t imm14 = offset >> 2;
+      int64_t  offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
+      uint32_t imm14  = offset >> 2;
       set_bits(branch_instr, 5, 18, imm14);
 
       _ nop();
@@ -217,12 +217,12 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       op      = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t offset = 4 * 3;
-      uint32_t imm19 = offset >> 2;
+      int64_t  offset = 4 * 3;
+      uint32_t imm19  = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _ AppendRelocLabelEntry(branchAddressLabel);
+      _                AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {
@@ -242,12 +242,12 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
       cond      = cond ^ 1;
       set_bits(branch_instr, 0, 3, cond);
 
-      int64_t offset = 4 * 3;
-      uint32_t imm19 = offset >> 2;
+      int64_t  offset = 4 * 3;
+      uint32_t imm19  = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _ AppendRelocLabelEntry(branchAddressLabel);
+      _                AppendRelocLabelEntry(branchAddressLabel);
 
       _ nop();
       {

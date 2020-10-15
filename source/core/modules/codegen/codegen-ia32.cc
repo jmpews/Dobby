@@ -8,10 +8,10 @@ namespace x86 {
 
 void CodeGen::JmpNearIndirect(uint32_t address) {
   TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
-#define _ turbo_assembler_->
+#define _  turbo_assembler_->
 #define __ turbo_assembler_->GetCodeBuffer()->
   uint32_t currIP = turbo_assembler_->CurrentIP() + 6;
-  dword offset = (dword)(address - currIP);
+  dword    offset = (dword)(address - currIP);
 
   // RIP-relative addressing
   __ Emit8(0xFF);

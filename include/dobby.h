@@ -9,14 +9,14 @@ extern "C" {
 #include <stdint.h>
 
 typedef uintptr_t addr_t;
-typedef uint32_t addr32_t;
-typedef uint64_t addr64_t;
+typedef uint32_t  addr32_t;
+typedef uint64_t  addr64_t;
 
 #if defined(__arm64__) || defined(__aarch64__)
 #define Tx(type) type##arm64
-#define TX() type##ARM64
-#define xT() arm64##type
-#define XT() ARM64##type
+#define TX()     type##ARM64
+#define xT()     arm64##type
+#define XT()     ARM64##type
 typedef union _FPReg {
   __int128_t q;
   struct {
@@ -60,9 +60,9 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #elif defined(__arm__)
 #define Tx(type) type##arm
-#define TX() type##ARM
-#define xT() arm##type
-#define XT() ARM##type
+#define TX()     type##ARM
+#define xT()     arm##type
+#define XT()     ARM##type
 typedef struct _RegisterContext {
   uint32_t dummy_0;
   uint32_t dummy_1;
@@ -105,7 +105,7 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #endif
 
-#define RT_FAILED -1
+#define RT_FAILED  -1
 #define RT_SUCCESS 0
 typedef enum _RetStatus { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 

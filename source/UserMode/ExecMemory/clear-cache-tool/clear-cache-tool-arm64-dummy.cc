@@ -42,15 +42,15 @@ void CpuFeatures::FlushICache(void *startp, void *endp) {
   uintptr_t start = reinterpret_cast<uintptr_t>(startp);
   // Sizes will be used to generate a mask big enough to cover a pointer.
   CacheLineSizes sizes;
-  uintptr_t dsize = sizes.dcache_line_size();
-  uintptr_t isize = sizes.icache_line_size();
+  uintptr_t      dsize = sizes.dcache_line_size();
+  uintptr_t      isize = sizes.icache_line_size();
   // Cache line sizes are always a power of 2.
   uintptr_t dstart = start & ~(dsize - 1);
   uintptr_t istart = start & ~(isize - 1);
   uintptr_t end    = reinterpret_cast<uintptr_t>(endp);
 
   __asm__ __volatile__( // NOLINT
-      // Clean every line of the D cache containing the target data.
+                        // Clean every line of the D cache containing the target data.
       "0:                                \n\t"
       // dc       : Data Cache maintenance
       //    c     : Clean

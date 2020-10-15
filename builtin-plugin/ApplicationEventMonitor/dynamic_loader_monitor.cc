@@ -82,7 +82,8 @@ __attribute__((constructor)) static void ctor() {
   void *dl              = dlopen("libdl.so", RTLD_LAZY);
   void *__loader_dlopen = dlsym(dl, "__loader_dlopen");
 #endif
-  DobbyHook((void *)DobbySymbolResolver(NULL, "__loader_dlopen"), (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
+  DobbyHook((void *)DobbySymbolResolver(NULL, "__loader_dlopen"), (void *)fake_loader_dlopen,
+            (void **)&orig_loader_dlopen);
 #else
   DobbyHook((void *)DobbySymbolResolver(NULL, "dlopen"), (void *)fake_dlopen, (void **)&orig_dlopen);
 #endif

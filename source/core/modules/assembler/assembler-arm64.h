@@ -34,11 +34,11 @@ namespace arm64 {
 constexpr Register TMP0 = x17;
 constexpr Register TMP1 = x16;
 
-#define Rd(rd) (rd.code() << kRdShift)
-#define Rt(rt) (rt.code() << kRtShift)
+#define Rd(rd)  (rd.code() << kRdShift)
+#define Rt(rt)  (rt.code() << kRtShift)
 #define Rt2(rt) (rt.code() << kRt2Shift)
-#define Rn(rn) (rn.code() << kRnShift)
-#define Rm(rm) (rm.code() << kRmShift)
+#define Rn(rn)  (rn.code() << kRnShift)
+#define Rm(rm)  (rm.code() << kRmShift)
 
 // ================================================================
 // PseudoLabel
@@ -48,7 +48,7 @@ public:
   enum PseudoLabelType { kLdrLiteral };
 
   typedef struct _PseudoLabelInstruction {
-    int position_;
+    int             position_;
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
@@ -77,9 +77,9 @@ public:
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
-      int32_t offset       = pos() - instruction->position_;
-      const int32_t inst32 = _buffer->LoadInst(instruction->position_);
-      int32_t encoded      = 0;
+      int32_t       offset  = pos() - instruction->position_;
+      const int32_t inst32  = _buffer->LoadInst(instruction->position_);
+      int32_t       encoded = 0;
 
       switch (instruction->type_) {
       case kLdrLiteral: {
@@ -178,11 +178,11 @@ public:
   }
 
 private:
-  int64_t immediate_;
+  int64_t  immediate_;
   Register reg_;
-  Shift shift_;
-  Extend extend_;
-  int32_t shift_extent_imm_;
+  Shift    shift_;
+  Extend   extend_;
+  int32_t  shift_extent_imm_;
 };
 
 // ================================================================
@@ -262,11 +262,11 @@ public:
 private:
   Register base_;
   Register regoffset_;
-  int64_t offset_;
+  int64_t  offset_;
   AddrMode addrmode_;
-  Shift shift_;
-  Extend extend_;
-  int32_t shift_extend_imm_;
+  Shift    shift_;
+  Extend   extend_;
+  int32_t  shift_extend_imm_;
 };
 
 // ================================================================
@@ -330,7 +330,7 @@ public:
   static int32_t LoadStorePair(LoadStorePairOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
     int32_t scale = 2;
     int32_t opc   = 0;
-    int imm7;
+    int     imm7;
     opc = bits(op, 30, 31);
     if (rt.IsRegister()) {
       scale += bit(opc, 1);
@@ -517,7 +517,7 @@ public:
 private:
   // label helpers.
   static constexpr int kStartOfLabelLinkChain = 0;
-  int LinkAndGetByteOffsetTo(Label *label);
+  int                  LinkAndGetByteOffsetTo(Label *label);
 
   // load helpers.
   void EmitLoadRegLiteral(LoadRegLiteralOp op, CPURegister rt, int64_t imm) {

@@ -12,7 +12,8 @@ extern "C" {
 // Dispatch the routing befor running the origin function
 void prologue_routing_dispatch(RegisterContext *ctx, ClosureTrampolineEntry *entry);
 
-// Dispatch the routing before the function return . (as it's implementation by relpace `return address` in the stack ,or LR register)
+// Dispatch the routing before the function return . (as it's implementation by relpace `return address` in the stack
+// ,or LR register)
 void epilogue_routing_dispatch(RegisterContext *ctx, ClosureTrampolineEntry *entry);
 
 void pre_call_forward_handler(RegisterContext *ctx, HookEntry *entry);

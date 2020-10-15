@@ -86,7 +86,7 @@ public:
 
 private:
   RegisterType reg_type_;
-  int reg_size_;
+  int          reg_size_;
 };
 
 typedef CPURegister Register;
@@ -134,9 +134,9 @@ constexpr Register wLR = w30;
 } // namespace arm64
 } // namespace zz
 
-#define W(code) CPURegister::W(code)
-#define X(code) CPURegister::X(code)
-#define Q(code) CPURegister::Q(code)
+#define W(code)         CPURegister::W(code)
+#define X(code)         CPURegister::X(code)
+#define Q(code)         CPURegister::Q(code)
 #define InvalidRegister CPURegister::InvalidRegister()
 
 #endif

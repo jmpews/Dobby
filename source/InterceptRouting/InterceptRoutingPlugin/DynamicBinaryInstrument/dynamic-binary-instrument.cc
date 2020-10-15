@@ -27,7 +27,7 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
   this->prologue_dispatch_bridge = closure_trampoline->address;
 
   GenerateTrampolineBuffer(entry_->target_address, GetTrampolineTarget());
-  
+
   GenerateRelocatedCode();
 }
 

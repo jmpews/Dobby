@@ -40,7 +40,7 @@ void ClearCache(void *start, void *end) {
  * compatibility reasons, warranting it's re-definition here.
  */
 #define __ARM_NR_cacheflush 0x0f0002
-  register int start_reg __asm("r0")        = (int)(intptr_t)start;
+  register int       start_reg __asm("r0")  = (int)(intptr_t)start;
   const register int end_reg __asm("r1")    = (int)(intptr_t)end;
   const register int flags __asm("r2")      = 0;
   const register int syscall_nr __asm("r7") = __ARM_NR_cacheflush;
