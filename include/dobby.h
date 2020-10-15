@@ -1,6 +1,13 @@
 #ifndef dobby_h
 #define dobby_h
 
+// obfuscated interface
+#if 0
+#define DobbyBuildVersion c343f74888dffad84d9ad08d9c433456
+#define DobbyHook         c8dc3ffa44f22dbd10ccae213dd8b1f8
+#define DobbyInstrument   b71e27bca2c362de90c1034f19d839f9
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
