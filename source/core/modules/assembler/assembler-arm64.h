@@ -388,7 +388,7 @@ public:
 
   void adrp(const Register &rd, int64_t imm) {
     DCHECK(rd.Is64Bits());
-    DCHECK(abs(imm) < (1 << 21));
+    DCHECK((abs(imm) >> 12) < (1 << 21));
 
     int64_t immlo = LFT(bits(imm >> 12, 0, 1), 2, 29);
     int64_t immhi = LFT(bits(imm >> 12, 2, 20), 19, 5);
