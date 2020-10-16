@@ -89,5 +89,6 @@ mkdir -p ${summary_output_dir_name}/android/armv7
 mv ${output_dir_name}/${android_library_name} ${summary_output_dir_name}/android/armv7/${android_library_name}
 
 
-current_date_time="`date +%Y%m%d%H%M%S`";
-tar czvf dobby_static_${current_date_time}.tar.gz ${summary_output_dir_name}
+if [ $DOBBY_BUILD_OUTPUT_NAME ]; then
+  tar czvf ${DOBBY_BUILD_OUTPUT_NAME} ${summary_output_dir_name}
+fi
