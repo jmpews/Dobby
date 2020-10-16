@@ -241,9 +241,9 @@ if(FunctionWrapper OR DynamicBinaryInstrument)
     source/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
 
     # user mode - multi thread support
-    source/UserMode/MultiThreadSupport/ThreadSupport.cpp
-    source/UserMode/Thread/PlatformThread.cc
-    source/UserMode/Thread/platform-thread-${platform1}.cc
+    # source/UserMode/MultiThreadSupport/ThreadSupport.cpp
+    # source/UserMode/Thread/PlatformThread.cc
+    # source/UserMode/Thread/platform-thread-${platform1}.cc
     )
 endif()
 
