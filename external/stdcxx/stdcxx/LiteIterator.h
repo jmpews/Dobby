@@ -2,15 +2,23 @@
 #define LITE_ITERATOR_H
 
 #include "stdcxx/LiteObject.h"
-#include "stdcxx/LiteCollection.h"
 
 class LiteIterator : public LiteObject {
+public:
+  class Delegate {
+  public:
+    virtual bool initIterator(void *iterationContext) = 0;
+
+    virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) = 0;
+  };
+
 public:
   virtual void reset() = 0;
 
   virtual LiteObject *getNextObject() = 0;
 };
 
+class LiteCollection;
 class LiteCollectionIterator : public LiteIterator {
 protected:
   const LiteCollection *collection;
@@ -21,25 +29,24 @@ public:
   LiteCollectionIterator() {
   }
 
-  LiteCollectionIterator(const LiteCollection *inCollection) {
-    initWithCollection(inCollection);
+  LiteCollectionIterator(const LiteCollection *collection) {
+    initWithCollection(collection);
   }
 
   ~LiteCollectionIterator() {
     LiteMemOpt::free(innerIterator, sizeof(int));
   }
 
-public:
-  static LiteCollectionIterator *withCollection(const LiteCollection *inCollection);
+  virtual void reset() override;
 
-public:
-  virtual void reset();
+  virtual LiteObject *getNextObject() override;
 
   virtual void release();
 
-  virtual bool initWithCollection(const LiteCollection *inCollection);
+  virtual bool initWithCollection(const LiteCollection *collection);
 
-  virtual LiteObject *getNextObject();
+public:
+  static LiteCollectionIterator *withCollection(const LiteCollection *collection);
 };
 
 #endif

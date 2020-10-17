@@ -6,23 +6,20 @@
 class LiteMutableBuffer : public LiteObject {
 protected:
   // Backing store of the buffer
-  byte_t *buffer_;
+  uint8_t *buffer_;
 
   // Pointer to the next location to be written.
-  byte_t *cursor_;
+  uint8_t *buffer_cursor_;
 
   // Capacity in bytes of the backing store
-  int capacity_;
-
-  // Length of already bytes
-  // int size_;
+  uint32_t buffer_capacity_;
 
 public:
   LiteMutableBuffer() {
     initWithCapacity(8);
   }
 
-  LiteMutableBuffer(int size) {
+  LiteMutableBuffer(uint32_t size) {
     initWithCapacity(size);
   }
 
@@ -30,24 +27,22 @@ public:
     this->release();
   }
 
-public:
-  virtual void release();
+  virtual void release() override;
 
-public:
-  virtual int ensureCapacity(int newCapacity);
+  virtual uint32_t ensureCapacity(uint32_t newCapacity);
 
-  virtual bool initWithCapacity(int capacity = 8);
+  virtual bool initWithCapacity(uint32_t capacity = 8);
 
-  virtual inline int getSize() {
-    return (int)(cursor_ - buffer_);
+  virtual inline uint32_t getSize() {
+    return (uint32_t)(buffer_cursor_ - buffer_);
   }
 
-  virtual inline int getCapacity() {
-    return capacity_;
+  virtual inline uint32_t getCapacity() {
+    return buffer_capacity_;
   }
 
   virtual inline void *getCursor() {
-    return cursor_;
+    return buffer_cursor_;
   }
 
   virtual inline void *getRawBuffer() {

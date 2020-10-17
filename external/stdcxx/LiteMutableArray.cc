@@ -69,15 +69,15 @@ unsigned int LiteMutableArray::ensureCapacity(unsigned int newCapacity) {
   return newCapacity;
 }
 
-bool LiteMutableArray::initIterator(void *inIterator) const {
-  unsigned int *iterator = (unsigned int *)inIterator;
-  *iterator              = 0;
+bool LiteMutableArray::initIterator(void *iterator) const {
+  unsigned int *ndx_ptr = (unsigned int *)iterator;
+  *ndx_ptr              = 0;
   return true;
 }
 
-bool LiteMutableArray::getNextObjectForIterator(void *inIterator, LiteObject **ret) const {
-  unsigned int *iterator = (unsigned int *)inIterator;
-  unsigned int  index    = (*iterator)++;
+bool LiteMutableArray::getNextObjectForIterator(void *iterator, LiteObject **ret) const {
+  unsigned int *ndx_ptr = (unsigned int *)inIterator;
+  unsigned int  index   = (*ndx_ptr)++;
 
   if (index < this->count) {
     *ret = (const_cast<LiteObject *>(this->array[index]));

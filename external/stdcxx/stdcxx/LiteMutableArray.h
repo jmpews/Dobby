@@ -2,8 +2,9 @@
 #define LITE_MUTABLE_ARRAY_H
 
 #include "stdcxx/LiteCollection.h"
+#include "stdcxx/LiteIterator.h"
 
-class LiteMutableArray : public LiteCollection {
+class LiteMutableArray : public LiteCollection, public LiteIterator::Delegate {
 public:
   unsigned int count;
 
@@ -20,29 +21,25 @@ public:
     initWithCapacity(count);
   }
 
+  virtual void release() override;
+
+  virtual unsigned int getCount() override;
+
+  virtual unsigned int getCapacity() override;
+
+  virtual unsigned int ensureCapacity(unsigned int newCapacity) override;
+
+  virtual bool initIterator(void *iterator) override;
+
+  virtual bool getNextObjectForIterator(void *iterator, LiteObject **ret) override;
+
+  virtual bool initWithCapacity(unsigned int capacity);
+
   virtual LiteObject *getObject(const int index);
 
   virtual bool setObject(const LiteObject object);
 
   virtual bool pushObject(const LiteObject *object);
-
-  virtual unsigned int getCount() const;
-
-  virtual unsigned int getCapacity() const;
-
-  virtual unsigned int ensureCapacity(unsigned int newCapacity);
-
-  virtual bool initWithCapacity(unsigned int capacity);
-
-  // iterator
-
-  virtual bool initIterator(void *iterationContext) const;
-
-  virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const;
-
-  // object alloc release
-
-  virtual void release();
 };
 
 #endif
