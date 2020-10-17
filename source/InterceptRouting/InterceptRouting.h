@@ -5,8 +5,6 @@
 
 #include "Helpers//AssemblyCode.h"
 
-class CodeBuffer;
-
 extern CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
 
 extern void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);

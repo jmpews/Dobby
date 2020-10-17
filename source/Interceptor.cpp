@@ -1,8 +1,8 @@
 #include "Interceptor.h"
 #include "stdcxx/LiteIterator.h"
 
-Interceptor *Interceptor::priv_interceptor_ = nullptr;
-InterceptorOptions Interceptor::options_    = {0};
+Interceptor *      Interceptor::priv_interceptor_ = nullptr;
+InterceptorOptions Interceptor::options_          = {0};
 
 Interceptor *Interceptor::SharedInstance() {
   if (Interceptor::priv_interceptor_ == NULL) {
