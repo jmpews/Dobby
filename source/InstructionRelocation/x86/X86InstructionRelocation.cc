@@ -13,7 +13,7 @@
 
 using namespace zz::x86;
 
-static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
   turbo_assembler_.CommitRealizeAddress((void *)relocated->raw_instruction_start());
@@ -104,40 +104,40 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 
   // Generate executable code
   {
-    AssemblyCode *code = NULL;
-    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
+    AssemblyCodeChunk *code = NULL;
+    code                    = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     delete code;
   }
 
   return RT_SUCCESS;
 }
 
-void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   // pre-alloc code chunk
-  AssemblyCodeChunk *codeChunk = NULL;
+  AssemblyCodeChunk *cchunk = NULL;
 
   int       relo_code_chunk_size = 32;
   const int chunk_size_step      = 16;
 
   if (relocated->raw_instruction_start() == 0) {
-    codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    if (codeChunk == nullptr)
+    cchunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
+    if (cchunk == nullptr)
       goto failed;
-    relocated->reInitWithAddressRange((addr_t)codeChunk->address, (int)codeChunk->length);
+    relocated->re_init_region_range((addr_t)cchunk->address, (int)cchunk->length);
   }
 
   if (GenRelocateCodeFixed(buffer, origin, relocated) != RT_SUCCESS) {
-    // free the codeChunk
-    MemoryArena::Destory(codeChunk);
+    // free the cchunk
+    MemoryArena::Destroy(cchunk);
 
     goto failed;
 
     relo_code_chunk_size += chunk_size_step;
-    codeChunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    relocated->reInitWithAddressRange((addr_t)codeChunk->address, (int)codeChunk->length);
+    cchunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
+    relocated->re_init_region_range((addr_t)cchunk->address, (int)cchunk->length);
   }
 
 failed:
-  relocated->reInitWithAddressRange(0, 0);
+  relocated->re_init_region_range(0, 0);
 }
 #endif

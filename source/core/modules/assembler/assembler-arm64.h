@@ -7,10 +7,10 @@
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "CodeBufferKit/code-buffer-arm64.h"
+#include "CodeBuffer/code-buffer-arm64.h"
 
-#include "stdcxx/LiteMutableArray.h"
-#include "stdcxx/LiteIterator.h"
+#include "xnucxx/LiteMutableArray.h"
+#include "xnucxx/LiteIterator.h"
 
 #include "dobby_internal.h"
 

@@ -6,10 +6,10 @@
 #include "core/arch/x64/registers-x64.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "CodeBufferKit/code-buffer-x64.h"
+#include "CodeBuffer/code-buffer-x64.h"
 
-#include "stdcxx/LiteMutableArray.h"
-#include "stdcxx/LiteIterator.h"
+#include "xnucxx/LiteMutableArray.h"
+#include "xnucxx/LiteIterator.h"
 
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 

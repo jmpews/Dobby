@@ -7,10 +7,10 @@
 #include "core/arch/arm/registers-arm.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "CodeBufferKit/code-buffer-arm.h"
+#include "CodeBuffer/code-buffer-arm.h"
 
-#include "stdcxx/LiteMutableArray.h"
-#include "stdcxx/LiteIterator.h"
+#include "xnucxx/LiteMutableArray.h"
+#include "xnucxx/LiteIterator.h"
 
 namespace zz {
 namespace arm {

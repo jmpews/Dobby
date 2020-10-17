@@ -10,7 +10,7 @@ namespace x64 {
 
 class CodeGen : public CodeGenBase {
 public:
-  CodeGen(TurboAssembler *turbo_assember) : CodeGenBase(turbo_assember) {
+  CodeGen(TurboAssembler *turbo_assembler) : CodeGenBase(turbo_assembler) {
   }
 
   void JmpNearIndirect(uint64_t address);

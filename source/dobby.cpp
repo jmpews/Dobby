@@ -16,7 +16,8 @@ PUBLIC const char *DobbyBuildVersion() {
   return __DOBBY_BUILD_VERSION__;
 }
 
-PUBLIC int DobbyDestory(void *address) {
+PUBLIC int DobbyDestroy(void *address) {
+  return RT_SUCCESS;
 }
 
 #endif

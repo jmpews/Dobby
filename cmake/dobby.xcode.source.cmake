@@ -20,15 +20,15 @@ set(dobby.SOURCE_FILE_LIST
   source/core/modules/codegen/codegen-x64.cc
 
   # executable memory - code buffer
-  source/CodeBufferKit/CodeBufferBase.cc
-  source/CodeBufferKit/code-buffer-arm.cc
-  source/CodeBufferKit/code-buffer-arm64.cc
-  source/CodeBufferKit/code-buffer-x86.cc
-  source/CodeBufferKit/code-buffer-x64.cc
+  source/MemoryKit/CodeBuffer/CodeBufferBase.cc
+  source/MemoryKit/CodeBuffer/code-buffer-arm.cc
+  source/MemoryKit/CodeBuffer/code-buffer-arm64.cc
+  source/MemoryKit/CodeBuffer/code-buffer-x86.cc
+  source/MemoryKit/CodeBuffer/code-buffer-x64.cc
 
   # executable memory
-  source/Helpers/AssemblyCode.cc
-  source/MemoryArena.cc
+  source/MemoryKit/AssemblyCodeBuilder.cc
+  source/MemoryKit/MemoryArena.cc
 
   # instruction relocation
   source/InstructionRelocation/arm/ARMInstructionRelocation.cc
@@ -42,14 +42,14 @@ set(dobby.SOURCE_FILE_LIST
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/InterceptRouting/InterceptRoutingTrampoline/arm/trampoline-arm.cc
-  source/InterceptRouting/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
-  source/InterceptRouting/InterceptRoutingTrampoline/x86/trampoline-x86.cc
-  source/InterceptRouting/InterceptRoutingTrampoline/x64/trampoline-x64.cc
+  source/TrampolineKit/InterceptRoutingTrampoline/arm/trampoline-arm.cc
+  source/TrampolineKit/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
+  source/TrampolineKit/InterceptRoutingTrampoline/x86/trampoline-x86.cc
+  source/TrampolineKit/InterceptRoutingTrampoline/x64/trampoline-x64.cc
 
   # intercept routing plugin (buildin)
-  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
+  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
   # plugin register
   source/InterceptRouting/ExtraInternalPlugin/RegisterPlugin.cc
@@ -74,19 +74,19 @@ set(dobby.SOURCE_FILE_LIST
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
-    source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
+    source/TrampolineKit/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
 
-    source/ClosureTrampolineBridge/arm/helper-arm.cc
-    source/ClosureTrampolineBridge/arm/closure-bridge-arm.cc
-    source/ClosureTrampolineBridge/arm/ARMAssemblyClosureTrampoline.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm/helper-arm.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm/closure-bridge-arm.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm/ARMAssemblyClosureTrampoline.cc
 
-    source/ClosureTrampolineBridge/arm64/helper-arm64.cc
-    source/ClosureTrampolineBridge/arm64/closure-bridge-arm64.cc
-    source/ClosureTrampolineBridge/arm64/ARM64AssemblyClosureTrampoline.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm64/helper-arm64.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm64/closure-bridge-arm64.cc
+    source/TrampolineKit/ClosureTrampolineBridge/arm64/ARM64AssemblyClosureTrampoline.cc
 
-    source/ClosureTrampolineBridge/x64/helper-x64.cc
-    source/ClosureTrampolineBridge/x64/closure-bridge-x64.cc
-    source/ClosureTrampolineBridge/x64/X64AssemblyClosureTrampoline.cc
+    source/TrampolineKit/ClosureTrampolineBridge/x64/helper-x64.cc
+    source/TrampolineKit/ClosureTrampolineBridge/x64/closure-bridge-x64.cc
+    source/TrampolineKit/ClosureTrampolineBridge/x64/X64AssemblyClosureTrampoline.cc
 
     # user mode - multi thread support
     source/UserMode/MultiThreadSupport/ThreadSupport.cpp

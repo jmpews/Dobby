@@ -115,7 +115,7 @@ static inline int decode_rd(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
-void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
@@ -302,9 +302,9 @@ void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated
 
   // Generate executable code
   {
-    AssemblyCode *code = NULL;
-    code               = AssemblyCode::FinalizeFromTurboAssember(&turbo_assembler_);
-    relocated->reInitWithAddressRange(code->raw_instruction_start(), code->raw_instruction_size());
+    AssemblyCodeChunk *code = NULL;
+    code                    = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+    relocated->re_init_region_range(code->raw_instruction_start(), code->raw_instruction_size());
     delete code;
   }
 }

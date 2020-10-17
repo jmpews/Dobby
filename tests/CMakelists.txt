@@ -22,7 +22,7 @@ include_directories(
   ${PrimaryPath}/source/UserMode
   ${PrimaryPath}/external
   ${PrimaryPath}/external/logging
-  ${PrimaryPath}/external/stdcxx
+  ${PrimaryPath}/external/xnucxx
 )
 
 add_subdirectory(${PrimaryPath} dobby.out)

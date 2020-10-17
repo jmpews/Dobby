@@ -161,13 +161,11 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # codegen
   source/core/modules/codegen/codegen-${core_arch}.cc
 
-  # executable memory - code buffer
-  source/CodeBufferKit/CodeBufferBase.cc
-  source/CodeBufferKit/code-buffer-${arch1}.cc
-
-  # executable memory
-  source/Helpers/AssemblyCode.cc
-  source/MemoryArena.cc
+  # memory kit
+  source/MemoryKit/CodeBuffer/CodeBufferBase.cc
+  source/MemoryKit/CodeBuffer/code-buffer-${arch1}.cc
+  source/MemoryKit/AssemblyCodeBuilder.cc
+  source/MemoryKit/MemoryArena.cc
 
   # instruction relocation
   source/InstructionRelocation/${arch1}/${ARCH1}InstructionRelocation.cc
@@ -176,16 +174,14 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/InterceptRouting/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
+  source/TrampolineKit/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
 
   # intercept routing plugin (buildin)
-  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRouting/InterceptRoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
+  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
   # plugin register
   source/InterceptRouting/ExtraInternalPlugin/RegisterPlugin.cc
-
-  # unified interface
 
   # platform util
   source/UserMode/PlatformUtil/${platform2}/ProcesssRuntimeUtility.cc
@@ -235,10 +231,10 @@ endif()
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
-    source/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
-    source/ClosureTrampolineBridge/${arch1}/helper-${arch1}.cc
-    source/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
-    source/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
+    source/TrampolineKit/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
+    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/helper-${arch1}.cc
+    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
+    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
 
     # user mode - multi thread support
     # source/UserMode/MultiThreadSupport/ThreadSupport.cpp
@@ -254,9 +250,9 @@ endif()
 if(DynamicBinaryInstrument)
   message(STATUS "[Dobby] Enable Dynamic Binary Instrument allow you instrument at any instruction")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-    source/InterceptRouting/InterceptRoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
+    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
+    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
     )
 endif()
 
@@ -274,15 +270,15 @@ set(logging.SOURCE_FILE_LIST
   external/logging/cxxlogging.cc
   )
 
-# add stdcxx library
-# add_subdirectory(external/stdcxx)
-set(stdcxx.SOURCE_FILE_LIST
-  external/stdcxx/LiteObject.cc
-  external/stdcxx/LiteMemOpt.cc
-  external/stdcxx/LiteCollection.cc
-  external/stdcxx/LiteIterator.cc
-  external/stdcxx/LiteMutableArray.cc
-  external/stdcxx/LiteMutableBuffer.cc
+# add xnucxx library
+# add_subdirectory(external/xnucxx)
+set(xnucxx.SOURCE_FILE_LIST
+  external/xnucxx/LiteObject.cc
+  external/xnucxx/LiteMemOpt.cc
+  external/xnucxx/LiteCollection.cc
+  external/xnucxx/LiteIterator.cc
+  external/xnucxx/LiteMutableArray.cc
+  external/xnucxx/LiteMutableBuffer.cc
   )
 
 set(dobby.plugin.SOURCE_FILE_LIST
@@ -350,10 +346,12 @@ include_directories(
   .
   ./source
   ./source/UserMode
+  ./source/MemoryKit
+  ./source/TrampolineKit
 
   ./external
   ./external/logging
-  ./external/stdcxx
+  ./external/xnucxx
 
   builtin-plugin
   builtin-plugin/AndroidRestriction
@@ -391,9 +389,9 @@ if(SYSTEM.Darwin AND Darwin.GenerateFramework)
 endif()
 
 if(DOBBY_GENERATE_SHARED)
-  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 else()
-  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${stdcxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 endif()
 
 target_include_directories(${dobby_name} PUBLIC include)

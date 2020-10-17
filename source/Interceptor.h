@@ -2,7 +2,6 @@
 #define INTERCEPTER_H
 
 #include "dobby_internal.h"
-#include "stdcxx/LiteMutableArray.h"
 
 typedef struct _InterceptorOptions {
   // Enable B Branch in the arm and aarch64

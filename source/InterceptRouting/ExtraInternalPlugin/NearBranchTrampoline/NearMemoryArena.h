@@ -2,7 +2,7 @@
 #ifndef NEAR_EXECUTABLE_MEMORY_ARENA_H
 #define NEAR_EXECUTABLE_MEMORY_ARENA_H
 
-#include "MemoryArena.h"
+#include "MemoryKit/MemoryArena.h"
 
 class NearMemoryArena : public MemoryArena {
 public:
@@ -14,7 +14,7 @@ public:
 
   static int PushPage(addr_t page_addr, MemoryPermission permission);
 
-  static void Destory(MemoryChunk *chunk);
+  static void Destroy(MemoryChunk *chunk);
 
 private:
   static LiteMutableArray *page_chunks;

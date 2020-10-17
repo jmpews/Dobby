@@ -9,7 +9,7 @@ namespace zz {
 namespace arm64 {
 
 // Generate the relocated instruction
-void GenRelocateCode(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
+void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
 
 } // namespace arm64
 } // namespace zz

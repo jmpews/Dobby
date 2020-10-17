@@ -6,7 +6,7 @@
 using namespace zz;
 
 // void InterceptRouting::PrepareOriginCode() {
-//   AssemblyCode *originCode = NULL;
+//   AssemblyCodeChunk *originCode = NULL;
 
 //   int predefined_relocate_size = 0;
 //   {
@@ -20,7 +20,7 @@ using namespace zz;
 //   }
 
 //   // generate the relocated code
-//   originCode = AssemblyCode::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
+//   originCode = AssemblyCodeBuilder::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
 
 //   origin_ = originCode;
 // }
@@ -32,7 +32,7 @@ void InterceptRouting::GenerateRelocatedCode() {
   void *relocate_buffer = NULL;
   relocate_buffer       = entry_->target_address;
 
-  AssemblyCode *origin = NULL;
+  AssemblyCodeChunk *origin = NULL;
 #if 0
   {
     int predefined_relocate_size = 0;
@@ -47,11 +47,11 @@ void InterceptRouting::GenerateRelocatedCode() {
 #endif
   // generate the relocated code
   int trampoline_len = trampoline_buffer_->getSize();
-  origin             = AssemblyCode::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
+  origin             = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
   this->origin_      = origin;
 
-  AssemblyCode *relocated = NULL;
-  relocated               = AssemblyCode::FinalizeFromAddress(0, 0);
+  AssemblyCodeChunk *relocated = NULL;
+  relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
   GenRelocateCode(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
     return;

@@ -2,7 +2,7 @@
 #if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 
 #include "./cpu-x86.h"
-#include "stdcxx/LiteMemOpt.h"
+#include "xnucxx/LiteMemOpt.h"
 
 X86CpuInfo::X86CpuInfo() {
   icache_line_size_ = 0;

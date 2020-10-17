@@ -10,7 +10,7 @@ namespace arm {
 
 class CodeGen : public CodeGenBase {
 public:
-  CodeGen(TurboAssembler *turbo_assember) : CodeGenBase(turbo_assember) {
+  CodeGen(TurboAssembler *turbo_assembler) : CodeGenBase(turbo_assembler) {
   }
 
   void LiteralLdrBranch(uint32_t address);
