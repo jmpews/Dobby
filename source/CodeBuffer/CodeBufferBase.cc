@@ -1,6 +1,12 @@
 
 #include "CodeBufferBase.h"
 
+CodeBufferBase *CodeBufferBase::Copy() {
+  CodeBufferBase *result = new CodeBufferBase(this->getCapacity());
+  result->EmitBuffer(this->getRawBuffer(), this->getSize());
+  return result;
+}
+
 void CodeBufferBase::Emit8(uint8_t value) {
   // Ensure the free space enough for the template T value
   this->ensureCapacity(sizeof(uint8_t) + this->getSize());

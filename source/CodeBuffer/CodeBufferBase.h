@@ -4,7 +4,6 @@
 #include "stdcxx/LiteMutableBuffer.h"
 
 class CodeBufferBase : public LiteMutableBuffer {
-
 public:
   CodeBufferBase() : LiteMutableBuffer() {
   }
@@ -13,13 +12,8 @@ public:
   }
 
 public:
-  CodeBufferBase *copy() {
-    CodeBufferBase *result = new CodeBufferBase(this->getCapacity());
-    result->EmitBuffer(this->getRawBuffer(), this->getSize());
-    return result;
-  }
+  virtual CodeBufferBase *Copy();
 
-public:
   void Emit8(uint8_t data);
 
   void Emit16(uint16_t data);
