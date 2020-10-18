@@ -332,7 +332,6 @@ endif()
 
 if(Plugin.HideSystemCall)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/HideSystemCall/syscall.darwin.S
     )
 endif()
 

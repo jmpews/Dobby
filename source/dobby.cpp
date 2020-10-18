@@ -4,6 +4,8 @@
 
 #include "dobby_internal.h"
 
+#include "Interceptor.h"
+
 __attribute__((constructor)) static void ctor() {
   DLOG("================================");
   DLOG("Dobby");
@@ -17,7 +19,18 @@ PUBLIC const char *DobbyBuildVersion() {
 }
 
 PUBLIC int DobbyDestroy(void *address) {
-  return RT_SUCCESS;
+  Interceptor *interceptor = Interceptor::SharedInstance();
+
+  // check if we already hook
+  HookEntry *entry = interceptor->FindHookEntry(address);
+  if(entry) {
+    void *buffer = entry->origin_chunk_.chunk_buffer;
+    uint32_t buffer_size = entry->origin_chunk_.chunk.length;
+    CodePatch(address, buffer,buffer_size);
+    return RT_SUCCESS;
+  }
+
+  return RT_FAILED;
 }
 
 #endif

@@ -15,6 +15,10 @@ struct MemoryChunk : MemoryRange {
     init_region_range(address, size);
   }
 
+  inline void re_init_region_range(MemoryChunk *chunk) {
+    init_region_range((addr_t)chunk->address, chunk->length);
+  }
+  
   inline addr_t raw_instruction_start() {
     return (addr_t)address;
   };

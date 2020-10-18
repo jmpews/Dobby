@@ -1,8 +1,6 @@
 #ifndef ASSEMBLY_CODE_H
 #define ASSEMBLY_CODE_H
 
-#include "dobby_internal.h"
-
 #include "MemoryArena.h"
 
 #include "core/modules/assembler/assembler.h"

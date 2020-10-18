@@ -48,25 +48,22 @@ void InterceptRouting::GenerateRelocatedCode() {
   // generate the relocated code
   int trampoline_len = trampoline_buffer_->getSize();
   origin             = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
-  this->origin_      = origin;
+  origin_            = origin;
 
   AssemblyCodeChunk *relocated = NULL;
   relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
   GenRelocateCode(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
     return;
-  this->relocated_ = relocated;
+  relocated_ = relocated;
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
   DLOG("relocate %d bytes to %p", relocated->raw_instruction_size(), relocated->raw_instruction_start());
 
-#if defined(PLUGIN_DOBBY_DRILL)
   // save original prologue
-  _memcpy(entry_->origin_instructions.data, relocate_buffer, this->origin_->raw_instruction_size());
-  entry_->origin_instructions.size    = this->origin_->raw_instruction_size();
-  entry_->origin_instructions.address = (void *)this->origin_->raw_instruction_start();
-#endif
+  memcpy((void *)entry_->origin_chunk_.chunk_buffer, (void *)origin_->raw_instruction_start(), origin_->raw_instruction_size());
+  entry_->origin_chunk_.chunk.re_init_region_range(origin_);
 }
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.

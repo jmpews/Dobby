@@ -25,11 +25,10 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-typedef struct _InstructionBackupArray {
-  void *address;
-  int   size;
-  char  data[64];
-} InstructionBackupArray;
+typedef struct _AssemblyCodeChunkBuffer {
+  AssemblyCodeChunk chunk;
+  uint8_t           chunk_buffer[64];
+} AssemblyCodeChunkBuffer;
 
 typedef struct _HookEntry {
   union {
@@ -50,8 +49,7 @@ typedef struct _HookEntry {
     void *relocated_origin_function;
   };
 
-  // backup origin instructions
-  InstructionBackupArray origin_instructions;
+  AssemblyCodeChunkBuffer origin_chunk_;
 } HookEntry;
 
 #endif
