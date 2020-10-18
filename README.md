@@ -17,6 +17,8 @@ cd Dobby/example/
 mkdir build; cd build; cmake ..
 ```
 
+Or download [latest release](https://github.com/jmpews/Dobby/releases/tag/latest)
+
 #### [Build Installation](docs/build-documentation.md)
 
 #### [Getting Started with iOS](docs/get-started-ios.md)
@@ -55,6 +57,10 @@ vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 ## Documentation
 
 [full Installation documentation site](http://dobby.libkernel.com)
+
+## Download
+
+[download static library](https://github.com/jmpews/Dobby/releases/tag/latest)
 
 ## Credits
 
