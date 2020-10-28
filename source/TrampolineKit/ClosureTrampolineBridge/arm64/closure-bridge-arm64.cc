@@ -31,19 +31,21 @@ void *get_closure_bridge() {
   TurboAssembler turbo_assembler_(0);
 
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-  _              sub(SP, SP, 24 * 16);
-  _              stp(Q(30), Q(31), MEM(SP, 22 * 16));
-  _              stp(Q(28), Q(29), MEM(SP, 20 * 16));
-  _              stp(Q(26), Q(27), MEM(SP, 18 * 16));
-  _              stp(Q(24), Q(25), MEM(SP, 16 * 16));
-  _              stp(Q(22), Q(23), MEM(SP, 14 * 16));
-  _              stp(Q(20), Q(21), MEM(SP, 12 * 16));
-  _              stp(Q(18), Q(19), MEM(SP, 10 * 16));
-  _              stp(Q(16), Q(17), MEM(SP, 8 * 16));
-  _              stp(Q(14), Q(15), MEM(SP, 6 * 16));
-  _              stp(Q(12), Q(13), MEM(SP, 4 * 16));
-  _              stp(Q(10), Q(11), MEM(SP, 2 * 16));
-  _              stp(Q(8), Q(9), MEM(SP, 0 * 16));
+
+  _ sub(SP, SP, 24 * 16);
+  _ stp(Q(30), Q(31), MEM(SP, 22 * 16));
+  _ stp(Q(28), Q(29), MEM(SP, 20 * 16));
+  _ stp(Q(26), Q(27), MEM(SP, 18 * 16));
+  _ stp(Q(24), Q(25), MEM(SP, 16 * 16));
+  _ stp(Q(22), Q(23), MEM(SP, 14 * 16));
+  _ stp(Q(20), Q(21), MEM(SP, 12 * 16));
+  _ stp(Q(18), Q(19), MEM(SP, 10 * 16));
+  _ stp(Q(16), Q(17), MEM(SP, 8 * 16));
+  _ stp(Q(14), Q(15), MEM(SP, 6 * 16));
+  _ stp(Q(12), Q(13), MEM(SP, 4 * 16));
+  _ stp(Q(10), Q(11), MEM(SP, 2 * 16));
+  _ stp(Q(8), Q(9), MEM(SP, 0 * 16));
+
 #endif
 
   // save {q0-q7}
@@ -71,27 +73,31 @@ void *get_closure_bridge() {
   _ stp(X(3), X(4), MEM(SP, 2 * 8));
   _ stp(X(1), X(2), MEM(SP, 0 * 8));
 
-#if 1
   // save {x0}
   _ sub(SP, SP, 2 * 8);
   _ str(x0, MEM(SP, 8));
 
-  // save origin sp
-  _ add(x0, SP, 2 * 8 + 30 * 8 + 8 * 16);
+  // calculate original sp
+  _ add(TMP_REG_0, SP, 2 * 8);                          // closure trampoline reserved
+  _ add(TMP_REG_0, TMP_REG_0, 2 * 8 + 30 * 8 + 8 * 16); // x0, x1-x30, q0-q7 reserved
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-  _ add(x0, x0, 24 * 16);
+  _ add(TMP_REG_0, TMP_REG_0, 24 * 16);                 // q8-q31 reserved
 #endif
+
+  // alloc stack, store original sp
   _ sub(SP, SP, 2 * 8);
-  _ str(x0, MEM(SP, 8));
+  _ str(TMP_REG_0, MEM(SP, 8));
+
+#if defined(FULL_FLOATING_POINT_REGISTER_PACK)
+#define REGISTER_CONTEXT_SIZE (sizeof(RegisterContext))
 #else
-// refer: closure_bridge_template
+#define REGISTER_CONTEXT_SIZE (sizeof(RegisterContext) - 24 * 16)
 #endif
-
-  _ mov(x0, SP);
-  _ mov(x1, TMP_REG_1);
+  // create function arm64 call convention
+  _ mov(x0, SP); // arg1: register context
+  // load package(closure trampoline reserved)
+  _ ldr(x1, MEM(SP, REGISTER_CONTEXT_SIZE + 0)); // arg2: closure trampoline package
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
-
-  // ======= RegisterContext Restore =======
 
   // restore sp placeholder stack
   _ add(SP, SP, 2 * 8);
@@ -140,13 +146,13 @@ void *get_closure_bridge() {
 
   // _ brk(0); // for debug
 
-  // branch to next hop, @modify by `xxx_routing_dispatch`
-  _ br(TMP_REG_1);
+  // return to closure trampoline, but TMP_REG_0, had been modified with next hop address
+  _ ret(); // AKA br x30
 
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge          = (void *)code->raw_instruction_start();
 
-  DLOG("Build the closure bridge at %p", closure_bridge);
+  DLOG(0, "Build the closure bridge at %p", closure_bridge);
 
 #endif
   return (void *)closure_bridge;

@@ -39,7 +39,7 @@ PUBLIC void dobby_register_image_load_callback(linker_load_callback_t func) {
 
 #if defined(DOBBY_DEBUG) && 1
 static void monitor_linker_load(const char *image_name, void *handle) {
-  DLOG("load %s at %p", image_name, handle);
+  LOG(1, "load %s at %p", image_name, handle);
 }
 #endif
 
@@ -49,7 +49,7 @@ __attribute__((constructor)) static void ctor() {
 
 #if defined(__ANDROID__)
   void *__loader_dlopen = DobbySymbolResolver(NULL, "__loader_dlopen");
-  DLOG("__loader_dlopen: %p", __loader_dlopen);
+  LOG(1, "__loader_dlopen: %p", __loader_dlopen);
   DobbyHook(__loader_dlopen, (void *)fake_loader_dlopen, (void **)&orig_loader_dlopen);
 #else
   DobbyHook((void *)DobbySymbolResolver(NULL, "dlopen"), (void *)fake_dlopen, (void **)&orig_dlopen);

@@ -571,7 +571,7 @@ void gen_arm_relocate_code(LiteMutableArray *relo_map, TurboAssembler *turbo_ass
     int last_relo_offset = turbo_assembler_->GetCodeBuffer()->getSize();
 
     ARMRelocateSingleInstr(turbo_assembler_, instr, curr_orig_pc, curr_relo_pc, execute_state_changed_pc_ptr);
-    DLOG("Relocate arm instr: 0x%x", instr);
+    DLOG(0, "Relocate arm instr: 0x%x", instr);
 
     {
       // 1 orignal instrution => ? relocated instruction
@@ -619,7 +619,7 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
   thumb2_inst_t instr         = *(thumb2_inst_t *)buffer_cursor;
 
   int predefined_relocate_size = origin->raw_instruction_size();
-  DLOG("Thumb relocate %d start >>>>>", predefined_relocate_size);
+  DLOG(0, "Thumb relocate %d start >>>>>", predefined_relocate_size);
 
   addr32_t execute_state_changed_pc = 0;
 
@@ -632,12 +632,12 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
       Thumb2RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
                                 curr_relo_pc);
 
-      DLOG("Relocate thumb2 instr: 0x%x", instr);
+      DLOG(0, "Relocate thumb2 instr: 0x%x", instr);
     } else {
       Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc,
                                 &execute_state_changed_pc);
 
-      DLOG("Relocate thumb1 instr: 0x%x", (uint16_t)instr);
+      DLOG(0, "Relocate thumb1 instr: 0x%x", (uint16_t)instr);
     }
 
     {
@@ -708,7 +708,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       addr32_t              val   = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
-        DLOG("found thumb instr branch in to origin code");
+        DLOG(0, "found thumb instr branch in to origin code");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
         fixup_val += (addr_t)thumb_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);
@@ -724,7 +724,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       addr32_t         val   = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
-        DLOG("found arm instr branch in to origin code");
+        DLOG(0, "found arm instr branch in to origin code");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
         fixup_val += (addr_t)arm_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);

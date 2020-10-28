@@ -35,6 +35,7 @@ static addr_t search_near_blank_page(addr_t pos, int range) {
     // check if assume-page-addr in memory-layout
     addr_t region_end   = (addr_t)region.address + region.length;
     addr_t region_start = (addr_t)region.address;
+    // DLOG(0, "%p --- %p", region_start, region_end);
     if (region_end < max_page_addr) {
       if (region_start >= min_page_addr) {
         // sepcial-bank

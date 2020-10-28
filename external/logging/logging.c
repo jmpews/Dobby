@@ -14,20 +14,25 @@
 #if defined(_WIN32)
 #define PUBLIC
 #else
-#define PUBLIC __attribute__((visibility("default")))
+#define PUBLIC   __attribute__((visibility("default")))
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
+static int _log_level = 0;
+void       log_set_level(int level) {
+  _log_level = level;
+}
+
 static int _syslog_enabled = 0;
-void switch_to_syslog(void) {
+void       log_switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
 
-static int _file_log_enabled     = 0;
-static const char *log_file_path = NULL;
-static int log_file_fd           = -1;
-static FILE *log_file_stream     = NULL;
-void switch_to_file_log(const char *path) {
+static int         _file_log_enabled = 0;
+static const char *log_file_path     = NULL;
+static int         log_file_fd       = -1;
+static FILE *      log_file_stream   = NULL;
+void               log_switch_to_file(const char *path) {
   _file_log_enabled = 1;
   log_file_path     = strdup(path);
 
@@ -51,7 +56,10 @@ static int check_log_file_available() {
   return 0;
 }
 
-PUBLIC int custom_log(const char *fmt, ...) {
+PUBLIC int log_internal_impl(unsigned int level, const char *fmt, ...) {
+  if (level < _log_level)
+    return 0;
+
   va_list ap;
   va_start(ap, fmt);
 #pragma clang diagnostic ignored "-Wformat"

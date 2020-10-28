@@ -13,7 +13,7 @@ PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
     return RS_FAILED;
   }
 
-  DLOG("Initialize DobbyInstrument => %p => %p", instr_address, handler);
+  DLOG(1, "Initialize DobbyInstrument => %p => %p", instr_address, handler);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 

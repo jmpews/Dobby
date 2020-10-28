@@ -1,6 +1,9 @@
+#include "./dobby_hide_library.h"
+
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
+#include <mach-o/dyld_images.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,17 +14,13 @@
 
 #include <vector>
 
-#include "dobby.h"
-
-#include "logging/logging.h"
-
-#include <mach-o/dyld_images.h>
+#include "dobby_internal.h"
 
 typedef void ImageLoader;
 
 typedef void ImageLoaderMachO;
 
-static void *(*removeImageFromAllImages)(struct mach_header *mh) = NULL;
+static void *(*removeImageFromAllImages)(const struct mach_header *mh) = NULL;
 
 static char *(*ImageLoader__getShortName)(ImageLoader *loader) = NULL;
 
@@ -31,13 +30,7 @@ static std::vector<ImageLoader *> *sAllImages = NULL;
 
 std::vector<char *> *remove_image_array;
 
-int DobbyHideLibrary(const char *library_name) {
-  if (remove_image_array == NULL)
-    remove_image_array = new std::vector<char *>();
-  remove_image_array->push_back((char *)library_name);
-}
-
-int dobby_hide_library_internal(const char *library_name) {
+static int dobby_hide_library_internal(const char *library_name) {
   if (removeImageFromAllImages == NULL) {
     removeImageFromAllImages =
         (typeof(removeImageFromAllImages))DobbySymbolResolver("dyld", "__Z24removeImageFromAllImagesPK11mach_header");
@@ -56,10 +49,49 @@ int dobby_hide_library_internal(const char *library_name) {
   if (sAllImages == NULL)
     sAllImages = (typeof(sAllImages))DobbySymbolResolver("dyld", "__ZN4dyldL10sAllImagesE");
 
+#if 0
+  if (dyld3__AllImages__imageLoadAddressByIndex == NULL) {
+    dyld3__AllImages__imageLoadAddressByIndex = (typeof(removeImageFromAllImages))DobbySymbolResolver(
+        "libdyld.dylib", "__ZNK5dyld39AllImages23imageLoadAddressByIndexEj");
+  }
+
+  if (dyld3_sAllImages == NULL)
+    dyld3_sAllImages = (typeof(dyld3_sAllImages))DobbySymbolResolver("libdyld.dylib", "__ZN5dyld310gAllImagesE");
+#endif
+
+#if 0
+  typedef void AllImages;
+  static void(*AllImages__decRefCount)(AllImages *_this, const struct mach_header *mh) = NULL;
+  if(AllImages__decRefCount == NULL) {
+    AllImages__decRefCount = (typeof(AllImages__decRefCount))DobbySymbolResolver("libdyld.dylib", "__ZN5dyld39AllImages11decRefCountEPK11mach_header");
+  }
+  
+  static AllImages *gAllImages = NULL;
+  if(gAllImages == NULL) {
+    gAllImages = (typeof(gAllImages))DobbySymbolResolver("libdyld.dylib", "__ZN5dyld310gAllImagesE");
+  }
+#endif
+
+  //  int count = _dyld_image_count();
+  //  for (int i = 0; i < count; i++) {
+  //    const char *name       = _dyld_get_image_name(i);
+  //    const char *image_name = strrchr(name, '/');
+  //    if (image_name == NULL) {
+  //      continue;
+  //    }
+  //    image_name += 1;
+  //    if (strcmp(image_name, library_name) == 0) {
+  //      const struct mach_header *header = _dyld_get_image_header(i);
+  //      AllImages__decRefCount(gAllImages, header);
+  //      break;
+  //    }
+  //  }
+
   for (std::vector<ImageLoader *>::iterator it = sAllImages->begin(); it != sAllImages->end(); it++) {
     char *name = ImageLoader__getShortName(*it);
-    DLOG("loader: %s", name);
+    LOG(1, "load library : %s", name);
     if (strcmp(name, library_name) == 0) {
+      LOG(1, "strip load library : %s", library_name);
       struct mach_header *header = ImageLoaderMachO__machHeader(*it);
       removeImageFromAllImages(header);
       sAllImages->erase(it);
@@ -68,6 +100,17 @@ int dobby_hide_library_internal(const char *library_name) {
   }
 
   return 0;
+}
+
+PUBLIC int DobbyHideLibrary(const char *library_name) {
+#if 1
+  dobby_hide_library_internal(library_name);
+  return;
+#endif
+
+  if (remove_image_array == NULL)
+    remove_image_array = new std::vector<char *>();
+  remove_image_array->push_back((char *)library_name);
 }
 
 static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
@@ -79,8 +122,12 @@ static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) 
 }
 
 __attribute__((constructor)) static void ctor() {
+#if 0
   void *dyld__notifyMonitoringDyldMain = DobbySymbolResolver("dyld", "__ZN4dyldL24notifyMonitoringDyldMainEv");
   DobbyInstrument(dyld__notifyMonitoringDyldMain, common_handler);
+#endif
+
+  log_switch_to_syslog();
 
 #if defined(DOBBY_DEBUG) && 0
   DobbyHideLibrary("Dobby");

@@ -302,7 +302,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     if (buffer_)

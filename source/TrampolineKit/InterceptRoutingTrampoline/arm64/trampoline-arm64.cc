@@ -14,7 +14,7 @@
 using namespace zz::arm64;
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
-  DLOG("Generate trampoline => %p", to);
+  DLOG(0, "Generate trampoline => %p", to);
 
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
@@ -25,12 +25,12 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
     // adrp, add, br
     _ AdrpAdd(TMP_REG_0, from, to);
     _ br(TMP_REG_0);
-    DLOG("Trampoline use [Adrp, Add, Br] combine");
+    DLOG(0, "Trampoline use [Adrp, Add, Br] combine");
   } else {
     // ldr, br, branch-address
     CodeGen codegen(&turbo_assembler_);
     codegen.LiteralLdrBranch((uint64_t)to);
-    DLOG("Trampoline use [Ldr, Br, Label] combine");
+    DLOG(0, "Trampoline use [Ldr, Br, Label] combine");
   }
 
   CodeBufferBase *result = NULL;

@@ -46,7 +46,7 @@ int _main(int argc, const char **argv);
 }
 
 int _main(int argc, const char **argv) {
-  LOG("pc_relative_instructions: %p", pc_relative_instructions);
+  LOG(1, "pc_relative_instructions: %p", pc_relative_instructions);
 
   char *relo_buffer = (char *)malloc(0x1000);
 

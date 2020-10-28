@@ -132,11 +132,11 @@ void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_pt
       localNlistCount          = entries[i].nlistCount;
       localNlists              = &localNlists[localNlistStart];
 
-#if defined(DOBBY_DEBUG) && 0
+#if 0
       static struct dyld_cache_image_info *imageInfos = NULL;
       imageInfos = (struct dyld_cache_image_info *)((addr_t)g_mmap_shared_cache + g_mmap_shared_cache->imagesOffset);
       char *image_name = (char *)g_mmap_shared_cache + imageInfos[i].pathFileOffset;
-      DLOG("dyld image: %s", image_name);
+      LOG(1, "dyld image: %s", image_name);
 #endif
     }
   }

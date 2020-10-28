@@ -26,22 +26,12 @@
 #include "bootstrap.h"
 #include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
 
-#if defined(DOBBY_DEBUG)
-#define KERN_ERROR_RETURN(err, failure)                                                                                \
-  do {                                                                                                                 \
-    if (err != KERN_SUCCESS) {                                                                                         \
-      ERROR_LOG("error message: %s", mach_error_string(err));                                                          \
-      return failure;                                                                                                  \
-    }                                                                                                                  \
-  } while (0);
-#else
 #define KERN_ERROR_RETURN(err, failure)                                                                                \
   do {                                                                                                                 \
     if (err != KERN_SUCCESS) {                                                                                         \
       return failure;                                                                                                  \
     }                                                                                                                  \
   } while (0);
-#endif
 
 static mach_port_t substrated_server_port = MACH_PORT_NULL;
 
@@ -71,10 +61,9 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
   kr = substrated_mark(substrated_server_port, mach_task_self(), (mach_vm_address_t)buffer, size,
                        (mach_vm_address_t *)&address);
   if (kr != KERN_SUCCESS) {
-    DLOG("Code patch with substrated failed");
-    return -1;
+    return RT_FAILED;
   }
-  return 0;
+  return RT_SUCCESS;
 }
 #endif
 
@@ -123,7 +112,7 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 #if defined(CODE_PATCH_WITH_SUBSTRATED) && defined(TARGET_ARCH_ARM64)
   ret = code_remap_with_substrated((addr_t)remap_page, page_size, (addr_t)page_align_address);
   if (ret == RT_FAILED)
-    DLOG("Not found <substrated> service => vm_remap");
+    DLOG(0, "substrated failed, use vm_remap");
 #endif
   if (ret == RT_FAILED) {
     mprotect((void *)remap_page, page_size, PROT_READ | PROT_EXEC);
@@ -139,7 +128,6 @@ _MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   // unmap the origin page
   int err = munmap((void *)remap_page, (mach_vm_address_t)page_size);
   if (err == -1) {
-    ERRNO_PRINT();
     return kMemoryOperationError;
   }
 

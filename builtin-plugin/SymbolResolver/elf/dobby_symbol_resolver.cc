@@ -155,7 +155,9 @@ PUBLIC void *              DobbySymbolResolver(const char *image_name, const cha
   for (auto soinfo : solist) {
     uintptr_t handle = linker_soinfo_to_handle(soinfo);
     if (image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
-      DLOG("DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
+#if 0
+      LOG(1, "DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
+#endif
       result = dlsym((void *)handle, symbol_name_pattern);
       if (result)
         return result;

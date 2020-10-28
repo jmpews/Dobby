@@ -98,7 +98,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->getSize();
   if (relo_len > relocated->raw_instruction_size()) {
-    DLOG("pre-alloc code chunk not enough");
+    DLOG(0, "pre-alloc code chunk not enough");
     return RT_FAILED;
   }
 

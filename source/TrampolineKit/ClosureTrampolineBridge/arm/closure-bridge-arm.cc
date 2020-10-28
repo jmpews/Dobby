@@ -82,7 +82,7 @@ void *get_closure_bridge() {
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge          = (void *)code->raw_instruction_start();
 
-  DLOG("Build the closure bridge at %p", closure_bridge);
+  DLOG(0, "Build the closure bridge at %p", closure_bridge);
 
 #endif
   return (void *)closure_bridge;

@@ -35,8 +35,6 @@ namespace arm64 {
 
 constexpr Register TMP_REG_0 = X(ARM64_TMP_REG_NDX_0);
 
-constexpr Register TMP_REG_1 = X(ARM64_TMP_REG_NDX_1);
-
 #define Rd(rd)  (rd.code() << kRdShift)
 #define Rt(rt)  (rt.code() << kRtShift)
 #define Rt2(rt) (rt.code() << kRt2Shift)
@@ -362,7 +360,7 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG("Initialize assembler code buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG(0, "Initialize assembler code buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     if (buffer_)
@@ -387,6 +385,10 @@ public:
 
   void brk(int code) {
     Emit(BRK | LeftShift(code, 16, 5));
+  }
+
+  void ret() {
+    Emit(0xD65F03C0);
   }
 
   void adrp(const Register &rd, int64_t imm) {

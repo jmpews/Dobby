@@ -21,9 +21,7 @@ typedef uint64_t  addr64_t;
 
 #if defined(__arm64__) || defined(__aarch64__)
 
-#define ARM64_TMP_REG_NDX_0 16
-
-#define ARM64_TMP_REG_NDX_1 17
+#define ARM64_TMP_REG_NDX_0 17
 
 // float register
 typedef union _FPReg {

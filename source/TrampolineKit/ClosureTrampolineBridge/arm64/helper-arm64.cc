@@ -8,7 +8,7 @@
 using namespace zz::arm64;
 
 void set_routing_bridge_next_hop(RegisterContext *ctx, void *address) {
-  *reinterpret_cast<void **>(&ctx->general.x[TMP_REG_1.code()]) = address;
+  *reinterpret_cast<void **>(&ctx->general.x[TMP_REG_0.code()]) = address;
 }
 
 void get_routing_bridge_next_hop(RegisterContext *ctx, void *address) {

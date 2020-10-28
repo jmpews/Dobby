@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void *DobbyHideLibrary(const char *library_name);
+int DobbyHideLibrary(const char *library_name);
 
 #ifdef __cplusplus
 }

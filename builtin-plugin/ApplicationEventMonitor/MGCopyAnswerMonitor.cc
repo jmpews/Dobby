@@ -36,6 +36,8 @@ void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 __attribute__((constructor)) static void ctor() {
   void *lib               = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_NOW);
   void *MGCopyAnswer_addr = DobbySymbolResolver("libMobileGestalt.dylib", "MGCopyAnswer");
+  
+  sleep(1);
 
   dobby_enable_near_branch_trampoline();
   DobbyInstrument((void *)MGCopyAnswer_addr, common_handler);

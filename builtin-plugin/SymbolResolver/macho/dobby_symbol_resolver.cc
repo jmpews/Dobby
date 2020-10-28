@@ -230,7 +230,7 @@ void *iterateSymbolTable(char *name_pattern, nlist_t *nlist_array, uint32_t nlis
       uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
       char *   symbol_name   = string_pool + strtab_offset;
 #if 0
-      LOG("> %s", symbol_name);
+      LOG(1, "> %s", symbol_name);
 #endif
       if (strcmp(name_pattern, symbol_name) == 0) {
         return (void *)(nlist_array[i].n_value);
@@ -259,7 +259,9 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     if (image_name != NULL && strstr(path, image_name) == NULL)
       continue;
 
-    DLOG("resolve image: %s", path);
+#if 0
+    LOG(1, "resolve image: %s", path);
+#endif
 
     uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
@@ -318,6 +320,6 @@ __attribute__((constructor)) static void ctor() {
   header                = (mach_header_t *)_dyld_get_image_header(0);
 
   void *addr = (void *)((addr_t)iterate_exported_symbol(header, "_mainxx") + (addr_t)header);
-  LOG("export %p", addr);
+  LOG(1, "export %p", addr);
 }
 #endif

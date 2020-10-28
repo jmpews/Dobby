@@ -266,7 +266,7 @@ public:
   Assembler(void *address) : AssemblerBase(address) {
     execute_state_ = ARMExecuteState;
     buffer_        = new CodeBuffer(64);
-    DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   // shared_ptr is better choice
@@ -274,7 +274,7 @@ public:
   Assembler(void *address, CodeBuffer *buffer) : AssemblerBase(address) {
     execute_state_ = ARMExecuteState;
     buffer_        = buffer;
-    DLOG("Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
+    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
 
   ~Assembler() {

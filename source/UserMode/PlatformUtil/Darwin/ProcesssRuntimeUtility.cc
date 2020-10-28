@@ -76,12 +76,11 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       }
       MemoryRegion region = {(void *)addr, static_cast<size_t>(size), permission};
 #if 0
-      LOG("%p - %p", addr, addr + size);
+      DLOG(0, "%p --- %p", addr, addr + size);
 #endif
       ProcessMemoryLayout.push_back(region);
+      addr += size;
     }
-
-    addr += size;
   }
 
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);

@@ -33,7 +33,7 @@ int (*orig_connect)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 int fake_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
   const char *traced_socket = get_traced_socket(sockfd, false);
   if (traced_socket) {
-    LOG("[-] connect: %s\n", traced_socket);
+    LOG(1, "[-] connect: %s\n", traced_socket);
   }
   return orig_connect(sockfd, addr, addrlen);
 }
@@ -42,7 +42,7 @@ ssize_t (*orig_send)(int sockfd, const void *buf, size_t len, int flags);
 ssize_t fake_send(int sockfd, const void *buf, size_t len, int flags) {
   const char *traced_socket = get_traced_socket(sockfd, false);
   if (traced_socket) {
-    LOG("[-] send: %s, buf: %p, len: %zu\n", traced_socket, buf, len);
+    LOG(1, "[-] send: %s, buf: %p, len: %zu\n", traced_socket, buf, len);
   }
   return orig_send(sockfd, buf, len, flags);
 }
@@ -51,7 +51,7 @@ ssize_t (*orig_recv)(int sockfd, void *buf, size_t len, int flags);
 ssize_t fake_recv(int sockfd, void *buf, size_t len, int flags) {
   const char *traced_socket = get_traced_socket(sockfd, false);
   if (traced_socket) {
-    LOG("[-] recv: %s, buf: %p, len: %zu\n", traced_socket, buf, len);
+    LOG(1, "[-] recv: %s, buf: %p, len: %zu\n", traced_socket, buf, len);
   }
   return orig_recv(sockfd, buf, len, flags);
 }

@@ -59,10 +59,11 @@ void InterceptRouting::GenerateRelocatedCode() {
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
-  DLOG("relocate %d bytes to %p", relocated->raw_instruction_size(), relocated->raw_instruction_start());
+  DLOG(0, "relocate %d bytes to %p", relocated->raw_instruction_size(), relocated->raw_instruction_start());
 
   // save original prologue
-  memcpy((void *)entry_->origin_chunk_.chunk_buffer, (void *)origin_->raw_instruction_start(), origin_->raw_instruction_size());
+  memcpy((void *)entry_->origin_chunk_.chunk_buffer, (void *)origin_->raw_instruction_start(),
+         origin_->raw_instruction_size());
   entry_->origin_chunk_.chunk.re_init_region_range(origin_);
 }
 
@@ -77,7 +78,7 @@ void InterceptRouting::Active() {
   patch_address       = (void *)this->origin_->raw_instruction_start();
 
   CodePatch(patch_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
-  DLOG("Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
+  DLOG(0, "Code patch %p => %p", trampoline_buffer_->getRawBuffer(), entry_->target_address);
 }
 
 void InterceptRouting::Commit() {
@@ -87,7 +88,7 @@ void InterceptRouting::Commit() {
     RoutingPlugin *plugin        = NULL;
     LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
     while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
-      DLOG("Run plugin %s", "Unknown");
+      DLOG(0, "Run plugin %s", "Unknown");
       if (plugin->Active(this))
         handle_by_plugin = true;
     }
@@ -96,7 +97,7 @@ void InterceptRouting::Commit() {
 #endif
 
   this->Active();
-  DLOG("================ InterceptRouting End ================");
+  DLOG(0, "================ InterceptRouting End ================");
 }
 
 #if 0
@@ -116,7 +117,7 @@ void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
     RoutingPlugin *plugin = NULL;
     plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
     if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
-      DLOG("Failed enable near branch trampoline plugin");
+      DLOG(0, "Failed enable near branch trampoline plugin");
     }
   }
 

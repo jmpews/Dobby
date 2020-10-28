@@ -89,7 +89,7 @@ elseif(SYSTEM.Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 elseif(SYSTEM.Windows)
   if(NOT DOBBY_DEBUG)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:custom_log")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:log_internal_impl")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:DobbyHook /export:DobbyInstrument /export:DobbySymbolResolver")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:dobby_enable_near_branch_trampoline /export:dobby_disable_near_branch_trampoline")
   endif()
@@ -341,6 +341,13 @@ if(Plugin.LinkerLoadCallback)
     )
 endif()
 
+if(Plugin.InstrumentSVC)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/InstrumentSVC/instrument_svc.cc
+    builtin-plugin/InstrumentSVC/MachUtility.cc
+    )
+endif()
+
 include_directories(
   .
   ./source
@@ -355,6 +362,7 @@ include_directories(
   builtin-plugin
   builtin-plugin/AndroidRestriction
   builtin-plugin/SymbolResolver
+  builtin-plugin/InstrumentSVC
   builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC
 )

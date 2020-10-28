@@ -144,7 +144,7 @@ void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo)) {
 static int iterate_soinfo_cb(soinfo_t soinfo) {
   android_namespace_t ns = NULL;
   ns                     = linker_soinfo_get_primary_namespace(soinfo);
-  DLOG("lib: %s", linker_soinfo_get_realpath(soinfo));
+  LOG(1, "lib: %s", linker_soinfo_get_realpath(soinfo));
 
   // set is_isolated_ as false
   // no need for this actually
@@ -176,7 +176,7 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
 
 bool (*orig_linker_namespace_is_is_accessible)(android_namespace_t ns, const std::string &file);
 bool linker_namespace_is_is_accessible(android_namespace_t ns, const std::string &file) {
-  DLOG("check %s", file.c_str());
+  LOG(1, "check %s", file.c_str());
   return true;
   return orig_linker_namespace_is_is_accessible(ns, file);
 }
@@ -191,5 +191,5 @@ void linker_disable_namespace_restriction() {
   DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
             (void **)&orig_linker_namespace_is_is_accessible);
 
-  DLOG("disable namespace restriction done");
+  LOG(1, "disable namespace restriction done");
 }

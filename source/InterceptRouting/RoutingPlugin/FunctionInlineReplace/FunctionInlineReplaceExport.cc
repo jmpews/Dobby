@@ -13,7 +13,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
     return RS_FAILED;
   }
 
-  DLOG("Initialize DobbyHook => %p => %p", function_address, replace_call);
+  DLOG(1, "Initialize DobbyHook => %p => %p", function_address, replace_call);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 

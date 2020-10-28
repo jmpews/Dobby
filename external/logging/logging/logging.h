@@ -13,12 +13,14 @@
 extern "C" {
 #endif
 
-void switch_to_syslog();
+void log_set_level(int level);
 
-void switch_to_file_log(const char *path);
+void log_switch_to_syslog();
 
-#define LOGFUNC custom_log
-int custom_log(const char *, ...);
+void log_switch_to_file(const char *path);
+
+#define LOGFUNC log_internal_impl
+int log_internal_impl(unsigned int level, const char *, ...);
 
 #ifdef __cplusplus
 }
@@ -33,46 +35,36 @@ extern "C" {
 #endif
 #endif
 
-#define LOG(fmt, ...)                                                                                                  \
+#define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
     if (LOG_TAG)                                                                                                       \
-      LOGFUNC("[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                                           \
+      LOGFUNC(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                                    \
     else                                                                                                               \
-      LOGFUNC("[*] " fmt "\n", ##__VA_ARGS__);                                                                         \
+      LOGFUNC(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                                  \
   } while (0)
 
-#define LOG_NO_TAG(fmt, ...)                                                                                           \
+#define RAW_LOG(level, fmt, ...)                                                                                       \
   do {                                                                                                                 \
-    LOGFUNC(fmt, ##__VA_ARGS__);                                                                                       \
-  } while (0)
-
-#define ERRNO_PRINT()                                                                                                  \
-  do {                                                                                                                 \
-    ERROR_LOG("ErrorMessage: %s \n", strerror(errno));                                                                 \
-  } while (0)
-#define CHECK_ERROR_CODE(lsh, rhs)                                                                                     \
-  do {                                                                                                                 \
-    if (lhs != rsh)                                                                                                    \
-      ERRNO_PRINT();                                                                                                   \
+    LOGFUNC(level, fmt, ##__VA_ARGS__);                                                                                \
   } while (0)
 
 #if defined(LOGGING_DEBUG)
-#define DLOG(fmt, ...) LOG(fmt, ##__VA_ARGS__)
+#define DLOG(level, fmt, ...) LOG(level, fmt, ##__VA_ARGS__)
 
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
-    LOG_NO_TAG("[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                    \
-    LOG_NO_TAG("[!] " fmt "\n", ##__VA_ARGS__);                                                                        \
+    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+    RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
     abort();                                                                                                           \
   } while (0)
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG_NO_TAG("[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                    \
-    LOG_NO_TAG("[!] " fmt "\n", ##__VA_ARGS__);                                                                        \
+    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+    RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
   } while (0)
 #else
-#define DLOG(fmt, ...)
+#define DLOG(level, fmt, ...)
 
 #define FATAL(fmt, ...)
 
