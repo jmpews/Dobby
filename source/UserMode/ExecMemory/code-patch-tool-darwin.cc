@@ -26,6 +26,7 @@
 #include "bootstrap.h"
 #include "ExecMemory/substrated/mach_interface_support/substrated_client.h"
 
+#if defined(DOBBY_DEBUG)
 #define KERN_ERROR_RETURN(err, failure)                                                                                \
   do {                                                                                                                 \
     if (err != KERN_SUCCESS) {                                                                                         \
@@ -33,6 +34,14 @@
       return failure;                                                                                                  \
     }                                                                                                                  \
   } while (0);
+#else
+#define KERN_ERROR_RETURN(err, failure)                                                                                \
+  do {                                                                                                                 \
+    if (err != KERN_SUCCESS) {                                                                                         \
+      return failure;                                                                                                  \
+    }                                                                                                                  \
+  } while (0);
+#endif
 
 static mach_port_t substrated_server_port = MACH_PORT_NULL;
 
@@ -41,14 +50,10 @@ mach_port_t connect_mach_service(const char *name) {
   kern_return_t kr;
 
   kr = task_get_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, &bootstrap_port);
-  KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
+  KERN_ERROR_RETURN(kr, MACH_PORT_NULL)
 
   kr = bootstrap_look_up(bootstrap_port, (char *)name, &port);
-#if defined(DOBBY_DEBUG)
-  if (kr != KERN_SUCCESS) {
-    ERROR_LOG("error message: %s", mach_error_string(kr));
-  }
-#endif
+  KERN_ERROR_RETURN(kr, MACH_PORT_NULL);
 
   substrated_server_port = port;
 
