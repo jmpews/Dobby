@@ -341,10 +341,11 @@ if(Plugin.LinkerLoadCallback)
     )
 endif()
 
-if(Plugin.InstrumentSVC)
+if(Plugin.SupervisorCallMonitor)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/InstrumentSVC/instrument_svc.cc
-    builtin-plugin/InstrumentSVC/MachUtility.cc
+    builtin-plugin/SupervisorCallMonitor/mach_system_call.cc
+    builtin-plugin/SupervisorCallMonitor/system_call.cc
+    builtin-plugin/SupervisorCallMonitor/MachUtility.cc
     )
 endif()
 
@@ -360,9 +361,9 @@ include_directories(
   ./external/xnucxx
 
   builtin-plugin
+  builtin-plugin/SupervisorCallMonitor
   builtin-plugin/AndroidRestriction
   builtin-plugin/SymbolResolver
-  builtin-plugin/InstrumentSVC
   builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC
 )
