@@ -119,25 +119,24 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
   int       relo_code_chunk_size = 32;
   const int chunk_size_step      = 16;
 
+x86_try_again:
   if (relocated->raw_instruction_start() == 0) {
     cchunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    if (cchunk == nullptr)
-      goto failed;
+    if (cchunk == nullptr) {
+      return;
+    }
     relocated->re_init_region_range((addr_t)cchunk->address, (int)cchunk->length);
   }
 
-  if (GenRelocateCodeFixed(buffer, origin, relocated) != RT_SUCCESS) {
+  int ret = GenRelocateCodeFixed(buffer, origin, relocated);
+  if (ret != RT_SUCCESS) {
     // free the cchunk
     MemoryArena::Destroy(cchunk);
 
-    goto failed;
-
     relo_code_chunk_size += chunk_size_step;
-    cchunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    relocated->re_init_region_range((addr_t)cchunk->address, (int)cchunk->length);
-  }
+    relocated->re_init_region_range(0, 0);
 
-failed:
-  relocated->re_init_region_range(0, 0);
+    goto x86_try_again;
+  }
 }
 #endif

@@ -6,11 +6,11 @@
 
 class NearMemoryArena : public MemoryArena {
 public:
-  static MemoryChunk *AllocateChunk(addr_t position, size_t range, int inSize, MemoryPermission permission);
+  static MemoryChunk *AllocateChunk(addr_t position, size_t alloc_range, int alloc_size, MemoryPermission permission);
 
-  static WritableDataChunk *AllocateDataChunk(addr_t position, size_t range, int inSize);
+  static WritableDataChunk *AllocateDataChunk(addr_t position, size_t alloc_range, int alloc_size);
 
-  static AssemblyCodeChunk *AllocateCodeChunk(addr_t position, size_t range, int inSize);
+  static AssemblyCodeChunk *AllocateCodeChunk(addr_t position, size_t alloc_range, int alloc_size);
 
   static int PushPage(addr_t page_addr, MemoryPermission permission);
 

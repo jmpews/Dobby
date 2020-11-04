@@ -18,7 +18,7 @@ struct MemoryChunk : MemoryRange {
   inline void re_init_region_range(MemoryChunk *chunk) {
     init_region_range((addr_t)chunk->address, chunk->length);
   }
-  
+
   inline addr_t raw_instruction_start() {
     return (addr_t)address;
   };
@@ -39,11 +39,11 @@ typedef struct {
 
 class MemoryArena {
 public:
-  static MemoryChunk *AllocateChunk(int inSize, MemoryPermission permission);
+  static MemoryChunk *AllocateChunk(int alloc_size, MemoryPermission permission);
 
-  static WritableDataChunk *AllocateDataChunk(int inSize);
+  static WritableDataChunk *AllocateDataChunk(int alloc_size);
 
-  static AssemblyCodeChunk *AllocateCodeChunk(int inSize);
+  static AssemblyCodeChunk *AllocateCodeChunk(int alloc_size);
 
   static void Destroy(MemoryChunk *chunk);
 

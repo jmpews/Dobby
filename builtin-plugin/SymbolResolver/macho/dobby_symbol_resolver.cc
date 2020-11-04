@@ -267,14 +267,18 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     nlist_t *nlist_array = 0;
     char *   string_pool = 0;
 
+#if defined(__arm__) || defined(__aarch64__)
+    // sharedcache library
     if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
       get_syms_in_dyld_shared_cache((void *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+#endif
     result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result) {
       result = (void *)((uintptr_t)result + slide);
       break;
     }
 
+    // binary symbol table
     get_syms_in_single_image((mach_header_t *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
     result = iterateSymbolTable((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result) {
@@ -282,6 +286,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
       break;
     }
 
+    // binary exported table(uleb128)
     result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern);
     if (result) {
       result = (void *)((uintptr_t)result + (uintptr_t)header);
