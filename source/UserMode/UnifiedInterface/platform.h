@@ -3,7 +3,7 @@
 
 #include <stdarg.h>
 
-#include "PlatformUnifiedInterface/StdMemory.h"
+#include "StdMemory.h"
 
 namespace base {
 
@@ -32,32 +32,34 @@ class ThreadLocalStorageInterface {
 // ================================================================
 // base :: Thread
 
-class Thread {
-public:
-  // Thread(dispatch_function_t func, void *ctx) : func_(func), ctx_(ctx)
+typedef void *ThreadHandle;
 
+class ThreadInterface {
+public:
+  class Delegate {
+  public:
+    virtual void ThreadMain() = 0;
+  };
+
+public:
+  static bool Create(Delegate *delegate, ThreadHandle *handle);
+
+  static int CurrentId();
+
+  static void SetName(const char *);
+};
+
+class Thread : public ThreadInterface, public ThreadInterface::Delegate {
+public:
   Thread(const char *name);
 
-  ~Thread() {
-  }
-
 public:
-  // void dispatch_handler() {
-  //   func_(ctx_);
-  // }
-
-  void Start();
-
-  virtual void Run() = 0;
-
-  const char *name() const {
-    return thread_name_;
-  }
+  bool Start();
 
 private:
-  char thread_name_[FILENAME_MAX];
+  ThreadHandle handle_;
 
-  void *thread_package_;
+  char name_[256];
 };
 } // namespace base
 

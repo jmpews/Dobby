@@ -21,9 +21,15 @@
 #define LOG_TAG "DobbySymbolResolver"
 
 static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_size_ptr) {
-  int      fd        = open(file_path, O_RDONLY, 0);
   uint8_t *mmap_data = NULL;
   size_t   file_size = 0;
+
+  int      fd        = open(file_path, O_RDONLY, 0);
+  if(fd < 0) {
+    ERROR_LOG("open failed");
+    goto finished;
+  }
+
 
   {
     struct stat s;
@@ -43,6 +49,8 @@ static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_si
   }
 
 finished:
+  close(fd);
+
   if (data_size_ptr)
     *data_size_ptr = file_size;
   if (data_ptr)

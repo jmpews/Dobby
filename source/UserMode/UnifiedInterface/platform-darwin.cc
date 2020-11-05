@@ -47,7 +47,7 @@ namespace zz {
 #if defined(__APPLE__)
 const int kMmapFd = VM_MAKE_TAG(255);
 #else
-const int                      kMmapFd = -1;
+const int kMmapFd = -1;
 #endif
 
 const int kMmapFdOffset = 0;

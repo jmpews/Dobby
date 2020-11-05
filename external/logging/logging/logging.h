@@ -19,7 +19,9 @@ void log_switch_to_syslog();
 
 void log_switch_to_file(const char *path);
 
-#define LOGFUNC log_internal_impl
+#if !defined(LOG_FUNCTION_IMPL)
+#define LOG_FUNCTION_IMPL log_internal_impl
+#endif
 int log_internal_impl(unsigned int level, const char *, ...);
 
 #ifdef __cplusplus
@@ -38,14 +40,14 @@ extern "C" {
 #define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
     if (LOG_TAG)                                                                                                       \
-      LOGFUNC(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                                    \
+      LOG_FUNCTION_IMPL(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                                    \
     else                                                                                                               \
-      LOGFUNC(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                                  \
+      LOG_FUNCTION_IMPL(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                                  \
   } while (0)
 
 #define RAW_LOG(level, fmt, ...)                                                                                       \
   do {                                                                                                                 \
-    LOGFUNC(level, fmt, ##__VA_ARGS__);                                                                                \
+    LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                                \
   } while (0)
 
 #if defined(LOGGING_DEBUG)

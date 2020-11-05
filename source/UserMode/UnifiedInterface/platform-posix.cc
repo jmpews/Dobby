@@ -24,6 +24,7 @@
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
+#include <mach/mach.h>
 #include <mach/vm_statistics.h>
 #endif
 
@@ -47,31 +48,55 @@ const int kMmapFdOffset = 0;
 
 using namespace base;
 
-typedef struct thread_package_t {
+typedef struct thread_handle_t {
   pthread_t thread;
-} thread_package_t;
+} thread_handle_t;
 
-Thread::Thread(const char *name) {
-  thread_package_ = new thread_package_t;
-
-  strncpy(thread_name_, name, FILENAME_MAX - 1);
-}
-
-static void set_thread_name(const char *name) {
+void ThreadInterface::SetName(const char *name) {
 #if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
   pthread_set_name_np(pthread_self(), name);
 #elif defined(__APPLE__)
   pthread_setname_np(name);
 #endif
 }
+
+int ThreadInterface::CurrentId() {
+#if defined(__APPLE__)
+  mach_port_t port = mach_thread_self();
+  mach_port_deallocate(mach_task_self(), port);
+  return port;
+#elif defined(_POSIX_VERSION)
+  return syscall(__NR_gettid);
+#endif
+}
+
 static void *thread_handler_wrapper(void *ctx) {
-  Thread *t = (Thread *)ctx;
-  set_thread_name(t->name());
-  t->Run();
+  ThreadInterface::Delegate *d = (ThreadInterface::Delegate *)ctx;
+  d->ThreadMain();
   return nullptr;
 }
-void Thread::Start() {
-  pthread_create(&((thread_package_t *)thread_package_)->thread, nullptr, thread_handler_wrapper, this);
+
+bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *handle) {
+  thread_handle_t *platform_handle = new thread_handle_t;
+
+  int err = 0;
+  err     = pthread_create(&(platform_handle->thread), nullptr, thread_handler_wrapper, delegate);
+  if (err != 0) {
+    ERRNO_PRINT();
+    return false;
+  }
+  return true;
+}
+
+Thread::Thread(const char *name) {
+  strncpy(name_, name, strlen(name));
+}
+
+bool Thread::Start() {
+  if (ThreadInterface::Create(this, &handle_) == false) {
+    return false;
+  }
+  return true;
 }
 
 // ================================================================
