@@ -115,16 +115,19 @@ extern void mach_system_call_monitor();
 
 __attribute__((constructor)) static void ctor() {
   log_set_level(1);
+  log_switch_to_syslog();
 
   // create logger file
   char logger_path[1024] = {0};
   sprintf(logger_path, "%s%s", getenv("HOME"), "/Documents/svc_monitor.txt");
-
+  LOG(1, "%s", logger_path);
   async_logger_init(logger_path);
 
   mach_msg_id_hash_table_init();
+  
+  dobby_enable_near_branch_trampoline();
 
-//  system_call_monitor();
+  system_call_monitor();
 
-  mach_system_call_monitor();
+//  mach_system_call_monitor();
 }
