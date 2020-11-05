@@ -4,24 +4,68 @@
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
+#include <iostream>
+
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "XnuInternal/syscalls.c"
+#include <sys/syscall.h>
 
-void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  //  if((int64_t)reg_ctx->general.regs.x16 < 0)
-  //    printf("-num: %ld", reg_ctx->general.regs.x16);
-  //  else
-  char buffer[256] = {0};
-  int  syscall_rum = reg_ctx->general.regs.x16;
-  sprintf(buffer, "call %s\n", syscallnames[syscall_rum]);
-  write(STDOUT_FILENO, buffer, strlen(buffer) + 1);
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "async_logger.h"
+
+static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
+  uintptr_t result;
+#if defined(_M_X64) || defined(__x86_64__)
+#if defined(_WIN32)
+  result = reg_ctx->general.regs.rcx;
+#else
+  result = reg_ctx->general.regs.rdi;
+#endif
+#elif defined(__arm64__) || defined(__aarch64__)
+  result = reg_ctx->general.regs.x0;
+#elif defined(__arm__)
+  result = reg_ctx->general.regs.r0;
+#else
+#error "Not Support Architecture."
+#endif
+  return result;
 }
 
-#if 1
-typedef int32_t                          arm64_instr_t;
-__attribute__((constructor)) static void ctor() {
+extern const char *syscall_num_to_str(int num);
+
+extern const char *mach_syscall_num_to_str(int num);
+
+extern char *mach_msg_to_str(mach_msg_header_t *msg);
+
+void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+  char buffer[256] = {0};
+  int  syscall_rum = reg_ctx->general.regs.x16;
+  if (syscall_rum > 0) {
+    sprintf(buffer, "[syscall] %s\n", syscall_num_to_str(syscall_rum));
+  } else {
+    sprintf(buffer, "[mach syscall] %s\n", mach_syscall_num_to_str(syscall_rum));
+    // mach_msg_trap
+    if (syscall_rum == -31) {
+      mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(reg_ctx);
+      char *mach_msg_name = mach_msg_to_str(msg);
+      if(mach_msg_name) {
+        sprintf(buffer, "[mach_msg] %s\n", mach_msg_name);
+      } else {
+        buffer[0] = 0;
+      }
+    }
+  }
+  if(buffer[0])
+    async_logger_print(buffer);
+}
+
+typedef int32_t arm64_instr_t;
+
+void monitor_libsystem_kernel_dylib() {
   auto   libsystem_c        = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
   addr_t libsystem_c_header = (addr_t)libsystem_c.load_address;
   auto   text_section =
@@ -31,17 +75,44 @@ __attribute__((constructor)) static void ctor() {
   addr_t insn_addr              = shared_cache_load_addr + (addr_t)text_section->offset;
   addr_t insn_addr_end          = insn_addr + text_section->size;
 
-  log_set_level(1);
   addr_t write_svc_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", "write");
   write_svc_addr += 4;
-  for (insn_addr; insn_addr < insn_addr_end; insn_addr += sizeof(arm64_instr_t)) {
+
+  addr_t __psynch_mutexwait_svc_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", "__psynch_mutexwait");
+  __psynch_mutexwait_svc_addr += 4;
+
+  for (; insn_addr < insn_addr_end; insn_addr += sizeof(arm64_instr_t)) {
     if (*(arm64_instr_t *)insn_addr == 0xd4001001) {
       dobby_enable_near_branch_trampoline();
       if (insn_addr == write_svc_addr)
+        continue;
+
+      if (insn_addr == __psynch_mutexwait_svc_addr)
         continue;
       DobbyInstrument((void *)insn_addr, common_handler);
       LOG(1, "instrument svc at %p", insn_addr);
     }
   }
 }
-#endif
+
+void monitor_main_binary() {
+  auto   main        = ProcessRuntimeUtility::GetProcessModuleMap()[0];
+  addr_t main_header = (addr_t)main.load_address;
+  auto text_section  = mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
+
+  addr_t insn_addr     = main_header + (addr_t)text_section->offset;
+  addr_t insn_addr_end = insn_addr + text_section->size;
+
+  for (; insn_addr < insn_addr_end; insn_addr += sizeof(arm64_instr_t)) {
+    if (*(arm64_instr_t *)insn_addr == 0xd4001001) {
+      DobbyInstrument((void *)insn_addr, common_handler);
+      LOG(1, "instrument svc at %p", insn_addr);
+    }
+  }
+}
+
+void system_call_monitor() {
+  monitor_libsystem_kernel_dylib();
+
+  monitor_main_binary();
+}

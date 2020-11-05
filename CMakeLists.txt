@@ -283,6 +283,11 @@ set(xnucxx.SOURCE_FILE_LIST
 
 set(dobby.plugin.SOURCE_FILE_LIST
 )
+
+set(dobby.HEADER_FILE_LIST
+  include/dobby.h
+  )
+
 if(Plugin.SymbolResolver)
   include_directories(builtin-plugin/SymbolResolver)
 
@@ -300,6 +305,7 @@ if(Plugin.SymbolResolver)
     )
   endif()
 endif()
+
 if(Plugin.Darwin.HideLibrary)
   if(NOT SYSTEM.Darwin)
     message(FATAL_ERROR "[!] Plugin.Darwin.HideLibrary only works on Darwin.")
@@ -309,6 +315,7 @@ if(Plugin.Darwin.HideLibrary)
     builtin-plugin/HideLibrary/hide_library_darwin.cc
   )
 endif()
+
 if(Plugin.Darwin.ObjectiveC)
   if(NOT SYSTEM.Darwin)
     message(FATAL_ERROR "[!] Plugin.Darwin.ObjectiveC only works on Darwin.")
@@ -317,16 +324,6 @@ if(Plugin.Darwin.ObjectiveC)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     external/helpers/variable_cache.c
     builtin-plugin/ObjectiveC/objective_c_tookit.mm
-  )
-endif()
-if(Plugin.ApplicationEventMonitor)
-  message(STATUS "[Dobby] Enable Plugin.ApplicationEventMonitor")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/ApplicationEventMonitor/MGCopyAnswerMonitor.cc
-    builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
-    builtin-plugin/ApplicationEventMonitor/file_operation_monitor.cc
-    builtin-plugin/ApplicationEventMonitor/memory_operation_instrument.cc
-    builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
   )
 endif()
 
@@ -341,16 +338,11 @@ if(Plugin.LinkerLoadCallback)
     )
 endif()
 
-if(Plugin.SupervisorCallMonitor)
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/SupervisorCallMonitor/mach_system_call.cc
-    builtin-plugin/SupervisorCallMonitor/system_call.cc
-    builtin-plugin/SupervisorCallMonitor/MachUtility.cc
-    )
-endif()
-
 include_directories(
   .
+
+  ./include
+
   ./source
   ./source/UserMode
   ./source/MemoryKit
@@ -361,15 +353,10 @@ include_directories(
   ./external/xnucxx
 
   builtin-plugin
-  builtin-plugin/SupervisorCallMonitor
   builtin-plugin/AndroidRestriction
   builtin-plugin/SymbolResolver
   builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC
-)
-
-set(dobby.HEADER_FILE_LIST
-  include/dobby.h
 )
 
 # add build version
@@ -390,19 +377,18 @@ set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 message(STATUS "Version: ${DOBBY_BUILD_VERSION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 
-set(dobby_name dobby)
-
+set(dobby_output_name dobby)
 if(SYSTEM.Darwin AND Darwin.GenerateFramework)
-  set(dobby_name Dobby)
+  set(dobby_output_name Dobby)
 endif()
 
 if(DOBBY_GENERATE_SHARED)
-  add_library(${dobby_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  add_library(${dobby_output_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 else()
-  add_library(${dobby_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  add_library(${dobby_output_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 endif()
 
-target_include_directories(${dobby_name} PUBLIC include)
+target_include_directories(${dobby_output_name} PUBLIC include)
 
 if(SYSTEM.Darwin AND Darwin.GenerateFramework)
   # set framework property
@@ -420,8 +406,8 @@ if(SYSTEM.Darwin AND Darwin.GenerateFramework)
   # message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
   # add_custom_command(TARGET Dobby
   #   POST_BUILD
-  #   COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_name}>/Frameworks
-  #   COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_name}>/Frameworks/Gollum.framework
+  #   COMMAND mkdir -p $<TARGET_FILE_DIR:${dobby_output_name}>/Frameworks
+  #   COMMAND cp -R ${CMAKE_SOURCE_DIR}/buildin-plugin/Gollum_2019.12.31.framework $<TARGET_FILE_DIR:${dobby_output_name}>/Frameworks/Gollum.framework
   #   )
 endif()
 
@@ -430,6 +416,10 @@ if(SYSTEM.Android)
 endif()
 
 if(SYSTEM.Darwin)
-  target_link_libraries(${dobby_name}
+  target_link_libraries(${dobby_output_name}
     "-framework Foundation")
+endif()
+
+if(Plugin.SupervisorCallMonitor)
+  add_subdirectory(builtin-plugin/SupervisorCallMonitor)
 endif()
