@@ -38,12 +38,10 @@ static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address < b.address);
 }
 
-std::vector<MemoryRegion> ProcessMemoryLayout;
-std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  if (!ProcessMemoryLayout.empty()) {
-    ProcessMemoryLayout.clear();
-  }
 
+std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
+  std::vector<MemoryRegion> ProcessMemoryLayout;
+  
   struct vm_region_submap_short_info_64 submap_info;
   mach_msg_type_number_t                count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
   mach_vm_address_t                     addr  = 0;
@@ -91,11 +89,10 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
 // ================================================================
 // GetProcessModuleMap
 
-std::vector<RuntimeModule> ProcessModuleMap;
+
 std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-  if (!ProcessMemoryLayout.empty()) {
-    ProcessMemoryLayout.clear();
-  }
+  std::vector<RuntimeModule> ProcessModuleMap;
+  
   int image_count = _dyld_image_count();
   for (size_t i = 0; i < image_count; i++) {
     const struct mach_header *header = NULL;
