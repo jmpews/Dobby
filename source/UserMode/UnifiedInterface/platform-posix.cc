@@ -5,6 +5,7 @@
 #if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h> // for pthread_set_name_np
 #endif
+
 #include <sched.h> // for sched_yield
 #include <stdio.h>
 #include <time.h>
@@ -14,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/syscall.h>
+
 #if defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h> // NOLINT, for sysctl
 #endif
@@ -82,7 +85,7 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
   int err = 0;
   err     = pthread_create(&(platform_handle->thread), nullptr, thread_handler_wrapper, delegate);
   if (err != 0) {
-    ERRNO_PRINT();
+    FATAL("pthread create failed");
     return false;
   }
   return true;

@@ -31,6 +31,11 @@ constexpr Register TMP_REG_0 = r12;
 
 constexpr Register VOLATILE_REGISTER = r12;
 
+#define Rd(rd) (rd.code() << kRdShift)
+#define Rt(rt) (rt.code() << kRtShift)
+#define Rn(rn) (rn.code() << kRnShift)
+#define Rm(rm) (rm.code() << kRmShift)
+
 // ===== PseudoLabel =====
 
 class PseudoLabel : public Label {
@@ -122,19 +127,23 @@ private:
 // Operand
 
 class Operand {
+  friend class OpEncode;
 public:
-  explicit Operand(int immediate) : imm_(immediate), rm_(no_reg), rs_(no_reg) {
+  Operand(int immediate) : imm_(immediate), rm_(no_reg), shift_(LSL), shift_imm_(0), rs_(no_reg) {
   }
-  explicit Operand(Register rm) : imm_(-1), rm_(rm), rs_(no_reg) {
+
+  Operand(Register rm) : imm_(0), rm_(rm), shift_(LSL), shift_imm_(0), rs_(no_reg) {
   }
-  explicit Operand(Register rm, Shift shift, int shift_imm)
-      : imm_(-1), rm_(rm), rs_(no_reg), shift_(shift), shift_imm_(shift & 31) {
+
+  Operand(Register rm, Shift shift, uint32_t shift_imm)
+      : imm_(0), rm_(rm), shift_(shift), shift_imm_(shift_imm), rs_(no_reg) {
   }
-  explicit Operand(Register rm, Shift shift, Register rs) : imm_(-1), rm_(rm), rs_(rs), shift_(shift) {
+
+  Operand(Register rm, Shift shift, Register rs) : imm_(0), rm_(rm), shift_(shift), shift_imm_(0), rs_(rs) {
   }
 
 public:
-  uint32_t GetImmediate() const {
+  int GetImmediate() const {
     return imm_;
   }
 
@@ -145,7 +154,7 @@ private:
   Shift shift_;
   int   shift_imm_;
 
-  uint32_t imm_;
+  int imm_;
 
 private:
   friend class EncodeUtility;
@@ -155,19 +164,19 @@ private:
 // MemOperand
 
 class MemOperand {
+  friend class OpEncode;
+
 public:
-  explicit MemOperand(Register rn, int32_t offset = 0, AddrMode am = Offset)
-      : rn_(rn), rm_(no_reg), offset_(offset), am_(am) {
+  MemOperand(Register rn, int32_t offset, AddrMode addrmode = Offset)
+      : rn_(rn), offset_(offset), rm_(no_reg), shift_(LSL), shift_imm_(0), addrmode_(addrmode) {
   }
 
-  explicit MemOperand(Register rn, Register rm, AddrMode am = Offset)
-      : rn_(rn), rm_(rm), shift_(LSL), shift_imm_(0), am_(am) {
-    UNREACHABLE();
+  MemOperand(Register rn, Register rm, AddrMode addrmode = Offset)
+      : rn_(rn), offset_(0), rm_(rm), shift_(LSL), shift_imm_(0), addrmode_(addrmode) {
   }
 
-  explicit MemOperand(Register rn, Register rm, Shift shift, int shift_imm, AddrMode am = Offset)
-      : rn_(rn), rm_(rm), shift_(shift), shift_imm_(shift_imm & 31), am_(am) {
-    UNREACHABLE();
+  MemOperand(Register rn, Register rm, Shift shift, uint32_t shift_imm, AddrMode addrmode = Offset)
+      : rn_(rn), offset_(0), rm_(rm), shift_(shift), shift_imm_(shift_imm), addrmode_(addrmode) {
   }
 
   const Register &rn() const {
@@ -181,16 +190,16 @@ public:
   }
 
   bool IsImmediateOffset() const {
-    return (am_ == Offset);
+    return (addrmode_ == Offset);
   }
   bool IsRegisterOffset() const {
-    return (am_ == Offset);
+    return (addrmode_ == Offset);
   }
   bool IsPreIndex() const {
-    return am_ == PreIndex;
+    return addrmode_ == PreIndex;
   }
   bool IsPostIndex() const {
-    return am_ == PostIndex;
+    return addrmode_ == PostIndex;
   }
 
 private:
@@ -199,54 +208,46 @@ private:
 
   int32_t offset_; // valid if rm_ == no_reg
 
-  Shift shift_;
-  int   shift_imm_; // valid if rm_ != no_reg && rs_ == no_reg
+  Shift    shift_;
+  uint32_t shift_imm_; // valid if rm_ != no_reg && rs_ == no_reg
 
-  AddrMode am_; // bits P, U, and W
-
-  friend class EncodeUtility;
+  AddrMode addrmode_; // bits P, U, and W
 };
 
-class EncodeUtility {
+class OpEncode {
 public:
-  static inline uint32_t Rd(Register rd) {
-    return static_cast<uint32_t>(rd.code()) << 12;
-  }
-
-  static inline uint32_t Rt(Register rt) {
-    return static_cast<uint32_t>(rt.code()) << 12;
-  }
-
-  static inline uint32_t Rm(Register rm) {
-    return static_cast<uint32_t>(rm.code()) << 0;
-  }
-
-  static inline uint32_t Rn(Register rn) {
-    return static_cast<uint32_t>(rn.code()) << 16;
-  }
-
-  // ===
-  static inline uint32_t MemOperand(const MemOperand operand) {
+  static uint32_t MemOperand(const MemOperand operand) {
     uint32_t encoding = 0;
-    if (!operand.rm_.IsValid()) {
-      if (operand.offset_ < 0) {
-        encoding = (operand.am_ ^ (1 << 23)) | (-operand.offset_); // Flip U to adjust sign.
-      } else {
-        encoding = operand.am_ | operand.offset_;
-      }
-      encoding |= EncodeUtility::Rn(operand.rn_);
-    } else {
+    if (operand.rm_.IsValid()) {
       UNREACHABLE();
     }
+
+    if (operand.offset_ > 0) {
+      encoding |= (1 << 23);
+    }
+
+    encoding |= bits(operand.offset_, 0, 11);
+
+    if(operand.addrmode_ == Offset) {
+
+    }
+
+      encoding = (operand.addrmode_ ^ ) | (-operand.offset_); // Flip U to adjust sign.
+    } else {
+      encoding = operand.addrmode_ | operand.offset_;
+    }
+
+    encoding |= Rn(operand.rn_);
+
     return encoding;
   }
 
-  static inline uint32_t Operand(const Operand operand) {
+  static uint32_t Operand(const Operand operand) {
     uint32_t encoding = 0;
     if (operand.rm_.IsValid()) {
-      encoding = operand.GetImmediate();
-    } else {
       encoding = static_cast<uint32_t>(operand.rm_.code());
+    } else {
+      encoding = operand.GetImmediate();
     }
 
     return encoding;
@@ -335,18 +336,18 @@ public:
   void ldr(Condition cond, Register rt, const MemOperand &operand) {
     uint32_t encoding = 0x05100000U;
     encoding |= (cond << kConditionShift);
-    encoding |= EncodeUtility::Rt(rt) | EncodeUtility::MemOperand(operand);
+    encoding |= Rt(rt) | OpEncode::MemOperand(operand);
     buffer_->EmitARMInst(encoding);
   }
 
   void str(Register rt, const MemOperand &operand) {
-    ldr(AL, rt, operand);
+    str(AL, rt, operand);
   }
 
   void str(Condition cond, Register rt, const MemOperand &operand) {
     uint32_t encoding = 0x05000000U;
     encoding |= (cond << kConditionShift);
-    encoding |= EncodeUtility::Rt(rt) | EncodeUtility::MemOperand(operand);
+    encoding |= Rt(rt) | OpEncode::MemOperand(operand);
     buffer_->EmitARMInst(encoding);
   }
 
@@ -355,9 +356,9 @@ public:
   }
 
   void mov(Condition cond, Register rd, const Operand &operand) {
-    uint32_t encoding = 0x01a00000U;
+    uint32_t encoding = 0x01a00000;
     encoding |= (cond << kConditionShift);
-    encoding |= EncodeUtility::Rd(rd) | EncodeUtility::Operand(operand);
+    encoding |= Rd(rd) | OpEncode::Operand(operand);
     buffer_->EmitARMInst(encoding);
   }
 
@@ -366,7 +367,7 @@ public:
     b(AL, branch_offset);
   }
   void b(Condition cond, int branch_offset) {
-    uint32_t encoding = 0xb000000;
+    uint32_t encoding = 0xa000000;
     encoding |= (cond << kConditionShift);
     uint32_t imm24 = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;
@@ -377,7 +378,7 @@ public:
     bl(AL, branch_offset);
   }
   void bl(Condition cond, int branch_offset) {
-    uint32_t encoding = 0xa000000;
+    uint32_t encoding = 0xb000000;
     encoding |= (cond << kConditionShift);
     uint32_t imm24 = bits(branch_offset >> 2, 0, 23);
     encoding |= imm24;

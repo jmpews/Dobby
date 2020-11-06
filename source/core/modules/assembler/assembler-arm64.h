@@ -138,11 +138,11 @@ public:
   inline explicit Operand(int64_t imm)
       : immediate_(imm), reg_(InvalidRegister), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extent_imm_(0) {
   }
-  inline Operand(Register reg, Shift shift = LSL, int32_t imm = 0)
-      : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(imm) {
+  inline Operand(Register reg, Shift shift = LSL, int32_t shift_imm = 0)
+      : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(shift_imm) {
   }
-  inline Operand(Register reg, Extend extend, int32_t imm = 0)
-      : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(imm) {
+  inline Operand(Register reg, Extend extend, int32_t shift_imm = 0)
+      : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(shift_imm) {
   }
 
   // =====
@@ -179,11 +179,13 @@ public:
   }
 
 private:
-  int64_t  immediate_;
+  int64_t immediate_;
+
   Register reg_;
-  Shift    shift_;
-  Extend   extend_;
-  int32_t  shift_extent_imm_;
+
+  Shift   shift_;
+  Extend  extend_;
+  int32_t shift_extent_imm_;
 };
 
 // ================================================================
@@ -263,11 +265,14 @@ public:
 private:
   Register base_;
   Register regoffset_;
-  int64_t  offset_;
-  AddrMode addrmode_;
+
+  int64_t offset_;
+
   Shift    shift_;
   Extend   extend_;
-  int32_t  shift_extend_imm_;
+  uint32_t shift_extend_imm_;
+
+  AddrMode addrmode_;
 };
 
 // ================================================================

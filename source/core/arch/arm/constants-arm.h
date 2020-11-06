@@ -1,16 +1,7 @@
 #ifndef CORE_ARCH_CONSTANTS_ARM_H
 #define CORE_ARCH_CONSTANTS_ARM_H
 
-// Memory operand addressing mode.
-enum AddrMode {
-  // Bit encoding P U W.
-  Offset       = (8 | 4 | 0) << 21, // Offset (without writeback to base).
-  PreIndex     = (8 | 4 | 1) << 21, // Pre-indexed addressing with writeback.
-  PostIndex    = (0 | 4 | 0) << 21, // Post-indexed addressing with writeback.
-  NegOffset    = (8 | 0 | 0) << 21, // Negative offset (without writeback to base).
-  NegPreIndex  = (8 | 0 | 1) << 21, // Negative pre-indexed with writeback.
-  NegPostIndex = (0 | 0 | 0) << 21  // Negative post-indexed with writeback.
-};
+enum AddrMode { Offset = 0, PreIndex = 1, PostIndex = 2 };
 
 enum Condition {
   EQ = 0,  // equal
@@ -65,6 +56,13 @@ enum {
 };
 
 enum InstructionFields {
+  // Registers.
+  kRdShift = 12,
+  kRtShift = 12,
+  kRmShift = 10,
+  kRnShift = 16,
+
+  // Condition
   kConditionShift = 28,
 };
 
