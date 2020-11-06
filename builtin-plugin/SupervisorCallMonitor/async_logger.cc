@@ -19,6 +19,11 @@ static int output_fd = -1;
 
 void async_logger_print(char *str) {
   pthread_mutex_lock(&async_logger_mutex);
+#if 0
+  {
+    write(STDOUT_FILENO, str, strlen(str) + 1);
+  }
+#endif
   memcpy(async_logger_buffer + async_logger_buffer_cursor, str, strlen(str));
   async_logger_buffer_cursor += strlen(str);
   pthread_mutex_unlock(&async_logger_mutex);

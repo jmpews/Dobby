@@ -17,8 +17,8 @@
 
 #include "async_logger.h"
 
-static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
-  uintptr_t result;
+static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
+  addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
   result = reg_ctx->general.regs.rcx;
@@ -41,23 +41,25 @@ extern const char *mach_syscall_num_to_str(int num);
 
 extern char *mach_msg_to_str(mach_msg_header_t *msg);
 
-void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   char buffer[256] = {0};
   int  syscall_rum = reg_ctx->general.regs.x16;
-  if (syscall_rum >= 0) {
+  if (syscall_rum == 0) {
+    syscall_rum = (int)getCallFirstArg(reg_ctx);
+    sprintf(buffer, "[syscall svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
+  } else if (syscall_rum == -31) {
+    // mach_msg_trap
+    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(reg_ctx);
+    char *             mach_msg_name = mach_msg_to_str(msg);
+    if (mach_msg_name) {
+      sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);
+    } else {
+      buffer[0] = 0;
+    }
+  } else if (syscall_rum > 0) {
     sprintf(buffer, "[svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
   } else {
     sprintf(buffer, "[mach svc-%d] %s\n", syscall_rum, mach_syscall_num_to_str(syscall_rum));
-    // mach_msg_trap
-    if (syscall_rum == -31) {
-      mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(reg_ctx);
-      char *mach_msg_name = mach_msg_to_str(msg);
-      if(mach_msg_name) {
-        sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);
-      } else {
-        buffer[0] = 0;
-      }
-    }
   }
   async_logger_print(buffer);
 }

@@ -129,5 +129,5 @@ __attribute__((constructor)) static void ctor() {
 
   system_call_monitor();
 
-//  mach_system_call_monitor();
+  mach_system_call_monitor();
 }
