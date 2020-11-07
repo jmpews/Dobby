@@ -12,7 +12,7 @@ std::map<void *, const char *> *func_map;
 void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   auto iter = func_map->find(info->function_address);
   if(iter != func_map->end()) {
-    LOG(1, "func %s:%p invoke", iter->first, iter->second);
+    LOG(1, "func %s:%p invoke", iter->second, iter->first);
   }
 }
 
@@ -27,6 +27,7 @@ const char *func_array[] = {
 #if 1
 __attribute__((constructor)) static void ctor() {
   void *func = NULL;
+  log_set_level(1);
 
   func_map = new std::map<void *, const char *>();
 
