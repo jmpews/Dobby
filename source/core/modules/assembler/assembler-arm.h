@@ -12,6 +12,8 @@
 #include "xnucxx/LiteMutableArray.h"
 #include "xnucxx/LiteIterator.h"
 
+#include <math.h>
+
 namespace zz {
 namespace arm {
 
@@ -128,6 +130,7 @@ private:
 
 class Operand {
   friend class OpEncode;
+
 public:
   Operand(int immediate) : imm_(immediate), rm_(no_reg), shift_(LSL), shift_imm_(0), rs_(no_reg) {
   }
@@ -167,7 +170,7 @@ class MemOperand {
   friend class OpEncode;
 
 public:
-  MemOperand(Register rn, int32_t offset, AddrMode addrmode = Offset)
+  MemOperand(Register rn, int32_t offset = 0, AddrMode addrmode = Offset)
       : rn_(rn), offset_(offset), rm_(no_reg), shift_(LSL), shift_imm_(0), addrmode_(addrmode) {
   }
 
@@ -222,21 +225,31 @@ public:
       UNREACHABLE();
     }
 
+    // sign
+    uint32_t U = 0;
     if (operand.offset_ > 0) {
-      encoding |= (1 << 23);
+      U = (1 << 23);
     }
+    encoding |= U;
 
-    encoding |= bits(operand.offset_, 0, 11);
+    // offset
+    encoding |= bits(abs(operand.offset_), 0, 11);
 
-    if(operand.addrmode_ == Offset) {
-
+    // addr mode
+    uint32_t P, W;
+    if (operand.addrmode_ == Offset) {
+      P = 1;
+      W = 0;
+    } else if (operand.addrmode_ == PostIndex) {
+      P = 0;
+      W = 0;
+    } else if (operand.addrmode_ == PreIndex) {
+      P = 1;
+      W = 1;
     }
+    encoding |= ((P << 24) | (W << 21));
 
-      encoding = (operand.addrmode_ ^ ) | (-operand.offset_); // Flip U to adjust sign.
-    } else {
-      encoding = operand.addrmode_ | operand.offset_;
-    }
-
+    // rn
     encoding |= Rn(operand.rn_);
 
     return encoding;
@@ -306,46 +319,40 @@ public:
 
 public:
   void sub(Register rd, Register rn, const Operand &operand) {
-    sub(AL, rd, rn, operand);
-  }
-
-  void sub(Condition cond, Register rd, Register rn, const Operand &operand) {
-    if (rn.Is(pc))
-      UNIMPLEMENTED();
-
-    uint32_t imm = operand.GetImmediate();
-    buffer_->EmitARMInst(0x024d0000U | (cond << 28) | (rd.code() << 12) | (rn.code() << 16) | imm);
+    uint32_t encoding = B25 | B22;
+    add_sub(encoding, AL, rd, rn, operand);
   }
 
   void add(Register rd, Register rn, const Operand &operand) {
-    sub(AL, rd, rn, operand);
+    uint32_t encoding = B25 | B23;
+    add_sub(encoding, AL, rd, rn, operand);
   }
 
-  void add(Condition cond, Register rd, Register rn, const Operand &operand) {
-    if (rn.Is(pc))
-      UNIMPLEMENTED();
+  void add_sub(uint32_t encoding, Condition cond, Register rd, Register rn, const Operand &operand) {
+    encoding |= (cond << kConditionShift);
 
     uint32_t imm = operand.GetImmediate();
-    buffer_->EmitARMInst(0x02900000U | (cond << 28) | (rd.code() << 12) | (rn.code() << 16) | imm);
-  }
+    encoding |= imm;
 
-  void ldr(Register rt, const MemOperand &operand) {
-    ldr(AL, rt, operand);
-  }
+    encoding |= Rd(rd);
 
-  void ldr(Condition cond, Register rt, const MemOperand &operand) {
-    uint32_t encoding = 0x05100000U;
-    encoding |= (cond << kConditionShift);
-    encoding |= Rt(rt) | OpEncode::MemOperand(operand);
+    encoding |= Rn(rn);
+
+
     buffer_->EmitARMInst(encoding);
   }
 
-  void str(Register rt, const MemOperand &operand) {
-    str(AL, rt, operand);
+  void ldr(Register rt, const MemOperand &operand) {
+    uint32_t encoding = B20 | B26;
+    load_store(encoding, AL, rt, operand);
   }
 
-  void str(Condition cond, Register rt, const MemOperand &operand) {
-    uint32_t encoding = 0x05000000U;
+  void str(Register rt, const MemOperand &operand) {
+    uint32_t encoding = B26;
+    load_store(encoding, AL, rt, operand);
+  }
+
+  void load_store(uint32_t encoding, Condition cond, Register rt, const MemOperand &operand) {
     encoding |= (cond << kConditionShift);
     encoding |= Rt(rt) | OpEncode::MemOperand(operand);
     buffer_->EmitARMInst(encoding);

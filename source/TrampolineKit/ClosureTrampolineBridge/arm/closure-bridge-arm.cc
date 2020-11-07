@@ -49,13 +49,14 @@ void *get_closure_bridge() {
   _ sub(sp, sp, Operand(8));
   _ str(r0, MemOperand(sp, 4));
 
+  // stack align
   _ sub(sp, sp, Operand(8));
 
   _ mov(r0, Operand(sp));
   _ mov(r1, Operand(r12));
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
-  // dummy stack align
+  // stack align
   _ add(sp, sp, Operand(8));
 
   // restore sp placeholder stack
