@@ -227,7 +227,7 @@ public:
 
     // sign
     uint32_t U = 0;
-    if (operand.offset_ > 0) {
+    if (operand.offset_ >= 0) {
       U = (1 << 23);
     }
     encoding |= U;
