@@ -382,7 +382,7 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
 
   // Branches and miscellaneous control
   if ((inst1 & 0xf800) == 0xf000 && (inst2 & 0x8000) == 0x8000) {
-    int32_t op1 = 0, op3 = 0;
+    uint32_t op1 = 0, op3 = 0;
     op1 = bits(inst1, 6, 9);
     op3 = bits(inst2, 12, 14);
 
@@ -484,35 +484,48 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     }
   }
 
-  // Data-processing (simple immediate)
-  if ((inst1 & 0xfb50) == 0xf200 & (inst2 & 0x8000) == 0) {
-    int o1 = bit(inst1, 7);
-    int o2 = bit(inst1, 5);
-    int rn = bits(inst1, 0, 3);
+  // Data-processing (plain binary immediate)
+  if ((inst1 & (0xfa10)) == 0xf200 & (inst2 & 0x8000) == 0) {
+    uint32_t op0 = 0, op1 = 0;
+    op0 = bit(inst1, 8);
+    op1 = bits(inst2, 5, 6);
 
-    uint32_t i     = bit(inst1, 10);
-    uint32_t imm3  = bits(inst2, 12, 14);
-    uint32_t imm8  = bits(inst2, 0, 7);
-    uint32_t rd    = bits(inst2, 8, 11);
-    uint32_t label = imm8 | (imm3 << 8) | (i << 11);
-    addr32_t val   = 0;
+    // Data-processing (simple immediate)
+    if (op0 == 0 && (op1 & 0b10) == 0b00) {
+      int o1 = bit(inst1, 7);
+      int o2 = bit(inst1, 5);
+      int rn = bits(inst1, 0, 3);
 
-    if (rn == 15 && o1 == 0 && o2 == 0) {
-      // ADR - T3 variant
-      // adr with add
-      val = from_pc + label;
-    } else if (rn == 15 && o1 == 1 && o2 == 1) {
-      // ADR - T2 variant
-      // adr with sub
-      val = from_pc - label;
+      // ADR
+      if (((o1 == 0 && o2 == 0) || (o1 == 1 && o2 == 1)) && rn == 0b1111) {
+        uint32_t i     = bit(inst1, 10);
+        uint32_t imm3  = bits(inst2, 12, 14);
+        uint32_t imm8  = bits(inst2, 0, 7);
+        uint32_t rd    = bits(inst2, 8, 11);
+        uint32_t label = imm8 | (imm3 << 8) | (i << 11);
+        addr32_t val   = 0;
+
+        if (o1 == 0 && o2 == 0) { // ADR - T3
+          // ADR - T3 variant
+          // adr with add
+          val = from_pc + label;
+
+        } else if (o1 == 1 && o2 == 1) { // ADR - T2
+          // ADR - T2 variant
+          // adr with sub
+          val = from_pc - label;
+        } else {
+          UNREACHABLE();
+        }
+
+        // ===
+        _ t2_ldr(Register::R(rd), MemOperand(pc, 4));
+        _ t2_b(0);
+        _ EmitAddress(val);
+        // ===
+        is_instr_relocated = true;
+      }
     }
-
-    // ===
-    _ t2_ldr(Register::R(rd), MemOperand(pc, 4));
-    _ t2_b(0);
-    _ EmitAddress(val);
-    // ===
-    is_instr_relocated = true;
   }
 
   // LDR literal (T2)
