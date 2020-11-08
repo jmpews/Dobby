@@ -19,23 +19,40 @@ void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 const char *func_array[] = {
 //    "_ZN3art2gc4Heap13PreZygoteForkEv",
 
-//    "__loader_dlopen",
+    "__loader_dlopen",
     "dlsym",
-//    "dlclose"
+    "dlclose"
 };
+
+namespace art {
+  namespace gc {
+    namespace Heap {
+      namespace _11 {
+        char PreZygoteFork[] = {
+          0x2D, 0xE9, 0xF0, 0x4F,
+          0xAD, 0xF2, 0x04, 0x4D,
+          0x07, 0x46,
+        };
+      }
+    }
+  }
+}
+
 
 #if 1
 __attribute__((constructor)) static void ctor() {
   void *func = NULL;
-  log_set_level(1);
+  log_set_level(0);
 
   func_map = new std::map<void *, const char *>();
 
-  for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
-    func = DobbySymbolResolver(NULL, func_array[i]);
-    func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
-    DobbyInstrument(func, common_handler);
-  }
+//  for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
+//    func = DobbySymbolResolver(NULL, func_array[i]);
+//    func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
+//    DobbyInstrument(func, common_handler);
+//  }
+
+  DobbyInstrument((void *)((addr_t)art::gc::Heap::_11::PreZygoteFork + 1), common_handler);
 
 }
 #endif
