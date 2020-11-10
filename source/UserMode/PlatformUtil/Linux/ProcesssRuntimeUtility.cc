@@ -15,14 +15,11 @@
 // GetProcessMemoryLayout
 
 static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
-  return (a.address > b.address);
+  return ((addr_t)a.address < (addr_t)b.address);
 }
 
-std::vector<MemoryRegion> ProcessMemoryLayout;
 std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  if (!ProcessMemoryLayout.empty()) {
-    ProcessMemoryLayout.clear();
-  }
+  std::vector<MemoryRegion> ProcessMemoryLayout;
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
@@ -67,6 +64,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
       FATAL("/proc/self/maps parse failed!");
+      fclose(fp);
       return ProcessMemoryLayout;
     }
 
@@ -81,22 +79,23 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       permission = MemoryPermission::kNoAccess;
     }
 
+#if 0
+      DLOG(0, "%p --- %p", region_start, region_end);
+#endif
+
     ProcessMemoryLayout.push_back(MemoryRegion{(void *)region_start, region_end - region_start, permission});
   }
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
+  fclose(fp);
   return ProcessMemoryLayout;
 }
 
 // ================================================================
 // GetProcessModuleMap
 
-std::vector<RuntimeModule> ProcessModuleMap;
-
 static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
-  if (!ProcessModuleMap.empty()) {
-    ProcessModuleMap.clear();
-  }
+  std::vector<RuntimeModule> ProcessModuleMap;
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
@@ -141,6 +140,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
       FATAL("/proc/self/maps parse failed!");
+      fclose(fp);
       return ProcessModuleMap;
     }
 
@@ -163,31 +163,34 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
     ProcessModuleMap.push_back(module);
   }
 
+  fclose(fp);
   return ProcessModuleMap;
 }
 
 #if defined(__ANDROID__) && defined(__LP64__)
 static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
+  std::vector<RuntimeModule> ProcessModuleMap;
+
   dl_iterate_phdr(
       [](dl_phdr_info *info, size_t size, void *data) {
         RuntimeModule module = {0};
         if (info->dlpi_name && info->dlpi_name[0] == '/')
           strcpy(module.path, info->dlpi_name);
         module.load_address = (void *)info->dlpi_addr;
-        ProcessModuleMap.push_back(module);
+
+        // push to vector
+        auto ProcessModuleMap = reinterpret_cast<std::vector<RuntimeModule> *>(data);
+        ProcessModuleMap->push_back(module);
         return 0;
       },
-      NULL);
+      (void *)&ProcessModuleMap);
 
   return ProcessModuleMap;
 }
 #endif
 
 std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-  if (!ProcessMemoryLayout.empty()) {
-    ProcessMemoryLayout.clear();
-  }
-#if defined(__LP64__)
+#if defined(__LP64__) && 0
   return get_process_map_with_linker_iterator();
 #else
   return get_process_map_with_proc_maps();
