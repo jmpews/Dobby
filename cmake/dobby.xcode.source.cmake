@@ -33,10 +33,12 @@ set(dobby.SOURCE_FILE_LIST
   # instruction relocation
   source/InstructionRelocation/arm/ARMInstructionRelocation.cc
   source/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
-  source/InstructionRelocation/x86/X86OpcodoDecodeTable.cc
   source/InstructionRelocation/x86/X86InstructionRelocation.cc
-  source/InstructionRelocation/x64/X64IPRelativeOpcodeTable.cc
   source/InstructionRelocation/x64/X64InstructionRelocation.cc
+
+  source/InstructionRelocation/x86/Ia32Disassembler.cc
+  source/InstructionRelocation/x86/disassembler.c
+  source/InstructionRelocation/x86/disasm.c
 
   # intercept routing
   source/InterceptRouting/InterceptRouting.cpp
