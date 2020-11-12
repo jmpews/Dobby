@@ -59,7 +59,6 @@ endif()
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   message(STATUS "[Dobby] Enable debug logging")
 endif()
 
@@ -146,8 +145,9 @@ else()
 endif()
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-  include(cmake/dobby.xcode.source.cmake)
 endif()
+include(cmake/dobby.xcode.source.cmake)
+
 
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # cpu
@@ -199,16 +199,10 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   )
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
-  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/core/arch/x86/cpu-x86.cc
-    source/InstructionRelocation/x86/X86OpcodoDecodeTable.cc
-    )
-  if (PROCESSOR.X86_64)
-    set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-      source/InstructionRelocation/${arch1}/${ARCH1}IPRelativeOpcodeTable.cc
-      )
-  endif ()
   set(NearBranch ON)
+  if (PROCESSOR.X86_64)
+    add_definitions(-DDETOURS_X64)
+  endif()
 endif()
 
 if(SYSTEM.Darwin)

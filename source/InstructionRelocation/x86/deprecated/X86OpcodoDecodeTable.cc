@@ -87,13 +87,13 @@ void _DecodeOpEn_O(InstrMnemonic *instr, addr_t p) {
 #define REX_X(byte) ((byte & 0b00000010) >> 1)
 #define REX_B(byte) ((byte & 0b00000001) >> 0)
 
-#define ModRM_Mod(byte)       ((byte & 0b11000000) >> 6)
+#define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
-#define ModRM_RM(byte)        (byte & 0b00000111)
+#define ModRM_RM(byte) (byte & 0b00000111)
 
 #define SIB_Scale(sib) ((sib & 0b11000000) >> 6)
 #define SIB_Index(sib) ((sib & 0b00111000) >> 3)
-#define SIB_Base(sib)  ((sib & 0b00000111) >> 0)
+#define SIB_Base(sib) ((sib & 0b00000111) >> 0)
 
 #define REX_SIB_Base(rex, sib) ((REX_B(rex) << 3) | SIB_Base(sib))
 
@@ -582,10 +582,10 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {
     {0xF0, _xDecodePrefix},
     {0xF1, _xDecodeOpEn_ZO},
     {0xF2, _xDecodeOpEn_ZO},
-#if defined(_M_X64) || defined(__x86_64__)
-    {0xF3, _xDecodeOpEn_ZO},
-#else
+#ifdef DETOURS_X86
     {0xF3, _CopyF3},
+#else
+    {0xF3, _xDecodeOpEn_ZO},
 #endif
     {0xF4, _xDecodeOpEn_ZO},
     {0xF5, _xDecodeOpEn_ZO},
@@ -599,7 +599,6 @@ OpcodeDecodeItem OpcodeDecodeTable[257] = {
     {0xFD, _xDecodeOpEn_ZO},
     {0xFE, 2, OpEn_M, OpSz_8, ImmSz_0, _DecodeOpEn_M},
     {0xFF, 2, OpEn_M, OpSz_16 | OpSz_32, ImmSz_0, _DecodeOpEn_M},
-    {0, 0, 0, 0, 0}
+    {0, 0, 0, 0, 0}};
 
-};
 #endif
