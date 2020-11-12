@@ -15,8 +15,8 @@ enum SegmentPrefix {
 bool supports_rex_ = false;
 
 void DecodeInstruction(uint8_t *instr) {
-  bool    have_prefixes = true;
-  uint8_t prefix[4]     = {0, 0, 0, 0};
+  bool have_prefixes = true;
+  uint8_t prefix[4]  = {0, 0, 0, 0};
 
   // decode legacy prefix
   do {
@@ -79,6 +79,36 @@ void DecodeInstruction(uint8_t *instr) {
 #define OpEn_I(immediate_size)                                                                                         \
   do {                                                                                                                 \
     immediate_bytes = immediate_size;                                                                                  \
+  } while (0);                                                                                                         \
+  break;
+
+#define OpEn_RMI(immediate_size)                                                                                       \
+  do {                                                                                                                 \
+    immediate_bytes = immediate_size;                                                                                  \
+  } while (0);                                                                                                         \
+  break;
+
+#define OpEn_O                                                                                                         \
+  do {                                                                                                                 \
+    reg_is_opcode = true;                                                                                              \
+  } while (0);                                                                                                         \
+  break;
+
+#define OpEn_D                                                                                                         \
+  do {                                                                                                                 \
+    reg_is_opcode = true;                                                                                              \
+  } while (0);                                                                                                         \
+  break;
+
+#define OpEn_ZO                                                                                                        \
+  do {                                                                                                                 \
+    reg_is_opcode = true;                                                                                              \
+  } while (0);                                                                                                         \
+  break;
+
+#define Op_Prefix                                                                                                      \
+  do {                                                                                                                 \
+    reg_is_opcode = true;                                                                                              \
   } while (0);                                                                                                         \
   break;
 
@@ -243,5 +273,116 @@ void DecodeInstruction(uint8_t *instr) {
   case 0x4e:
   case 0x4f:
     UnImplOpcode;
+
+  case 0x50:
+  case 0x51:
+  case 0x52:
+  case 0x53:
+  case 0x54:
+  case 0x55:
+  case 0x56:
+  case 0x57:
+  case 0x58:
+  case 0x59:
+  case 0x5A:
+  case 0x5B:
+  case 0x5C:
+  case 0x5D:
+  case 0x5E:
+  case 0x5F:
+    OpEn_O;
+
+  case 0x60:
+  case 0x61:
+  case 0x62:
+    UnImplOpcode;
+
+  case 0x63:
+    if ((rex & REX_W) != 0) {
+      OpEn_RM;
+    };
+    break;
+
+  case 0x64:
+  case 0x65:
+  case 0x66:
+  case 0x67:
+    Op_Prefix;
+
+  case 0x68:
+    OpEn_I(16 | 32);
+
+  case 0x69:
+    OpEn_RMI(16 | 32);
+
+  case 0x6a:
+    OpEn_I(8);
+
+  case 0x6b:
+    OpEn_RMI(8);
+
+  case 0x70:
+  case 0x71:
+  case 0x72:
+  case 0x73:
+  case 0x74:
+  case 0x75:
+  case 0x76:
+  case 0x77:
+  case 0x78:
+  case 0x79:
+  case 0x7A:
+  case 0x7B:
+  case 0x7C:
+  case 0x7D:
+  case 0x7E:
+  case 0x7F:
+    OpEn_D;
+
+  case 0x80:
+  case 0x81:
+  case 0x82:
+  case 0x83:
+  case 0x84:
+  case 0x85:
+    UnImplOpcode;
+
+  case 0x86:
+  case 0x87:
+    OpEn_RM;
+
+  case 0x88:
+  case 0x89:
+  case 0x8a:
+  case 0x8b:
+    OpEn_RM;
+
+  case 0x8c:
+  case 0x8d:
+  case 0x8e:
+  case 0x8f:
+  case 0x90:
+  case 0x91:
+  case 0x92:
+  case 0x93:
+  case 0x94:
+  case 0x95:
+  case 0x96:
+  case 0x97:
+  case 0x98:
+  case 0x99:
+  case 0x9a:
+  case 0x9b:
+  case 0x9c:
+    UnImplOpcode;
+
+  case 0x9d:
+    OpEn_ZO;
+
+  case 0x0f:
+    DecodeExtendedOpcode
   }
+}
+
+void DecodeExtendedOpcode(uint8_t *instr) {
 }

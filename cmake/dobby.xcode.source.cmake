@@ -36,9 +36,7 @@ set(dobby.SOURCE_FILE_LIST
   source/InstructionRelocation/x86/X86InstructionRelocation.cc
   source/InstructionRelocation/x64/X64InstructionRelocation.cc
 
-  source/InstructionRelocation/x86/Ia32Disassembler.cc
-  source/InstructionRelocation/x86/disassembler.c
-  source/InstructionRelocation/x86/disasm.c
+  source/InstructionRelocation/x86/insn_decode_lv1.cc
 
   # intercept routing
   source/InterceptRouting/InterceptRouting.cpp
