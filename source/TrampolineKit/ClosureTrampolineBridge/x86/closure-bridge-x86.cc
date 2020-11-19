@@ -41,21 +41,21 @@ void *get_closure_bridge() {
   _ sub(esp, Immediate(4, 32));
 
   // general register
-  _ sub(esp, Immediate(8 * 4, 32));
-  _ mov(Address(esp, 8 * 0), eax);
-  _ mov(Address(esp, 8 * 1), ebx);
-  _ mov(Address(esp, 8 * 2), ecx);
-  _ mov(Address(esp, 8 * 3), edx);
-  _ mov(Address(esp, 8 * 4), ebp);
-  _ mov(Address(esp, 8 * 5), esp);
-  _ mov(Address(esp, 8 * 6), edi);
-  _ mov(Address(esp, 8 * 7), esi);
+  _ sub(esp, Immediate(4 * 4, 32));
+  _ mov(Address(esp, 4 * 0), eax);
+  _ mov(Address(esp, 4 * 1), ebx);
+  _ mov(Address(esp, 4 * 2), ecx);
+  _ mov(Address(esp, 4 * 3), edx);
+  _ mov(Address(esp, 4 * 4), ebp);
+  _ mov(Address(esp, 4 * 5), esp);
+  _ mov(Address(esp, 4 * 6), edi);
+  _ mov(Address(esp, 4 * 7), esi);
 
   // save origin sp
   _ mov(eax, esp);
-  _ add(eax, Immediate(4 + 4 + 4 + 8 * 4, 32));
+  _ add(eax, Immediate(4 + 4 + 4 + 4 * 4, 32));
   _ sub(esp, Immediate(2 * 4, 32));
-  _ mov(Address(esp, 8), eax);
+  _ mov(Address(esp, 4), eax);
 
   // ======= Jump to UnifiedInterface Bridge Handle =======
 

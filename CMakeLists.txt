@@ -148,7 +148,6 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 endif()
 include(cmake/dobby.xcode.source.cmake)
 
-
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # cpu
   source/core/arch/CpuFeature.cc

@@ -293,6 +293,17 @@ public:
 
   // This addressing mode does not exist.
   Address(Register base, Register index, ScaleFactor scale, Register r);
+
+private:
+  Address(Register base, int32_t disp, bool fixed) {
+    ASSERT(fixed);
+
+    SetModRM(2, base);
+    if (base.code() == esp.code()) {
+      SetSIB(TIMES_1, esp, base);
+    }
+    SetDisp32(disp);
+  }
 };
 
 // ================================================================
@@ -337,27 +348,32 @@ public:
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
 
-  // RM or MR
-  void Emit_OpEn_Register_Operand(Register dst, Address &operand) {
+  void Emit_OpEn_Register_MemOperand(Register dst, Address &operand) {
     EmitModRM_Update_Register(operand.modrm(), dst);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-  void Emit_OpEn_Register_RegisterOperand(Register dst, Register src) {
+
+  void Emit_OpEn_Register_RegOperand(Register dst, Register src) {
     EmitModRM_Register_Register(dst, src);
   }
 
-  void Emit_OpEn_Operand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
+  void Emit_OpEn_MemOperand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
+    EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
+    EmitImmediate(imm, imm.size());
   }
-  void Emit_OpEn_RegisterOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
+
+  void Emit_OpEn_RegOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
     EmitImmediate(imm, imm.size());
   }
 
-  void Emit_OpEn_Operand(uint8_t extra_opcode, Address &operand) {
+  void Emit_OpEn_MemOperand(uint8_t extra_opcode, Address &operand) {
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-  void Emit_OpEn_RegisterOperand(uint8_t extra_opcode, Register reg) {
+
+  void Emit_OpEn_RegOperand(uint8_t extra_opcode, Register reg) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
   }
 
@@ -419,52 +435,65 @@ public:
     DCHECK_EQ(dst.size(), 32);
 
     EmitOpcode(0x81);
-    Emit_OpEn_RegisterOperand_Immediate(0x5, dst, imm);
+
+    Emit_OpEn_RegOperand_Immediate(0x5, dst, imm);
   }
 
   void add(Register dst, Immediate imm) {
     DCHECK_EQ(dst.size(), 32);
 
     EmitOpcode(0x81);
-    Emit_OpEn_RegisterOperand_Immediate(0x0, dst, imm);
+
+    Emit_OpEn_RegOperand_Immediate(0x0, dst, imm);
   }
 
   // MOV RAX, 0x320
   // 48 c7 c0 20 03 00 00 (MI encoding)
   // 48 b8 20 03 00 00 00 00 00 00 (OI encoding)
   void mov(Register dst, const Immediate imm) {
-    // OI encoding
     Emit_OpEn_OpcodeRegister_Immediate(0xb8, dst, imm);
+  }
+
+  void mov(Address dst, const Immediate imm) {
+    EmitOpcode(0xc7);
+
+    Emit_OpEn_MemOperand_Immediate(0x0, dst, imm);
   }
 
   void mov(Register dst, Address src) {
     EmitOpcode(0x8B);
-    Emit_OpEn_Register_Operand(dst, src);
+
+    Emit_OpEn_Register_MemOperand(dst, src);
   }
 
   void mov(Address dst, Register src) {
     EmitOpcode(0x89);
-    Emit_OpEn_Register_Operand(src, dst);
+
+    Emit_OpEn_Register_MemOperand(src, dst);
   }
 
   void mov(Register dst, Register src) {
     Emit1(0x8B);
-    Emit_OpEn_Register_RegisterOperand(dst, src);
+
+    Emit_OpEn_Register_RegOperand(dst, src);
   }
 
   void call(Address operand) {
     EmitOpcode(0xFF);
-    Emit_OpEn_Operand(0x2, operand);
+
+    Emit_OpEn_MemOperand(0x2, operand);
   }
 
   void call(Immediate imm) {
     EmitOpcode(0xe8);
+
     EmitImmediate(imm, imm.size());
   }
 
   void call(Register reg) {
     EmitOpcode(0xFF);
-    Emit_OpEn_RegisterOperand(0x2, reg);
+
+    Emit_OpEn_RegOperand(0x2, reg);
   }
 
   void pop(Register reg) {

@@ -1,5 +1,5 @@
 #include "common/macros/platform_macro.h"
-#if TARGET_ARCH_X64
+#if defined(TARGET_ARCH_X64)
 
 #include "core/modules/assembler/assembler-x64.h"
 
