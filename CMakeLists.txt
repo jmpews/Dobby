@@ -417,3 +417,5 @@ endif()
 if(Plugin.SupervisorCallMonitor)
   add_subdirectory(builtin-plugin/SupervisorCallMonitor)
 endif()
+
+# add_subdirectory(example)

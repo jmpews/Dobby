@@ -26,9 +26,9 @@
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++11",
             "configurationProvider": "vector-of-bool.cmake-tools",
-            "compileCommands": "${workspaceRoot}/cmake-build-iphone-armv7/compile_commands.json"
+            "compileCommands": "${workspaceRoot}/ninja-build/compile_commands.json"
         },
         {
             "name": "Linux",

@@ -13,7 +13,7 @@ public:
   CodeGen(TurboAssembler *turbo_assembler) : CodeGenBase(turbo_assembler) {
   }
 
-  void JmpNearIndirect(uint32_t address);
+  void JmpNear(uint32_t address);
 };
 
 } // namespace x86
