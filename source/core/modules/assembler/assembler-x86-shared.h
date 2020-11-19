@@ -14,7 +14,9 @@
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
 namespace zz {
-namespace x64 {
+namespace x86shared {
+
+using namespace x64;
 
 constexpr Register VOLATILE_REGISTER = r11;
 
@@ -22,7 +24,7 @@ constexpr Register VOLATILE_REGISTER = r11;
 // PseudoLabel
 
 class PseudoLabel : public Label {
- public:
+public:
   enum PseudoLabelType { kDisp32_off_9 };
 
   typedef struct _PseudoLabelInstruction {
@@ -30,7 +32,7 @@ class PseudoLabel : public Label {
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
- public:
+public:
   PseudoLabel(void) {
     instructions_.initWithCapacity(8);
   }
@@ -48,7 +50,8 @@ class PseudoLabel : public Label {
   }
 
   void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if (!buffer) UNREACHABLE();
+    if (!buffer)
+      UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
     for (size_t i = 0; i < instructions_.getCount(); i++) {
@@ -57,13 +60,13 @@ class PseudoLabel : public Label {
       int32_t offset = pos() - instruction->position_;
 
       switch (instruction->type_) {
-        case kDisp32_off_9: {
-          int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
-          _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
-        } break;
-        default:
-          UNREACHABLE();
-          break;
+      case kDisp32_off_9: {
+        int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
+        _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
+      } break;
+      default:
+        UNREACHABLE();
+        break;
       }
     }
   };
@@ -75,12 +78,12 @@ class PseudoLabel : public Label {
     instructions_.pushObject((LiteObject *)instruction);
   }
 
- private:
+private:
   LiteMutableArray instructions_;
 };
 
 class RelocLabelEntry : public PseudoLabel {
- public:
+public:
   explicit RelocLabelEntry(uint64_t data) : data_size_(0) {
     data_ = data;
   }
@@ -89,7 +92,7 @@ class RelocLabelEntry : public PseudoLabel {
     return data_;
   }
 
- private:
+private:
   uint64_t data_;
 
   int data_size_;
@@ -112,7 +115,7 @@ typedef union _ModRM {
 // Immediate
 
 class Immediate {
- public:
+public:
   explicit Immediate(int64_t imm) : value_(imm), value_size_(64) {
     if ((int64_t)(int8_t)imm == imm) {
       value_size_ = 8;
@@ -136,7 +139,7 @@ class Immediate {
     return value_size_;
   }
 
- private:
+private:
   const int64_t value_;
 
   int value_size_;
@@ -146,7 +149,7 @@ class Immediate {
 // Operand
 
 class Operand {
- public:
+public:
   // [base]
   Operand(Register base);
 
@@ -159,7 +162,7 @@ class Operand {
   // [index*scale + disp/r]
   Operand(Register index, ScaleFactor scale, int32_t disp);
 
- public:  // Getter and Setter
+public: // Getter and Setter
   uint8_t rex() const {
     return rex_;
   }
@@ -217,9 +220,9 @@ class Operand {
     return static_cast<int32_t>(encoding_[length_ - 4]);
   }
 
- protected:
+protected:
   Operand() : length_(0), rex_(REX_NONE) {
-  }  // Needed by subclass Address.
+  } // Needed by subclass Address.
 
   void SetModRM(int mod, Register rm) {
     ASSERT((mod & ~3) == 0);
@@ -236,10 +239,11 @@ class Operand {
     ASSERT((scale & ~3) == 0);
 
     if (base.code() > 7) {
-      ASSERT((rex_ & REX_B) == 0);  // Must not have REX.B already set.
+      ASSERT((rex_ & REX_B) == 0); // Must not have REX.B already set.
       rex_ |= REX_B;
     }
-    if (index.code() > 7) rex_ |= REX_X;
+    if (index.code() > 7)
+      rex_ |= REX_X;
     encoding_[1] = (scale << 6) | ((index.code() & 7) << 3) | (base.code() & 7);
     length_      = 2;
   }
@@ -257,7 +261,7 @@ class Operand {
     length_ += sizeof(disp);
   }
 
- private:
+private:
   // explicit Operand(Register reg) : rex_(REX_NONE) { SetModRM(3, reg); }
 
   // Get the operand encoding byte at the given index.
@@ -266,7 +270,7 @@ class Operand {
     return encoding_[index];
   }
 
- public:
+public:
   uint8_t length_;
   uint8_t rex_;
   uint8_t encoding_[6];
@@ -276,7 +280,7 @@ class Operand {
 // Address
 
 class Address : public Operand {
- public:
+public:
   Address(Register base, int32_t disp) {
     int base_ = base.code();
     int rbp_  = rbp.code();
@@ -305,7 +309,7 @@ class Address : public Operand {
   Address(Register base, Register r);
 
   Address(Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index.code() != rsp.code());  // Illegal addressing mode.
+    ASSERT(index.code() != rsp.code()); // Illegal addressing mode.
     SetModRM(0, rsp);
     SetSIB(scale, index, rbp);
     SetDisp32(disp);
@@ -315,7 +319,7 @@ class Address : public Operand {
   Address(Register index, ScaleFactor scale, Register r);
 
   Address(Register base, Register index, ScaleFactor scale, int32_t disp) {
-    ASSERT(index.code() != rsp.code());  // Illegal addressing mode.
+    ASSERT(index.code() != rsp.code()); // Illegal addressing mode.
     int rbp_ = rbp.code();
     if ((disp == 0) && ((base.code() & 7) != rbp_)) {
       SetModRM(0, rsp);
@@ -334,7 +338,7 @@ class Address : public Operand {
   // This addressing mode does not exist.
   Address(Register base, Register index, ScaleFactor scale, Register r);
 
- private:
+private:
   Address(Register base, int32_t disp, bool fixed) {
     ASSERT(fixed);
     SetModRM(2, base);
@@ -349,16 +353,17 @@ class Address : public Operand {
 // Assembler
 
 class Assembler : public AssemblerBase {
- public:
-  Assembler(void *address) : AssemblerBase(address) {
+public:
+  Assembler(void *address, int mode) : AssemblerBase(address) : mode_(mode) {
     buffer_ = new CodeBuffer(32);
     DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
-    if (buffer_) delete buffer_;
+    if (buffer_)
+      delete buffer_;
   }
 
- public:
+public:
   void Emit1(byte_t val) {
     buffer_->Emit8(val);
   }
@@ -369,6 +374,14 @@ class Assembler : public AssemblerBase {
 
   void EmitInt64(int64_t value) {
     buffer_->Emit64(value);
+  }
+
+  void EmitAddr(uint64_t addr) {
+    if (mode == 64) {
+      EmitInt64(int64_t)addr);
+    } else {
+      EmitI((int32_t)addr);
+    }
   }
 
   // ================================================================
@@ -384,16 +397,16 @@ class Assembler : public AssemblerBase {
 
     uint8_t rex = force ? 0x40 : 0;
     if (w) {
-      rex |= 0x48;  // REX.W000
+      rex |= 0x48; // REX.W000
     }
     if (r) {
-      rex |= 0x44;  // REX.0R00
+      rex |= 0x44; // REX.0R00
     }
     if (x) {
-      rex |= 0x42;  // REX.00X0
+      rex |= 0x42; // REX.00X0
     }
     if (b) {
-      rex |= 0x41;  // REX.000B
+      rex |= 0x41; // REX.000B
     }
     if (rex != 0) {
       return rex;
@@ -404,21 +417,25 @@ class Assembler : public AssemblerBase {
   void Emit_64REX(uint8_t extra) {
     uint8_t rex = EmitOptionalRex(false, true, false, false, false);
     rex |= extra;
-    if (rex) Emit1(rex);
+    if (rex)
+      Emit1(rex);
   }
 
   void EmitREX_ExtraRegister(Register reg) {
     uint8_t rex = EmitOptionalRex(false, reg.size() == 64, reg.code() > 7, false, reg.code() > 7);
-    if (rex) Emit1(rex);
+    if (rex)
+      Emit1(rex);
   }
 
   void EmitREX_Register(Register reg) {
     uint8_t rex = EmitOptionalRex(false, reg.size() == 64, reg.code() > 7, false, false);
-    if (rex) Emit1(rex);
+    if (rex)
+      Emit1(rex);
   }
 
   void EmitREX_Register_Operand(Register reg, Operand &operand) {
-    if (reg.size() != 64) UNIMPLEMENTED();
+    if (reg.size() != 64)
+      UNIMPLEMENTED();
     uint8_t rex = operand.rex();
     rex |= EmitOptionalRex(true, reg.size() == 64, reg.code() > 7, false, false);
     if (rex != 0) {
@@ -456,26 +473,26 @@ class Assembler : public AssemblerBase {
   // ModR/M == 8 registers and 24 addressing mode
 
   // RM or MR
-  void Emit_OpEn_Register_Operand(Register dst, Address &operand) {
+  void Emit_OpEn_Register_MemOperand(Register dst, Address &operand) {
     EmitModRM_Update_Register(operand.modrm(), dst);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-  void Emit_OpEn_Register_RegisterOperand(Register dst, Register src) {
+  void Emit_OpEn_Register_RegOperand(Register dst, Register src) {
     EmitModRM_Register_Register(dst, src);
   }
 
-  void Emit_OpEn_Operand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
+  void Emit_OpEn_MemOperand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
   }
-  void Emit_OpEn_RegisterOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
+  void Emit_OpEn_RegOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
     EmitImmediate(imm, imm.size());
   }
 
-  void Emit_OpEn_Operand(uint8_t extra_opcode, Address &operand) {
+  void Emit_OpEn_MemOperand(uint8_t extra_opcode, Address &operand) {
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-  void Emit_OpEn_RegisterOperand(uint8_t extra_opcode, Register reg) {
+  void Emit_OpEn_RegOperand(uint8_t extra_opcode, Register reg) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
   }
 
@@ -536,13 +553,13 @@ class Assembler : public AssemblerBase {
   void sub(Register dst, Immediate imm) {
     EmitREX_Register(dst);
     EmitOpcode(0x81);
-    Emit_OpEn_RegisterOperand_Immediate(0x5, dst, imm);
+    Emit_OpEn_RegOperand_Immediate(0x5, dst, imm);
   }
 
   void add(Register dst, Immediate imm) {
     EmitREX_Register(dst);
     EmitOpcode(0x81);
-    Emit_OpEn_RegisterOperand_Immediate(0x0, dst, imm);
+    Emit_OpEn_RegOperand_Immediate(0x0, dst, imm);
   }
 
   // MOV RAX, 0x320
@@ -560,13 +577,13 @@ class Assembler : public AssemblerBase {
 
     EmitOpcode(0x8B);
 
-    Emit_OpEn_Register_Operand(dst, src);
+    Emit_OpEn_Register_MemOperand(dst, src);
   }
 
   void mov(Address dst, Register src) {
     EmitREX_Register_Operand(src, dst);
     EmitOpcode(0x89);
-    Emit_OpEn_Register_Operand(src, dst);
+    Emit_OpEn_Register_MemOperand(src, dst);
   }
 
   void mov(Register dst, Register src) {
@@ -574,7 +591,7 @@ class Assembler : public AssemblerBase {
 
     Emit1(0x8B);
 
-    Emit_OpEn_Register_RegisterOperand(dst, src);
+    Emit_OpEn_Register_RegOperand(dst, src);
   }
 
   void call(Address operand) {
@@ -582,7 +599,7 @@ class Assembler : public AssemblerBase {
 
     EmitOpcode(0xFF);
 
-    Emit_OpEn_Operand(0x2, operand);
+    Emit_OpEn_MemOperand(0x2, operand);
   }
 
   void call(Immediate imm) {
@@ -593,7 +610,7 @@ class Assembler : public AssemblerBase {
   void call(Register reg) {
     EmitREX_Register(reg);
     EmitOpcode(0xFF);
-    Emit_OpEn_RegisterOperand(0x2, reg);
+    Emit_OpEn_RegOperand(0x2, reg);
   }
 
   void pop(Register reg) {
@@ -612,14 +629,17 @@ class Assembler : public AssemblerBase {
   void nop() {
     EmitOpcode(0x90);
   }
+
+private:
+  int mode_;
 };
 
 // ================================================================
 // TurboAssembler
 
 class TurboAssembler : public Assembler {
- public:
-  TurboAssembler(void *address) : Assembler(address) {
+public:
+  TurboAssembler(void *address, int mode) : Assembler(address, mode) {
     data_labels_ = NULL;
   }
 
@@ -660,11 +680,12 @@ class TurboAssembler : public Assembler {
   }
 
   void RelocBind() {
-    if (data_labels_ == NULL) return;
+    if (data_labels_ == NULL)
+      return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
       PseudoBind(label);
-      EmitInt64(label->data());
+      EmitAddr(label->data());
     }
   }
 
@@ -679,11 +700,11 @@ class TurboAssembler : public Assembler {
     return data_labels_;
   }
 
- private:
+private:
   LiteMutableArray *data_labels_;
 };
 
-}  // namespace x64
-}  // namespace zz
+} // namespace x86shared
+} // namespace zz
 
 #endif

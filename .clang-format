@@ -11,6 +11,6 @@ AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 
 # default is true
-ReflowComments: true
+ReflowComments: false
 SortIncludes : false
 AllowShortFunctionsOnASingleLine: false

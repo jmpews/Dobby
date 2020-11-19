@@ -19,23 +19,24 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #define _  turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
-  TurboAssembler turbo_assembler_(0);
 
-  char *push_rip_6 = (char *)"\xff\x35\x06\x00\x00\x00";
-  char *jmp_rip_8  = (char *)"\xff\x25\x08\x00\x00\x00";
+  AssemblyCodeChunk *cchunk = MemoryArena::AllocateCodeChunk(32);
+  if (cchunk == nullptr) {
+    return NULL;
+  }
+  // init assembler
+  TurboAssembler turbo_assembler_(cchunk->address);
 
-  __ EmitBuffer(push_rip_6, 6);
-  __ EmitBuffer(jmp_rip_8, 6);
-  __ Emit64((uint64_t)entry);
-  __ Emit64((uint64_t)get_closure_bridge());
+  int32_t offset = (int32_t)cchunk->address + 8 - (int32_t)carry_handler;
 
-  AssemblyCodeChunk *code = NULL;
-  code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
+  _ sub(esp, Immediate(4, 32));
+  _ mov(Address(esp, 4 * 0), Immediate((int32_t)entry, 32));
+  _ jmp(Immediate(offset, 32));
 
-  entry->address       = (void *)code->raw_instruction_start();
+  entry->address       = (void *)cchunk->raw_instruction_start();
   entry->carry_data    = carry_data;
   entry->carry_handler = carry_handler;
-  entry->size          = code->raw_instruction_size();
+  entry->size          = cchunk->raw_instruction_size();
 
   return entry;
 }
