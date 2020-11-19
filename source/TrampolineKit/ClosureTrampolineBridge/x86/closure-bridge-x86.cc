@@ -41,7 +41,7 @@ void *get_closure_bridge() {
   _ sub(esp, Immediate(4, 32));
 
   // general register
-  _ sub(esp, Immediate(4 * 4, 32));
+  _ sub(esp, Immediate(8 * 4, 32));
   _ mov(Address(esp, 4 * 0), eax);
   _ mov(Address(esp, 4 * 1), ebx);
   _ mov(Address(esp, 4 * 2), ecx);
@@ -53,38 +53,20 @@ void *get_closure_bridge() {
 
   // save origin sp
   _ mov(eax, esp);
-  _ add(eax, Immediate(4 + 4 + 4 + 4 * 4, 32));
+  _ add(eax, Immediate(4 + 4 + 4 + 8 * 4, 32));
   _ sub(esp, Immediate(2 * 4, 32));
   _ mov(Address(esp, 4), eax);
 
   // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
-
-  // [!!!] As we can't detect the sp is aligned or not, check if need stack align
-  {
-    //  mov eax, esp
-    __ EmitBuffer((void *)"\x89\xE0", 2);
-    //  and eax, 0x7
-    __ EmitBuffer((void *)"\x83\xE0\x07", 3);
-    //  cmp eax, 0x0
-    __ EmitBuffer((void *)"\x83\xF8\x00", 3);
-    // jnz [stack_align_call_bridge]
-    __ EmitBuffer((void *)"\x75\x15", 2);
-  }
+  _ mov(eax, Address(esp, 4 + 4 + 8 * 4 + 2 * 4));
+  _ push(eax);
+  _ mov(eax, esp);
+  _ push(eax);
 
   // LABEL: call_bridge
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
-
-  // jmp [restore_stack_register]
-  __ EmitBuffer((void *)"\xE9\x12\x00\x00\x00", 5);
-
-  // LABEL: stack_align_call_bridge
-  // push eax
-  __ EmitBuffer((void *)"\x50", 1);
-  _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
-  // pop eax
-  __ EmitBuffer((void *)"\x58", 1);
 
   // ======= RegisterContext Restore =======
 
