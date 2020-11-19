@@ -27,7 +27,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   // init assembler
   TurboAssembler turbo_assembler_(cchunk->address);
 
-  int32_t offset = (int32_t)cchunk->address + 8 - (int32_t)carry_handler;
+  int32_t offset = (int32_t)get_closure_bridge() - ((int32_t)cchunk->address + 18);
 
   _ sub(esp, Immediate(4, 32));
   _ mov(Address(esp, 4 * 0), Immediate((int32_t)entry, 32));
@@ -37,6 +37,9 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   entry->carry_data    = carry_data;
   entry->carry_handler = carry_handler;
   entry->size          = cchunk->raw_instruction_size();
+
+  CodeBufferBase *buffer = reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
+  CodePatch(cchunk->address, buffer->getRawBuffer(), buffer->getSize());
 
   return entry;
 }

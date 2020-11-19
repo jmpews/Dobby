@@ -528,7 +528,7 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
+      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint32_t)function.address());
       addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
       this->AppendRelocLabelEntry(addrLabel);
     }
