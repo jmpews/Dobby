@@ -3,9 +3,11 @@
 
 #include "./X64InstructionRelocation.h"
 
+#include <string.h>
+
 #include "dobby_internal.h"
 
-#include "InstructionRelocation/x86/X86OpcodoDecodeTable.h"
+#include "InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/modules/assembler/assembler-x64.h"
@@ -25,67 +27,67 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
   addr_t buffer_cursor = (addr_t)buffer;
 
-  byte_t        opcode1 = *(byte_t *)buffer_cursor;
-  InstrMnemonic instr   = {0};
+  x86_options_t conf = {.mode = 64};
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
   while ((buffer_cursor < ((addr_t)buffer + predefined_relocate_size))) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
-    OpcodeDecodeItem *decodeItem = &OpcodeDecodeTable[opcode1];
-    decodeItem->DecodeHandler(&instr, buffer_cursor);
+    x86_insn_decode_t insn = {0};
+    memset(&insn, 0, sizeof(insn));
+    // decode x86 insn
+    x86_insn_decode(&insn, (uint8_t *)buffer_cursor, &conf);
 
-    // Jcc Relocate OpcodeEncoding=D and rel8
-    // Solution:
-    // Convert to 32bit AKA rel32
-    if (instr.instr.opcode1 >= 0x70 && instr.instr.opcode1 <= 0x7F) {
-      int orig_offset = *(byte_t *)&instr.instr.Immediate;
-      int offset      = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __  Emit8(0x0F);
-      __  Emit8(opcode1);
-      __  Emit32(offset);
-    } else if (instr.instr.opcode1 >= 0xE0 && instr.instr.opcode1 <= 0xE2) {
+    if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) {  // jc rel8
+      DLOG(1, "[x86 relo] jc rel8, %p", buffer_cursor);
+
+      int8_t  orig_offset = insn.immediate;
+      int     new_offset  = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
+      uint8_t opcode      = 0x80 | (insn.primary_opcode & 0x0f);
+
+      __ Emit8(0x0F);
+      __ Emit8(opcode);
+      __ Emit32(new_offset);
+    } else if (insn.primary_opcode == 0xEB) {  // jmp rel8
+      DLOG(1, "[x86 relo] jmp rel8, %p", buffer_cursor);
+
+      int8_t orig_offset = insn.immediate;
+      int8_t new_offset  = (int8_t)(curr_orig_ip + orig_offset - curr_relo_ip);
+
+      __ Emit8(0xE9);
+      __ Emit32(new_offset);
+    } else if ((insn.flags | X86_INSN_DECODE_FLAG_IP_RELATIVE) && (insn.operands[1].mem.base & RIP)) {  // RIP
+      DLOG(1, "[x86 relo] rip, %p", buffer_cursor);
+
+      // dword orig_disp = *(dword *)(buffer_cursor + insn.operands[1].mem.disp);
+      dword orig_disp = insn.operands[1].mem.disp;
+      dword disp      = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
+
+      __ EmitBuffer((void *)buffer_cursor, insn.displacement_offset);
+      __ Emit32(disp);
+    } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) {  // call or jmp rel32
+      DLOG(1, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
+
+      dword orig_offset = insn.immediate;
+      dword offset      = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);
+
+      __ EmitBuffer((void *)buffer_cursor, insn.immediate_offset);
+      __ Emit32(offset);
+    } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) {  // LOOPNZ/LOOPZ/LOOP/JECXZ
       // LOOP/LOOPcc
       UNIMPLEMENTED();
-    } else if (instr.instr.opcode1 == 0xE3) {
+    } else if (insn.primary_opcode == 0xE3) {
       // JCXZ JCEXZ JCRXZ
       UNIMPLEMENTED();
-    } else if (instr.instr.opcode1 == 0xEB) {
-      // JMP rel8
-      byte_t orig_offset = *(byte_t *)&instr.instr.Immediate;
-      // FIXME: security cast
-      byte_t offset = (byte_t)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __     Emit8(0xE9);
-      __     Emit32(offset);
-    } else if (instr.instr.opcode1 == 0xE8 || instr.instr.opcode1 == 0xE9) {
-      // JMP/CALL rel32
-      dword orig_offset = *(dword *)&instr.instr.Immediate;
-      dword offset      = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);
-      __    Emit8(instr.instr.opcode1);
-      __    Emit32(offset);
-    } else if (instr.flag & kIPRelativeAddress) {
-      // IP-Relative Address
-      dword orig_disp = *(dword *)(buffer_cursor + instr.instr.DisplacementOffset);
-      dword disp      = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
-#if 0
-      byte_t InstrArray[15];
-      LiteMemOpt::Copy(InstrArray, curr_ip, instr.len);
-      *(dword *)(InstrArray + instr.instr.DisplacementOffset) = disp;
-      _ Emit(InstrArray, instr.len);
-
-#else
-      __ EmitBuffer((void *)buffer_cursor, instr.instr.DisplacementOffset);
-      __ Emit32(disp);
-#endif
     } else {
       // Emit the origin instrution
-      __ EmitBuffer((void *)buffer_cursor, instr.len);
+      __ EmitBuffer((void *)buffer_cursor, insn.length);
     }
 
     // go next
-    curr_orig_ip += instr.len;
-    buffer_cursor += instr.len;
+    curr_orig_ip += insn.length;
+    buffer_cursor += insn.length;
 
 #if 0
     {
@@ -96,11 +98,6 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
     }
 #endif
     curr_relo_ip = relocated->raw_instruction_start() + turbo_assembler_.ip_offset();
-
-    opcode1 = *(byte_t *)buffer_cursor;
-
-    // clear instr structure
-    _memset((void *)&instr, 0, sizeof(InstrMnemonic));
   }
 
   // jmp to the origin rest instructions
@@ -149,7 +146,7 @@ x64_try_again:
 
     relo_code_chunk_size += chunk_size_step;
     relocated->re_init_region_range(0, 0);
-    
+
     goto x64_try_again;
   }
 }

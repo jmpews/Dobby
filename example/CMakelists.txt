@@ -5,24 +5,21 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(DOBBY_SOURCE_DIR ..)
-include(${DOBBY_SOURCE_DIR}/cmake/Macros.cmake)
-
-SET_OPTION(Plugin.DynamicBinaryInstrument ON)
-add_subdirectory(${DOBBY_SOURCE_DIR} dobby.out)
 
 include_directories(${DOBBY_SOURCE_DIR}/example)
 
-
-add_library(fopen_monitor SHARED
-  ./file_operation_monitor.cc
+add_library(dobby_monitor SHARED
+  ${DOBBY_SOURCE_DIR}/builtin-plugin/ApplicationEventMonitor/MGCopyAnswerMonitor.cc
+  ${DOBBY_SOURCE_DIR}/builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
+  ${DOBBY_SOURCE_DIR}/builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
 )
-target_link_libraries(fopen_monitor
-    dobby
+target_link_libraries(dobby_monitor
+    Dobby
 )
 
 add_executable(DobbyExample
   ./main.cc
 )
 target_link_libraries(DobbyExample
-  fopen_monitor
+  dobby_monitor
 )

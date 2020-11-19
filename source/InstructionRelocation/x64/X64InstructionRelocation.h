@@ -11,9 +11,9 @@ namespace zz {
 namespace x64 {
 
 // Generate the relocated instruction
-AssemblyCodeChunk *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
+AssemblyCodeChunk *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_ip, addr_t to_ip);
 
-} // namespace x64
-} // namespace zz
+}  // namespace x64
+}  // namespace zz
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef CORE_ASSEMBLER_X86_SHARED_H
-#define CORE_ASSEMBLER_X86_SHARED_H
+#ifndef CORE_ASSEMBLER_X64_H
+#define CORE_ASSEMBLER_X64_H
 
 #include "common/headers/common_header.h"
 
@@ -587,27 +587,22 @@ class Assembler : public AssemblerBase {
 
   void call(Immediate imm) {
     EmitOpcode(0xe8);
-
     EmitImmediate(imm, imm.size());
   }
 
   void call(Register reg) {
     EmitREX_Register(reg);
-
     EmitOpcode(0xFF);
-
     Emit_OpEn_RegisterOperand(0x2, reg);
   }
 
   void pop(Register reg) {
     EmitREX_ExtraRegister(reg);
-
     EmitOpcode_Register(0x58, reg);
   }
 
   void push(Register reg) {
     EmitREX_ExtraRegister(reg);
-
     EmitOpcode_Register(0x50, reg);
   }
 
