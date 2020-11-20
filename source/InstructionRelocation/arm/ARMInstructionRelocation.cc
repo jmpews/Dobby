@@ -188,7 +188,10 @@ static void ARMRelocateSingleInstr(TurboAssembler *turbo_assembler, int32_t inst
 static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, LiteMutableArray *thumb_labels,
                                       int16_t instr, addr32_t from_pc, addr32_t to_pc,
                                       addr32_t *execute_state_changed_pc_ptr) {
-  bool     is_instr_relocated = false;
+  bool is_instr_relocated = false;
+
+  _ AlignThumbNop();
+
   uint32_t val = 0, op = 0, rt = 0, rm = 0, rn = 0, rd = 0, shift = 0, cond = 0;
   int32_t  offset = 0;
 
@@ -207,12 +210,12 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
         uint16_t rewrite_inst = 0;
         rewrite_inst          = (instr & 0xff87) | LeftShift((VOLATILE_REGISTER.code()), 4, 3);
 
-        ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
+        ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val, false);
         _                     AppendRelocLabelEntry(label);
-        // ===
+
         _ T2_Ldr(VOLATILE_REGISTER, label);
         _ EmitInt16(rewrite_inst);
-        // ===
+
         is_instr_relocated = true;
       }
     }
@@ -225,13 +228,11 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
         rm = bits(instr, 3, 6);
         if (rm == pc.code()) {
           val                         = from_pc;
-          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
+          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val, true);
           _                     AppendRelocLabelEntry(label);
-          // ===
-          _ AlignThumbNop();
-          // ===
+
           _ T2_Ldr(pc, label);
-          // ===
+
           *execute_state_changed_pc_ptr = val;
           is_instr_relocated            = true;
         }
@@ -240,18 +241,16 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       if (L == 0b1) {
         if (rm == pc.code()) {
           val                         = from_pc;
-          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
+          ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val, true);
           _                     AppendRelocLabelEntry(label);
-          // ===
-          _ AlignThumbNop();
-          // ===
+
           int label_branch_off = 4, label_continue_off = 4;
           _   t2_bl(label_branch_off);
           _   t2_b(label_continue_off);
           /* Label: branch */
           _ T2_Ldr(pc, label);
           /* Label: continue */
-          // ===
+
           *execute_state_changed_pc_ptr = val;
           is_instr_relocated            = true;
         }
@@ -267,13 +266,12 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     val            = ALIGN_FLOOR(val, 4);
     rt             = bits(instr, 8, 10);
 
-    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val, false);
     _                     AppendRelocLabelEntry(label);
 
-    // ===
     _ T2_Ldr(Register::R(rt), label);
     _ t2_ldr(Register::R(rt), MemOperand(Register::R(rt), 0));
-    // ===
+
     is_instr_relocated = true;
   }
 
@@ -283,11 +281,11 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint16_t imm8 = bits(instr, 0, 7);
     val           = from_pc + imm8;
 
-    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val, false);
     _                     AppendRelocLabelEntry(label);
-    // ===
+
     _ T2_Ldr(Register::R(rd), label);
-    // ===
+
     if (pc.code() == rd)
       val += 1;
     is_instr_relocated = true;
@@ -304,19 +302,17 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint32_t offset = imm8 << 1;
     val             = from_pc + offset;
 
-    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1, true);
     _                     AppendRelocLabelEntry(label);
 
     // modify imm8 field
     imm8 = 0x4 >> 1;
-    // ===
+
     _ EmitInt16((instr & 0xfff0) | imm8);
-    // ===
-    _ AlignThumbNop();
-    // ===
+    _ t1_nop(); // manual align
     _ t2_b(4);
     _ T2_Ldr(pc, label);
-    // ===
+
     is_instr_relocated = true;
   }
 
@@ -328,19 +324,17 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     val             = from_pc + offset;
     rn              = bits(instr, 0, 2);
 
-    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1, true);
     _                     AppendRelocLabelEntry(label);
 
     imm5 = bits(0x4 >> 1, 1, 5);
     i    = bit(0x4 >> 1, 6);
-    // ===
+
     _ EmitInt16((instr & 0xfd07) | imm5 << 3 | i << 9);
-    // ===
-    _ AlignThumbNop();
-    // ===
+    _ t1_nop(); // manual align
     _ t2_b(0);
     _ T2_Ldr(pc, label);
-    // ===
+
     is_instr_relocated = true;
   }
 
@@ -350,14 +344,11 @@ static void Thumb1RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
     uint32_t offset = imm11 << 1;
     val             = from_pc + offset;
 
-    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1);
+    ThumbRelocLabelEntry *label = new ThumbRelocLabelEntry(val + 1, true);
     _                     AppendRelocLabelEntry(label);
 
-    // ===
-    _ AlignThumbNop();
-    // ===
     _ T2_Ldr(pc, label);
-    // ===
+
     is_instr_relocated = true;
   }
 
@@ -376,9 +367,11 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
 
   bool is_instr_relocated = false;
 
-  if (turbo_assembler->pc_offset() % 4) {
-    _ t1_nop();
-  }
+  // if (turbo_assembler->pc_offset() % 4) {
+  //   _ t1_nop();
+  // }
+
+  _ AlignThumbNop();
 
   // Branches and miscellaneous control
   if ((inst1 & 0xf800) == 0xf000 && (inst2 & 0x8000) == 0x8000) {
@@ -403,9 +396,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       _ EmitInt16(inst1 & 0xffc0);           // clear imm6
       _ EmitInt16((inst2 & 0xd000) | imm11); // 1. clear J1, J2, origin_imm12 2. set new imm11
 
-      // ===
-      _ AlignThumbNop();
-      // ===
       _ t2_b(4);
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val + THUMB_ADDRESS_FLAG);
@@ -426,9 +416,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       int32_t  label = (-S << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1);
       addr32_t val   = from_pc + label;
 
-      // ===
-      _ AlignThumbNop();
-      // ===
       _ t2_ldr(pc, MemOperand(pc, 0));
       _ EmitAddress(val + THUMB_ADDRESS_FLAG);
       // ===
@@ -448,9 +435,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       int32_t  label = (imm11 << 1) | (imm10 << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
       addr32_t val   = from_pc + label;
 
-      // =====
-      _ AlignThumbNop();
-      // ===
       _ t2_bl(4);
       _ t2_b(8);
       _ t2_ldr(pc, MemOperand(pc, 0));
@@ -472,9 +456,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
       int32_t  label = (imm10l << 2) | (imm10h << 12) | (i2 << 22) | (i1 << 23) | (-S << 24);
       addr32_t val   = ALIGN(from_pc, 4) + label;
 
-      // =====
-      _ AlignThumbNop();
-      // ===
       _ t2_bl(4);
       _ t2_b(8);
       _ t2_ldr(pc, MemOperand(pc, 0));
@@ -509,7 +490,6 @@ static void Thumb2RelocateSingleInstr(ThumbTurboAssembler *turbo_assembler, Lite
           // ADR - T3 variant
           // adr with add
           val = from_pc + label;
-
         } else if (o1 == 1 && o2 == 1) { // ADR - T2
           // ADR - T2 variant
           // adr with sub
@@ -718,10 +698,12 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
   if (labels) {
     for (size_t i = 0; i < labels->getCount(); i++) {
       ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *)labels->getObject(i);
-      addr32_t              val   = label->data();
+      if (label->used_for_branch() == false)
+        continue;
+      addr32_t val = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
-        DLOG(0, "found thumb instr branch in to origin code");
+        DLOG(0, "[reloc label fixup warning] found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
         fixup_val += (addr_t)thumb_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);
@@ -737,7 +719,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       addr32_t         val   = label->data();
 
       if (val >= origin_instr_start && val < origin_instr_end) {
-        DLOG(0, "found arm instr branch in to origin code");
+        DLOG(0, "[reloc label fixup warning]found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
         fixup_val += (addr_t)arm_turbo_assembler->GetRealizeAddress();
         label->fixup_data(fixup_val);

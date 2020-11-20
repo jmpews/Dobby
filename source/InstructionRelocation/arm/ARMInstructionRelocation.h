@@ -41,6 +41,8 @@ public:
         encoding          = encoding | imm12;
         _buffer->RewriteThumb1Inst(instruction->position_, inst1 | B7); // add = (U == '1');
         _buffer->RewriteThumb1Inst(instruction->position_ + Thumb1_INST_LEN, encoding);
+
+        DLOG(0, "[thumb label link] insn offset %d link offset %d", instruction->position_, offset);
       } break;
       default:
         UNREACHABLE();
@@ -79,7 +81,8 @@ public:
 
 class ThumbRelocLabelEntry : public ThumbPseudoLabel {
 public:
-  explicit ThumbRelocLabelEntry(uint32_t data) : data_size_(0) {
+  explicit ThumbRelocLabelEntry(uint32_t data, bool used_for_branch)
+      : data_size_(0) , used_for_branch_(used_for_branch) {
     data_ = data;
   }
 
@@ -91,10 +94,16 @@ public:
     data_ = data;
   }
 
+  bool used_for_branch() {
+    return used_for_branch_;
+  }
+
 private:
   uint32_t data_;
 
   int data_size_;
+
+  bool used_for_branch_;
 };
 
 // ================================================================
@@ -311,6 +320,7 @@ public:
       ThumbRelocLabelEntry *label = (ThumbRelocLabelEntry *)data_labels_->getObject(i);
       ThumbPseudoBind(label);
       EmitAddress(label->data());
+      DLOG(0, "[thumb label data] %p", label->data());
     }
   }
 
