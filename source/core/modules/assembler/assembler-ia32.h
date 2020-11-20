@@ -23,7 +23,7 @@ constexpr Register VOLATILE_REGISTER = eax;
 
 class PseudoLabel : public Label {
 public:
-  enum PseudoLabelType { kDisp32_off_9 };
+  enum PseudoLabelType { kDisp32_off_7 };
 
   typedef struct _PseudoLabelInstruction {
     int             position_;
@@ -58,9 +58,13 @@ public:
       int32_t offset = pos() - instruction->position_;
 
       switch (instruction->type_) {
-      case kDisp32_off_9: {
+      case kDisp32_off_7: {
+        // why 7 ?
+        // use `call` and `pop` get the runtime ip register
+        // but the ip register not the real call next insn
+        // it need add two insn length == 7
         int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
-        _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
+        _buffer->FixBindLabel(disp32_fix_pos, offset + 7);
       } break;
       default:
         UNREACHABLE();
@@ -313,7 +317,6 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     if (buffer_)
@@ -529,7 +532,7 @@ public:
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
       RelocLabelEntry *addrLabel = new RelocLabelEntry((uint32_t)function.address());
-      addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
+      addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_7);
       this->AppendRelocLabelEntry(addrLabel);
     }
     nop();

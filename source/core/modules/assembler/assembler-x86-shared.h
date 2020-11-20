@@ -356,7 +356,6 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address, int mode) : AssemblerBase(address) : mode_(mode) {
     buffer_ = new CodeBuffer(32);
-    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     if (buffer_)

@@ -13,7 +13,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
     return RS_FAILED;
   }
 
-  DLOG(1, "Initialize DobbyHook => %p => %p", function_address, replace_call);
+  DLOG(1, "[DobbyHook] Initialize at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -32,6 +32,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
   entry->type             = kFunctionInlineHook;
   entry->function_address = function_address;
 
+  DLOG(1, "================ FunctionInlineReplaceRouting Start ================");
   FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, replace_call);
   route->Dispatch();
   interceptor->AddHookEntry(entry);
@@ -42,6 +43,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
 
   // code patch & hijack original control flow entry
   route->Commit();
+  DLOG(1, "================ FunctionInlineReplaceRouting End ================");
 
   return RS_SUCCESS;
 }

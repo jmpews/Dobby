@@ -10,7 +10,6 @@
 class FunctionInlineReplaceRouting : public InterceptRouting {
 public:
   FunctionInlineReplaceRouting(HookEntry *entry, void *replace_call) : InterceptRouting(entry) {
-    DLOG(0, "================ FunctionInlineReplaceRouting Start ================");
     this->replace_call = replace_call;
   }
 

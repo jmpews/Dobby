@@ -43,6 +43,10 @@ const void *ExternalReference::address() {
 AssemblerBase::AssemblerBase(void *address) {
   realized_address_ = address;
   buffer_           = NULL;
+
+  if (realized_address_ != NULL) {
+    DLOG(1, "[assembler] Create fixed address at %p", realized_address_);
+  }
 }
 
 // TODO: mov to x64

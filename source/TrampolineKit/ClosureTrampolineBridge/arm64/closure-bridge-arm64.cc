@@ -81,7 +81,7 @@ void *get_closure_bridge() {
   _ add(TMP_REG_0, SP, 2 * 8);                          // closure trampoline reserved
   _ add(TMP_REG_0, TMP_REG_0, 2 * 8 + 30 * 8 + 8 * 16); // x0, x1-x30, q0-q7 reserved
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-  _ add(TMP_REG_0, TMP_REG_0, 24 * 16);                 // q8-q31 reserved
+  _ add(TMP_REG_0, TMP_REG_0, 24 * 16); // q8-q31 reserved
 #endif
 
   // alloc stack, store original sp
@@ -152,8 +152,7 @@ void *get_closure_bridge() {
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge          = (void *)code->raw_instruction_start();
 
-  DLOG(0, "Build the closure bridge at %p", closure_bridge);
-
+  DLOG(1, "[closure bridge] Build the closure bridge at %p", closure_bridge);
 #endif
   return (void *)closure_bridge;
 }
