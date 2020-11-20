@@ -26,7 +26,7 @@ static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_si
 
   int      fd        = open(file_path, O_RDONLY, 0);
   if(fd < 0) {
-    ERROR_LOG("open failed");
+    ERROR_LOG("%s open failed", file_path);
     goto finished;
   }
 
@@ -132,6 +132,9 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
     for (auto module : ProcessModuleMap) {
       uint8_t *file_mem      = NULL;
       size_t   file_mem_size = 0;
+
+      symtab = 0, strtab = 0, count = 0;
+
       if (module.load_address)
         file_mmap(module.path, &file_mem, &file_mem_size);
 

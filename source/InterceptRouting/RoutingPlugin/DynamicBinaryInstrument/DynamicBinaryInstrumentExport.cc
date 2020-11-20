@@ -13,7 +13,7 @@ PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
     return RS_FAILED;
   }
 
-  DLOG(1, "Initialize DobbyInstrument => %p => %p", instr_address, handler);
+  DLOG(1, "[DobbyInstrument] Initialize at %p", instr_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -32,10 +32,12 @@ PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
   entry->type                = kDynamicBinaryInstrument;
   entry->instruction_address = instr_address;
 
+  DLOG(1, "================ DynamicBinaryInstrumentRouting Start ================");
   DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry, (void *)handler);
   route->Dispatch();
   interceptor->AddHookEntry(entry);
   route->Commit();
+  DLOG(1, "================ DynamicBinaryInstrumentRouting End ================");
 
   return RS_SUCCESS;
 }

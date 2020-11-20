@@ -1,9 +1,9 @@
 #include "common/macros/platform_macro.h"
-#if defined(TARGET_ARCH_X64)
+#if defined(TARGET_ARCH_X64) || defined(TARGET_ARCH_IA32)
 
-#include "core/modules/assembler/assembler-x64.h"
+#include "core/modules/assembler/assembler-x86-shared.h"
 
-using namespace zz::x64;
+using namespace zz::x86shared;
 
 void Assembler::jmp(Immediate imm) {
   buffer_->Emit8(0xE9);

@@ -1,5 +1,5 @@
-#ifndef CORE_ASSEMBLER_X86_SHARED_H
-#define CORE_ASSEMBLER_X86_SHARED_H
+#ifndef CORE_ASSEMBLER_X64_H
+#define CORE_ASSEMBLER_X64_H
 
 #include "common/headers/common_header.h"
 
@@ -14,7 +14,9 @@
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
 namespace zz {
-namespace x64 {
+namespace x86shared {
+
+using namespace x64;
 
 constexpr Register VOLATILE_REGISTER = r11;
 
@@ -59,10 +61,6 @@ public:
 
       switch (instruction->type_) {
       case kDisp32_off_9: {
-        // why 9 ?
-        // use `call` and `pop` get the runtime ip register
-        // but the ip register not the real call next insn
-        // it need add two insn length == 9
         int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
         _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
       } break;
@@ -246,7 +244,6 @@ protected:
     }
     if (index.code() > 7)
       rex_ |= REX_X;
-
     encoding_[1] = (scale << 6) | ((index.code() & 7) << 3) | (base.code() & 7);
     length_      = 2;
   }
@@ -344,7 +341,6 @@ public:
 private:
   Address(Register base, int32_t disp, bool fixed) {
     ASSERT(fixed);
-
     SetModRM(2, base);
     if ((base.code() & 7) == rsp.code()) {
       SetSIB(TIMES_1, rsp, base);
@@ -358,7 +354,7 @@ private:
 
 class Assembler : public AssemblerBase {
 public:
-  Assembler(void *address) : AssemblerBase(address) {
+  Assembler(void *address, int mode) : AssemblerBase(address) : mode_(mode) {
     buffer_ = new CodeBuffer(32);
   }
   ~Assembler() {
@@ -377,6 +373,14 @@ public:
 
   void EmitInt64(int64_t value) {
     buffer_->Emit64(value);
+  }
+
+  void EmitAddr(uint64_t addr) {
+    if (mode == 64) {
+      EmitInt64(int64_t)addr);
+    } else {
+      EmitI((int32_t)addr);
+    }
   }
 
   // ================================================================
@@ -467,21 +471,17 @@ public:
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
 
+  // RM or MR
   void Emit_OpEn_Register_MemOperand(Register dst, Address &operand) {
     EmitModRM_Update_Register(operand.modrm(), dst);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-
   void Emit_OpEn_Register_RegOperand(Register dst, Register src) {
     EmitModRM_Register_Register(dst, src);
   }
 
   void Emit_OpEn_MemOperand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
-    EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
-    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
-    EmitImmediate(imm, imm.size());
   }
-
   void Emit_OpEn_RegOperand_Immediate(uint8_t extra_opcode, Register reg, Immediate imm) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
     EmitImmediate(imm, imm.size());
@@ -491,7 +491,6 @@ public:
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
     buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
-
   void Emit_OpEn_RegOperand(uint8_t extra_opcode, Register reg) {
     EmitModRM_ExtraOpcode_Register(extra_opcode, reg);
   }
@@ -552,17 +551,13 @@ public:
 
   void sub(Register dst, Immediate imm) {
     EmitREX_Register(dst);
-
     EmitOpcode(0x81);
-
     Emit_OpEn_RegOperand_Immediate(0x5, dst, imm);
   }
 
   void add(Register dst, Immediate imm) {
     EmitREX_Register(dst);
-
     EmitOpcode(0x81);
-
     Emit_OpEn_RegOperand_Immediate(0x0, dst, imm);
   }
 
@@ -572,15 +567,8 @@ public:
   void mov(Register dst, const Immediate imm) {
     EmitREX_Register(dst);
 
+    // OI encoding
     Emit_OpEn_OpcodeRegister_Immediate(0xb8, dst, imm);
-  }
-
-  void mov(Address dst, const Immediate imm) {
-    EmitREX_Operand(dst);
-
-    EmitOpcode(0xc7);
-
-    Emit_OpEn_MemOperand_Immediate(0x0, dst, imm);
   }
 
   void mov(Register dst, Address src) {
@@ -593,9 +581,7 @@ public:
 
   void mov(Address dst, Register src) {
     EmitREX_Register_Operand(src, dst);
-
     EmitOpcode(0x89);
-
     Emit_OpEn_Register_MemOperand(src, dst);
   }
 
@@ -617,27 +603,22 @@ public:
 
   void call(Immediate imm) {
     EmitOpcode(0xe8);
-
     EmitImmediate(imm, imm.size());
   }
 
   void call(Register reg) {
     EmitREX_Register(reg);
-
     EmitOpcode(0xFF);
-
     Emit_OpEn_RegOperand(0x2, reg);
   }
 
   void pop(Register reg) {
     EmitREX_ExtraRegister(reg);
-
     EmitOpcode_Register(0x58, reg);
   }
 
   void push(Register reg) {
     EmitREX_ExtraRegister(reg);
-
     EmitOpcode_Register(0x50, reg);
   }
 
@@ -647,6 +628,9 @@ public:
   void nop() {
     EmitOpcode(0x90);
   }
+
+private:
+  int mode_;
 };
 
 // ================================================================
@@ -654,7 +638,7 @@ public:
 
 class TurboAssembler : public Assembler {
 public:
-  TurboAssembler(void *address) : Assembler(address) {
+  TurboAssembler(void *address, int mode) : Assembler(address, mode) {
     data_labels_ = NULL;
   }
 
@@ -700,7 +684,7 @@ public:
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
       RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
       PseudoBind(label);
-      EmitInt64(label->data());
+      EmitAddr(label->data());
     }
   }
 
@@ -719,7 +703,7 @@ private:
   LiteMutableArray *data_labels_;
 };
 
-} // namespace x64
+} // namespace x86shared
 } // namespace zz
 
 #endif

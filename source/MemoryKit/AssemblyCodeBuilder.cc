@@ -44,7 +44,7 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase
 
   AssemblyCodeChunk *result = NULL;
   result                    = FinalizeFromAddress((addr_t)address, codeBuffer->getSize());
-  DLOG(0, "Finalize assembler at %p", (void *)address);
+  DLOG(0, "[assembler] Finalize assembler at %p", (void *)address);
 
   return result;
 }
