@@ -27,8 +27,6 @@ static void **AllocIndirectStub(addr_t branch_address) {
 }
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
-  DLOG(0, "Generate trampoline => %p", to);
-
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 

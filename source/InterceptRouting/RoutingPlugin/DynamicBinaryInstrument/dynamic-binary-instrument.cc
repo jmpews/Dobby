@@ -16,13 +16,11 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
   ClosureTrampolineEntry *closure_trampoline;
   // forward trampoline
   closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)instrument_routing_dispatch);
-  DLOG(0, "Closure trampoline carry %p data", entry_);
-  DLOG(0, "Create dynamic binary instrumentation call closure trampoline to prologue_dispatch_bridge(%p)",
-       closure_trampoline->address);
+  DLOG(1, "[closure bridge] Carry data %p ", entry_);
+  DLOG(1, "[closure bridge] Create prologue_dispatch_bridge %p", closure_trampoline->address);
 
   // set trampoline target address
   this->SetTrampolineTarget(closure_trampoline->address);
-  DLOG(0, "Set trampoline target => %p", GetTrampolineTarget());
 
   this->prologue_dispatch_bridge = closure_trampoline->address;
 

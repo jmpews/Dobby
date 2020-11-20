@@ -39,7 +39,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
     // decode x86 insn
     x86_insn_decode(&insn, (uint8_t *)buffer_cursor, &conf);
 
-    if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) {  // jc rel8
+    if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jc rel8
       DLOG(1, "[x86 relo] jc rel8, %p", buffer_cursor);
 
       int8_t  orig_offset = insn.immediate;
@@ -49,7 +49,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
       __ Emit8(0x0F);
       __ Emit8(opcode);
       __ Emit32(new_offset);
-    } else if (insn.primary_opcode == 0xEB) {  // jmp rel8
+    } else if (insn.primary_opcode == 0xEB) { // jmp rel8
       DLOG(1, "[x86 relo] jmp rel8, %p", buffer_cursor);
 
       int8_t orig_offset = insn.immediate;
@@ -57,7 +57,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
       __ Emit8(0xE9);
       __ Emit32(new_offset);
-    } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) {  // call or jmp rel32
+    } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
       DLOG(1, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
 
       dword orig_offset = insn.immediate;
@@ -65,7 +65,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
       __ EmitBuffer((void *)buffer_cursor, insn.immediate_offset);
       __ Emit32(offset);
-    } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) {  // LOOPNZ/LOOPZ/LOOP/JECXZ
+    } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) { // LOOPNZ/LOOPZ/LOOP/JECXZ
       // LOOP/LOOPcc
       UNIMPLEMENTED();
     } else if (insn.primary_opcode == 0xE3) {
@@ -92,9 +92,13 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
   }
 
   // jmp to the origin rest instructions
-  CodeGen codegen(&turbo_assembler_);
+  CodeGen  codegen(&turbo_assembler_);
   addr64_t stub_addr = curr_relo_ip + 6;
   codegen.JmpNear(curr_orig_ip);
+
+  // update origin
+  int new_origin_len = curr_orig_ip - origin->raw_instruction_start();
+  origin->re_init_region_range(origin->raw_instruction_start(), new_origin_len);
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->getSize();
   if (relo_len > relocated->raw_instruction_size()) {

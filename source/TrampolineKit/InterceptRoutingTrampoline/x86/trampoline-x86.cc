@@ -14,17 +14,14 @@
 using namespace zz::x86;
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
-  CodeBufferBase *result = NULL;
-
-  DLOG(0, "Generate trampoline => %p", to);
-
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpNear((uint32_t)to);
 
-  result = turbo_assembler_.GetCodeBuffer()->Copy();
+  CodeBufferBase *result = NULL;
+  result                 = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
 

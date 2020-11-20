@@ -59,6 +59,10 @@ public:
 
       switch (instruction->type_) {
       case kDisp32_off_9: {
+        // why 9 ?
+        // use `call` and `pop` get the runtime ip register
+        // but the ip register not the real call next insn
+        // it need add two insn length == 9
         int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
         _buffer->FixBindLabel(disp32_fix_pos, offset + 9);
       } break;
@@ -356,7 +360,6 @@ class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
     buffer_ = new CodeBuffer(32);
-    DLOG(0, "Assembler buffer at %p", (CodeBufferBase *)buffer_->getRawBuffer());
   }
   ~Assembler() {
     if (buffer_)

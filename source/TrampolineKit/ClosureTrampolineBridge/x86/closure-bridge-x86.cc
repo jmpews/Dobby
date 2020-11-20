@@ -35,11 +35,6 @@ void *get_closure_bridge() {
 
   TurboAssembler turbo_assembler_(0);
 
-  // save flags register
-  __ EmitBuffer(pushfd, 1);
-  // align rsp 16-byte
-  _ sub(esp, Immediate(4, 32));
-
   // general register
   _ sub(esp, Immediate(8 * 4, 32));
   _ mov(Address(esp, 4 * 0), eax);
@@ -51,27 +46,46 @@ void *get_closure_bridge() {
   _ mov(Address(esp, 4 * 6), edi);
   _ mov(Address(esp, 4 * 7), esi);
 
+  // save flags register
+  __ EmitBuffer(pushfd, 1);
+  _ pop(eax);
+  { // save to stack
+    _ sub(esp, Immediate(2 * 4, 32));
+    _ mov(Address(esp, 4), eax);
+  }
+
   // save origin sp
   _ mov(eax, esp);
-  _ add(eax, Immediate(4 + 4 + 4 + 8 * 4, 32));
-  _ sub(esp, Immediate(2 * 4, 32));
-  _ mov(Address(esp, 4), eax);
+  _ add(eax, Immediate(8 * 4 + 2 * 4 + 4, 32));
+  { // save to stack
+    _ sub(esp, Immediate(2 * 4, 32));
+    _ mov(Address(esp, 4), eax);
+  }
 
   // ======= Jump to UnifiedInterface Bridge Handle =======
 
   // prepare args
-  _ mov(eax, Address(esp, 4 + 4 + 8 * 4 + 2 * 4));
-  _ push(eax);
+  _ sub(esp, Immediate(2 * 4, 32));
+  _ mov(eax, Address(esp, 8 * 4 + 2 * 4 + 2 * 4 + 2 * 4));
+  _ mov(Address(esp, 4), eax);
   _ mov(eax, esp);
-  _ push(eax);
+  _ add(eax, Immediate(2 * 4, 32));
+  _ mov(Address(esp, 0), eax);
 
   // LABEL: call_bridge
   _ CallFunction(ExternalReference((void *)intercept_routing_common_bridge_handler));
 
   // ======= RegisterContext Restore =======
 
+  // restore argument reserved stack
+  _ add(esp, Immediate(2 * 4, 32));
+
   // restore sp placeholder stack
   _ add(esp, Immediate(2 * 4, 32));
+
+  _ add(esp, Immediate(4, 32));
+  // restore flags register
+  __ EmitBuffer(popfd, 1);
 
   // general register
   _ pop(eax);
@@ -83,11 +97,6 @@ void *get_closure_bridge() {
   _ pop(edi);
   _ pop(esi);
 
-  // align rsp 16-byte
-  _ add(esp, Immediate(4, 32));
-  // restore flags register
-  __ EmitBuffer(popfd, 1);
-
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
@@ -96,8 +105,7 @@ void *get_closure_bridge() {
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge = (void *)code->raw_instruction_start();
 
-  DLOG(0, "Build the closure bridge at %p", closure_bridge);
-
+  DLOG(1, "[closure bridge] Build the closure bridge at %p", closure_bridge);
 #endif
   return (void *)closure_bridge;
 }
