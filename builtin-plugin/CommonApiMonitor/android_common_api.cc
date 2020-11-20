@@ -22,28 +22,41 @@ void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
 
 // clang-format off
 const char *func_array[] = {
-    "__loader_dlopen",
-    "dlsym",
-    "dlclose",
+   "__loader_dlopen",
+   "dlsym",
+   "dlclose",
 
-    "open",
-    "write",
-    "read",
-    "close",
+   "open",
+   "write",
+   "read",
+   "close",
 
-    "socket",
-    "connect",
-    "bind",
-    "listen",
-    "accept",
-    "send",
-    "recv",
+   "socket",
+   "connect",
+   "bind",
+   "listen",
+   "accept",
+   "send",
+   "recv",
 
-    // art::gc::Heap::PreZygoteFork
-    "_ZN3art2gc4Heap13PreZygoteForkEv",
+   // art::gc::Heap::PreZygoteFork
+   "_ZN3art2gc4Heap13PreZygoteForkEv",
 
-    // art::ClassLinker::DefineClass
-    "_ZN3art11ClassLinker11DefineClassEPNS_6ThreadEPKcmNS_6HandleINS_6mirror11ClassLoaderEEERKNS_7DexFileERKNS_3dex8ClassDefE"
+   // art::ClassLinker::DefineClass
+   "_ZN3art11ClassLinker11DefineClassEPNS_6ThreadEPKcmNS_6HandleINS_6mirror11ClassLoaderEEERKNS_7DexFileERKNS_3dex8ClassDefE",
+
+    // art::ClassLinker::ShouldUseInterpreterEntrypoint
+   "_ZN3art11ClassLinker30ShouldUseInterpreterEntrypointEPNS_9ArtMethodEPKv",
+
+   "_ZN3art11ClassLinkerC2EPNS_11InternTableE",
+   "_ZN3art11ClassLinkerC2EPNS_11InternTableEb",
+   "_ZN3art9hiddenapi6detail28ShouldDenyAccessToMemberImplINS_9ArtMethodEEEbPT_NS0_7ApiListENS0_12AccessMethodE",
+   "_ZN3art9hiddenapi6detail28ShouldDenyAccessToMemberImplINS_8ArtFieldEEEbPT_NS0_7ApiListENS0_12AccessMethodE",
+   "_ZN3art14OatFileManager24SetOnlyUseSystemOatFilesEbb",
+   "_ZN3art7Runtime4InitEONS_18RuntimeArgumentMapE",
+   "_ZN3art2gc4Heap13PreZygoteForkEv",
+   "_ZN3art6mirror5Class15IsInSamePackageENS_6ObjPtrIS1_EE",
+   "_ZNK23FileDescriptorWhitelist9IsAllowedERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE",
 };
 // clang-format on
 
@@ -51,7 +64,7 @@ namespace art {
 namespace gc {
 namespace Heap {
 namespace _11 {
-char PreZygoteFork[] = {
+uint8_t PreZygoteFork[] = {
     0x2D, 0xE9, 0xF0, 0x4F, 0xAD, 0xF2, 0x04, 0x4D, 0x07, 0x46,
 };
 }
@@ -66,11 +79,16 @@ __attribute__((constructor)) static void ctor() {
 
   func_map = new std::map<void *, const char *>();
 
-  //  for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
-  //    func = DobbySymbolResolver(NULL, func_array[i]);
-  //    func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
-  //    DobbyInstrument(func, common_handler);
-  //  }
+  for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
+    func = DobbySymbolResolver(NULL, func_array[i]);
+    if (func == NULL) {
+      LOG(1, "func %s not resolve", func_array[i]);
+      continue;
+    }
+    func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
+    DobbyInstrument(func, common_handler);
+  }
+  return;
 
   DobbyInstrument((void *)((addr_t)art::gc::Heap::_11::PreZygoteFork + 1), common_handler);
 
