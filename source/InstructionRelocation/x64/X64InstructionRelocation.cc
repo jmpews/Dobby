@@ -57,7 +57,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
       __ Emit8(0xE9);
       __ Emit32(new_offset);
-    } else if ((insn.flags | X86_INSN_DECODE_FLAG_IP_RELATIVE) && (insn.operands[1].mem.base & RIP)) { // RIP
+    } else if ((insn.flags & X86_INSN_DECODE_FLAG_IP_RELATIVE) && (insn.operands[1].mem.base == RIP)) { // RIP
       DLOG(1, "[x86 relo] rip, %p", buffer_cursor);
 
       // dword orig_disp = *(dword *)(buffer_cursor + insn.operands[1].mem.disp);
