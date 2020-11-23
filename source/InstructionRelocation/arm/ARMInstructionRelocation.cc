@@ -592,6 +592,10 @@ void gen_arm_relocate_code(LiteMutableArray *relo_map, TurboAssembler *turbo_ass
     instr = *(arm_inst_t *)buffer_cursor;
   }
 
+  // update origin
+  int new_origin_len = curr_orig_pc - origin->raw_instruction_start() - ARM_PC_OFFSET;
+  origin->re_init_region_range(origin->raw_instruction_start(), new_origin_len);
+
   bool is_relocate_interrupted = buffer_cursor < ((addr_t)buffer + predefined_relocate_size);
   if (is_relocate_interrupted) {
     *execute_state_changed_pc_ptr = execute_state_changed_pc;
@@ -612,7 +616,7 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
   thumb2_inst_t instr         = *(thumb2_inst_t *)buffer_cursor;
 
   int predefined_relocate_size = origin->raw_instruction_size();
-  DLOG(0, "[arm ]Thumb relocate %d start >>>>>", predefined_relocate_size);
+  DLOG(0, "[arm] Thumb relocate %d start >>>>>", predefined_relocate_size);
 
   addr32_t execute_state_changed_pc = 0;
 
@@ -664,6 +668,10 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
     instr = *(thumb2_inst_t *)buffer_cursor;
   }
 
+  // update origin
+  int new_origin_len = curr_orig_pc - origin->raw_instruction_start() - Thumb_PC_OFFSET;
+  origin->re_init_region_range(origin->raw_instruction_start(), new_origin_len);
+
   /*
   .thumb1 bx pc
   .thumb1 mov r8, r8
@@ -675,6 +683,8 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
     *execute_state_changed_pc_ptr = execute_state_changed_pc;
     turbo_assembler_->SetExecuteState(ARMExecuteState);
   }
+
+
 }
 
 static addr32_t get_orig_instr_relocated_addr(LiteMutableArray *relo_map, addr32_t orig_pc) {
@@ -805,7 +815,7 @@ relocate_remain:
 
   // TODO:
   // if last instr is unlink branch, skip
-  addr32_t rest_instr_addr = origin->raw_instruction_start() + origin->raw_instruction_size();
+  addr32_t rest_instr_addr = origin_chunk.raw_instruction_start() + origin_chunk.raw_instruction_size();
   if (curr_assembler_ == &thumb_turbo_assembler_) {
     // Branch to the rest of instructions
     thumb_ AlignThumbNop();
