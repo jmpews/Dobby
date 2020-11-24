@@ -159,7 +159,15 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
     curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
-  if (!linkedit_segment) {
+  if (text_segment == NULL || linkedit_segment == NULL) {
+    return (void *)0;
+  }
+  
+  if (text_segment->vmaddr == 0 || linkedit_segment->vmaddr == 0) {
+    return (void *)0;
+  }
+  
+  if( dyld_info_cmd == NULL || dyld_info_cmd->export_off == 0) {
     return (void *)0;
   }
 
