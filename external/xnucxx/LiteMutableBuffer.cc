@@ -1,56 +1,54 @@
 #include "xnucxx/LiteMutableBuffer.h"
+#include "xnucxx/LiteMemOpt.h"
 
-bool LiteMutableBuffer::initWithCapacity(uint32_t in_capacity) {
-  if (in_capacity <= 0)
+bool LiteMutableBuffer::initWithCapacity(uint32_t initCapacity) {
+  if (initCapacity <= 0)
     return false;
-  this->buffer_ = (uint8_t *)LiteMemOpt::alloc(in_capacity);
-  assert(this->buffer_);
 
-  this->buffer_cursor_   = buffer_;
-  this->buffer_capacity_ = in_capacity;
+  this->buffer = (uint8_t *)LiteMemOpt::alloc(initCapacity);
+  this->buffer_cursor   = buffer;
+  this->buffer_capacity = initCapacity;
   return true;
 }
 
-uint32_t LiteMutableBuffer::ensureCapacity(uint32_t new_capacity) {
-  uint8_t *new_buffer;
+uint32_t LiteMutableBuffer::ensureCapacity(uint32_t newCapacity) {
+  if (newCapacity <= buffer_capacity)
+    return buffer_capacity;
 
-  if (new_capacity <= this->buffer_capacity_)
-    return this->buffer_capacity_;
+  // or use step
+  newCapacity = newCapacity + (uint32_t)newCapacity / 2;
 
-#undef CAPACITY_STEP
-#define CAPACITY_STEP 64
-  new_capacity = (uint32_t)ALIGN(new_capacity + CAPACITY_STEP, CAPACITY_STEP);
-
-  new_buffer = (uint8_t *)LiteMemOpt::alloc(new_capacity);
-  assert(new_buffer);
-  _memset(new_buffer, 'A', new_capacity);
-
-  uint32_t offset = (uint32_t)(this->buffer_cursor_ - this->buffer_);
-  assert(offset == this->getSize());
-  _memcpy(new_buffer, this->buffer_, offset);
-
-  // free the origin
-  LiteMemOpt::free(this->buffer_, this->buffer_capacity_);
-
-  this->buffer_cursor_   = new_buffer + offset;
-  this->buffer_          = new_buffer;
-  this->buffer_capacity_ = new_capacity;
-
-  return new_capacity;
-}
-
-#if 0
-LiteMutableBuffer *LiteMutableBuffer::copy() {
-  LiteMutableBuffer *result = new LiteMutableBuffer(this->buffer_capacity_);
-}
-#endif
-
-void LiteMutableBuffer::release() {
-  if (this->buffer_ != NULL) {
-    LiteMemOpt::free(this->buffer_, this->buffer_capacity_);
-    this->buffer_ = NULL;
-    return;
+  // alloc new buffer
+  uint8_t *newBuffer;
+  newBuffer = (uint8_t *)LiteMemOpt::alloc(newCapacity);
+  if(newBuffer == nullptr) {
+    return 0;
   }
 
-  ERROR_LOG("double free occured");
+  // clear buffer content
+  _memset(newBuffer, 'A', newCapacity);
+
+  // copy the origin content
+  uint32_t originContentSize = (uint32_t)(buffer_cursor - buffer);
+  _memcpy(newBuffer, buffer, originContentSize);
+
+  // free the origin
+  uint32_t originBufferSize = buffer_capacity;
+  LiteMemOpt::free(buffer, originBufferSize);
+
+  // update info
+  this->buffer          = newBuffer;
+  this->buffer_cursor   = newBuffer + originContentSize;
+  this->buffer_capacity = newCapacity;
+
+  return newCapacity;
+}
+
+void LiteMutableBuffer::release() {
+  if (buffer != NULL) {
+    uint32_t originBufferSize = buffer_capacity;
+    LiteMemOpt::free(buffer, originBufferSize);
+
+    buffer = NULL;
+  }
 }

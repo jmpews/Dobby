@@ -1,9 +1,5 @@
 #include "xnucxx/LiteObject.h"
 
-bool LiteObject::init() {
-  return true;
-}
-
 void LiteObject::free() {
   return;
 }

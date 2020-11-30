@@ -15,8 +15,6 @@
 #include <sys/sysctl.h> // NOLINT, for sysctl
 #endif
 
-#include "piertotum_internal.h"
-
 #if defined(__APPLE__)
 #include <dlfcn.h>
 #include <mach/vm_statistics.h>

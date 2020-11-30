@@ -360,6 +360,7 @@ public:
   ~Assembler() {
     if (buffer_)
       delete buffer_;
+    buffer_ = NULL
   }
 
 public:

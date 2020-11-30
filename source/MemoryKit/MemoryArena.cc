@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-LiteMutableArray *MemoryArena::page_chunks = NULL;
+LiteMutableArray MemoryArena::page_chunks(8);
 
 void MemoryArena::Destroy(AssemblyCodeChunk *cchunk) {
   return;
@@ -11,13 +11,9 @@ void MemoryArena::Destroy(AssemblyCodeChunk *cchunk) {
 MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permission) {
   MemoryChunk *result = NULL;
 
-  if (!MemoryArena::page_chunks) {
-    MemoryArena::page_chunks = new LiteMutableArray;
-  }
-
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(page_chunks);
+  LiteCollectionIterator iter(&page_chunks);
   PageChunk *             page = NULL;
-  while ((page = reinterpret_cast<PageChunk *>(iter->getNextObject())) != NULL) {
+  while ((page = reinterpret_cast<PageChunk *>(iter.getNextObject())) != NULL) {
     if (page->permission == permission) {
       // check the page remain space is enough for the new chunk
       if ((page->page_cursor + alloc_size) < ((addr_t)page->page.address + page->page.length)) {
@@ -25,7 +21,6 @@ MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permiss
       }
     }
   }
-  delete iter;
 
   // alloc a new executable page.
   if (!page) {
@@ -42,7 +37,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permiss
     newPage->page_cursor  = (addr_t)pageAddress;
     newPage->permission   = permission;
     newPage->chunks       = new LiteMutableArray(8);
-    MemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+    MemoryArena::page_chunks.pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
 

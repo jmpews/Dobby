@@ -4,40 +4,35 @@
 #include "xnucxx/LiteCollection.h"
 #include "xnucxx/LiteIterator.h"
 
-class LiteMutableArray : public LiteCollection {
-public:
-  unsigned int count;
-
-  unsigned int capacity;
-
+class LiteMutableArray : public LiteCollectionInterface {
+protected:
   const LiteObject **array;
 
+  unsigned int array_count;
+
+  unsigned int array_capacity;
+
 public:
-  LiteMutableArray() {
-    initWithCapacity(1);
-  }
+  explicit LiteMutableArray(int count);
 
-  LiteMutableArray(int count) {
-    initWithCapacity(count);
-  }
+  ~LiteMutableArray();
 
-  virtual void release() override;
+  // === LiteObject override ==
+  void release() override;
 
-  virtual unsigned int getCount() override;
+  // === LiteCollectionInterface override ==
+  unsigned int getCount() override;
 
-  virtual unsigned int getCapacity() override;
+  unsigned int getCapacity() override;
 
-  virtual unsigned int ensureCapacity(unsigned int newCapacity) override;
+  unsigned int ensureCapacity(unsigned int newCapacity) override;
 
-  virtual bool initIterator(void *iterator) override;
+  // === LiteIteratorInterface::Delegate override ==
+  bool initIterator(void *iterator) const override;
 
-  virtual bool getNextObjectForIterator(void *iterator, LiteObject **ret) override;
+  bool getNextObjectForIterator(void *iterator, LiteObject **ret) const override;
 
-  virtual bool initWithCapacity(unsigned int capacity);
-
-  virtual LiteObject *getObject(const int index);
-
-  virtual bool setObject(const LiteObject object);
+  virtual LiteObject *getObject(int index);
 
   virtual bool pushObject(const LiteObject *object);
 };

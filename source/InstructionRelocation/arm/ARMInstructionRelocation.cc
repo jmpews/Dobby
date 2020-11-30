@@ -605,8 +605,7 @@ void gen_arm_relocate_code(LiteMutableArray *relo_map, TurboAssembler *turbo_ass
 void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *turbo_assembler_, void *buffer,
                              AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated,
                              addr32_t *execute_state_changed_pc_ptr) {
-  LiteMutableArray *thumb_labels = new LiteMutableArray;
-
+  LiteMutableArray thumb_labels(8);
 #define _ turbo_assembler_->
 
   addr32_t curr_orig_pc = origin->raw_instruction_start() + Thumb_PC_OFFSET;
@@ -626,12 +625,12 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
 
     int last_relo_offset = turbo_assembler_->GetCodeBuffer()->getSize();
     if (is_thumb2(instr)) {
-      Thumb2RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
+      Thumb2RelocateSingleInstr(turbo_assembler_, &thumb_labels, (uint16_t)instr, (uint16_t)(instr >> 16), curr_orig_pc,
                                 curr_relo_pc);
 
       DLOG(0, "[arm] Relocate thumb2 instr: 0x%x", instr);
     } else {
-      Thumb1RelocateSingleInstr(turbo_assembler_, thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc,
+      Thumb1RelocateSingleInstr(turbo_assembler_, &thumb_labels, (uint16_t)instr, curr_orig_pc, curr_relo_pc,
                                 &execute_state_changed_pc);
 
       DLOG(0, "[arm] Relocate thumb1 instr: 0x%x", (uint16_t)instr);
@@ -683,8 +682,6 @@ void gen_thumb_relocate_code(LiteMutableArray *relo_map, ThumbTurboAssembler *tu
     *execute_state_changed_pc_ptr = execute_state_changed_pc;
     turbo_assembler_->SetExecuteState(ARMExecuteState);
   }
-
-
 }
 
 static addr32_t get_orig_instr_relocated_addr(LiteMutableArray *relo_map, addr32_t orig_pc) {
@@ -699,7 +696,6 @@ static addr32_t get_orig_instr_relocated_addr(LiteMutableArray *relo_map, addr32
 
 static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_map,
                               ThumbTurboAssembler *thumb_turbo_assembler, TurboAssembler *arm_turbo_assembler) {
-
   addr32_t origin_instr_start = origin->raw_instruction_start();
   addr32_t origin_instr_end   = origin_instr_start + origin->raw_instruction_size();
 
@@ -715,7 +711,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG(0, "[reloc label fixup warning] found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t)thumb_turbo_assembler->GetRealizeAddress();
+        fixup_val += (addr_t)thumb_turbo_assembler->RealizeAddress();
         label->fixup_data(fixup_val);
         thumb_turbo_assembler->RelocBindFixup(label);
       }
@@ -731,7 +727,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG(0, "[reloc label fixup warning]found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t)arm_turbo_assembler->GetRealizeAddress();
+        fixup_val += (addr_t)arm_turbo_assembler->RealizeAddress();
         label->fixup_data(fixup_val);
         arm_turbo_assembler->RelocBindFixup(label);
       }

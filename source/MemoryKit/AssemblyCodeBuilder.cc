@@ -14,7 +14,7 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromAddress(addr_t address, int 
 AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
   CodeBufferBase *codeBuffer = reinterpret_cast<CodeBufferBase *>(assembler->GetCodeBuffer());
 
-  void *address = assembler->GetRealizeAddress();
+  void *address = assembler->RealizeAddress();
   if (!address) {
 
     int buffer_size = 0;

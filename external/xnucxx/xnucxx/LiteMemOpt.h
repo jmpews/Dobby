@@ -12,11 +12,6 @@ public:
   static void *alloc(int size);
 
   static void free(void *address, int size);
-
-public:
-#if 0
-  static void (*copy_)(void *, void *, int);
-#endif
 };
 
 #endif

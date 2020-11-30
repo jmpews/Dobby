@@ -14,7 +14,7 @@ PUBLIC void dobby_enable_near_branch_trampoline() {
 }
 
 PUBLIC void dobby_disable_near_branch_trampoline() {
-  RoutingPlugin *plugin = (RoutingPlugin *)ExtraInternalPlugin::near_branch_trampoline;
+  NearBranchTrampolinePlugin *plugin = (NearBranchTrampolinePlugin *)ExtraInternalPlugin::near_branch_trampoline;
   delete plugin;
   ExtraInternalPlugin::near_branch_trampoline = NULL;
 }
@@ -42,10 +42,8 @@ bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *rout
 // generate trampoline, patch the original entry
 bool NearBranchTrampolinePlugin::Active(InterceptRouting *routing) {
   addr_t src, dst;
-
   HookEntry *entry = routing->GetHookEntry();
   src              = (addr_t)entry->target_address;
   dst              = (addr_t)routing->GetTrampolineTarget();
-
   return true;
 }

@@ -4,7 +4,7 @@
 #include "xnucxx/LiteObject.h"
 #include "xnucxx/LiteIterator.h"
 
-class LiteCollection : public LiteObject, public LiteIterator::Delegate {
+class LiteCollectionInterface : public LiteObject, public LiteIteratorInterface::Delegate {
 public:
   virtual unsigned int getCount() = 0;
 
@@ -12,9 +12,9 @@ public:
 
   virtual unsigned int ensureCapacity(unsigned int newCapacity) = 0;
 
-  virtual bool initIterator(void *iterator) = 0;
+  virtual bool initIterator(void *iterator) const = 0;
 
-  virtual bool getNextObjectForIterator(void *iterator, LiteObject **ret) = 0;
+  virtual bool getNextObjectForIterator(void *iterator, LiteObject **ret) const = 0;
 };
 
 #endif

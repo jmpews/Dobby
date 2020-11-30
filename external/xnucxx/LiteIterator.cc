@@ -1,25 +1,19 @@
 #include "xnucxx/LiteIterator.h"
-
 #include "xnucxx/LiteCollection.h"
+#include "xnucxx/LiteMemOpt.h"
 
 void LiteCollectionIterator::reset() {
-  this->collection->initIterator(this->innerIterator);
-  return;
+  collection->initIterator(innerIterator);
 }
 
-bool LiteCollectionIterator::initWithCollection(const LiteCollection *collection) {
-  this->collection = (LiteCollection *)collection;
-
+bool LiteCollectionIterator::initWithCollection(const LiteCollectionInterface *inCollection) {
   int *ndxPtr         = (int *)LiteMemOpt::alloc(sizeof(int));
-  this->innerIterator = (void *)ndxPtr;
-  this->collection->initIterator(this->innerIterator);
-  return true;
-}
+  innerIterator = (void *)ndxPtr;
 
-LiteCollectionIterator *LiteCollectionIterator::withCollection(const LiteCollection *collection) {
-  LiteCollectionIterator *iter = new LiteCollectionIterator;
-  iter->initWithCollection(collection);
-  return iter;
+  inCollection->initIterator(this->innerIterator);
+  collection = inCollection;
+
+  return true;
 }
 
 LiteObject *LiteCollectionIterator::getNextObject() {
@@ -29,5 +23,9 @@ LiteObject *LiteCollectionIterator::getNextObject() {
 }
 
 void LiteCollectionIterator::release() {
-  LiteMemOpt::free(this->innerIterator, sizeof(void *));
+  if(innerIterator) {
+    LiteMemOpt::free(innerIterator, sizeof(int));
+
+    innerIterator = NULL;
+  }
 }

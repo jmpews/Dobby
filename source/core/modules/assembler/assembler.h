@@ -12,9 +12,6 @@ public:
   Label() : pos_(0), near_link_pos_(0) {
   }
 
-  ~Label() {
-  }
-
 public:
   bool is_bound() const;
 
@@ -37,18 +34,6 @@ private:
   int near_link_pos_;
 };
 
-#if 0
-class LiteObjectPool {
-public:
-  intptr_t AddObject(const LiteObject &obj);
-
-  intptr_t FindObject(const LiteObject &obj);
-
-private:
-  std::vector<LiteObject *> object_pool_;
-};
-#endif
-
 class ExternalReference {
 public:
   explicit ExternalReference(void *address) : address_(address) {
@@ -62,26 +47,31 @@ private:
 
 class AssemblerBase {
 public:
-  AssemblerBase(void *address);
+  explicit AssemblerBase(void *address);
 
-public:
+  ~AssemblerBase();
+
+  // === IP / PC register ===
+
   int ip_offset() const;
 
   int pc_offset() const;
 
+  // === CodeBuffer ===
+
   CodeBuffer *GetCodeBuffer();
+
+  // === Realized Address ===
+
+  virtual void *RealizeAddress();
 
   virtual void CommitRealizeAddress(void *address);
 
-  virtual void *GetRealizeAddress();
+  // === CPU Cache ===
 
   static void FlushICache(addr_t start, int size);
 
   static void FlushICache(addr_t start, addr_t end);
-
-private:
-  AssemblerBase() {
-  }
 
 protected:
   CodeBuffer *buffer_;

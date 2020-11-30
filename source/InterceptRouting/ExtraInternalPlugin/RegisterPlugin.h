@@ -11,7 +11,7 @@ public:
   static void registerPlugin(const char *name, ExtraInternalPlugin *plugin);
 
 public:
-  static LiteMutableArray *plugins_;
+  static LiteMutableArray plugins_;
 
   static ExtraInternalPlugin *near_branch_trampoline;
 };
@@ -27,6 +27,9 @@ public:
 
   // @Return: if false will continue to iter next plugin
   virtual bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst) = 0;
+
+private:
+  char name_[256];
 };
 
 #endif

@@ -3,13 +3,13 @@
 
 #include "xnucxx/LiteObject.h"
 
-class LiteIterator : public LiteObject {
+class LiteIteratorInterface : public LiteObject {
 public:
   class Delegate {
   public:
-    virtual bool initIterator(void *iterationContext) = 0;
+    virtual bool initIterator(void *iterationContext) const = 0;
 
-    virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) = 0;
+    virtual bool getNextObjectForIterator(void *iterationContext, LiteObject **nextObject) const = 0;
   };
 
 public:
@@ -18,35 +18,31 @@ public:
   virtual LiteObject *getNextObject() = 0;
 };
 
-class LiteCollection;
-class LiteCollectionIterator : public LiteIterator {
+class LiteCollectionInterface;
+class LiteCollectionIterator : public LiteIteratorInterface {
 protected:
-  LiteCollection *collection;
+  const LiteCollectionInterface *collection;
 
   void *innerIterator;
 
 public:
-  LiteCollectionIterator() {
-  }
-
-  LiteCollectionIterator(const LiteCollection *collection) {
+  explicit LiteCollectionIterator(const LiteCollectionInterface *collection) {
     initWithCollection(collection);
   }
 
   ~LiteCollectionIterator() {
-    LiteMemOpt::free(innerIterator, sizeof(int));
+    release();
   }
 
-  virtual void reset() override;
+  // === LiteObject override ===
+  void release() override;
 
-  virtual LiteObject *getNextObject() override;
+  // === LiteIteratorInterface override ===
+  void reset() override;
 
-  virtual void release() override;
+  LiteObject *getNextObject() override;
 
-  virtual bool initWithCollection(const LiteCollection *collection);
-
-public:
-  static LiteCollectionIterator *withCollection(const LiteCollection *collection);
+  bool initWithCollection(const LiteCollectionInterface *collection);
 };
 
 #endif

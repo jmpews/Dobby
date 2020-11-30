@@ -4,16 +4,12 @@
 #include "dobby_internal.h"
 
 typedef struct _InterceptorOptions {
-  // Enable B Branch in the arm and aarch64
+  // enable near branch
   bool enable_near_branch_trampoline;
 
-  // Enable dynamic closure which is use remap on the iOS
-  bool enable_dynamic_closure_bridge;
 } InterceptorOptions;
 
 class Interceptor {
-public:
-  LiteMutableArray *entries;
 
 public:
   static Interceptor *SharedInstance();
@@ -24,11 +20,14 @@ public:
 
   HookEntry *FindHookEntry(void *address);
 
-  void AddHookEntry(HookEntry *hook_entry);
+  void AddHookEntry(HookEntry *entry);
 
 private:
   Interceptor() {
   }
+
+public:
+  LiteMutableArray *entries;
 
 private:
   static Interceptor *priv_interceptor_;

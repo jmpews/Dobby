@@ -13,10 +13,9 @@ using namespace zz;
 #define MB (1024uLL * KB)
 #define GB (1024uLL * MB)
 
-LiteMutableArray *NearMemoryArena::page_chunks = NULL;
+LiteMutableArray NearMemoryArena::page_chunks(8);
 
 #if 1
-
 static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
   addr_t min_page_addr, max_page_addr;
   min_page_addr = ALIGN((pos - alloc_range), OSMemory::PageSize()) + OSMemory::PageSize();
@@ -139,7 +138,7 @@ int NearMemoryArena::PushPage(addr_t page_addr, MemoryPermission permission) {
   newPage->page_cursor  = page_addr;
   newPage->permission   = permission;
   newPage->chunks       = new LiteMutableArray(8);
-  NearMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  NearMemoryArena::page_chunks.pushObject(reinterpret_cast<LiteObject *>(newPage));
   return RT_SUCCESS;
 }
 
@@ -155,14 +154,10 @@ MemoryChunk *NearMemoryArena::AllocateChunk(addr_t position, size_t alloc_range,
                                             MemoryPermission permission) {
   MemoryChunk *result = NULL;
 
-  if (!NearMemoryArena::page_chunks) {
-    NearMemoryArena::page_chunks = new LiteMutableArray;
-  }
-
 search_once_more:
-  LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(NearMemoryArena::page_chunks);
+  LiteCollectionIterator iter(&NearMemoryArena::page_chunks);
   PageChunk *             page = NULL;
-  while ((page = reinterpret_cast<PageChunk *>(iter->getNextObject())) != NULL) {
+  while ((page = reinterpret_cast<PageChunk *>(iter.getNextObject())) != NULL) {
     if (page->permission == permission) {
       if (llabs((intptr_t)(page->page_cursor - position)) < alloc_range) {
         if ((page->page_cursor + alloc_size) < ((addr_t)page->page.address + page->page.length)) {
@@ -171,7 +166,6 @@ search_once_more:
       }
     }
   }
-  delete iter;
 
   MemoryChunk *chunk = NULL;
   if (page) {

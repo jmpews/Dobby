@@ -32,21 +32,22 @@ void Label::link_to(int pos) {
   pos_ = pos + 1;
 }
 
-// ===== ExternalReference =====
-
 const void *ExternalReference::address() {
   return address_;
 }
 
-// ===== AssemblerBase =====
-
 AssemblerBase::AssemblerBase(void *address) {
   realized_address_ = address;
-  buffer_           = NULL;
+
+  buffer_ = NULL;
 
   if (realized_address_ != NULL) {
     DLOG(1, "[assembler] Create fixed address at %p", realized_address_);
   }
+}
+
+AssemblerBase::~AssemblerBase() {
+  buffer_ = NULL;
 }
 
 // TODO: mov to x64
@@ -60,14 +61,14 @@ int AssemblerBase::pc_offset() const {
 }
 
 CodeBuffer *AssemblerBase::GetCodeBuffer() {
-  return (buffer_);
+  return buffer_;
 }
 
 void AssemblerBase::CommitRealizeAddress(void *address) {
   realized_address_ = address;
 }
 
-void *AssemblerBase::GetRealizeAddress() {
+void *AssemblerBase::RealizeAddress() {
   return realized_address_;
 }
 

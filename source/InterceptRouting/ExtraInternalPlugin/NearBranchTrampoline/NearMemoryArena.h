@@ -19,7 +19,7 @@ public:
   static void Destroy(MemoryChunk *chunk);
 
 private:
-  static LiteMutableArray *page_chunks;
+  static LiteMutableArray page_chunks;
 };
 
 #endif
