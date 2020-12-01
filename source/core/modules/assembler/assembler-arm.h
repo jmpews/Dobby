@@ -405,12 +405,14 @@ public:
   }
 
   ~TurboAssembler() {
-    for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
-      delete label;
-    }
+    if (data_labels_) {
+      for (size_t i = 0; i < data_labels_->getCount(); i++) {
+        RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
+        delete label;
+      }
 
-    delete data_labels_;
+      delete data_labels_;
+    }
   }
 
   TurboAssembler(void *address, CodeBuffer *buffer) : Assembler(address, buffer) {
