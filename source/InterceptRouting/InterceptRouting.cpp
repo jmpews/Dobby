@@ -85,9 +85,9 @@ void InterceptRouting::Active() {
 void InterceptRouting::Commit() {
 #if 0
   bool handle_by_plugin = false;
-  if (ExtraInternalPlugin::plugins_) {
+  if (ExtraInternalPlugin::plugins) {
     RoutingPlugin *plugin        = NULL;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins_);
+    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins);
     while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
       DLOG(0, "Run plugin %s", "Unknown");
       if (plugin->Active(this))

@@ -1,5 +1,5 @@
-#ifndef INTERCEPTER_H
-#define INTERCEPTER_H
+#ifndef INTERCEPTOR_H
+#define INTERCEPTOR_H
 
 #include "dobby_internal.h"
 

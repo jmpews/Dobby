@@ -11,7 +11,8 @@ public:
   static void registerPlugin(const char *name, ExtraInternalPlugin *plugin);
 
 public:
-  static LiteMutableArray plugins_;
+  // global plugin array
+  static LiteMutableArray *plugins;
 
   static ExtraInternalPlugin *near_branch_trampoline;
 };
