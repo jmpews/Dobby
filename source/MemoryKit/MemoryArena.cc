@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-LiteMutableArray MemoryArena::page_chunks(8);
+LiteMutableArray *MemoryArena::page_chunks = NULL;
 
 void MemoryArena::Destroy(AssemblyCodeChunk *cchunk) {
   return;
@@ -10,8 +10,12 @@ void MemoryArena::Destroy(AssemblyCodeChunk *cchunk) {
 
 MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permission) {
   MemoryChunk *result = NULL;
+  
+  if(page_chunks == NULL) {
+    page_chunks = new LiteMutableArray(8);
+  }
 
-  LiteCollectionIterator iter(&page_chunks);
+  LiteCollectionIterator iter(page_chunks);
   PageChunk *             page = NULL;
   while ((page = reinterpret_cast<PageChunk *>(iter.getNextObject())) != NULL) {
     if (page->permission == permission) {
@@ -37,7 +41,7 @@ MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permiss
     newPage->page_cursor  = (addr_t)pageAddress;
     newPage->permission   = permission;
     newPage->chunks       = new LiteMutableArray(8);
-    MemoryArena::page_chunks.pushObject(reinterpret_cast<LiteObject *>(newPage));
+    MemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
     page = newPage;
   }
 
