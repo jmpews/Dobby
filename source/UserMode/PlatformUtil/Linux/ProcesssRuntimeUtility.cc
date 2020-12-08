@@ -41,8 +41,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
         break;
     }
 
-    addr_t  region_start;
-    addr_t  region_end;
+    addr_t  region_start, region_end;
     addr_t  region_offset;
     char    permissions[5] = {'\0'}; // Ensure NUL-terminated string.
     uint8_t dev_major      = 0;
@@ -117,8 +116,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
         break;
     }
 
-    addr_t  region_start;
-    addr_t  region_end;
+    addr_t  region_start, region_end;
     addr_t  region_offset;
     char    permissions[5] = {'\0'}; // Ensure NUL-terminated string.
     uint8_t dev_major      = 0;
@@ -154,13 +152,22 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
       continue;
     }
 
+    char *path_buffer = line_buffer + path_index;
+    if (*path_buffer == 0 || *path_buffer == '\n' || *path_buffer == '[')
+      continue;
     RuntimeModule module;
-    strncpy(module.path, line_buffer + path_index, 1024 - 1);
-    if (module.path[strlen(module.path) - 1] == '\n') {
-      module.path[strlen(module.path) - 1] = 0;
+
+    // strip
+    if (path_buffer[strlen(path_buffer) - 1] == '\n') {
+      path_buffer[strlen(path_buffer) - 1] = 0;
     }
+    strncpy(module.path, path_buffer, sizeof(module.path));
     module.load_address = (void *)region_start;
     ProcessModuleMap.push_back(module);
+
+#if 0
+    DLOG(0, "module: %s", module.path);
+#endif
   }
 
   fclose(fp);

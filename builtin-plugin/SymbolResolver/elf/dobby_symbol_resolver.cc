@@ -24,12 +24,11 @@ static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_si
   uint8_t *mmap_data = NULL;
   size_t   file_size = 0;
 
-  int      fd        = open(file_path, O_RDONLY, 0);
-  if(fd < 0) {
+  int fd = open(file_path, O_RDONLY, 0);
+  if (fd < 0) {
     ERROR_LOG("%s open failed", file_path);
     goto finished;
   }
-
 
   {
     struct stat s;
@@ -159,7 +158,8 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
 // impl at "android_restriction.cc"
 extern std::vector<void *> linker_get_solist();
-PUBLIC void *              DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
+
+PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result = NULL;
 
   auto solist = linker_get_solist();
