@@ -36,7 +36,8 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
     resultPageAddr = first_region_start - OSMemory::PageSize();
     resultPageAddr =
         (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::PageSize(), MemoryPermission::kReadExecute);
-    return resultPageAddr;
+    if (resultPageAddr)
+      return resultPageAddr;
   }
 
   // check last region
@@ -46,7 +47,8 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
     resultPageAddr = last_region_end + OSMemory::PageSize();
     resultPageAddr =
         (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::PageSize(), MemoryPermission::kReadExecute);
-    return resultPageAddr;
+    if (resultPageAddr)
+      return resultPageAddr;
   }
 
   for (int i = 0; i < process_memory_layout.size(); ++i) {
