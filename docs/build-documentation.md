@@ -17,9 +17,9 @@ option(NearBranch "Enable Near Branch Trampoline" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
-option(DBI.FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
+option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-option(Darwin.GenerateFramework "Build darwin framework library" ON)
+option(GenerateDarwinFramework "Build darwin framework library" ON)
 
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
