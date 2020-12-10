@@ -1,9 +1,10 @@
-#include "./dynamic-binary-instrument.h"
-#include "./intercept_routing_handler.h"
+#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
 #include "dobby_internal.h"
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+
+#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.h"
 
 void DynamicBinaryInstrumentRouting::Dispatch() {
   Prepare();

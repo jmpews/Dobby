@@ -1,15 +1,10 @@
+#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.h"
 
 #include "dobby_internal.h"
 
-#include "logging/logging.h"
+#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
-#include "intercept_routing_handler.h"
-
-#include "intercept_routing_handler.h"
-
-#include "dynamic-binary-instrument.h"
-
-#include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.h"
 
 void instrument_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   DynamicBinaryInstrumentRouting *route = (DynamicBinaryInstrumentRouting *)entry->route;

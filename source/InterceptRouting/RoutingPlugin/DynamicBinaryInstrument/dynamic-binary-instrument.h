@@ -3,9 +3,11 @@
 
 #include "dobby_internal.h"
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
-#include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
+
+#include "InterceptRouting/InterceptRouting.h"
+
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 #define X64InterceptRouting   InterceptRouting
 #define ARM64InterceptRouting InterceptRouting

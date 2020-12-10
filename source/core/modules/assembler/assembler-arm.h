@@ -7,7 +7,7 @@
 #include "core/arch/arm/registers-arm.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "CodeBuffer/code-buffer-arm.h"
+#include "MemoryAllocator/CodeBuffer/code-buffer-arm.h"
 
 #include "xnucxx/LiteMutableArray.h"
 #include "xnucxx/LiteIterator.h"

@@ -1,7 +1,7 @@
 #include "common/macros/platform_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
-#include "./X86InstructionRelocation.h"
+#include "InstructionRelocation/x86//X86InstructionRelocation.h"
 
 #include <string.h>
 

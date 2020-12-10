@@ -1,6 +1,6 @@
-#include "dobby_internal.h"
+#include "InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
-#include "function-inline-replace.h"
+#include "dobby_internal.h"
 
 void FunctionInlineReplaceRouting::Dispatch() {
   Prepare();

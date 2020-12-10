@@ -3,7 +3,7 @@
 
 #include "dobby_internal.h"
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
 

@@ -10,7 +10,6 @@ typedef struct _InterceptorOptions {
 } InterceptorOptions;
 
 class Interceptor {
-
 public:
   static Interceptor *SharedInstance();
 

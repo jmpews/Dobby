@@ -1,29 +1,9 @@
 #include "dobby_internal.h"
 
-#include "InterceptRouting.h"
-#include "ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/InterceptRouting.h"
+#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 using namespace zz;
-
-// void InterceptRouting::PrepareOriginCode() {
-//   AssemblyCodeChunk *originCode = NULL;
-
-//   int predefined_relocate_size = 0;
-//   {
-//     predefined_relocate_size = this->PredefinedTrampolineSize();
-//     // if near branch trampoline plugin enabled
-//     if (ExtraInternalPlugin::near_branch_trampoline) {
-//       RoutingPlugin *plugin    = NULL;
-//       plugin                   = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
-//       predefined_relocate_size = plugin->PredefinedTrampolineSize();
-//     }
-//   }
-
-//   // generate the relocated code
-//   originCode = AssemblyCodeBuilder::FinalizeFromAddress(entry_->target_address, predefined_relocate_size);
-
-//   origin_ = originCode;
-// }
 
 void InterceptRouting::Prepare() {
 }

@@ -2,7 +2,7 @@
 #define INTERCEPT_ROUTING_H
 
 #include "Interceptor.h"
-#include "MemoryKit/AssemblyCodeBuilder.h"
+#include "MemoryAllocator/AssemblyCodeBuilder.h"
 
 extern CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
 

@@ -1,11 +1,8 @@
 #include "dobby_internal.h"
 
-#include "logging/logging.h"
-
 #include "Interceptor.h"
 #include "InterceptRouting/InterceptRouting.h"
-
-#include "function-inline-replace.h"
+#include "InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
 
 PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_call) {
   if (!function_address) {

@@ -10,7 +10,7 @@
 
 #include "MultiThreadSupport/ThreadSupport.h"
 
-#include "ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.h"
 
 void pre_call_forward_handler(RegisterContext *reg_ctx, HookEntry *entry) {
   FunctionWrapperRouting *route = (FunctionWrapperRouting *)entry->route;

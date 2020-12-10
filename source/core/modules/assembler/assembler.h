@@ -1,7 +1,7 @@
 #ifndef CORE_ASSEMBLER_H
 #define CORE_ASSEMBLER_H
 
-#include "MemoryKit/CodeBuffer/CodeBufferBase.h"
+#include "MemoryAllocator/CodeBuffer/CodeBufferBase.h"
 
 class CodeBuffer;
 

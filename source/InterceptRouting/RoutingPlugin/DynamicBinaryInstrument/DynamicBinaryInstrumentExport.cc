@@ -1,11 +1,7 @@
 #include "dobby_internal.h"
 
-#include "logging/logging.h"
-
-#include "Interceptor.h"
 #include "InterceptRouting/InterceptRouting.h"
-
-#include "dynamic-binary-instrument.h"
+#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
 PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
   if (!instr_address) {

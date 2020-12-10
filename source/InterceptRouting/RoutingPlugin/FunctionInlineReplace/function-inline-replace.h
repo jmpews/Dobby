@@ -3,9 +3,10 @@
 
 #include "dobby_internal.h"
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "InterceptRouting/InterceptRouting.h"
 #include "Interceptor.h"
+
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 class FunctionInlineReplaceRouting : public InterceptRouting {
 public:

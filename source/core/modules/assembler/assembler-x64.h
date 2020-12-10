@@ -6,7 +6,7 @@
 #include "core/arch/x64/registers-x64.h"
 #include "core/modules/assembler/assembler.h"
 
-#include "CodeBuffer/code-buffer-x64.h"
+#include "MemoryAllocator/CodeBuffer/code-buffer-x64.h"
 
 #include "xnucxx/LiteMutableArray.h"
 #include "xnucxx/LiteIterator.h"

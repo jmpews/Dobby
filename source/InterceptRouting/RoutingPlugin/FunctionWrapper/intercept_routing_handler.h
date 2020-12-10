@@ -1,7 +1,7 @@
 #ifndef FUNCTION_WRAPPER_INTERCEPT_ROUTING_HANDLER_H
 #define FUNCTION_WRAPPER_INTERCEPT_ROUTING_HANDLER_H
 
-#include "ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 #include "Interceptor.h"
 #include "dobby_internal.h"
 

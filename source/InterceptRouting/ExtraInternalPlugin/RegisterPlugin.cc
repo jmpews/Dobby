@@ -1,4 +1,4 @@
-#include "RegisterPlugin.h"
+#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
 
 LiteMutableArray *ExtraInternalPlugin::plugins;
 

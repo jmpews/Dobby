@@ -161,10 +161,10 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/core/modules/codegen/codegen-${core_arch}.cc
 
   # memory kit
-  source/MemoryKit/CodeBuffer/CodeBufferBase.cc
-  source/MemoryKit/CodeBuffer/code-buffer-${arch1}.cc
-  source/MemoryKit/AssemblyCodeBuilder.cc
-  source/MemoryKit/MemoryArena.cc
+  source/MemoryAllocator/CodeBuffer/CodeBufferBase.cc
+  source/MemoryAllocator/CodeBuffer/code-buffer-${arch1}.cc
+  source/MemoryAllocator/AssemblyCodeBuilder.cc
+  source/MemoryAllocator/MemoryArena.cc
 
   # instruction relocation
   source/InstructionRelocation/${arch1}/${ARCH1}InstructionRelocation.cc
@@ -173,7 +173,7 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/TrampolineKit/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
+  source/TrampolineBridge/InterceptRoutingTrampoline/${arch1}/trampoline-${arch1}.cc
 
   # intercept routing plugin (buildin)
   source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
@@ -224,10 +224,10 @@ endif()
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
-    source/TrampolineKit/ClosureTrampolineBridge/closure-trampoline-common-handler/closure-trampoline-common-handler.cc
-    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/helper-${arch1}.cc
-    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
-    source/TrampolineKit/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/${arch1}/helper-${arch1}.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/${arch1}/closure-bridge-${arch1}.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/${arch1}/${ARCH1}AssemblyClosureTrampoline.cc
 
     # user mode - multi thread support
     # source/UserMode/MultiThreadSupport/ThreadSupport.cpp
@@ -253,7 +253,7 @@ if(NearBranch)
   message(STATUS "[Dobby] Enable Near Branch Trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
-    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearMemoryArena.cc)
+    source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 
 # add logging library
@@ -338,8 +338,6 @@ include_directories(
 
   ./source
   ./source/UserMode
-  ./source/MemoryKit
-  ./source/TrampolineKit
 
   ./external
   ./external/logging

@@ -12,12 +12,13 @@
 #include "xnucxx/LiteIterator.h"
 
 #include "UnifiedInterface/platform.h"
+
 #include "PlatformUnifiedInterface/StdMemory.h"
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 #include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
 
-#include "MemoryKit/MemoryArena.h"
-#include "MemoryKit/AssemblyCodeBuilder.h"
+#include "MemoryAllocator/MemoryArena.h"
+#include "MemoryAllocator/AssemblyCodeBuilder.h"
 
 #include <stdlib.h>
 #include <string.h>

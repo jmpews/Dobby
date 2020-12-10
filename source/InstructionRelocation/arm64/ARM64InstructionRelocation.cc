@@ -1,7 +1,7 @@
 #include "common/macros/platform_macro.h"
 #if defined(TARGET_ARCH_ARM64)
 
-#include "./ARM64InstructionRelocation.h"
+#include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
 
 #include "dobby_internal.h"
 
