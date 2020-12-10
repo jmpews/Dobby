@@ -17,7 +17,7 @@ darwin_library_name=libdobby.a
 darwin_fat_library_name=libdobby.a
 
 # build macos x86_64
-output_dir_name=auto-build-workspace//darwin-x64-build
+output_dir_name=auto-build-workspace/darwin-x86_64-build
 echo "prepare build ${output_dir_name}"
 
 mkdir -p ${CURRENT_DIR}/${output_dir_name}
@@ -28,9 +28,8 @@ cmake --build ${output_dir_name} --parallel 4 --target dobby
 mkdir -p ${summary_output_dir_name}/darwin/x86_64
 cp -r ${output_dir_name}/${darwin_library_name} ${summary_output_dir_name}/darwin/x86_64
 
-
-# build iphone aarch64
-output_dir_name=auto-build-workspace//darwin-arm64-build
+# build iphone arm64
+output_dir_name=auto-build-workspace/darwin-arm64-build
 compress_dir_array="$compress_dir_array $output_dir_name"
 echo "prepare build ${output_dir_name}"
 
@@ -45,14 +44,35 @@ cmake --build ${output_dir_name} --parallel 4 --target dobby
 mkdir -p ${summary_output_dir_name}/darwin/arm64
 cp -r ${output_dir_name}/${darwin_library_name} ${summary_output_dir_name}/darwin/arm64
 
+# build iphone arm64e
+output_dir_name=auto-build-workspace/darwin-arm64e-build
+compress_dir_array="$compress_dir_array $output_dir_name"
+echo "prepare build ${output_dir_name}"
+
+mkdir -p ${CURRENT_DIR}/${output_dir_name}
+cmake -S . -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
+  -DPLATFORM=OS64 -DARCHS="arm64e" -DCMAKE_SYSTEM_PROCESSOR=arm64e \
+  -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
+  -DDOBBY_GENERATE_SHARED=OFF -DDarwin.GenerateFramework=OFF -DDOBBY_DEBUG=OFF
+cmake --build ${output_dir_name} --parallel 4 --target dobby
+
+mkdir -p ${summary_output_dir_name}/darwin/arm64e
+cp -r ${output_dir_name}/${darwin_library_name} ${summary_output_dir_name}/darwin/arm64e
 
 # build darwin universal
-output_dir_name=auto-build-workspace//darwin-universal-build
+output_dir_name=auto-build-workspace/darwin-universal-build
 echo "prepare build ${output_dir_name}"
 
 mkdir -p ${CURRENT_DIR}/${output_dir_name}
 cp -r ${summary_output_dir_name}/darwin/arm64/${darwin_library_name} ${output_dir_name}
-lipo -create ${summary_output_dir_name}/darwin/arm64/${darwin_fat_library_name} ${summary_output_dir_name}/darwin/x86_64/${darwin_fat_library_name} -output ${output_dir_name}/${darwin_fat_library_name}
+
+# create universal fat lib
+lipo -create \
+  ${summary_output_dir_name}/darwin/arm64/${darwin_fat_library_name} \
+  ${summary_output_dir_name}/darwin/arm64e/${darwin_fat_library_name} \
+  ${summary_output_dir_name}/darwin/x86_64/${darwin_fat_library_name} \
+  -output ${output_dir_name}/${darwin_fat_library_name}
 
 mkdir -p ${summary_output_dir_name}/darwin/universal
 cp -r ${output_dir_name}/${darwin_library_name} ${summary_output_dir_name}/darwin/universal
@@ -62,7 +82,7 @@ cp -r ${output_dir_name}/${darwin_library_name} ${summary_output_dir_name}/darwi
 android_library_name=libdobby.a
 
 # build android aarch64
-output_dir_name=auto-build-workspace//android-arm64-build
+output_dir_name=auto-build-workspace/android-arm64-build
 compress_dir_array="$compress_dir_array $output_dir_name"
 echo "prepare build ${output_dir_name}"
 
@@ -74,9 +94,8 @@ cmake --build ${output_dir_name} --parallel 4 --target dobby
 mkdir -p ${summary_output_dir_name}/android/arm64
 mv ${output_dir_name}/${android_library_name} ${summary_output_dir_name}/android/arm64/${android_library_name}
 
-
 # build android armv7
-output_dir_name=auto-build-workspace//android-armv7-build
+output_dir_name=auto-build-workspace/android-armv7-build
 compress_dir_array="$compress_dir_array $output_dir_name"
 echo "prepare build ${output_dir_name}"
 
@@ -88,6 +107,31 @@ cmake --build ${output_dir_name} --parallel 4 --target dobby
 mkdir -p ${summary_output_dir_name}/android/armv7
 mv ${output_dir_name}/${android_library_name} ${summary_output_dir_name}/android/armv7/${android_library_name}
 
+# build android x86
+output_dir_name=auto-build-workspace/android-x86-build
+compress_dir_array="$compress_dir_array $output_dir_name"
+echo "prepare build ${output_dir_name}"
+
+cmake -S . -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="x86" -DCMAKE_ANDROID_NDK=$ANDROID_NDK_DIR -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
+  -DDOBBY_GENERATE_SHARED=OFF -DDOBBY_DEBUG=OFF
+cmake --build ${output_dir_name} --parallel 4 --target dobby
+
+mkdir -p ${summary_output_dir_name}/android/x86
+mv ${output_dir_name}/${android_library_name} ${summary_output_dir_name}/android/x86/${android_library_name}
+
+# build android x86_64
+output_dir_name=auto-build-workspace/android-x86_64-build
+compress_dir_array="$compress_dir_array $output_dir_name"
+echo "prepare build ${output_dir_name}"
+
+cmake -S . -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="x86_64" -DCMAKE_ANDROID_NDK=$ANDROID_NDK_DIR -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
+  -DDOBBY_GENERATE_SHARED=OFF -DDOBBY_DEBUG=OFF
+cmake --build ${output_dir_name} --parallel 4 --target dobby
+
+mkdir -p ${summary_output_dir_name}/android/x86_64
+mv ${output_dir_name}/${android_library_name} ${summary_output_dir_name}/android/x86_64/${android_library_name}
 
 if [ $DOBBY_BUILD_OUTPUT_NAME ]; then
   tar czvf ${DOBBY_BUILD_OUTPUT_NAME} ${summary_output_dir_name}
