@@ -5,14 +5,6 @@
 
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
-typedef enum _MemoryOperationError {
-  kMemoryOperationSuccess,
-  kMemoryOperationError,
-  kNotSupportAllocateExecutableMemory,
-  kNotEnough,
-  kNone
-} MemoryOperationError;
-
 typedef struct _MemoryRange {
   void * address;
   size_t length;

@@ -15,6 +15,17 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef enum {
+  kMemoryOperationSuccess,
+  kMemoryOperationError,
+  kNotSupportAllocateExecutableMemory,
+  kNotEnough,
+  kNone
+} MemoryOperationError;
+
+#define PLATFORM_INTERFACE_CODE_PATCH_TOOL_H
+MemoryOperationError CodePatch(void *address, void *buffer, int size);
+
 typedef uintptr_t addr_t;
 typedef uint32_t  addr32_t;
 typedef uint64_t  addr64_t;
@@ -160,16 +171,12 @@ int DobbyDestroy(void *address);
 // iterate symbol table and find symbol
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
-// near branch plugin
 // [!!! READ ME !!!]
 // for arm, Arm64, dobby will use b xxx instead of ldr absolute indirect branch
 // for x64, dobby always use absolute indirect jump
 #if defined(__arm__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
-
 void dobby_enable_near_branch_trampoline();
-
 void dobby_disable_near_branch_trampoline();
-
 #endif
 
 // register linker load image callback

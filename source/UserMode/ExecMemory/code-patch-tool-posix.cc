@@ -1,13 +1,13 @@
-#include "core/arch/Cpu.h"
 
 #include "dobby_internal.h"
+#include "core/arch/Cpu.h"
 
 #include <unistd.h>
 #include <sys/mman.h>
 #include <string.h>
 
 #if !defined(__APPLE__)
-_MemoryOperationError CodePatch(void *address, void *buffer, int size) {
+PUBLIC MemoryOperationError CodePatch(void *address, void *buffer, int size) {
 
   int       page_size          = (int)sysconf(_SC_PAGESIZE);
   uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);

@@ -4,7 +4,7 @@
 
 using namespace zz;
 
-_MemoryOperationError CodePatch(void *address, void *buffer, int size) {
+PUBLIC MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   DWORD oldProtect;
   int   pageSize;
 

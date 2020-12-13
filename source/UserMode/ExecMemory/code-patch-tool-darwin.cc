@@ -1,7 +1,7 @@
-#include <core/arch/Cpu.h>
-
+#include "dobby_internal.h"
+#include "core/arch/Cpu.h"
 #include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
-#include "UnifiedInterface//platform.h"
+#include "UnifiedInterface/platform.h"
 
 #include <unistd.h>
 
@@ -67,7 +67,7 @@ int code_remap_with_substrated(addr_t buffer, size_t size, addr_t address) {
 }
 #endif
 
-_MemoryOperationError CodePatch(void *address, void *buffer, int size) {
+PUBLIC MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   kern_return_t kr;
 
   int    page_size          = (int)sysconf(_SC_PAGESIZE);

@@ -118,7 +118,7 @@ static inline int decode_rd(uint32_t instr) {
 #if defined(DOBBY_DEBUG)
 #define debug_nop() _ nop()
 #else
-#define debug_nop() ()
+#define debug_nop()
 #endif
 
 void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
