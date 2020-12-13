@@ -32,7 +32,7 @@ void InterceptRouting::GenerateRelocatedCode() {
 
   AssemblyCodeChunk *relocated = NULL;
   relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
-  GenRelocateCode(relocate_buffer, origin, relocated);
+  GenRelocateCodeAndBranch(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
     return;
   relocated_ = relocated;

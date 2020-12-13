@@ -260,9 +260,9 @@ public:
   }
 
   ~ThumbTurboAssembler() {
-    if(data_labels_) {
+    if (data_labels_) {
       for (size_t i = 0; i < data_labels_->getCount(); i++) {
-        RelocLabelEntry *label = (RelocLabelEntry *) data_labels_->getObject(i);
+        RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
         delete label;
       }
 
@@ -351,7 +351,7 @@ private:
 };
 
 // Generate the relocated instruction
-void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
 
 } // namespace arm
 } // namespace zz

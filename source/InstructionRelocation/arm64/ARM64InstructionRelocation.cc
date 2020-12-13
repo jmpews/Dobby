@@ -115,7 +115,13 @@ static inline int decode_rd(uint32_t instr) {
   return bits(instr, 0, 4);
 }
 
-void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+#if defined(DOBBY_DEBUG)
+#define debug_nop() _ nop()
+#else
+#define debug_nop() ()
+#endif
+
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
@@ -136,7 +142,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
       addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
 
 #define MEM(reg, offset) MemOperand(reg, offset)
-      _ nop(); // for debug
+      debug_nop(); // for debug
       {
         _ Mov(TMP_REG_0, memory_address); // should we replace with `Ldr` to set  X17 ?
         if (opc == 0b00)
@@ -147,7 +153,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
           UNIMPLEMENTED();
         }
       }
-      _ nop();
+      debug_nop();
     } else if ((instr & PCRelAddressingFixedMask) == PCRelAddressingFixed) {
       int rd = decode_rd(instr);
 
@@ -162,18 +168,18 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
       }
 
       /* output Mov */
-      _ nop();
+      debug_nop();
       {
         _ Mov(X(rd), runtime_address); // should we replace with `Ldr` to set  X17 ?
       }
-      _ nop();
+      debug_nop();
 
     } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
       addr_t           branch_address     = decode_imm26_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
       _                AppendRelocLabelEntry(branchAddressLabel);
 
-      _ nop();
+      debug_nop();
       {
         _ Ldr(TMP_REG_0, branchAddressLabel); // should we replace with `Mov` to set  X17 ?
         if ((instr & UnconditionalBranchMask) == BL) {
@@ -182,7 +188,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
           _ br(TMP_REG_0);
         }
       }
-      _ nop();
+      debug_nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
       addr64_t         branch_address     = decode_imm14_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
@@ -198,7 +204,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
       uint32_t imm14  = offset >> 2;
       set_bits(branch_instr, 5, 18, imm14);
 
-      _ nop();
+      debug_nop();
       {
         _ Emit(branch_instr);
         {
@@ -206,7 +212,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
           _ br(TMP_REG_0);
         }
       }
-      _ nop();
+      debug_nop();
 
     } else if ((instr & CompareBranchFixedMask) == CompareBranchFixed) { // cbz cbnz
       addr64_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
@@ -224,7 +230,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
       _                AppendRelocLabelEntry(branchAddressLabel);
 
-      _ nop();
+      debug_nop();
       {
         _ Emit(branch_instr);
         {
@@ -232,7 +238,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
           _ br(TMP_REG_0);
         }
       }
-      _ nop();
+      debug_nop();
     } else if ((instr & ConditionalBranchFixedMask) == ConditionalBranchFixed) { // b.cond
       addr64_t branch_address = decode_imm19_offset(instr) + curr_orig_pc;
 
@@ -249,7 +255,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
       _                AppendRelocLabelEntry(branchAddressLabel);
 
-      _ nop();
+      debug_nop();
       {
         _ Emit(branch_instr);
         {
@@ -257,7 +263,7 @@ void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk 
           _ br(TMP_REG_0);
         }
       }
-      _ nop();
+      debug_nop();
     } else {
       // origin write the instruction bytes
       _ Emit(instr);

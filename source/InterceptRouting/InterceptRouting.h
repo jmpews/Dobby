@@ -6,7 +6,7 @@
 
 extern CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
 
-extern void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+extern void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
 
 class InterceptRouting {
 public:

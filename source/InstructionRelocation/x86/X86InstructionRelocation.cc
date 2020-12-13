@@ -116,7 +116,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
   return RT_SUCCESS;
 }
 
-void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   // pre-alloc code chunk
   AssemblyCodeChunk *cchunk = NULL;
 

@@ -735,7 +735,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
   }
 }
 
-void GenRelocateCode(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   CodeBuffer *code_buffer = new CodeBuffer(64);
 
   ThumbTurboAssembler thumb_turbo_assembler_(0, code_buffer);

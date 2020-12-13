@@ -39,7 +39,7 @@ __attribute__((naked)) void pc_relative_instructions_end() {
 
 #include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
 
-extern zz::AssemblyCode *GenRelocateCode(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
+extern zz::AssemblyCode *GenRelocateCodeAndBranch(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 
 extern "C" {
 int _main(int argc, const char **argv);
@@ -51,7 +51,7 @@ int _main(int argc, const char **argv) {
   char *relo_buffer = (char *)malloc(0x1000);
 
   int               relo_size = (uint64_t)pc_relative_instructions_end - (uint64_t)pc_relative_instructions;
-  zz::AssemblyCode *code      = GenRelocateCode((void *)pc_relative_instructions, &relo_size, 0, 0);
+  zz::AssemblyCode *code      = GenRelocateCodeAndBranch((void *)pc_relative_instructions, &relo_size, 0, 0);
 
   unsigned char *instruction_bytes = (unsigned char *)code->raw_instruction_start();
   for (int i = 0; i < code->raw_instruction_size(); i += 1) {
