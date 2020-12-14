@@ -19,12 +19,14 @@
 #endif
 
 static int _log_level = 0;
-void       log_set_level(int level) {
+
+PUBLIC void log_set_level(int level) {
   _log_level = level;
 }
 
 static int _syslog_enabled = 0;
-void       log_switch_to_syslog(void) {
+
+PUBLIC void log_switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
 
@@ -32,7 +34,8 @@ static int         _file_log_enabled = 0;
 static const char *log_file_path     = NULL;
 static int         log_file_fd       = -1;
 static FILE *      log_file_stream   = NULL;
-void               log_switch_to_file(const char *path) {
+
+PUBLIC void log_switch_to_file(const char *path) {
   _file_log_enabled = 1;
   log_file_path     = strdup(path);
 
