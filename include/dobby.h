@@ -24,7 +24,7 @@ typedef enum {
 } MemoryOperationError;
 
 #define PLATFORM_INTERFACE_CODE_PATCH_TOOL_H
-MemoryOperationError CodePatch(void *address, void *buffer, int size);
+MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 typedef uintptr_t addr_t;
 typedef uint32_t  addr32_t;

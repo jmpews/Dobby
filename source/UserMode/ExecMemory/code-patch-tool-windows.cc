@@ -4,7 +4,7 @@
 
 using namespace zz;
 
-PUBLIC MemoryOperationError CodePatch(void *address, void *buffer, int size) {
+PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   DWORD oldProtect;
   int   pageSize;
 
@@ -18,7 +18,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, void *buffer, int size) {
   if (!VirtualProtect(addressPageAlign, pageSize, PAGE_EXECUTE_READWRITE, &oldProtect))
     return kMemoryOperationError;
 
-  memcpy(address, buffer, size);
+  memcpy(address, buffer, buffer_size);
 
   if (!VirtualProtect(addressPageAlign, pageSize, oldProtect, &oldProtect))
     return kMemoryOperationError;

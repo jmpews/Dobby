@@ -24,7 +24,7 @@ PUBLIC int DobbyDestroy(void *address) {
   // check if we already hook
   HookEntry *entry = interceptor->FindHookEntry(address);
   if (entry) {
-    void *   buffer      = entry->origin_chunk_.chunk_buffer;
+    uint8_t *buffer      = entry->origin_chunk_.chunk_buffer;
     uint32_t buffer_size = entry->origin_chunk_.chunk.length;
     CodePatch(address, buffer, buffer_size);
     return RT_SUCCESS;

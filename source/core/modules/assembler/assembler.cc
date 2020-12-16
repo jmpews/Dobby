@@ -42,7 +42,7 @@ AssemblerBase::AssemblerBase(void *address) {
   buffer_ = NULL;
 
   if (realized_address_ != NULL) {
-    DLOG(1, "[assembler] Create fixed address at %p", realized_address_);
+    DLOG(0, "[assembler] Create fixed address at %p", realized_address_);
   }
 }
 

@@ -58,7 +58,7 @@ void InterceptRouting::Active() {
   void *patch_address = NULL;
   patch_address       = (void *)this->origin_->raw_instruction_start();
 
-  CodePatch(patch_address, trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
+  CodePatch(patch_address, (uint8_t *)trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
   DLOG(1, "[intercept routing] Active patch %p", patch_address);
 }
 

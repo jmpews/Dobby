@@ -39,7 +39,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   entry->size          = cchunk->raw_instruction_size();
 
   CodeBufferBase *buffer = reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
-  CodePatch(cchunk->address, buffer->getRawBuffer(), buffer->getSize());
+  CodePatch(cchunk->address, (uint8_t *)buffer->getRawBuffer(), buffer->getSize());
 
   return entry;
 }

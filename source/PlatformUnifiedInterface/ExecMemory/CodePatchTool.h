@@ -4,6 +4,6 @@
 
 #include "PlatformUnifiedInterface/StdMemory.h"
 
-MemoryOperationError CodePatch(void *address, void *buffer, int size);
+MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 #endif
