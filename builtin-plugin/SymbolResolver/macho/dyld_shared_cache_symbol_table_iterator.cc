@@ -30,31 +30,43 @@ struct dyld_cache_header *g_mmap_shared_cache;
 
 int g_dyld_shared_cache_fd = 0;
 
+extern "C" int __shared_region_check_np(uint64_t *startaddress);
+
 void *get_shared_cache_load_addr() {
   static void *shared_cache_load_addr = 0;
   if (shared_cache_load_addr)
     return shared_cache_load_addr;
-  if (syscall(294, &shared_cache_load_addr) == 0) {
 #if 0
+  if (syscall(294, &shared_cache_load_addr) == 0) {
+#else
   if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) == 0) {
 #endif
-    return shared_cache_load_addr;
-  }
-  return 0;
+  return shared_cache_load_addr;
+}
+return 0;
 }
 
+extern "C" const char *dyld_shared_cache_file_path();
+
 void mmap_dyld_shared_cache() {
-  char cache_file_path[1024] = {0};
-  snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
-           DYLD_SHARED_CACHE_BASE_NAME, "arm64");
-  int fd = open(cache_file_path, O_RDONLY, 0);
-  if (fd == -1) {
+  int         fd;
+  const char *cache_file_path = dyld_shared_cache_file_path();
+  if (cache_file_path == NULL) {
+    char cache_file_path[1024] = {0};
     snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
-             DYLD_SHARED_CACHE_BASE_NAME, "arm64e");
+             DYLD_SHARED_CACHE_BASE_NAME, "arm64");
+    int fd = open(cache_file_path, O_RDONLY, 0);
+    if (fd == -1) {
+      snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
+               DYLD_SHARED_CACHE_BASE_NAME, "arm64e");
+      fd = open(cache_file_path, O_RDONLY, 0);
+    }
+  } else {
     fd = open(cache_file_path, O_RDONLY, 0);
   }
+
   if (fd == -1) {
-    ERROR_LOG("open %s failed", cache_file_path);
+
     return;
   }
 
@@ -63,17 +75,20 @@ void mmap_dyld_shared_cache() {
 
   // auto align
   mmap_shared_cache_header = (struct dyld_cache_header *)get_shared_cache_load_addr();
+  if (mmap_shared_cache_header->localSymbolsSize == 0) {
+    return;
+  }
 
   mmap_shared_cache =
       (struct dyld_cache_header *)mmap(0, mmap_shared_cache_header->localSymbolsSize, PROT_READ, MAP_FILE | MAP_PRIVATE,
                                        fd, mmap_shared_cache_header->localSymbolsOffset);
-  mmap_shared_cache =
-      (struct dyld_cache_header *)((addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset);
-
   if (mmap_shared_cache == MAP_FAILED) {
     ERROR_LOG("mmap shared cache failed");
     return;
   }
+
+  mmap_shared_cache =
+      (struct dyld_cache_header *)((addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset);
 
   g_mmap_shared_cache_header = mmap_shared_cache_header;
   g_mmap_shared_cache        = mmap_shared_cache;
@@ -107,9 +122,12 @@ bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length) {
 void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_ptr, char **string_pool_ptr,
                                    uint32_t *nlist_count_ptr) {
   pthread_once(&mmap_dyld_shared_cache_once, mmap_dyld_shared_cache);
+  if (g_mmap_shared_cache == NULL)
+    return;
 
-  addr_t                    cache_base_address = (addr_t)get_shared_cache_load_addr();
-  struct dyld_cache_header *header             = (struct dyld_cache_header *)cache_base_address;
+  addr_t cache_base_address = (addr_t)get_shared_cache_load_addr();
+
+  struct dyld_cache_header *header = (struct dyld_cache_header *)cache_base_address;
 
   uint64_t textOffsetInCache = (uint64_t)image_header - (uint64_t)header;
 
