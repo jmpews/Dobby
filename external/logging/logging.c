@@ -18,7 +18,7 @@
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
-static int _log_level = 0;
+static int _log_level = 1;
 
 PUBLIC void log_set_level(int level) {
   _log_level = level;
