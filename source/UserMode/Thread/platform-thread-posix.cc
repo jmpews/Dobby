@@ -1,8 +1,8 @@
-#include "PlatformThread.h"
+#include "Thread/PlatformThread.h"
 
-#include <unistd.h> // getpid
-
+#include <unistd.h>  // getpid
 #include <pthread.h> // pthread
+#include <sys/syscall.h>
 
 using namespace zz;
 

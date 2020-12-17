@@ -21,7 +21,7 @@
 
 #define LOG_TAG "PosixFileOperationMonitor"
 
-std::unordered_map<int, const char *> posix_file_descriptors;
+std::unordered_map<int, const char *> *posix_file_descriptors;
 
 int (*orig_open)(const char *pathname, int flags, ...);
 int fake_open(const char *pathname, int flags, ...) {
@@ -39,7 +39,11 @@ int fake_open(const char *pathname, int flags, ...) {
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
     LOG(1, "[-] trace open handle: %s", pathname);
-    posix_file_descriptors.insert(std::make_pair(result, (const char *)traced_filename));
+
+    if (posix_file_descriptors == NULL) {
+      posix_file_descriptors = new std::unordered_map<int, const char *>();
+    }
+    posix_file_descriptors->insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
 }
@@ -55,17 +59,20 @@ int fake___open(const char *pathname, int flags, int mode) {
   }
   int result = orig___open(pathname, flags, mode);
   if (result != -1) {
-    posix_file_descriptors.insert(std::make_pair(result, (const char *)traced_filename));
+    if (posix_file_descriptors == NULL) {
+      posix_file_descriptors = new std::unordered_map<int, const char *>();
+    }
+    posix_file_descriptors->insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
 }
 
 static const char *get_traced_filename(int fd, bool removed) {
   std::unordered_map<int, const char *>::iterator it;
-  it = posix_file_descriptors.find(fd);
-  if (it != posix_file_descriptors.end()) {
+  it = posix_file_descriptors->find(fd);
+  if (it != posix_file_descriptors->end()) {
     if (removed)
-      posix_file_descriptors.erase(it);
+      posix_file_descriptors->erase(it);
     return it->second;
   }
   return NULL;
@@ -98,7 +105,7 @@ int fake_close(int fd) {
   return orig_close(fd);
 }
 
-#if 0
+#if 1
 __attribute__((constructor)) static void ctor() {
   DobbyHook((void *)DobbySymbolResolver(NULL, "open"), (void *)fake_open, (void **)&orig_open);
 

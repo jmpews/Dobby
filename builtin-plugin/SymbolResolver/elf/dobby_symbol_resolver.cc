@@ -2,14 +2,15 @@
 #include "common/headers/common_header.h"
 
 #include <elf.h>
-#include <jni.h>
-#include <string>
 #include <dlfcn.h>
 #include <link.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <string>
+#include <string.h>
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
@@ -171,6 +172,9 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     }
   }
 #endif
+  result = dlsym(RTLD_DEFAULT, symbol_name_pattern);
+  if(result)
+    return result;
 
   result = resolve_elf_internal_symbol(image_name, symbol_name_pattern);
   return result;

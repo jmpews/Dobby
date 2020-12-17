@@ -1,11 +1,12 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <elf.h>
-#include <jni.h>
-#include <string>
 #include <dlfcn.h>
 #include <link.h>
 #include <sys/mman.h>
+
+#include <string>
+#include <string.h>
 
 #include <vector>
 
@@ -174,13 +175,13 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
   return ProcessModuleMap;
 }
 
-#if defined(__ANDROID__) && defined(__LP64__)
+#if defined(__LP64__)
 static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
   std::vector<RuntimeModule> ProcessModuleMap;
 
-  static int (*dl_iterate_phdr_ptr)(int (*)(struct dl_phdr_info*, size_t, void*), void*);
+  static int (*dl_iterate_phdr_ptr)(int (*)(struct dl_phdr_info *, size_t, void *), void *);
   dl_iterate_phdr_ptr = (typeof(dl_iterate_phdr_ptr))dlsym(RTLD_DEFAULT, "dl_iterate_phdr");
-  if(dl_iterate_phdr_ptr == NULL) {
+  if (dl_iterate_phdr_ptr == NULL) {
     return ProcessModuleMap;
   }
 
@@ -203,7 +204,8 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 #endif
 
 std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-#if defined(__LP64__)
+#if defined(__LP64__) && 0
+  // TODO: won't resolve main binary
   return get_process_map_with_linker_iterator();
 #else
   return get_process_map_with_proc_maps();

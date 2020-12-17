@@ -296,7 +296,6 @@ if(Plugin.SymbolResolver)
   if(SYSTEM.Linux OR SYSTEM.Android)
     set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
       builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
-      builtin-plugin/AndroidRestriction/android_restriction.cc
     )
   endif()
 endif()
@@ -406,6 +405,10 @@ endif()
 
 if(SYSTEM.Android)
   target_link_libraries(dobby log)
+endif()
+
+if(SYSTEM.Linux)
+  target_link_libraries(dobby dl)
 endif()
 
 if(SYSTEM.Darwin)
