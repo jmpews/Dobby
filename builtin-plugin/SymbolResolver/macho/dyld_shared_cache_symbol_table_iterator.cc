@@ -8,9 +8,8 @@
 
 #include <fcntl.h> // open
 
-#include "shared_cache_internal.h"
-
-#include "shared-cache/dyld_cache_format.h"
+#include "macho/shared_cache_internal.h"
+#include "macho/shared-cache/dyld_cache_format.h"
 
 #include "logging/logging.h"
 
@@ -75,6 +74,8 @@ void mmap_dyld_shared_cache() {
 
   // auto align
   mmap_shared_cache_header = (struct dyld_cache_header *)get_shared_cache_load_addr();
+
+  // maybe shared cache is apple silicon
   if (mmap_shared_cache_header->localSymbolsSize == 0) {
     return;
   }

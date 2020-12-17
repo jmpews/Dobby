@@ -178,7 +178,13 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
 static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
   std::vector<RuntimeModule> ProcessModuleMap;
 
-  dl_iterate_phdr(
+  static int (*dl_iterate_phdr_ptr)(int (*)(struct dl_phdr_info*, size_t, void*), void*);
+  dl_iterate_phdr_ptr = (typeof(dl_iterate_phdr_ptr))dlsym(RTLD_DEFAULT, "dl_iterate_phdr");
+  if(dl_iterate_phdr_ptr == NULL) {
+    return ProcessModuleMap;
+  }
+
+  dl_iterate_phdr_ptr(
       [](dl_phdr_info *info, size_t size, void *data) {
         RuntimeModule module = {0};
         if (info->dlpi_name && info->dlpi_name[0] == '/')
@@ -197,7 +203,7 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 #endif
 
 std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-#if defined(__LP64__) && 0
+#if defined(__LP64__)
   return get_process_map_with_linker_iterator();
 #else
   return get_process_map_with_proc_maps();

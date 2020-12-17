@@ -1,3 +1,6 @@
+#include "dobby_symbol_resolver.h"
+#include "common/headers/common_header.h"
+
 #include <elf.h>
 #include <jni.h>
 #include <string>
@@ -8,12 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "dobby_symbol_resolver.h"
-#include "common/headers/common_header.h"
-
 #include "PlatformUtil/ProcessRuntimeUtility.h"
-
-#include "AndroidRestriction/android_restriction.h"
 
 #include <vector>
 
@@ -162,18 +160,17 @@ extern std::vector<void *> linker_get_solist();
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   void *result = NULL;
 
+#if 0
   auto solist = linker_get_solist();
   for (auto soinfo : solist) {
     uintptr_t handle = linker_soinfo_to_handle(soinfo);
     if (image_name == NULL || strstr(linker_soinfo_get_realpath(soinfo), image_name) != 0) {
-#if 0
-      LOG(1, "DobbySymbolResolver::dlsym: %s", linker_soinfo_get_realpath(soinfo));
-#endif
       result = dlsym((void *)handle, symbol_name_pattern);
       if (result)
         return result;
     }
   }
+#endif
 
   result = resolve_elf_internal_symbol(image_name, symbol_name_pattern);
   return result;
