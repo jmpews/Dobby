@@ -171,6 +171,9 @@ int DobbyDestroy(void *address);
 // iterate symbol table and find symbol
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
+// global offset table
+int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func);
+
 // [!!! READ ME !!!]
 // for arm, Arm64, dobby will use b xxx instead of ldr absolute indirect branch
 // for x64, dobby always use absolute indirect jump
