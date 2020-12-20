@@ -1,4 +1,4 @@
-#include "dobby_symbol_resolver.h"
+#include "SymbolResolver/dobby_symbol_resolver.h"
 #include "common/headers/common_header.h"
 
 #include <elf.h>
@@ -86,7 +86,7 @@ static void get_syms(ElfW(Ehdr) * header, ElfW(Sym) * *symtab_ptr, char **strtab
   }
 }
 
-static void *iterateSymbolTable(const char *symbol_name, ElfW(Sym) * symtab, char *strtab, int count) {
+static void *iterate_symbol_table(const char *symbol_name, ElfW(Sym) * symtab, char *strtab, int count) {
   for (int i = 0; i < count; ++i) {
     ElfW(Sym) *symbol       = symtab + i;
     char *symbol_name_check = strtab + symbol->st_name;
@@ -116,7 +116,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
       get_syms((ElfW(Ehdr) *)file_mem, &symtab, &strtab, &count);
 
     if (symtab && strtab)
-      result = iterateSymbolTable(symbol_name, symtab, strtab, count);
+      result = iterate_symbol_table(symbol_name, symtab, strtab, count);
 
     if (result)
       result = (void *)((addr_t)result + (addr_t)module.load_address);
@@ -140,7 +140,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
         get_syms((ElfW(Ehdr) *)file_mem, &symtab, &strtab, &count);
 
       if (symtab && strtab)
-        result = iterateSymbolTable(symbol_name, symtab, strtab, count);
+        result = iterate_symbol_table(symbol_name, symtab, strtab, count);
 
       if (result)
         result = (void *)((addr_t)result + (addr_t)module.load_address);
@@ -173,7 +173,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
   }
 #endif
   result = dlsym(RTLD_DEFAULT, symbol_name_pattern);
-  if(result)
+  if (result)
     return result;
 
   result = resolve_elf_internal_symbol(image_name, symbol_name_pattern);

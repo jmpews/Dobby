@@ -3,13 +3,11 @@
 #include <unistd.h>
 
 #include <pthread.h> // pthread_once
-
 #include <sys/mman.h> // mmap
-
 #include <fcntl.h> // open
 
-#include "macho/shared_cache_internal.h"
-#include "macho/shared-cache/dyld_cache_format.h"
+#include "SymbolResolver/macho/shared_cache_internal.h"
+#include "SymbolResolver/macho/shared-cache/dyld_cache_format.h"
 
 #include "logging/logging.h"
 
@@ -120,7 +118,7 @@ bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length) {
   return false;
 }
 
-void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array_ptr, char **string_pool_ptr,
+void get_shared_cache_symbol_table(void *image_header, uintptr_t *nlist_array_ptr, char **string_pool_ptr,
                                    uint32_t *nlist_count_ptr) {
   pthread_once(&mmap_dyld_shared_cache_once, mmap_dyld_shared_cache);
   if (g_mmap_shared_cache == NULL)

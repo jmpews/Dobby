@@ -50,5 +50,5 @@ typedef uintptr_t addr_t;
 
 bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length);
 
-void get_syms_in_dyld_shared_cache(void *image_header, uintptr_t *nlist_array, char **string_pool,
+void get_shared_cache_symbol_table(void *image_header, uintptr_t *nlist_array, char **string_pool,
                                    uint32_t *nlist_count);
