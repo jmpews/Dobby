@@ -16,7 +16,14 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
   // create closure trampoline jump to prologue_routing_dispath with the `entry_` data
   ClosureTrampolineEntry *closure_trampoline;
   // forward trampoline
-  closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)instrument_routing_dispatch);
+
+  void *handler = (void *)instrument_routing_dispatch;
+#if __APPLE__
+#if __has_feature(ptrauth_calls)
+  handler = __builtin_ptrauth_strip(handler, ptrauth_key_asia);
+#endif
+#endif
+  closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   DLOG(1, "[closure bridge] Carry data %p ", entry_);
   DLOG(1, "[closure bridge] Create prologue_dispatch_bridge %p", closure_trampoline->address);
 
