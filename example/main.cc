@@ -3,7 +3,7 @@
 
 int main(int argc, char const *argv[]) {
 
-  std::cout << "HookSimpleFunction Start..." << std::endl;
+  std::cout << "Start..." << std::endl;
 
   return 0;
 }
