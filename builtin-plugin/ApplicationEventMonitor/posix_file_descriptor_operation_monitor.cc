@@ -68,6 +68,8 @@ int fake___open(const char *pathname, int flags, int mode) {
 }
 
 static const char *get_traced_filename(int fd, bool removed) {
+  if(posix_file_descriptors == NULL)
+    return NULL;
   std::unordered_map<int, const char *>::iterator it;
   it = posix_file_descriptors->find(fd);
   if (it != posix_file_descriptors->end()) {
@@ -105,7 +107,7 @@ int fake_close(int fd) {
   return orig_close(fd);
 }
 
-#if 1
+#if 0
 __attribute__((constructor)) static void ctor() {
   DobbyHook((void *)DobbySymbolResolver(NULL, "open"), (void *)fake_open, (void **)&orig_open);
 

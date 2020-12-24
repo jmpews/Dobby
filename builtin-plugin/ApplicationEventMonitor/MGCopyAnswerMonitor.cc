@@ -32,7 +32,7 @@ void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   LOG("[#] MGCopyAnswer:: %s\n", str_key);
 }
 
-#if 1
+#if 0
 __attribute__((constructor)) static void ctor() {
   void *lib               = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_NOW);
   void *MGCopyAnswer_addr = DobbySymbolResolver("libMobileGestalt.dylib", "MGCopyAnswer");

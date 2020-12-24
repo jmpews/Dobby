@@ -66,7 +66,7 @@ __attribute__((constructor)) static void ctor() {
     DobbyInstrument(func, common_handler);
   }
 
-  DobbyGlobalOffsetTableReplace("apple_silicon_example", "_pthread_create", (void *)fake_pthread_create,
+  DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create,
                                 (void **)&orig_pthread_create);
 
   pthread_t socket_server;
@@ -99,7 +99,7 @@ uint64_t socket_demo_server(void *ctx) {
   }
 
   // Forcefully attaching socket to the port 8080
-  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
     perror("setsockopt");
     exit(EXIT_FAILURE);
   }
