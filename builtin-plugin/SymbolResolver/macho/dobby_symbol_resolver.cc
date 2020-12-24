@@ -137,7 +137,7 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
   return NULL;
 }
 
-void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
+uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
   segment_command_t *       curr_seg_cmd;
   struct dyld_info_command *dyld_info_cmd = NULL;
   segment_command_t *       text_segment, *data_segment, *linkedit_segment;
@@ -163,15 +163,15 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
   }
 
   if (text_segment == NULL || linkedit_segment == NULL) {
-    return (void *)0;
+    return 0;
   }
 
   if (text_segment->vmaddr == 0 || linkedit_segment->vmaddr == 0) {
-    return (void *)0;
+    return 0;
   }
 
   if (dyld_info_cmd == NULL || dyld_info_cmd->export_off == 0) {
-    return (void *)0;
+    return 0;
   }
 
   uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
@@ -179,7 +179,7 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
 
   void *exports = (void *)(linkedit_base + dyld_info_cmd->export_off);
   if (exports == NULL)
-    return (void *)0;
+    return 0;
 
   void *off = (void *)walk_exported_trie((const uint8_t *)exports,
                                          (const uint8_t *)exports + dyld_info_cmd->export_size, symbol_name);
@@ -192,7 +192,7 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
                                        _symbol_name);
     }
   }
-  return off;
+  return (uintptr_t)off;
 }
 
 static void get_image_symbol_table(mach_header_t *header, nlist_t **nlist_array, char **string_pool,
@@ -253,7 +253,7 @@ uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_
       }
     }
   }
-  return NULL;
+  return 0;
 }
 
 static uintptr_t macho_kit_get_slide(mach_header_t *header) {
@@ -275,7 +275,7 @@ static uintptr_t macho_kit_get_slide(mach_header_t *header) {
 }
 
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
-  void *result = NULL;
+  uintptr_t result = 0;
 
   std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
 
@@ -306,22 +306,22 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 #endif
     result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result) {
-      result = (void *)((uintptr_t)result + slide);
+      result = result + slide;
       break;
     }
 
     // binary symbol table
-    get_image_symbol_table((mach_header_t *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+    get_image_symbol_table((mach_header_t *)header, &nlist_array, &string_pool, &nlist_count);
     result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result) {
-      result = (void *)((uintptr_t)result + slide);
+      result = result + slide;
       break;
     }
 
     // binary exported table(uleb128)
     result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern);
     if (result) {
-      result = (void *)((uintptr_t)result + (uintptr_t)header);
+      result = result + (uintptr_t)header;
       break;
     }
   }
@@ -347,10 +347,10 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
     result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result)
-      result = (void *)((uintptr_t)result + (uintptr_t)dyld_header);
+      result = result + (uintptr_t)dyld_header;
   }
 
-  return result;
+  return (void *)result;
 }
 
 #if defined(DOBBY_DEBUG) && 0

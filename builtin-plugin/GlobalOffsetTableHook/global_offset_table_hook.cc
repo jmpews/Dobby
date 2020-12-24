@@ -78,6 +78,7 @@ static void *iterate_indirect_symtab(char *symbol_name, section_t *section, intp
     }
     mprotect(indirect_symbol_bindings, section->size, protection);
   }
+  return NULL;
 }
 
 static void *get_global_offset_table_stub(mach_header_t *header, char *symbol_name) {
@@ -105,7 +106,7 @@ static void *get_global_offset_table_stub(mach_header_t *header, char *symbol_na
   }
 
   if (!symtab_cmd || !linkedit_segment || !linkedit_segment) {
-    return;
+    return NULL;
   }
 
   uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
