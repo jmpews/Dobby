@@ -195,7 +195,7 @@ void *iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
   return off;
 }
 
-static void get_image_symbol_table(mach_header_t *header, uintptr_t *nlist_array, char **string_pool,
+static void get_image_symbol_table(mach_header_t *header, nlist_t **nlist_array, char **string_pool,
                                    uint32_t *nlist_count) {
   segment_command_t *      curr_seg_cmd;
   segment_command_t *      text_segment, *data_segment, *linkedit_segment;
@@ -231,11 +231,11 @@ static void get_image_symbol_table(mach_header_t *header, uintptr_t *nlist_array
   uint32_t  symtab_count  = symtab_cmd->nsyms;
 
   *nlist_count = symtab_count;
-  *nlist_array = (uintptr_t)symtab;
-  *string_pool = (char *)strtab;
+  *nlist_array = symtab;
+  *string_pool = strtab;
 }
 
-void *iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_t nlist_count, char *string_pool) {
+uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_t nlist_count, char *string_pool) {
   for (uint32_t i = 0; i < nlist_count; i++) {
     if (nlist_array[i].n_value) {
       uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
@@ -244,11 +244,11 @@ void *iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_t nl
       LOG(1, "> %s", symbol_name);
 #endif
       if (strcmp(name_pattern, symbol_name) == 0) {
-        return (void *)(nlist_array[i].n_value);
+        return nlist_array[i].n_value;
       }
       if (symbol_name[0] == '_') {
         if (strcmp(name_pattern, &symbol_name[1]) == 0) {
-          return (void *)(nlist_array[i].n_value);
+          return nlist_array[i].n_value;
         }
       }
     }
@@ -256,37 +256,22 @@ void *iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_t nl
   return NULL;
 }
 
-static size_t macho_kit_get_slide64(addr_t header_addr) {
-  size_t slide = 0;
+static uintptr_t macho_kit_get_slide(mach_header_t *header) {
+  uintptr_t slide = 0;
 
-  struct mach_header_64 *mach_header = (typeof(mach_header))header_addr;
-  const char *           segname     = "__TEXT";
+  segment_command_t *curr_seg_cmd;
 
-  struct segment_command_64 *segment = NULL;
-  struct load_command *      lc      = NULL;
-  uint8_t *                  base    = (uint8_t *)mach_header;
-  uint32_t                   offset  = sizeof(*mach_header);
-  uint32_t                   i       = 0;
-
-  if (mach_header->magic != MH_MAGIC_64)
-    goto finish;
-
-  for (i = 0; i < mach_header->ncmds; ++i) {
-    lc = (struct load_command *)(base + offset);
-
-    if (lc->cmd == LC_SEGMENT_64) {
-      segment = (struct segment_command_64 *)lc;
-      if (!strncmp(segment->segname, segname, sizeof(segment->segname))) {
-        slide = header_addr - segment->vmaddr;
+  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+  for (int i = 0; i < header->ncmds; i++) {
+    if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
+        slide = (uintptr_t)header - curr_seg_cmd->vmaddr;
+        return slide;
       }
-      segment = NULL;
     }
-
-    offset += lc->cmdsize;
+    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
-
-finish:
-  return slide;
+  return 0;
 }
 
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
@@ -298,12 +283,12 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     if (image_name != NULL && strstr(module.path, image_name) == NULL)
       continue;
 
-    addr_t header = (addr_t)module.load_address;
-    size_t slide  = 0;
+    mach_header_t *header = (mach_header_t *)module.load_address;
+    size_t         slide  = 0;
 
     if (header) {
-      if (((struct mach_header *)header)->magic == MH_MAGIC_64)
-        slide = macho_kit_get_slide64(header);
+      if (header->magic == MH_MAGIC_64)
+        slide = macho_kit_get_slide(header);
     }
 
 #if 0
@@ -358,7 +343,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     uint32_t nlist_count = 0;
     nlist_t *nlist_array = 0;
     char *   string_pool = 0;
-    get_image_symbol_table((mach_header_t *)dyld_header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+    get_image_symbol_table((mach_header_t *)dyld_header, &nlist_array, &string_pool, &nlist_count);
 
     result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
     if (result)
