@@ -43,6 +43,8 @@ option(Plugin.LinkerLoadCallback "Register image load callback " OFF)
 # frida is better choice
 option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
+option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
+
 option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
 
 option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
@@ -331,6 +333,16 @@ if(Plugin.Darwin.ObjectiveC)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     external/helpers/variable_cache.c
     builtin-plugin/ObjectiveC/objective_c_tookit.mm
+  )
+endif()
+
+if(Plugin.Android.BionicLinkerRestriction)
+  if(NOT SYSTEM.Android)
+    message(FATAL_ERROR "[!] Plugin.Android.BionicLinkerRestriction only works on Android.")
+  endif()
+  message(STATUS "[Dobby] Enable Plugin.Android.BionicLinkerRestriction")
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/BionicLinkerRestriction/bionic_linker_restriction.cc
   )
 endif()
 

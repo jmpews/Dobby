@@ -1,5 +1,5 @@
-#ifndef ANDROID_RESTRICTION_H
-#define ANDROID_RESTRICTION_H
+#ifndef LINKER_RESTRICTION_H
+#define LINKER_RESTRICTION_H
 
 #include <stdint.h>
 
