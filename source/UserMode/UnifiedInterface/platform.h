@@ -6,7 +6,6 @@
 #include "PlatformUnifiedInterface/StdMemory.h"
 
 namespace base {
-
 // ================================================================
 // base :: ThreadLocalStorageInterface
 
@@ -53,7 +52,6 @@ class Thread : public ThreadInterface, public ThreadInterface::Delegate {
 public:
   Thread(const char *name);
 
-public:
   bool Start();
 
 private:

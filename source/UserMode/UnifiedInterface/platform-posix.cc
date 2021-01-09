@@ -21,8 +21,8 @@
 #include <sys/sysctl.h> // NOLINT, for sysctl
 #endif
 
-#include "logging/check_logging.h"
 #include "logging/logging.h"
+#include "logging/check_logging.h"
 #include "UnifiedInterface/platform.h"
 
 #if defined(__APPLE__)
@@ -80,10 +80,10 @@ static void *thread_handler_wrapper(void *ctx) {
 }
 
 bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *handle) {
-  thread_handle_t *platform_handle = new thread_handle_t;
+  thread_handle_t *handle_impl = new thread_handle_t;
 
   int err = 0;
-  err     = pthread_create(&(platform_handle->thread), nullptr, thread_handler_wrapper, delegate);
+  err     = pthread_create(&(handle_impl->thread), nullptr, thread_handler_wrapper, delegate);
   if (err != 0) {
     FATAL("pthread create failed");
     return false;
@@ -92,7 +92,7 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
 }
 
 Thread::Thread(const char *name) {
-  strncpy(name_, name, strlen(name));
+  strncpy(name_, name, sizeof(name_));
 }
 
 bool Thread::Start() {
