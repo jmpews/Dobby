@@ -154,7 +154,7 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
     } break;
     case LC_DYLD_INFO:
     case LC_DYLD_INFO_ONLY: {
-      dyld_info_cmd = (__typeof__(dyld_info_cmd))curr_seg_cmd;
+      dyld_info_cmd = (struct dyld_info_command *)curr_seg_cmd;
     } break;
     default:
       break;
