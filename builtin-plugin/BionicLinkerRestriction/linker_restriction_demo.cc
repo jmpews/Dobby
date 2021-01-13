@@ -1,6 +1,6 @@
 #include "dobby.h"
 
-#include "android_restriction.h"
+#include "bionic_linker_restriction.h"
 
 #include "logging/logging.h"
 

@@ -1,4 +1,4 @@
-#include "./android_restriction.h"
+#include "bionic_linker_restriction.h"
 
 #include <elf.h>
 #include <jni.h>

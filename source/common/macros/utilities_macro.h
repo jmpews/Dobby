@@ -35,18 +35,14 @@
 #define VAR_NAME_VALUE(var) #var "=" VALUE(var)
 
 // format print
-#define PRIxPTR PTR_PREFIX "x"
-#if defined(__arm64__) || defined(__aarch64__)
-#define PTR_PREFIX "l"
-#elif defined(__arm__)
-#define PTR_PREFIX ""
-#elif defined(_M_IX86) || defined(__i386__)
-#define PTR_PREFIX ""
-#elif defined(_M_X64) || defined(__x86_64__)
-#define PTR_PREFIX "l"
+#ifdef __LP64__
+#define __PRI_64_prefix  "l"
+#define __PRI_PTR_prefix "l"
 #else
-#error "unsupported architecture"
+#define __PRI_64_prefix "ll"
+#define __PRI_PTR_prefix
 #endif
+#define PRIxPTR __PRI_PTR_prefix "x" /* uintptr_t */
 
 // deprecated declared
 #if defined(__GNUC__) || defined(__clang__)
