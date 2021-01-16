@@ -260,6 +260,8 @@ if(NearBranch)
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 
+add_subdirectory(external/external_helper)
+
 # add logging library
 # add_subdirectory(external/logging)
 set(logging.SOURCE_FILE_LIST
@@ -382,6 +384,7 @@ set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 message(STATUS "Version: ${DOBBY_BUILD_VERSION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 
+# upper framework output name
 set(dobby_output_name dobby)
 if(SYSTEM.Darwin AND GenerateDarwinFramework)
   set(dobby_output_name Dobby)
@@ -434,4 +437,3 @@ if(SYSTEM.iOS)
 endif()
 
 add_subdirectory(example)
-add_subdirectory(external/external_helper)
