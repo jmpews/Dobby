@@ -20,32 +20,30 @@ int __shared_region_check_np(uint64_t *startaddress);
 }
 #endif
 
+extern "C" const char *dyld_shared_cache_file_path();
+
 static pthread_once_t mmap_dyld_shared_cache_once = PTHREAD_ONCE_INIT;
-
-struct dyld_cache_header *g_mmap_shared_cache_header;
-struct dyld_cache_header *g_mmap_shared_cache;
-
-int g_dyld_shared_cache_fd = 0;
 
 extern "C" int __shared_region_check_np(uint64_t *startaddress);
 
-void *get_shared_cache_load_addr() {
-  static void *shared_cache_load_addr = 0;
+
+
+struct dyld_cache_header *shared_cache_get_load_addr() {
+  static struct dyld_cache_header *shared_cache_load_addr = 0;
   if (shared_cache_load_addr)
     return shared_cache_load_addr;
 #if 0
   if (syscall(294, &shared_cache_load_addr) == 0) {
 #else
-  if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) == 0) {
+// FIXME:
+  if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) != 0) {
 #endif
-  return shared_cache_load_addr;
-}
-return 0;
+    shared_cache_load_addr = 0;
+  }
+return shared_cache_load_addr;
 }
 
-extern "C" const char *dyld_shared_cache_file_path();
-
-void mmap_dyld_shared_cache() {
+int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   int         fd;
   const char *cache_file_path = dyld_shared_cache_file_path();
   if (cache_file_path == NULL) {
@@ -63,44 +61,70 @@ void mmap_dyld_shared_cache() {
   }
 
   if (fd == -1) {
-
-    return;
+    return KERN_FAILURE;
   }
 
-  struct dyld_cache_header *mmap_shared_cache_header;
+  struct dyld_cache_header *runtime_shared_cache;
   struct dyld_cache_header *mmap_shared_cache;
 
   // auto align
-  mmap_shared_cache_header = (struct dyld_cache_header *)get_shared_cache_load_addr();
+  runtime_shared_cache =  shared_cache_get_load_addr();
 
   // maybe shared cache is apple silicon
-  if (mmap_shared_cache_header->localSymbolsSize == 0) {
-    return;
+  if (runtime_shared_cache->localSymbolsSize == 0) {
+    return KERN_FAILURE;
   }
 
+  size_t mmap_length = runtime_shared_cache->localSymbolsSize;
+  off_t mmap_offset = runtime_shared_cache->localSymbolsOffset;
   mmap_shared_cache =
-      (struct dyld_cache_header *)mmap(0, mmap_shared_cache_header->localSymbolsSize, PROT_READ, MAP_FILE | MAP_PRIVATE,
-                                       fd, mmap_shared_cache_header->localSymbolsOffset);
+      (struct dyld_cache_header *)mmap(0, mmap_length , PROT_READ, MAP_FILE | MAP_PRIVATE,
+                                       fd, mmap_offset);
   if (mmap_shared_cache == MAP_FAILED) {
     ERROR_LOG("mmap shared cache failed");
-    return;
+    return KERN_FAILURE;
   }
 
+  // fake shared cache header
   mmap_shared_cache =
-      (struct dyld_cache_header *)((addr_t)mmap_shared_cache - mmap_shared_cache_header->localSymbolsOffset);
+      (struct dyld_cache_header *)((addr_t)mmap_shared_cache - runtime_shared_cache->localSymbolsOffset);
 
-  g_mmap_shared_cache_header = mmap_shared_cache_header;
-  g_mmap_shared_cache        = mmap_shared_cache;
+  ctx->runtime_shared_cache = runtime_shared_cache;
+  ctx->mmap_shared_cache        = mmap_shared_cache;
+
+  // shared cache slide
+  const struct dyld_cache_mapping_info *mappings =
+      (struct dyld_cache_mapping_info *)((char *)runtime_shared_cache + runtime_shared_cache->mappingOffset);
+  uintptr_t slide       = (uintptr_t)runtime_shared_cache - (uintptr_t)(mappings[0].address);
+  ctx->runtime_slide = slide;
+
+  // shared cache symbol table
+  static struct dyld_cache_local_symbols_info *localInfo = NULL;
+  localInfo = (struct dyld_cache_local_symbols_info *)((char *)mmap_shared_cache + runtime_shared_cache->localSymbolsOffset);
+
+  static struct dyld_cache_local_symbols_entry *localEntries = NULL;
+  localEntries = (struct dyld_cache_local_symbols_entry *)((char *)localInfo + localInfo->entriesOffset);
+
+  ctx->local_symbols_info = localInfo;
+  ctx->local_symbols_entries = localEntries;
+
+  ctx->symtab                 = (nlist_t *)((char *)localInfo + localInfo->nlistOffset);
+  ctx->strtab                = ((char *)localInfo) + localInfo->stringsOffset;
+  return 0;
 }
 
 // refer: dyld
-bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length) {
-  addr_t                    cache_base_address = (addr_t)get_shared_cache_load_addr();
-  struct dyld_cache_header *header             = (struct dyld_cache_header *)cache_base_address;
+bool shared_cache_is_contain(shared_cache_ctx_t *ctx, addr_t addr, size_t length) {
+  struct dyld_cache_header *runtime_shared_cache;
+  if(ctx) {
+    runtime_shared_cache = ctx->runtime_shared_cache;
+  } else {
+    runtime_shared_cache = shared_cache_get_load_addr();
+  }
 
   const struct dyld_cache_mapping_info *mappings =
-      (struct dyld_cache_mapping_info *)((char *)cache_base_address + header->mappingOffset);
-  uintptr_t slide       = (uintptr_t)cache_base_address - (uintptr_t)(mappings[0].address);
+      (struct dyld_cache_mapping_info *)((char *)runtime_shared_cache + runtime_shared_cache->mappingOffset);
+  uintptr_t slide       = (uintptr_t)runtime_shared_cache - (uintptr_t)(mappings[0].address);
   uintptr_t unslidStart = (uintptr_t)addr - slide;
 
   // quick out if after end of cache
@@ -108,7 +132,7 @@ bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length) {
     return false;
 
   // walk cache regions
-  const struct dyld_cache_mapping_info *mappingsEnd = &mappings[header->mappingCount];
+  const struct dyld_cache_mapping_info *mappingsEnd = &mappings[runtime_shared_cache->mappingCount];
   uintptr_t                             unslidEnd   = unslidStart + length;
   for (const struct dyld_cache_mapping_info *m = mappings; m < mappingsEnd; ++m) {
     if ((unslidStart >= m->address) && (unslidEnd < (m->address + m->size))) {
@@ -118,35 +142,22 @@ bool is_addr_in_dyld_shared_cache(addr_t addr, size_t length) {
   return false;
 }
 
-void get_shared_cache_symbol_table(void *image_header, uintptr_t *nlist_array_ptr, char **string_pool_ptr,
-                                   uint32_t *nlist_count_ptr) {
-  pthread_once(&mmap_dyld_shared_cache_once, mmap_dyld_shared_cache);
-  if (g_mmap_shared_cache == NULL)
-    return;
+int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_header, nlist_t **out_symtab, uint32_t *out_symtab_count,char **out_strtab) {
+  struct dyld_cache_header *runtime_shared_cache =  NULL;
 
-  addr_t cache_base_address = (addr_t)get_shared_cache_load_addr();
+  runtime_shared_cache = ctx->runtime_shared_cache;
 
-  struct dyld_cache_header *header = (struct dyld_cache_header *)cache_base_address;
-
-  uint64_t textOffsetInCache = (uint64_t)image_header - (uint64_t)header;
+  uint64_t textOffsetInCache = (uint64_t)image_header - (uint64_t)runtime_shared_cache;
 
   nlist_t *   localNlists     = NULL;
   uint32_t    localNlistCount = 0;
   const char *localStrings    = NULL;
 
-  static struct dyld_cache_local_symbols_info *localsInfo = NULL;
-  localsInfo = (struct dyld_cache_local_symbols_info *)((addr_t)g_mmap_shared_cache + header->localSymbolsOffset);
-
-  static struct dyld_cache_local_symbols_entry *entries = NULL;
-  entries = (struct dyld_cache_local_symbols_entry *)((char *)localsInfo + localsInfo->entriesOffset);
-
-  localNlists                 = (nlist_t *)((uint8_t *)localsInfo + localsInfo->nlistOffset);
-  localStrings                = ((char *)localsInfo) + localsInfo->stringsOffset;
-  const uint32_t entriesCount = localsInfo->entriesCount;
+  const uint32_t entriesCount = ctx->local_symbols_info->entriesCount;
   for (uint32_t i = 0; i < entriesCount; ++i) {
-    if (entries[i].dylibOffset == textOffsetInCache) {
-      uint32_t localNlistStart = entries[i].nlistStartIndex;
-      localNlistCount          = entries[i].nlistCount;
+    if (ctx->local_symbols_entries[i].dylibOffset == textOffsetInCache) {
+      uint32_t localNlistStart = ctx->local_symbols_entries[i].nlistStartIndex;
+      localNlistCount          = ctx->local_symbols_entries[i].nlistCount;
       localNlists              = &localNlists[localNlistStart];
 
 #if 0
@@ -157,9 +168,8 @@ void get_shared_cache_symbol_table(void *image_header, uintptr_t *nlist_array_pt
 #endif
     }
   }
-
-  *nlist_count_ptr = (uint32_t)localNlistCount;
-  *nlist_array_ptr = (uintptr_t)localNlists;
-  *string_pool_ptr = (char *)localStrings;
-  return;
+  *out_symtab = localNlists;
+  *out_symtab_count = (uint32_t)localNlistCount;
+  *out_strtab = (char *)localStrings;
+  return 0;
 }

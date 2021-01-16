@@ -24,48 +24,94 @@
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
 
-static uint64_t dyld_read_uleb128(const uint8_t **p_ptr, const uint8_t *end) {
-  uint64_t       result = 0;
-  int            bit    = 0;
-  const uint8_t *p      = *p_ptr;
+typedef struct macho_ctx {
+  mach_header_t *header;
+
+  uintptr_t slide;
+  uintptr_t linkedit_base;
+
+  segment_command_t *segments[16];
+  int segments_count;
+
+  segment_command_t *text_seg;
+  segment_command_t *data_seg;
+  segment_command_t *data_const_seg;
+  segment_command_t *linkedit_seg;
+
+  struct symtab_command *symtab_cmd;
+  struct dysymtab_command *dysymtab_cmd;
+  struct dyld_info_command *dyld_info_cmd;
+
+  nlist_t *symtab;
+  char *strtab;
+  uint32_t *indirect_symtab;
+
+} macho_ctx_t;
+
+uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
+  uint8_t *p = (uint8_t *)*pp;
+  uint64_t result = 0;
+  int bit = 0;
   do {
-    if (p == end) {
-      // diag.error("malformed uleb128");
-      break;
-    }
+    if (p == end)
+      assert(p == end);
+
     uint64_t slice = *p & 0x7f;
 
-    if (bit > 63) {
-      // diag.error("uleb128 too big for uint64");
-      break;
-    } else {
+    if (bit > 63)
+      assert(bit > 63);
+    else {
       result |= (slice << bit);
       bit += 7;
     }
   } while (*p++ & 0x80);
 
-  *p_ptr = p;
-  return result;
+  *pp = p;
+
+  return (uintptr_t)result;
+}
+
+intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
+  uint8_t *p = (uint8_t *)*pp;
+
+  int64_t result = 0;
+  int bit = 0;
+  uint8_t byte;
+  do {
+    if (p == end)
+      assert(p == end);
+    byte = *p++;
+    result |= (((int64_t)(byte & 0x7f)) << bit);
+    bit += 7;
+  } while (byte & 0x80);
+  // sign extend negative numbers
+  if ((byte & 0x40) != 0)
+    result |= (~0ULL) << bit;
+
+  *pp = p;
+
+  return (intptr_t)result;
 }
 
 // dyld
 // bool MachOLoaded::findExportedSymbol
-void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
+uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
   uint32_t visitedNodeOffsets[128];
-  int      visitedNodeOffsetCount              = 0;
+  int visitedNodeOffsetCount = 0;
   visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
-  const uint8_t *p                             = start;
+  const uint8_t *p = start;
   while (p < end) {
     uint64_t terminalSize = *p++;
     if (terminalSize > 127) {
       // except for re-export-with-rename, all terminal sizes fit in one byte
       --p;
-      terminalSize = dyld_read_uleb128(&p, end);
+      terminalSize = read_uleb128(&p, end);
     }
     if ((*symbol == '\0') && (terminalSize != 0)) {
+      return (uint8_t *)p;
       // skip flag == EXPORT_SYMBOL_FLAGS_REEXPORT
-      dyld_read_uleb128(&p, end);
-      return (void *)dyld_read_uleb128(&p, end);
+      read_uleb128(&p, end);
+      return (uint8_t *)read_uleb128(&p, end);
     }
     const uint8_t *children = p + terminalSize;
     if (children > end) {
@@ -73,11 +119,11 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
       return NULL;
     }
     uint8_t childrenRemaining = *children++;
-    p                         = children;
-    uint64_t nodeOffset       = 0;
+    p = children;
+    uint64_t nodeOffset = 0;
     for (; childrenRemaining > 0; --childrenRemaining) {
-      const char *ss        = symbol;
-      bool        wrongEdge = false;
+      const char *ss = symbol;
+      bool wrongEdge = false;
       // scan whole edge to get to next edge
       // if edge is longer than target symbol name, don't read past end of symbol name
       char c = *p;
@@ -105,7 +151,7 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
         // the symbol so far matches this edge (child)
         // so advance to the child's node
         ++p;
-        nodeOffset = dyld_read_uleb128(&p, end);
+        nodeOffset = read_uleb128(&p, end);
         if ((nodeOffset == 0) || (&start[nodeOffset] > end)) {
           // diag.error("malformed trie child, nodeOffset=0x%llX out of range\n", nodeOffset);
           return NULL;
@@ -137,12 +183,14 @@ void *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *s
   return NULL;
 }
 
-uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name) {
-  segment_command_t *       curr_seg_cmd;
-  struct dyld_info_command *dyld_info_cmd = NULL;
-  segment_command_t *       text_segment, *data_segment, *linkedit_segment;
 
-  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name, uint64_t *out_flags) {
+  segment_command_t *curr_seg_cmd;
+  struct dyld_info_command *dyld_info_cmd = NULL;
+  struct linkedit_data_command *exports_trie_cmd = NULL;
+  segment_command_t *text_segment, *data_segment, *linkedit_segment;
+
+  curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
     switch (curr_seg_cmd->cmd) {
     case LC_SEGMENT_ARCH_DEPENDENT: {
@@ -152,6 +200,9 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
         text_segment = curr_seg_cmd;
       }
     } break;
+    case LC_DYLD_EXPORTS_TRIE: {
+      exports_trie_cmd = (struct linkedit_data_command *)curr_seg_cmd;
+    } break;
     case LC_DYLD_INFO:
     case LC_DYLD_INFO_ONLY: {
       dyld_info_cmd = (struct dyld_info_command *)curr_seg_cmd;
@@ -159,56 +210,72 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
     default:
       break;
     };
-    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
+    curr_seg_cmd = (segment_command_t *)((uintptr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
   if (text_segment == NULL || linkedit_segment == NULL) {
     return 0;
   }
 
-  if (text_segment->vmaddr == 0 || linkedit_segment->vmaddr == 0) {
+  if (exports_trie_cmd == NULL && dyld_info_cmd == NULL)
     return 0;
-  }
 
-  if (dyld_info_cmd == NULL || dyld_info_cmd->export_off == 0) {
-    return 0;
-  }
+  uint32_t trieFileOffset = dyld_info_cmd ? dyld_info_cmd->export_off : exports_trie_cmd->dataoff;
+  uint32_t trieFileSize = dyld_info_cmd ? dyld_info_cmd->export_size : exports_trie_cmd->datasize;
 
-  uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
+  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
-  void *exports = (void *)(linkedit_base + dyld_info_cmd->export_off);
+  void *exports = (void *)(linkedit_base + trieFileOffset);
   if (exports == NULL)
     return 0;
 
-  void *off = (void *)walk_exported_trie((const uint8_t *)exports,
-                                         (const uint8_t *)exports + dyld_info_cmd->export_size, symbol_name);
+  uint8_t *exports_start = (uint8_t *)exports;
+  uint8_t *exports_end = exports_start + trieFileSize;
+  uint8_t *node = (uint8_t *)walk_exported_trie(exports_start, exports_end, symbol_name);
+  if (node == NULL)
+    return 0;
+  const uint8_t *p = node;
+  const uintptr_t flags = read_uleb128(&p, exports_end);
+  if (flags & EXPORT_SYMBOL_FLAGS_REEXPORT) {
+    return 0;
+  }
+  if(out_flags)
+    *out_flags = flags;
+  uint64_t trieValue = read_uleb128(&p, exports_end);
+  return trieValue;
+#if 0
   if (off == (void *)0) {
     if (symbol_name[0] != '_' && strlen(&symbol_name[1]) >= 1) {
       char _symbol_name[1024] = {0};
-      _symbol_name[0]         = '_';
+      _symbol_name[0] = '_';
       strcpy(&_symbol_name[1], symbol_name);
-      off = (void *)walk_exported_trie((const uint8_t *)exports, (const uint8_t *)exports + dyld_info_cmd->export_size,
-                                       _symbol_name);
+      off = (void *)walk_exported_trie((const uint8_t *)exports, (const uint8_t *)exports + trieFileSize, _symbol_name);
     }
   }
-  return (uintptr_t)off;
+#endif
 }
 
-static void get_image_symbol_table(mach_header_t *header, nlist_t **nlist_array, char **string_pool,
-                                   uint32_t *nlist_count) {
-  segment_command_t *      curr_seg_cmd;
-  segment_command_t *      text_segment, *data_segment, *linkedit_segment;
-  struct symtab_command *  symtab_cmd   = NULL;
+void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
+  ctx->header = header;
+  segment_command_t *curr_seg_cmd;
+  segment_command_t *text_segment, *data_segment, *data_const_segment, *linkedit_segment;
+  struct symtab_command *symtab_cmd = NULL;
   struct dysymtab_command *dysymtab_cmd = NULL;
+  struct dyld_info_command *dyld_info_cmd = NULL;
 
-  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+  curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
     if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      //  BIND_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB and REBASE_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB
+      ctx->segments[ctx->segments_count++] = curr_seg_cmd;
+
       if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
         linkedit_segment = curr_seg_cmd;
       } else if (strcmp(curr_seg_cmd->segname, "__DATA") == 0) {
         data_segment = curr_seg_cmd;
+      } else if (strcmp(curr_seg_cmd->segname, "__DATA_CONST") == 0) {
+        data_const_segment = curr_seg_cmd;
       } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
         text_segment = curr_seg_cmd;
       }
@@ -216,39 +283,46 @@ static void get_image_symbol_table(mach_header_t *header, nlist_t **nlist_array,
       symtab_cmd = (struct symtab_command *)curr_seg_cmd;
     } else if (curr_seg_cmd->cmd == LC_DYSYMTAB) {
       dysymtab_cmd = (struct dysymtab_command *)curr_seg_cmd;
+    } else if (curr_seg_cmd->cmd == LC_DYLD_INFO || curr_seg_cmd->cmd == LC_DYLD_INFO_ONLY) {
+      dyld_info_cmd = (struct dyld_info_command *)curr_seg_cmd;
     }
-    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
+    curr_seg_cmd = (segment_command_t *)((uintptr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
-  if (!symtab_cmd || !linkedit_segment) {
-    return;
-  }
-
-  uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
+  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
-  nlist_t * symtab        = (nlist_t *)(linkedit_base + symtab_cmd->symoff);
-  char *    strtab        = (char *)(linkedit_base + symtab_cmd->stroff);
-  uint32_t  symtab_count  = symtab_cmd->nsyms;
 
-  *nlist_count = symtab_count;
-  *nlist_array = symtab;
-  *string_pool = strtab;
+  ctx->text_seg = text_segment;
+  ctx->data_seg = data_segment;
+  ctx->data_const_seg = data_const_segment;
+  ctx->linkedit_seg = linkedit_segment;
+
+  ctx->symtab_cmd = symtab_cmd;
+  ctx->dysymtab_cmd = dysymtab_cmd;
+  ctx->dyld_info_cmd = dyld_info_cmd;
+
+  ctx->slide = slide;
+  ctx->linkedit_base = linkedit_base;
+
+  ctx->symtab = (nlist_t *)(ctx->linkedit_base + ctx->symtab_cmd->symoff);
+  ctx->strtab = (char *)(ctx->linkedit_base + ctx->symtab_cmd->stroff);
+  ctx->indirect_symtab = (uint32_t *)(ctx->linkedit_base + ctx->dysymtab_cmd->indirectsymoff);
 }
 
-uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *nlist_array, uint32_t nlist_count, char *string_pool) {
-  for (uint32_t i = 0; i < nlist_count; i++) {
-    if (nlist_array[i].n_value) {
-      uint32_t strtab_offset = nlist_array[i].n_un.n_strx;
-      char *   symbol_name   = string_pool + strtab_offset;
+uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *symtab, uint32_t symtab_count, char *strtab) {
+  for (uint32_t i = 0; i < symtab_count; i++) {
+    if (symtab[i].n_value) {
+      uint32_t strtab_offset = symtab[i].n_un.n_strx;
+      char *   symbol_name   = strtab + strtab_offset;
 #if 0
       LOG(1, "> %s", symbol_name);
 #endif
       if (strcmp(name_pattern, symbol_name) == 0) {
-        return nlist_array[i].n_value;
+        return symtab[i].n_value;
       }
       if (symbol_name[0] == '_') {
         if (strcmp(name_pattern, &symbol_name[1]) == 0) {
-          return nlist_array[i].n_value;
+          return symtab[i].n_value;
         }
       }
     }
@@ -295,38 +369,47 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     LOG(1, "resolve image: %s", path);
 #endif
 
-    uint32_t nlist_count = 0;
-    nlist_t *nlist_array = 0;
-    char *   string_pool = 0;
+    nlist_t *symtab = NULL;
+    uint32_t symtab_count = 0;
+    char *strtab = NULL;
 
 #if defined(__arm__) || defined(__aarch64__)
+    static shared_cache_ctx_t shared_cache_ctx;
+    if(shared_cache_ctx.mmap_shared_cache == NULL) {
+      shared_cache_ctx_init(&shared_cache_ctx);
+    }
     // shared cache library
-    if (is_addr_in_dyld_shared_cache((addr_t)header, 0))
-      get_shared_cache_symbol_table((void *)header, (uintptr_t *)&nlist_array, &string_pool, &nlist_count);
+    if (shared_cache_is_contain(&shared_cache_ctx, (addr_t)header, 0)) {
+      shared_cache_get_symbol_table(&shared_cache_ctx, header, &symtab, &symtab_count, &strtab);
+    }
 #endif
-    result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
+    if (symtab && strtab) {
+      result = iterate_symbol_table((char *)symbol_name_pattern, symtab, symtab_count, strtab);
+    }
     if (result) {
       result = result + slide;
       break;
     }
 
     // binary symbol table
-    get_image_symbol_table((mach_header_t *)header, &nlist_array, &string_pool, &nlist_count);
-    result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
+    macho_ctx_t macho_ctx;
+    memset(&macho_ctx, 0, sizeof(macho_ctx_t));
+    macho_ctx_init(&macho_ctx, header);
+    result = iterate_symbol_table((char *)symbol_name_pattern, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms, macho_ctx.strtab);
     if (result) {
       result = result + slide;
       break;
     }
 
     // binary exported table(uleb128)
-    result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern);
+    result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern, NULL);
     if (result) {
-      result = result + (uintptr_t)header;
+      result = result + (addr_t)header;
       break;
     }
   }
 
-  struct mach_header *dyld_header = NULL;
+  mach_header_t *dyld_header = NULL;
   if (image_name != NULL && strcmp(image_name, "dyld") == 0) {
     // task info
     task_dyld_info_data_t  task_dyld_info;
@@ -338,16 +421,15 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     // get dyld load address
     const struct dyld_all_image_infos *infos =
         (struct dyld_all_image_infos *)(uintptr_t)task_dyld_info.all_image_info_addr;
-    dyld_header = (struct mach_header *)infos->dyldImageLoadAddress;
+    dyld_header = (mach_header_t *)infos->dyldImageLoadAddress;
 
-    uint32_t nlist_count = 0;
-    nlist_t *nlist_array = 0;
-    char *   string_pool = 0;
-    get_image_symbol_table((mach_header_t *)dyld_header, &nlist_array, &string_pool, &nlist_count);
-
-    result = iterate_symbol_table((char *)symbol_name_pattern, nlist_array, nlist_count, string_pool);
-    if (result)
-      result = result + (uintptr_t)dyld_header;
+    macho_ctx_t dyld_ctx;
+    memset(&dyld_ctx, 0, sizeof(macho_ctx_t));
+    macho_ctx_init(&dyld_ctx, dyld_header);
+    result = iterate_symbol_table((char *)symbol_name_pattern, dyld_ctx.symtab, dyld_ctx.symtab_cmd->nsyms, dyld_ctx.strtab);
+    if (result) {
+      result = result + (addr_t)dyld_header;
+    }
   }
 
   return (void *)result;
