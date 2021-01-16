@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "async_logger.h"
+#include "external_helper/async_logger.h"
 
 extern char *mach_msg_to_str(mach_msg_header_t *msg);
 
@@ -40,7 +40,6 @@ void mach_system_call_monitor() {
 }
 #endif
 
-
 static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
@@ -67,27 +66,28 @@ static addr_t getRealLr(RegisterContext *ctx) {
 addr_t get_caller_from_main_binary(RegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
-  if(text_section_start == 0 || text_section_end == 0) {
+  if (text_section_start == 0 || text_section_end == 0) {
     auto   main        = ProcessRuntimeUtility::GetProcessModuleMap()[0];
     addr_t main_header = (addr_t)main.load_address;
-    
+
     auto text_segment = mach_kit::macho_get_segment_by_name_64((struct mach_header_64 *)main_header, "__TEXT");
-    slide  = main_header - text_segment->vmaddr;
-    
-    auto text_section  = mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
-    text_section_start     = main_header + (addr_t)text_section->offset;
-    text_section_end = text_section_start + text_section->size;
+    slide             = main_header - text_segment->vmaddr;
+
+    auto text_section =
+        mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
+    text_section_start = main_header + (addr_t)text_section->offset;
+    text_section_end   = text_section_start + text_section->size;
   }
-  
+
   addr_t lr = getRealLr(ctx);
-  if(lr > text_section_start && lr < text_section_end)
+  if (lr > text_section_start && lr < text_section_end)
     return lr - slide;
-  
+
 #define MAX_STACK_ITERATE_LEVEL 4
   addr_t fp = ctx->fp;
   for (int i = 0; i < MAX_STACK_ITERATE_LEVEL; i++) {
     addr_t lr = *(addr_t *)(fp + sizeof(addr_t));
-    if(lr > text_section_start && lr < text_section_end)
+    if (lr > text_section_start && lr < text_section_end)
       return lr - slide;
     fp = *(addr_t *)fp;
   }
@@ -98,16 +98,16 @@ static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) 
   addr_t caller = get_caller_from_main_binary(reg_ctx);
   if (caller == 0)
     return;
-  
-  char buffer[256] = {0};
-  mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(reg_ctx);
-  char *mach_msg_name = mach_msg_to_str(msg);
-  if(mach_msg_name) {
+
+  char               buffer[256]   = {0};
+  mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(reg_ctx);
+  char *             mach_msg_name = mach_msg_to_str(msg);
+  if (mach_msg_name) {
     sprintf(buffer, "[mach msg %p] %s\n", caller, mach_msg_name);
   } else {
     buffer[0] = 0;
   }
-  if(buffer[0])
+  if (buffer[0])
     async_logger_print(buffer);
 }
 

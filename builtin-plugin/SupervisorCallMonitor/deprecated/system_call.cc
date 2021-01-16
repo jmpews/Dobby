@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "async_logger.h"
+#include "external_helper/async_logger.h"
 
 static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
   addr_t result;

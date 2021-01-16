@@ -429,8 +429,9 @@ if(SYSTEM.Darwin)
     "-framework Foundation")
 endif()
 
-if(Plugin.SupervisorCallMonitor)
+if(SYSTEM.iOS)
   add_subdirectory(builtin-plugin/SupervisorCallMonitor)
 endif()
 
-# add_subdirectory(example)
+add_subdirectory(example)
+add_subdirectory(external/external_helper)
