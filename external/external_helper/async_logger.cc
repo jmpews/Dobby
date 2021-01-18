@@ -43,6 +43,11 @@ static void *async_logger_print_impl(void *ctx) {
 }
 
 void async_logger_init(char *logger_path) {
+  static int async_logger_initialized = 0;
+  if (async_logger_initialized)
+    return;
+  async_logger_initialized = 1;
+
   // init stdout write lock
   pthread_mutex_t write_mutex;
   pthread_mutex_init(&write_mutex, NULL);
