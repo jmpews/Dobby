@@ -1,7 +1,5 @@
 #include "dobby_internal.h"
 
-#include "PlatformUtil/ProcessRuntimeUtility.h"
-
 #include <iostream>
 
 #include <unistd.h>
@@ -13,6 +11,7 @@
 #include <mach/mach.h>
 
 #include "external_helper/async_logger.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 #include "SupervisorCallMonitor/misc_utility.h"
 #include "SupervisorCallMonitor/supervisor_call_monitor.h"
 
@@ -128,11 +127,11 @@ static addr_t getRealLr(RegisterContext *ctx) {
   return *(addr_t *)closure_trampoline_reserved_stack;
 }
 
-addr_t get_caller_from_main_binary(RegisterContext *ctx) {
+static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
   if (text_section_start == 0 || text_section_end == 0) {
-    auto   main        = ProcessRuntimeUtility::GetProcessModuleMap()[0];
+    auto   main        = ProcessRuntimeUtility::GetProcessModule("mobilex");
     addr_t main_header = (addr_t)main.load_address;
 
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");
@@ -143,24 +142,31 @@ addr_t get_caller_from_main_binary(RegisterContext *ctx) {
     text_section_start = main_header + (addr_t)text_section->offset;
     text_section_end   = text_section_start + text_section->size;
   }
+  
+  if(ctx == NULL)
+    return 0;
 
   addr_t lr = getRealLr(ctx);
   if (lr > text_section_start && lr < text_section_end)
     return lr - slide;
 
-#define MAX_STACK_ITERATE_LEVEL 4
+#define MAX_STACK_ITERATE_LEVEL 8
   addr_t fp = ctx->fp;
+  if(fp == 0)
+    return 0;
   for (int i = 0; i < MAX_STACK_ITERATE_LEVEL; i++) {
     addr_t lr = *(addr_t *)(fp + sizeof(addr_t));
     if (lr > text_section_start && lr < text_section_end)
       return lr - slide;
     fp = *(addr_t *)fp;
+    if(fp == 0)
+      return 0;
   }
   return 0;
 }
 
 static void mach_syscall_log_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  addr_t caller = get_caller_from_main_binary(reg_ctx);
+  addr_t caller = fast_get_caller_from_main_binary(reg_ctx);
   if (caller == 0)
     return;
 
@@ -183,5 +189,6 @@ static void mach_syscall_log_handler(RegisterContext *reg_ctx, const HookEntryIn
 
 void supervisor_call_monitor_register_mach_syscall_call_log_handler() {
   mach_msg_id_hash_table_init();
+  fast_get_caller_from_main_binary(NULL);
   supervisor_call_monitor_register_handler(mach_syscall_log_handler);
 }

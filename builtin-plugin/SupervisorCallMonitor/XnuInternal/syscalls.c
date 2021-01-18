@@ -32,6 +32,11 @@
  * created from /Users/adam/Documents/sources/xnu/build/xnu-6153.11.26/bsd/kern/syscalls.master
  */
 
+#define SOCKETS            1
+#define PSYNCH             1
+#define CONFIG_WORKQUEUE   1
+#define OLD_SEMWAIT_SIGNAL 1
+
 const char *syscallnames[] = {
     "syscall",   /* 0 = syscall indirect syscall */
     "exit",      /* 1 = exit */

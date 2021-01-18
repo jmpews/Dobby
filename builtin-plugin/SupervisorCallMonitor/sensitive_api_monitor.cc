@@ -7,33 +7,33 @@
 #include "SupervisorCallMonitor/supervisor_call_monitor.h"
 #include "external_helper/async_logger.h"
 
-#define    PT_DENY_ATTACH    31
+#define PT_DENY_ATTACH 31
 
 static void sensitive_api_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   char buffer[256] = {0};
   int  syscall_rum = reg_ctx->general.regs.x16;
   if (syscall_rum == 0) {
     syscall_rum = (int)reg_ctx->general.x[0];
-    if(syscall_rum == SYS_ptrace) {
+    if (syscall_rum == SYS_ptrace) {
       int request = reg_ctx->general.x[1];
-      if(request == PT_DENY_ATTACH) {
+      if (request == PT_DENY_ATTACH) {
         reg_ctx->general.x[1] = 0;
-        LOG(2, "syscall svc ptrace deny");
+        // LOG(2, "syscall svc ptrace deny");
       }
     }
-    if(syscall_rum == SYS_exit) {
-      LOG(2, "syscall svc exit");
+    if (syscall_rum == SYS_exit) {
+      // LOG(2, "syscall svc exit");
     }
   } else if (syscall_rum > 0) {
-    if(syscall_rum == SYS_ptrace) {
+    if (syscall_rum == SYS_ptrace) {
       int request = reg_ctx->general.x[0];
-      if(request == PT_DENY_ATTACH) {
-      reg_ctx->general.x[0] = 0;
-        LOG(2, "svc ptrace deny");
+      if (request == PT_DENY_ATTACH) {
+        reg_ctx->general.x[0] = 0;
+        // LOG(2, "svc ptrace deny");
       }
     }
-    if(syscall_rum == SYS_exit) {
-      LOG(2, "svc exit");
+    if (syscall_rum == SYS_exit) {
+      // LOG(2, "svc exit");
     }
   }
   async_logger_print(buffer);
@@ -52,10 +52,9 @@ static int get_func_svc_offset(addr_t func_addr) {
 
 #include <sys/sysctl.h>
 __typeof(sysctl) *orig_sysctl;
-int fake_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
-                void *newp, size_t newlen) {
+int fake_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp, size_t newlen) {
   struct kinfo_proc *info = NULL;
-  int ret = orig_sysctl(name, namelen, oldp, oldlenp, newp, newlen);
+  int                ret  = orig_sysctl(name, namelen, oldp, oldlenp, newp, newlen);
   if (name[0] == CTL_KERN && name[1] == KERN_PROC && name[2] == KERN_PROC_PID) {
     info = (struct kinfo_proc *)oldp;
     info->kp_proc.p_flag &= ~(P_TRACED);
@@ -64,8 +63,8 @@ int fake_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 }
 
 void supervisor_call_monitor_register_sensitive_api_handler() {
-  char *sensitive_func_array[] = {"ptrace", "exit"};
-  size_t count = sizeof(sensitive_func_array) / sizeof(char *);
+  char * sensitive_func_array[] = {"ptrace", "exit"};
+  size_t count                  = sizeof(sensitive_func_array) / sizeof(char *);
   for (size_t i = 0; i < count; i++) {
 
     addr_t func_addr = 0;

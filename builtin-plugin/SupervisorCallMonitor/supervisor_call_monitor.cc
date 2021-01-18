@@ -84,6 +84,48 @@ void supervisor_call_monitor_register_main_app() {
   }
 }
 
+extern "C" int __shared_region_check_np(uint64_t *startaddress);
+
+struct dyld_cache_header *shared_cache_get_load_addr() {
+  static struct dyld_cache_header *shared_cache_load_addr = 0;
+  if (shared_cache_load_addr)
+    return shared_cache_load_addr;
+#if 0
+  if (syscall(294, &shared_cache_load_addr) == 0) {
+#else
+  // FIXME:
+  if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) != 0) {
+#endif
+    shared_cache_load_addr = 0;
+  }
+  return shared_cache_load_addr;
+}
+void supervisor_call_monitor_register_system_kernel() {
+    auto   libsystem        = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
+    addr_t libsystem_header = (addr_t)libsystem.load_address;
+    auto   text_section = macho_kit_get_section_by_name((mach_header_t *)libsystem_header, "__TEXT", "__text");
+
+    addr_t shared_cache_load_addr = (addr_t)shared_cache_get_load_addr();
+    addr_t insn_addr              = shared_cache_load_addr + (addr_t)text_section->offset;
+    addr_t insn_addr_end          = insn_addr + text_section->size;
+
+    addr_t write_svc_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", "write");
+    write_svc_addr += 4;
+
+    addr_t __psynch_mutexwait_svc_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", "__psynch_mutexwait");
+    __psynch_mutexwait_svc_addr += 4;
+
+    for (; insn_addr < insn_addr_end; insn_addr += sizeof(uint32_t)) {
+      if (*(uint32_t *)insn_addr == 0xd4001001) {
+        if (insn_addr == write_svc_addr)
+          continue;
+
+        if (insn_addr == __psynch_mutexwait_svc_addr)
+          continue;
+        supervisor_call_monitor_register_svc((addr_t)insn_addr);
+      }
+    }
+}
 
 void supervisor_call_monitor_init() {
   // create logger file
