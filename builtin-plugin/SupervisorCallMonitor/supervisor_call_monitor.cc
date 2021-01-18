@@ -8,20 +8,26 @@
 std::vector<DBICallTy> *g_supervisor_call_handlers;
 
 static const char *fast_get_main_app_bundle_udid() {
+  static char *main_app_bundle_udid = NULL;
+  if(main_app_bundle_udid)
+    return main_app_bundle_udid;
+
   auto main = ProcessRuntimeUtility::GetProcessModuleMap()[0];
   char main_binary_path[2048] = {0};
   if(realpath(main.path, main_binary_path) == NULL)
     return NULL;
 
   char *bundle_udid_ndx = main_binary_path + strlen("/private/var/containers/Bundle/Application/");
-
-  char *result = (char *)malloc(36+1);
-  strncpy(result, bundle_udid_ndx, 36);
-  result[36] = 0;
-  return result;
+  main_app_bundle_udid = (char *)malloc(36+1);
+  strncpy(main_app_bundle_udid, bundle_udid_ndx, 36);
+  main_app_bundle_udid[36] = 0;
+  return main_app_bundle_udid;
 }
 
 static void common_supervisor_call_monitor_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+if(g_supervisor_call_handlers == NULL) {
+return;
+}
   for(auto handler : *g_supervisor_call_handlers) {
     handler(ctx, info);
   }
@@ -34,7 +40,22 @@ void supervisor_call_monitor_register_handler(DBICallTy handler) {
   g_supervisor_call_handlers->push_back(handler);
 }
 
+std::vector<addr_t> *g_svc_addr_array;
+
 void supervisor_call_monitor_register_svc(addr_t svc_addr) {
+  if(g_svc_addr_array == NULL) {
+    g_svc_addr_array = new std::vector<addr_t>();
+  }
+
+  if(g_svc_addr_array) {
+    auto iter = g_svc_addr_array->begin();
+    for(; iter != g_svc_addr_array->end(); iter++) {
+      if(*iter == svc_addr)
+        return;
+    }
+  }
+
+  g_svc_addr_array->push_back(svc_addr);
   DobbyInstrument((void *)svc_addr, common_supervisor_call_monitor_handler);
   DLOG(2, "register supervisor_call_monitor at %p", svc_addr);
 }
@@ -48,7 +69,6 @@ void supervisor_call_monitor_register_image(void *header) {
   for (; insn_addr < insn_addr_end; insn_addr += sizeof(uint32_t)) {
     if (*(uint32_t *)insn_addr == 0xd4001001) {
       supervisor_call_monitor_register_svc((addr_t)insn_addr);
-      LOG(2, "register supervisor_call_monitor at %p", insn_addr);
     }
   }
 }
@@ -58,6 +78,7 @@ void supervisor_call_monitor_register_main_app() {
   auto module_map = ProcessRuntimeUtility::GetProcessModuleMap();
   for(auto module : module_map) {
     if(strstr(module.path, main_bundle_udid)) {
+      LOG(2, "[supervisor_call_monitor] %s", module.path);
       supervisor_call_monitor_register_image((void *)module.load_address);
     }
   }

@@ -362,7 +362,6 @@ include_directories(
   builtin-plugin
   builtin-plugin/AndroidRestriction
   builtin-plugin/SymbolResolver
-  builtin-plugin/HideLibrary
   builtin-plugin/ObjectiveC
 )
 
@@ -433,6 +432,7 @@ if(SYSTEM.Darwin)
 endif()
 
 if(SYSTEM.iOS)
+  add_subdirectory(builtin-plugin/Dyld2HideLibrary)
   add_subdirectory(builtin-plugin/SupervisorCallMonitor)
 endif()
 

@@ -18,3 +18,5 @@ void supervisor_call_monitor_register_main_app();
 void supervisor_call_monitor_register_syscall_call_log_handler();
 
 void supervisor_call_monitor_register_mach_syscall_call_log_handler();
+
+void supervisor_call_monitor_register_sensitive_api_handler();

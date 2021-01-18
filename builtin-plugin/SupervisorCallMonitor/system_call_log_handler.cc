@@ -39,7 +39,6 @@ static void syscall_log_handler(RegisterContext *reg_ctx, const HookEntryInfo *i
   if (syscall_rum == 0) {
     syscall_rum = (int)getCallFirstArg(reg_ctx);
     sprintf(buffer, "[syscall svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
-
   } else if (syscall_rum > 0) {
     sprintf(buffer, "[svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
   }

@@ -45,7 +45,7 @@ cd Dobby && mkdir build_for_macos_x64 && cd build_for_macos_x64
 
 cmake .. \
 -DCMAKE_BUILD_TYPE=Release \
--DPlugin.SymbolResolver=ON -DPlugin.Darwin.HideLibrary=ON -DPlugin.Darwin.ObjectiveC=ON
+-DPlugin.SymbolResolver=ON -DPlugin.Darwin.ObjectiveC=ON
 
 make -j4
 ```

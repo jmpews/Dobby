@@ -3,8 +3,6 @@
 available build option within iOS:
 
 ```
-Plugin.Darwin.HideLibrary=ON, enable the hidden library plugin
-
 Plugin.Darwin.ObjectiveC=ON, enable the objective-c toolkit
 ```
 
@@ -15,7 +13,7 @@ cmake .. -G Xcode \
 -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
 -DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
 -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
--DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.Darwin.HideLibrary=ON -DPlugin.Darwin.ObjectiveC=ON
+-DDynamicBinaryInstrument=ON -DNearBranch=ON -DPlugin.SymbolResolver=ON -DPlugin.Darwin.ObjectiveC=ON
 
 ```
 

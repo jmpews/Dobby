@@ -58,42 +58,6 @@ static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
   return result;
 }
 
-static addr_t getRealLr(RegisterContext *ctx) {
-  addr_t closure_trampoline_reserved_stack = ctx->sp - sizeof(addr_t);
-  return *(addr_t *)closure_trampoline_reserved_stack;
-}
-
-addr_t get_caller_from_main_binary(RegisterContext *ctx) {
-  static addr_t text_section_start = 0, text_section_end = 0;
-  static addr_t slide = 0;
-  if (text_section_start == 0 || text_section_end == 0) {
-    auto   main        = ProcessRuntimeUtility::GetProcessModuleMap()[0];
-    addr_t main_header = (addr_t)main.load_address;
-
-    auto text_segment = mach_kit::macho_get_segment_by_name_64((struct mach_header_64 *)main_header, "__TEXT");
-    slide             = main_header - text_segment->vmaddr;
-
-    auto text_section =
-        mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
-    text_section_start = main_header + (addr_t)text_section->offset;
-    text_section_end   = text_section_start + text_section->size;
-  }
-
-  addr_t lr = getRealLr(ctx);
-  if (lr > text_section_start && lr < text_section_end)
-    return lr - slide;
-
-#define MAX_STACK_ITERATE_LEVEL 4
-  addr_t fp = ctx->fp;
-  for (int i = 0; i < MAX_STACK_ITERATE_LEVEL; i++) {
-    addr_t lr = *(addr_t *)(fp + sizeof(addr_t));
-    if (lr > text_section_start && lr < text_section_end)
-      return lr - slide;
-    fp = *(addr_t *)fp;
-  }
-  return 0;
-}
-
 static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
   addr_t caller = get_caller_from_main_binary(reg_ctx);
   if (caller == 0)

@@ -1,7 +1,5 @@
 #include "dobby_internal.h"
 
-#include "MachUtility.h"
-
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <iostream>
@@ -91,7 +89,7 @@ void monitor_libsystem_kernel_dylib() {
       if (insn_addr == __psynch_mutexwait_svc_addr)
         continue;
       DobbyInstrument((void *)insn_addr, common_handler);
-      LOG(1, "instrument svc at %p", insn_addr);
+      LOG(2, "instrument svc at %p", insn_addr);
     }
   }
 }
@@ -107,7 +105,7 @@ void monitor_main_binary() {
   for (; insn_addr < insn_addr_end; insn_addr += sizeof(arm64_instr_t)) {
     if (*(arm64_instr_t *)insn_addr == 0xd4001001) {
       DobbyInstrument((void *)insn_addr, common_handler);
-      LOG(1, "instrument svc at %p", insn_addr);
+      LOG(2, "instrument svc at %p", insn_addr);
     }
   }
 }

@@ -1,4 +1,4 @@
-#include "./dobby_hide_library.h"
+#include "Dyld2HideLibrary/dyld2_hide_library.h"
 
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
