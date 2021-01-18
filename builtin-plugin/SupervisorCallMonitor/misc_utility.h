@@ -1,5 +1,7 @@
-#ifndef MachUtility_h
-#define MachUtility_h
+#pragma once
+
+#include <stdint.h>
+typedef uintptr_t addr_t;
 
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
@@ -19,15 +21,8 @@ typedef struct nlist           nlist_t;
 #define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT
 #endif
 
-namespace mach_kit {
+// get macho segment by segment name
+segment_command_t *macho_kit_get_segment_by_name(mach_header_t *mach_header, const char *segname);
 
-struct segment_command_64 *macho_get_segment_by_name_64(struct mach_header_64 *mach_header, const char *segname);
-
-struct section_64 *macho_get_section_by_name_64(struct mach_header_64 *mach_header, const char *segname,
-                                                const char *sectname);
-
-void *macho_get_shared_cache();
-
-}; // namespace mach_kit
-
-#endif
+// get macho section by segment name and section name
+section_t *macho_kit_get_section_by_name(mach_header_t *mach_header, const char *segname, const char *sectname);

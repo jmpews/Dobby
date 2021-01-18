@@ -28,7 +28,7 @@ static struct mach_header *(*ImageLoaderMachO__machHeader)(ImageLoaderMachO *loa
 
 static std::vector<ImageLoader *> *sAllImages = NULL;
 
-std::vector<char *> *remove_image_array;
+std::vector<char *> *g_prepare_remove_array;
 
 static int dobby_hide_library_internal(const char *library_name) {
   if (removeImageFromAllImages == NULL) {
@@ -89,9 +89,9 @@ static int dobby_hide_library_internal(const char *library_name) {
 
   for (std::vector<ImageLoader *>::iterator it = sAllImages->begin(); it != sAllImages->end(); it++) {
     char *name = ImageLoader__getShortName(*it);
-    LOG(1, "load library : %s", name);
+    // LOG(2, "load library : %s", name);
     if (strcmp(name, library_name) == 0) {
-      LOG(1, "strip load library : %s", library_name);
+      LOG(2, "strip load library : %s", library_name);
       struct mach_header *header = ImageLoaderMachO__machHeader(*it);
       removeImageFromAllImages(header);
       sAllImages->erase(it);
@@ -102,21 +102,21 @@ static int dobby_hide_library_internal(const char *library_name) {
   return 0;
 }
 
-PUBLIC int DobbyHideLibrary(const char *library_name) {
+PUBLIC int dyld2_hide_library(const char *library_name) {
 #if 1
   dobby_hide_library_internal(library_name);
-  return;
+  return 0;
 #endif
 
-  if (remove_image_array == NULL)
-    remove_image_array = new std::vector<char *>();
-  remove_image_array->push_back((char *)library_name);
+  if (g_prepare_remove_array == NULL)
+    g_prepare_remove_array = new std::vector<char *>();
+  g_prepare_remove_array->push_back((char *)library_name);
 }
 
 static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  if (remove_image_array == nullptr)
+  if (g_prepare_remove_array == nullptr)
     return;
-  for (auto name : *remove_image_array) {
+  for (auto name : *g_prepare_remove_array) {
     dobby_hide_library_internal(name);
   }
 }
@@ -130,7 +130,7 @@ __attribute__((constructor)) static void ctor() {
   log_switch_to_syslog();
 
 #if defined(DOBBY_DEBUG) && 0
-  DobbyHideLibrary("Dobby");
-  DobbyHideLibrary("liblangid.dylib");
+  dyld2_hide_library("Dobby");
+  dyld2_hide_library("liblangid.dylib");
 #endif
 }

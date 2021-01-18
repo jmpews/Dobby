@@ -45,8 +45,6 @@ option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
-option(Plugin.Darwin.HideLibrary "Hide library by [DobbyHideLibrary]" OFF)
-
 option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
 
 # Use native assembly bridge to replace the runtime codegen
@@ -313,16 +311,6 @@ if(Plugin.SymbolResolver)
       builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
     )
   endif()
-endif()
-
-if(Plugin.Darwin.HideLibrary)
-  if(NOT SYSTEM.Darwin)
-    message(FATAL_ERROR "[!] Plugin.Darwin.HideLibrary only works on Darwin.")
-  endif()
-  message(STATUS "[Dobby] Enable Plugin.Darwin.HideLibrary")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/HideLibrary/hide_library_darwin.cc
-  )
 endif()
 
 if(Plugin.Darwin.ObjectiveC)

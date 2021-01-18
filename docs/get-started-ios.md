@@ -44,10 +44,6 @@ DobbyHook((void *)posix_spawn_ptr, (void *)fake_posix_spawn_ptr, (void **)&orig_
 ```
 
 
-## hide your library
-
-invoke `DobbyHideLibrary("Dobby");` will delete the image record in the `dyld::allimageinfos`
-
 ## objective-c toolkit
 
 invoke `DobbyOCReturnConstant("XXClass", "isVip", true);` will hook the objective-c instance/class method, and return the constant 1 automatically.
