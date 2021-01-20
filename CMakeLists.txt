@@ -380,18 +380,21 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
   endif()
 endif()
 set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
-message(STATUS "Version: ${DOBBY_BUILD_VERSION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
+message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
 # upper framework output name
 set(dobby_output_name dobby)
 if(SYSTEM.Darwin AND GenerateDarwinFramework)
+  message(STATUS "[Dobby] Generate darwin framework")
   set(dobby_output_name Dobby)
 endif()
 
 if(DOBBY_GENERATE_SHARED)
+  message(STATUS "[Dobby] Generate shared library")
   add_library(${dobby_output_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 else()
+  message(STATUS "[Dobby] Generate static library")
   add_library(${dobby_output_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 endif()
 
