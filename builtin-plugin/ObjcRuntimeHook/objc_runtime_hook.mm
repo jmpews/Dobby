@@ -54,7 +54,7 @@ void *DobbyObjcResolveMethodImp(const char *class_name, const char *selector_nam
 
   if (!method_) {
     DLOG(1, "Not found class: %s, selector: %s method\n", class_name, selector_name);
-    return;
+    return NULL;
   }
   return (void *)method_getImplementation(method_);
 }

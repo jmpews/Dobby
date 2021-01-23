@@ -45,8 +45,6 @@ option(Plugin.ApplicationEventMonitor "Auto monitor linker, file, etc." OFF)
 
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
-option(Plugin.Darwin.ObjectiveC "Auto hook oc method library by [DobbyOCReturnConstant]" OFF)
-
 # Use native assembly bridge to replace the runtime codegen
 # if(CLOSURE_BRIDGE_TEMPLATE)
 #   SET(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
@@ -315,17 +313,6 @@ if(Plugin.SymbolResolver)
   endif()
 endif()
 
-if(Plugin.Darwin.ObjectiveC)
-  if(NOT SYSTEM.Darwin)
-    message(FATAL_ERROR "[!] Plugin.Darwin.ObjectiveC only works on Darwin.")
-  endif()
-  message(STATUS "[Dobby] Enable Plugin.Darwin.ObjectiveC")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    external/helpers/variable_cache.c
-    builtin-plugin/ObjectiveC/objective_c_tookit.mm
-  )
-endif()
-
 if(Plugin.Android.BionicLinkerRestriction)
   if(NOT SYSTEM.Android)
     message(FATAL_ERROR "[!] Plugin.Android.BionicLinkerRestriction only works on Android.")
@@ -360,9 +347,6 @@ include_directories(
   ./external/xnucxx
 
   builtin-plugin
-  builtin-plugin/AndroidRestriction
-  builtin-plugin/SymbolResolver
-  builtin-plugin/ObjectiveC
 )
 
 # add build version
@@ -434,7 +418,7 @@ if(SYSTEM.Darwin)
     "-framework Foundation")
 endif()
 
-if(SYSTEM.iOS)
+if(SYSTEM.Darwin)
   add_subdirectory(builtin-plugin/Dyld2HideLibrary)
   add_subdirectory(builtin-plugin/SupervisorCallMonitor)
   add_subdirectory(builtin-plugin/ObjcRuntimeHook)

@@ -30,9 +30,6 @@ macro(SET_OPTION option value)
 endmacro()
 SET_OPTION(DOBBY_DEBUG ON)
 SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-SET_OPTION(DynamicBinaryInstrument ON)
-SET_OPTION(NearBranch ON)
-SET_OPTION(Plugin.SymbolResolver ON)
 add_subdirectory(${DobbyHome} dobby)
 ```
 
