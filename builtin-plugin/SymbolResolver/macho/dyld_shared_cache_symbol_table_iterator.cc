@@ -158,7 +158,7 @@ int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_
     if (ctx->local_symbols_entries[i].dylibOffset == textOffsetInCache) {
       uint32_t localNlistStart = ctx->local_symbols_entries[i].nlistStartIndex;
       localNlistCount          = ctx->local_symbols_entries[i].nlistCount;
-      localNlists              = &localNlists[localNlistStart];
+      localNlists              = &ctx->symtab[localNlistStart];
 
 #if 0
       static struct dyld_cache_image_info *imageInfos = NULL;
@@ -170,6 +170,6 @@ int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_
   }
   *out_symtab = localNlists;
   *out_symtab_count = (uint32_t)localNlistCount;
-  *out_strtab = (char *)localStrings;
+  *out_strtab = (char *)ctx->strtab;
   return 0;
 }

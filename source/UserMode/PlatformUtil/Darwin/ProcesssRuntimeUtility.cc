@@ -102,8 +102,11 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   }
 
   struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *)task_dyld_info.all_image_info_addr;
-  for (int i = 0; i < infos->infoArrayCount; ++i) {
-    const struct dyld_image_info *info = &infos->infoArray[i];
+    const struct dyld_image_info *infoArray = infos->infoArray;
+  uint32_t infoArrayCount = infos->infoArrayCount;
+  
+  for (int i = 0; i < infoArrayCount; ++i) {
+    const struct dyld_image_info *info = &infoArray[i];
 
     RuntimeModule module = {0};
     {
