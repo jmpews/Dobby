@@ -5,7 +5,7 @@ TabWidth: 2
 UseTab: Never
 ColumnLimit: 120
 
-#default is false
+# default is false
 AlignConsecutiveMacros: true
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true

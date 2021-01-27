@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>
 
-#include <pthread.h> // pthread_once
+#include <pthread.h>  // pthread_once
 #include <sys/mman.h> // mmap
-#include <fcntl.h> // open
+#include <fcntl.h>    // open
 
 #include "SymbolResolver/macho/shared_cache_internal.h"
 #include "SymbolResolver/macho/shared-cache/dyld_cache_format.h"
@@ -26,39 +27,97 @@ static pthread_once_t mmap_dyld_shared_cache_once = PTHREAD_ONCE_INIT;
 
 extern "C" int __shared_region_check_np(uint64_t *startaddress);
 
+#include <sys/stat.h>
 
+static char *fast_get_shared_cache_path() {
+  char *result            = NULL;
+  char  path_buffer[2048] = {0};
 
+  const char *path = NULL;
+  do {
+    path = dyld_shared_cache_file_path();
+    if (path != NULL) {
+      break;
+    } else {
+      struct stat statbuf;
+      int         r = 0;
+
+      path = IPHONE_DYLD_SHARED_CACHE_DIR DYLD_SHARED_CACHE_BASE_NAME "arm64";
+      r    = stat(path, &statbuf);
+      if (r == 0) {
+        break;
+      }
+      path = IPHONE_DYLD_SHARED_CACHE_DIR DYLD_SHARED_CACHE_BASE_NAME "arm64e";
+      r    = stat(path, &statbuf);
+      if (r == 0) {
+        break;
+      }
+      path = MACOSX_MRM_DYLD_SHARED_CACHE_DIR DYLD_SHARED_CACHE_BASE_NAME "arm64";
+      r    = stat(path, &statbuf);
+      if (r == 0) {
+        break;
+      }
+      path = MACOSX_MRM_DYLD_SHARED_CACHE_DIR DYLD_SHARED_CACHE_BASE_NAME "arm64e";
+      r    = stat(path, &statbuf);
+      if (r == 0) {
+        break;
+      }
+    }
+  } while (0);
+
+  if (path != NULL) {
+    strcpy(path_buffer, path);
+    result = (char *)malloc(strlen(path_buffer) + 1);
+    strcpy(result, path_buffer);
+  }
+
+  return result;
+}
+
+#include <mach/mach.h>
+#include <mach/task.h>
+#include <mach-o/dyld_images.h>
 struct dyld_cache_header *shared_cache_get_load_addr() {
   static struct dyld_cache_header *shared_cache_load_addr = 0;
+
+  // task info
+  task_dyld_info_data_t  task_dyld_info;
+  mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+  if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
+    return NULL;
+  }
+
+  // get dyld load address
+  const struct dyld_all_image_infos *infos =
+      (struct dyld_all_image_infos *)(uintptr_t)task_dyld_info.all_image_info_addr;
+  shared_cache_load_addr = (struct dyld_cache_header *)infos->sharedCacheBaseAddress;
+
+  return shared_cache_load_addr;
+
+#if 0
   if (shared_cache_load_addr)
     return shared_cache_load_addr;
 #if 0
   if (syscall(294, &shared_cache_load_addr) == 0) {
 #else
-// FIXME:
   if (__shared_region_check_np((uint64_t *)&shared_cache_load_addr) != 0) {
 #endif
-    shared_cache_load_addr = 0;
-  }
-return shared_cache_load_addr;
+  shared_cache_load_addr = 0;
+}
+#endif
+  return shared_cache_load_addr;
 }
 
 int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   int         fd;
-  const char *cache_file_path = dyld_shared_cache_file_path();
+  const char *cache_file_path = NULL;
+
+  cache_file_path = fast_get_shared_cache_path();
   if (cache_file_path == NULL) {
-    char cache_file_path[1024] = {0};
-    snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
-             DYLD_SHARED_CACHE_BASE_NAME, "arm64");
-    int fd = open(cache_file_path, O_RDONLY, 0);
-    if (fd == -1) {
-      snprintf(cache_file_path, sizeof(cache_file_path), "%s/%s%s", IPHONE_DYLD_SHARED_CACHE_DIR,
-               DYLD_SHARED_CACHE_BASE_NAME, "arm64e");
-      fd = open(cache_file_path, O_RDONLY, 0);
-    }
-  } else {
-    fd = open(cache_file_path, O_RDONLY, 0);
+    return -1;
   }
+
+  fd = open(cache_file_path, O_RDONLY, 0);
 
   if (fd == -1) {
     return KERN_FAILURE;
@@ -68,7 +127,10 @@ int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   struct dyld_cache_header *mmap_shared_cache;
 
   // auto align
-  runtime_shared_cache =  shared_cache_get_load_addr();
+  runtime_shared_cache = shared_cache_get_load_addr();
+  if(runtime_shared_cache == NULL) {
+    return KERN_FAILURE;
+  }
 
   // maybe shared cache is apple silicon
   if (runtime_shared_cache->localSymbolsSize == 0) {
@@ -76,10 +138,9 @@ int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   }
 
   size_t mmap_length = runtime_shared_cache->localSymbolsSize;
-  off_t mmap_offset = runtime_shared_cache->localSymbolsOffset;
+  off_t  mmap_offset = runtime_shared_cache->localSymbolsOffset;
   mmap_shared_cache =
-      (struct dyld_cache_header *)mmap(0, mmap_length , PROT_READ, MAP_FILE | MAP_PRIVATE,
-                                       fd, mmap_offset);
+      (struct dyld_cache_header *)mmap(0, mmap_length, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_offset);
   if (mmap_shared_cache == MAP_FAILED) {
     ERROR_LOG("mmap shared cache failed");
     return KERN_FAILURE;
@@ -90,33 +151,34 @@ int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
       (struct dyld_cache_header *)((addr_t)mmap_shared_cache - runtime_shared_cache->localSymbolsOffset);
 
   ctx->runtime_shared_cache = runtime_shared_cache;
-  ctx->mmap_shared_cache        = mmap_shared_cache;
+  ctx->mmap_shared_cache    = mmap_shared_cache;
 
   // shared cache slide
   const struct dyld_cache_mapping_info *mappings =
       (struct dyld_cache_mapping_info *)((char *)runtime_shared_cache + runtime_shared_cache->mappingOffset);
-  uintptr_t slide       = (uintptr_t)runtime_shared_cache - (uintptr_t)(mappings[0].address);
+  uintptr_t slide    = (uintptr_t)runtime_shared_cache - (uintptr_t)(mappings[0].address);
   ctx->runtime_slide = slide;
 
   // shared cache symbol table
   static struct dyld_cache_local_symbols_info *localInfo = NULL;
-  localInfo = (struct dyld_cache_local_symbols_info *)((char *)mmap_shared_cache + runtime_shared_cache->localSymbolsOffset);
+  localInfo =
+      (struct dyld_cache_local_symbols_info *)((char *)mmap_shared_cache + runtime_shared_cache->localSymbolsOffset);
 
   static struct dyld_cache_local_symbols_entry *localEntries = NULL;
   localEntries = (struct dyld_cache_local_symbols_entry *)((char *)localInfo + localInfo->entriesOffset);
 
-  ctx->local_symbols_info = localInfo;
+  ctx->local_symbols_info    = localInfo;
   ctx->local_symbols_entries = localEntries;
 
-  ctx->symtab                 = (nlist_t *)((char *)localInfo + localInfo->nlistOffset);
-  ctx->strtab                = ((char *)localInfo) + localInfo->stringsOffset;
+  ctx->symtab = (nlist_t *)((char *)localInfo + localInfo->nlistOffset);
+  ctx->strtab = ((char *)localInfo) + localInfo->stringsOffset;
   return 0;
 }
 
 // refer: dyld
 bool shared_cache_is_contain(shared_cache_ctx_t *ctx, addr_t addr, size_t length) {
   struct dyld_cache_header *runtime_shared_cache;
-  if(ctx) {
+  if (ctx) {
     runtime_shared_cache = ctx->runtime_shared_cache;
   } else {
     runtime_shared_cache = shared_cache_get_load_addr();
@@ -142,8 +204,9 @@ bool shared_cache_is_contain(shared_cache_ctx_t *ctx, addr_t addr, size_t length
   return false;
 }
 
-int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_header, nlist_t **out_symtab, uint32_t *out_symtab_count,char **out_strtab) {
-  struct dyld_cache_header *runtime_shared_cache =  NULL;
+int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_header, nlist_t **out_symtab,
+                                  uint32_t *out_symtab_count, char **out_strtab) {
+  struct dyld_cache_header *runtime_shared_cache = NULL;
 
   runtime_shared_cache = ctx->runtime_shared_cache;
 
@@ -168,8 +231,8 @@ int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_
 #endif
     }
   }
-  *out_symtab = localNlists;
+  *out_symtab       = localNlists;
   *out_symtab_count = (uint32_t)localNlistCount;
-  *out_strtab = (char *)ctx->strtab;
+  *out_strtab       = (char *)ctx->strtab;
   return 0;
 }
