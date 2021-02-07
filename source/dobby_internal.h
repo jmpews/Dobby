@@ -31,20 +31,25 @@ typedef struct _AssemblyCodeChunkBuffer {
   uint8_t           chunk_buffer[64];
 } AssemblyCodeChunkBuffer;
 
-typedef struct _HookEntry {
+typedef enum {
+  kFunctionWrapper,
+  kFunctionInlineHook,
+  kDynamicBinaryInstrument
+} HookEntryType;
+
+typedef struct {
+  int id;
+  int type;
+
   union {
     void *target_address;
     void *function_address;
     void *instruction_address;
   };
 
-  unsigned int id;
-
-  HookEntryType type;
-
   void *route;
 
-  // fixed-instructions which we relocated(patched).
+  // fixed-instructions which we relocated(patched)
   union {
     void *relocated_origin_instructions;
     void *relocated_origin_function;

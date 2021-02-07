@@ -8,34 +8,25 @@ using namespace zz;
 void InterceptRouting::Prepare() {
 }
 
+// Generate relocated code
 void InterceptRouting::GenerateRelocatedCode() {
+  // generate original code
+  AssemblyCodeChunk *origin         = NULL;
+  int                trampoline_len = trampoline_buffer_->getSize();
+  origin  = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
+  origin_ = origin;
+
+  // generate the relocated code
+  AssemblyCodeChunk *relocated = NULL;
+  relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
+  relocated_                   = relocated;
+
   void *relocate_buffer = NULL;
   relocate_buffer       = entry_->target_address;
 
-  AssemblyCodeChunk *origin = NULL;
-#if 0
-  {
-    int predefined_relocate_size = 0;
-    predefined_relocate_size     = this->PredefinedTrampolineSize();
-    // if near branch trampoline plugin enabled
-    if (ExtraInternalPlugin::near_branch_trampoline) {
-      RoutingPlugin *plugin    = NULL;
-      plugin                   = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
-      predefined_relocate_size = plugin->PredefinedTrampolineSize();
-    }
-  }
-#endif
-  // generate the relocated code
-  int trampoline_len = trampoline_buffer_->getSize();
-  origin             = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
-  origin_            = origin;
-
-  AssemblyCodeChunk *relocated = NULL;
-  relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
   GenRelocateCodeAndBranch(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
     return;
-  relocated_ = relocated;
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
@@ -48,35 +39,37 @@ void InterceptRouting::GenerateRelocatedCode() {
   entry_->origin_chunk_.chunk.re_init_region_range(origin_);
 }
 
+/*
+X86_64 (14 bytes)
+  [jmp rip]
+  [branch_address]
+
+ARM64 - 16 bytes
+  [ldr literal]
+  [br]
+  [branch_address]
+
+ARM64 - 12 bytes
+  [adrp]
+  [add]
+  [br]
+
+ARM - 8 bytes:
+  [ldr pc literal]
+  [data_address]
+*/
+
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
 // Patch the address with branch instr
-// X86_64(14 bytes): [jmp rip] [data_address]
-// ARM64(16 bytes): [ldr] [br] [data_address]
-// ARM64(12 bytes): [adrp ] [add] [br]
-// ARM(8 bytes): [ldr pc, 4] [data_address]
 void InterceptRouting::Active() {
   void *patch_address = NULL;
-  patch_address       = (void *)this->origin_->raw_instruction_start();
+  patch_address       = (void *)origin_->raw_instruction_start();
 
   CodePatch(patch_address, (uint8_t *)trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
   DLOG(1, "[intercept routing] Active patch %p", patch_address);
 }
 
 void InterceptRouting::Commit() {
-#if 0
-  bool handle_by_plugin = false;
-  if (ExtraInternalPlugin::plugins) {
-    RoutingPlugin *plugin        = NULL;
-    LiteCollectionIterator *iter = LiteCollectionIterator::withCollection(ExtraInternalPlugin::plugins);
-    while ((plugin = reinterpret_cast<RoutingPlugin *>(iter->getNextObject())) != NULL) {
-      DLOG(0, "Run plugin %s", "Unknown");
-      if (plugin->Active(this))
-        handle_by_plugin = true;
-    }
-    delete iter;
-  }
-#endif
-
   this->Active();
 }
 
@@ -91,7 +84,7 @@ int InterceptRouting::PredefinedTrampolineSize() {
 #endif
 
 void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
-  CodeBufferBase *trampoline_buffer;
+  CodeBufferBase *trampoline_buffer = NULL;
   // if near branch trampoline plugin enabled
   if (ExtraInternalPlugin::near_branch_trampoline) {
     RoutingPlugin *plugin = NULL;
@@ -103,9 +96,9 @@ void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
 
   if (this->GetTrampolineBuffer() == NULL) {
     trampoline_buffer = GenerateNormalTrampolineBuffer((addr_t)src, (addr_t)dst);
-    DLOG(1, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
-
     this->SetTrampolineBuffer(trampoline_buffer);
+
+    DLOG(1, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
   }
 }
 

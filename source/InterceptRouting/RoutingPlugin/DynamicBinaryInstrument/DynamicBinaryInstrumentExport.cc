@@ -11,10 +11,8 @@ PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
 
   DLOG(1, "[DobbyInstrument] Initialize at %p", instr_address);
 
-  Interceptor *interceptor = Interceptor::SharedInstance();
-
   // check if we already instruemnt
-  HookEntry *entry = interceptor->FindHookEntry(instr_address);
+  HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(instr_address);
   if (entry) {
     DynamicBinaryInstrumentRouting *route = (DynamicBinaryInstrumentRouting *)entry->route;
     if (route->handler == handler) {
@@ -24,14 +22,14 @@ PUBLIC int DobbyInstrument(void *instr_address, DBICallTy handler) {
   }
 
   entry                      = new HookEntry();
-  entry->id                  = interceptor->entries->getCount();
+  entry->id                  = Interceptor::SharedInstance()->GetHookEntryCount();
   entry->type                = kDynamicBinaryInstrument;
   entry->instruction_address = instr_address;
 
   DLOG(1, "================ DynamicBinaryInstrumentRouting Start ================");
   DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry, (void *)handler);
   route->Dispatch();
-  interceptor->AddHookEntry(entry);
+  Interceptor::SharedInstance()->AddHookEntry(entry);
   route->Commit();
   DLOG(1, "================ DynamicBinaryInstrumentRouting End ================");
 

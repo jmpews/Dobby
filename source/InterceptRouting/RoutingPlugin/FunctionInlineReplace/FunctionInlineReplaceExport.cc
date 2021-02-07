@@ -9,13 +9,12 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
     ERROR_LOG("function address is 0x0");
     return RS_FAILED;
   }
-
   DLOG(1, "[DobbyHook] Initialize at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
-  // check if we already hook
-  HookEntry *entry = interceptor->FindHookEntry(function_address);
+  // check if already hooked
+  HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(function_address);
   if (entry) {
     FunctionInlineReplaceRouting *route = (FunctionInlineReplaceRouting *)entry->route;
     if (route->GetTrampolineTarget() == replace_call) {
@@ -25,7 +24,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
   }
 
   entry                   = new HookEntry();
-  entry->id               = interceptor->entries->getCount();
+  entry->id               = Interceptor::SharedInstance()->GetHookEntryCount();
   entry->type             = kFunctionInlineHook;
   entry->function_address = function_address;
 
@@ -34,7 +33,6 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
   route->Dispatch();
   interceptor->AddHookEntry(entry);
 
-  // SET BEFORE `route->Commit()` !!!
   // set origin call with relocated function
   *origin_call = entry->relocated_origin_function;
 

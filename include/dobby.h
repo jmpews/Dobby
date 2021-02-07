@@ -129,15 +129,8 @@ typedef struct _RegisterContext {
 #define RT_SUCCESS 0
 typedef enum _RetStatus { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 
-typedef enum _PackageType {
-  kFunctionWrapper,
-  kFunctionInlineHook,
-  kDynamicBinaryInstrument
-} PackageType,
-    HookEntryType;
-
 typedef struct _HookEntryInfo {
-  uintptr_t hook_id;
+  int hook_id;
   union {
     void *target_address;
     void *function_address;
