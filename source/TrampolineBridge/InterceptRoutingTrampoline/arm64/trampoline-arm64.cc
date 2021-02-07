@@ -87,7 +87,7 @@ static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, a
     }
   }
 
-  turbo_assembler_.CommitRealizeAddress(cchunk->address);
+  turbo_assembler_.SetRealizedAddress(cchunk->address);
 
   AssemblyCodeChunk *result = NULL;
   result                    = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);

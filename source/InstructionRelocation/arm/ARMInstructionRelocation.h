@@ -170,8 +170,8 @@ private:
 #if 0
     // literal ldr, base = ALIGN(pc, 4)
     if (rt.Is(pc)) {
-      // TODO: convert to `RealizeAddress()` ???
-      addr_t curr_pc = pc_offset() + (addr_t)RealizeAddress();
+      // TODO: convert to `GetRealizedAddress()` ???
+      addr_t curr_pc = pc_offset() + (addr_t)GetRealizedAddress();
       if (curr_pc % 4) {
         t1_nop();
       }
@@ -299,7 +299,7 @@ public:
   }
 
   void AlignThumbNop() {
-    addr32_t pc = this->GetCodeBuffer()->getSize() + (addr32_t)RealizeAddress();
+    addr32_t pc = this->GetCodeBuffer()->getSize() + (addr32_t)GetRealizedAddress();
     if (pc % Thumb2_INST_LEN) {
       t1_nop();
     } else {

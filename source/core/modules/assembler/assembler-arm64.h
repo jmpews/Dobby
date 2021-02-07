@@ -373,9 +373,9 @@ public:
   }
 
 public:
-  void CommitRealizeAddress(void *address) {
+  void SetRealizedAddress(void *address) {
     DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
-    AssemblerBase::CommitRealizeAddress(address);
+    AssemblerBase::SetRealizedAddress(address);
   }
 
   void Emit(int32_t value);

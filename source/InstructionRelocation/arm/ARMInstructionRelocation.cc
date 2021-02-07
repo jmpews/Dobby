@@ -711,7 +711,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG(0, "[reloc label fixup warning] found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t)thumb_turbo_assembler->RealizeAddress();
+        fixup_val += (addr_t)thumb_turbo_assembler->GetRealizedAddress();
         label->fixup_data(fixup_val);
         thumb_turbo_assembler->RelocBindFixup(label);
       }
@@ -727,7 +727,7 @@ static void reloc_label_fixup(AssemblyCodeChunk *origin, LiteMutableArray *relo_
       if (val >= origin_instr_start && val < origin_instr_end) {
         DLOG(0, "[reloc label fixup warning]found thumb instr branch / access in origin code range");
         addr32_t fixup_val = get_orig_instr_relocated_addr(relo_map, val);
-        fixup_val += (addr_t)arm_turbo_assembler->RealizeAddress();
+        fixup_val += (addr_t)arm_turbo_assembler->GetRealizedAddress();
         label->fixup_data(fixup_val);
         arm_turbo_assembler->RelocBindFixup(label);
       }
@@ -839,8 +839,8 @@ relocate_remain:
     if (cchunk == nullptr)
       return;
 
-    thumb_turbo_assembler_.CommitRealizeAddress(cchunk->address);
-    arm_turbo_assembler_.CommitRealizeAddress(cchunk->address);
+    thumb_turbo_assembler_.SetRealizedAddress(cchunk->address);
+    arm_turbo_assembler_.SetRealizedAddress(cchunk->address);
 
     // fixup the instr branch into trampoline(has been modified)
     reloc_label_fixup(origin, &relo_map, &thumb_turbo_assembler_, &arm_turbo_assembler_);

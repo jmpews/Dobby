@@ -68,9 +68,9 @@ public:
 
   // === Realized Address ===
 
-  virtual void *RealizeAddress();
+  virtual void *GetRealizedAddress();
 
-  virtual void CommitRealizeAddress(void *address);
+  virtual void SetRealizedAddress(void *address);
 
   // === CPU Cache ===
 

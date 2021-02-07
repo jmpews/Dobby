@@ -11,14 +11,16 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromAddress(addr_t address, int 
 }
 
 AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
-  CodeBufferBase *codeBuffer = reinterpret_cast<CodeBufferBase *>(assembler->GetCodeBuffer());
+  AssemblyCodeChunk *result = NULL;
 
-  void *address = assembler->RealizeAddress();
-  if (!address) {
+  CodeBufferBase *code_buffer =NULL;
+  code_buffer = (CodeBufferBase *)assembler->GetCodeBuffer();
 
+  void *realized_address = assembler->GetRealizedAddress();
+  if (realized_address == NULL) {
     int buffer_size = 0;
     {
-      buffer_size = codeBuffer->getSize();
+      buffer_size = code_buffer->getSize();
 #if TARGET_ARCH_ARM64 || TARGET_ARCH_ARM
       // FIXME: need it ? actually ???
       // extra bytes for align needed
@@ -27,23 +29,19 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase
     }
 
     // assembler without specific memory address
-    AssemblyCodeChunk *cchunk;
-    cchunk = MemoryArena::AllocateCodeChunk(buffer_size);
-    if (cchunk == nullptr)
-      return nullptr;
+    result = MemoryArena::AllocateCodeChunk(buffer_size);
+    if (result == NULL)
+      return NULL;
 
-    address = cchunk->address;
-    assembler->CommitRealizeAddress(cchunk->address);
-    delete cchunk;
+    realized_address = (void *)result->raw_instruction_start();
+    assembler->SetRealizedAddress(realized_address);
+  } else {
+    result                    = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)realized_address, code_buffer->getSize());
   }
 
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
   // instructions
-  CodePatch(address, (uint8_t *)codeBuffer->getRawBuffer(), codeBuffer->getSize());
-
-  AssemblyCodeChunk *result = NULL;
-  result                    = FinalizeFromAddress((addr_t)address, codeBuffer->getSize());
-  DLOG(0, "[assembler] Finalize assembler at %p", (void *)address);
+  CodePatch(realized_address, (uint8_t *)code_buffer->getRawBuffer(), code_buffer->getSize());
 
   return result;
 }

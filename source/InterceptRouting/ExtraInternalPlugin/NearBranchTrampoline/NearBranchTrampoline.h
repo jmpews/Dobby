@@ -15,7 +15,6 @@ class NearBranchTrampolinePlugin : public RoutingPlugin {
 
   bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst);
 
-  int PredefinedTrampolineSize();
 };
 
 #endif

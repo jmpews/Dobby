@@ -18,7 +18,7 @@ using namespace zz::x86;
 static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
-  turbo_assembler_.CommitRealizeAddress((void *)relocated->raw_instruction_start());
+  turbo_assembler_.SetRealizedAddress((void *)relocated->raw_instruction_start());
 #define _  turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 

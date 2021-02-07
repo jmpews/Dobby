@@ -64,11 +64,11 @@ CodeBuffer *AssemblerBase::GetCodeBuffer() {
   return buffer_;
 }
 
-void AssemblerBase::CommitRealizeAddress(void *address) {
+void AssemblerBase::SetRealizedAddress(void *address) {
   realized_address_ = address;
 }
 
-void *AssemblerBase::RealizeAddress() {
+void *AssemblerBase::GetRealizedAddress() {
   return realized_address_;
 }
 
