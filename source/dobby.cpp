@@ -19,10 +19,8 @@ PUBLIC const char *DobbyBuildVersion() {
 }
 
 PUBLIC int DobbyDestroy(void *address) {
-  Interceptor *interceptor = Interceptor::SharedInstance();
-
   // check if we already hook
-  HookEntry *entry = interceptor->FindHookEntry(address);
+  HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);
   if (entry) {
     uint8_t *buffer      = entry->origin_chunk_.chunk_buffer;
     uint32_t buffer_size = entry->origin_chunk_.chunk.length;
@@ -30,6 +28,7 @@ PUBLIC int DobbyDestroy(void *address) {
     address = (void *)((addr_t)address - 1);
 #endif
     CodePatch(address, buffer, buffer_size);
+    Interceptor::SharedInstance()->RemoveHookEntry(address);
     return RT_SUCCESS;
   }
 
