@@ -30,6 +30,9 @@ extern "C" int __shared_region_check_np(uint64_t *startaddress);
 #include <sys/stat.h>
 
 static char *fast_get_shared_cache_path() {
+#if defined(_M_IX86) || defined(__i386__) || defined(_M_X64) || defined(__x86_64__)
+  return NULL;
+#endif
   char *result            = NULL;
   char  path_buffer[2048] = {0};
 
@@ -118,7 +121,6 @@ int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   }
 
   fd = open(cache_file_path, O_RDONLY, 0);
-
   if (fd == -1) {
     return KERN_FAILURE;
   }

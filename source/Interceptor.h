@@ -74,7 +74,7 @@ private:
   HookEntryListNode *FindHookEntryNode(void *address);
 
 private:
-  struct list_head *hook_entry_list_;
+  struct list_head hook_entry_list_;
 
   static Interceptor *priv_interceptor_;
 };

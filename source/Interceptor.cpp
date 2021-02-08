@@ -4,9 +4,10 @@
 
 Interceptor *      Interceptor::priv_interceptor_ = nullptr;
 
-Interceptor *Interceptor::SharedInstance() {
+Interceptor *Interceptor::SharedInstance() { 
   if (Interceptor::priv_interceptor_ == NULL) {
     Interceptor::priv_interceptor_          = new Interceptor();
+    INIT_LIST_HEAD(&Interceptor::priv_interceptor_->hook_entry_list_);
   }
   return Interceptor::priv_interceptor_;
 }
@@ -15,7 +16,7 @@ HookEntryListNode *Interceptor::FindHookEntryNode(void *address) {
   HookEntry *entry = NULL;
 
   struct list_head *node  = NULL;
-  for (node = hook_entry_list_->next;  node != hook_entry_list_; node = node->next) {
+  for (node = hook_entry_list_.next;  node != &hook_entry_list_; node = node->next) {
     if(((HookEntryListNode *)node)->info.target_address == address) {
       return (HookEntryListNode *)node;
     }
@@ -38,7 +39,7 @@ HookEntry *Interceptor::FindHookEntry(void *address) {
 void Interceptor::AddHookEntry(HookEntry *entry) {
   HookEntryListNode *node = new HookEntryListNode ;
   node->info = *entry;
-  list_add(hook_entry_list_, (struct list_head *)node);
+  list_add((struct list_head *)node, &hook_entry_list_);
 }
 
 void Interceptor::RemoveHookEntry(void *address) {
@@ -52,8 +53,8 @@ void Interceptor::RemoveHookEntry(void *address) {
 int Interceptor::GetHookEntryCount() {
   int count = 0;
 
-  struct list_head *node  = hook_entry_list_;
-  while((node = hook_entry_list_->next)) {
+  struct list_head *node  = &hook_entry_list_;
+  while((node = node->next) != &hook_entry_list_) {
     count += 1;
   }
   return count;

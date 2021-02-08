@@ -374,8 +374,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
 #if defined(__arm__) || defined(__aarch64__)
     static shared_cache_ctx_t shared_cache_ctx;
-    memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
     if (shared_cache_ctx.mmap_shared_cache == NULL) {
+      memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
       shared_cache_ctx_init(&shared_cache_ctx);
     }
     if(shared_cache_ctx.runtime_shared_cache) {
