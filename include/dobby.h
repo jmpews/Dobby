@@ -141,8 +141,8 @@ typedef struct _HookEntryInfo {
 // DobbyWrap <==> DobbyInstrument, so use DobbyInstrument instead of DobbyWrap
 #if 0
 // wrap function with pre_call and post_call
-typedef void (*PreCallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-typedef void (*PostCallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
+typedef void (*PreCallTy)(RegisterContext *ctx, const HookEntryInfo *info);
+typedef void (*PostCallTy)(RegisterContext *ctx, const HookEntryInfo *info);
 int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 #endif
 
@@ -150,13 +150,13 @@ int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 const char *DobbyBuildVersion();
 
 // replace function
-int DobbyHook(void *function_address, void *replace_call, void **origin_call);
+int DobbyHook(void *address, void *replace_call, void **origin_call);
 
 // dynamic binary instrument for instruction
 // [!!! READ ME !!!]
 // for Arm64, can't access q8 - q31, unless you enable full floating-point register pack
-typedef void (*DBICallTy)(RegisterContext *reg_ctx, const HookEntryInfo *info);
-int DobbyInstrument(void *instr_address, DBICallTy dbi_call);
+typedef void (*DBICallTy)(RegisterContext *ctx, const HookEntryInfo *info);
+int DobbyInstrument(void *address, DBICallTy dbi_call);
 
 // destory and restore hook
 int DobbyDestroy(void *address);

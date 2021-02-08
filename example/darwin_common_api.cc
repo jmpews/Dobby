@@ -13,7 +13,7 @@
 
 std::map<void *, const char *> *func_map;
 
-void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   auto iter = func_map->find(info->function_address);
   if (iter != func_map->end()) {
     LOG(1, "func %s:%p invoke", iter->second, iter->first);
@@ -66,8 +66,7 @@ __attribute__((constructor)) static void ctor() {
     DobbyInstrument(func, common_handler);
   }
 
-  DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create,
-                                (void **)&orig_pthread_create);
+  DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 
   pthread_t socket_server;
   uint64_t  socket_demo_server(void *ctx);
@@ -103,7 +102,7 @@ uint64_t socket_demo_server(void *ctx) {
     perror("setsockopt");
     exit(EXIT_FAILURE);
   }
-  
+
   address.sin_family      = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port        = htons(PORT);

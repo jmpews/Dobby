@@ -15,18 +15,18 @@
 
 #include "external_helper/async_logger.h"
 
-static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
+static addr_t getCallFirstArg(RegisterContext *ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
-  result = reg_ctx->general.regs.rcx;
+  result = ctx->general.regs.rcx;
 #else
-  result = reg_ctx->general.regs.rdi;
+  result = ctx->general.regs.rdi;
 #endif
 #elif defined(__arm64__) || defined(__aarch64__)
-  result = reg_ctx->general.regs.x0;
+  result = ctx->general.regs.x0;
 #elif defined(__arm__)
-  result = reg_ctx->general.regs.r0;
+  result = ctx->general.regs.r0;
 #else
 #error "Not Support Architecture."
 #endif
@@ -39,15 +39,15 @@ extern const char *mach_syscall_num_to_str(int num);
 
 extern char *mach_msg_to_str(mach_msg_header_t *msg);
 
-static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   char buffer[256] = {0};
-  int  syscall_rum = reg_ctx->general.regs.x16;
+  int  syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == 0) {
-    syscall_rum = (int)getCallFirstArg(reg_ctx);
+    syscall_rum = (int)getCallFirstArg(ctx);
     sprintf(buffer, "[syscall svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
   } else if (syscall_rum == -31) {
     // mach_msg_trap
-    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(reg_ctx);
+    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
     char *             mach_msg_name = mach_msg_to_str(msg);
     if (mach_msg_name) {
       sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);

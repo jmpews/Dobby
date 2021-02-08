@@ -5,27 +5,27 @@
 
 #define LOG_TAG "MGCopyAnswer"
 
-static uintptr_t getCallFirstArg(RegisterContext *reg_ctx) {
+static uintptr_t getCallFirstArg(RegisterContext *ctx) {
   uintptr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
-  result = reg_ctx->general.regs.rcx;
+  result = ctx->general.regs.rcx;
 #else
-  result = reg_ctx->general.regs.rdi;
+  result = ctx->general.regs.rdi;
 #endif
 #elif defined(__arm64__) || defined(__aarch64__)
-  result = reg_ctx->general.regs.x0;
+  result = ctx->general.regs.x0;
 #elif defined(__arm__)
-  result = reg_ctx->general.regs.r0;
+  result = ctx->general.regs.r0;
 #else
 #error "Not Support Architecture."
 #endif
   return result;
 }
 
-void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   CFStringRef key_ = 0;
-  key_             = (CFStringRef)getCallFirstArg(reg_ctx);
+  key_             = (CFStringRef)getCallFirstArg(ctx);
 
   char str_key[256] = {0};
   CFStringGetCString(key_, str_key, 256, kCFStringEncodingUTF8);

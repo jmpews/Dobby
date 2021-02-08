@@ -9,15 +9,15 @@
 
 #define PT_DENY_ATTACH 31
 
-static void sensitive_api_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+static void sensitive_api_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   char buffer[256] = {0};
-  int  syscall_rum = reg_ctx->general.regs.x16;
+  int  syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == 0) {
-    syscall_rum = (int)reg_ctx->general.x[0];
+    syscall_rum = (int)ctx->general.x[0];
     if (syscall_rum == SYS_ptrace) {
-      int request = reg_ctx->general.x[1];
+      int request = ctx->general.x[1];
       if (request == PT_DENY_ATTACH) {
-        reg_ctx->general.x[1] = 0;
+        ctx->general.x[1] = 0;
         // LOG(2, "syscall svc ptrace deny");
       }
     }
@@ -26,9 +26,9 @@ static void sensitive_api_handler(RegisterContext *reg_ctx, const HookEntryInfo 
     }
   } else if (syscall_rum > 0) {
     if (syscall_rum == SYS_ptrace) {
-      int request = reg_ctx->general.x[0];
+      int request = ctx->general.x[0];
       if (request == PT_DENY_ATTACH) {
-        reg_ctx->general.x[0] = 0;
+        ctx->general.x[0] = 0;
         // LOG(2, "svc ptrace deny");
       }
     }

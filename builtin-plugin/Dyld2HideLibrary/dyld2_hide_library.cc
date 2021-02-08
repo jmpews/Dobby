@@ -113,7 +113,7 @@ PUBLIC int dyld2_hide_library(const char *library_name) {
   g_prepare_remove_array->push_back((char *)library_name);
 }
 
-static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
+static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   if (g_prepare_remove_array == nullptr)
     return;
   for (auto name : *g_prepare_remove_array) {
