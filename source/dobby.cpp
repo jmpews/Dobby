@@ -26,6 +26,9 @@ PUBLIC int DobbyDestroy(void *address) {
   if (entry) {
     uint8_t *buffer      = entry->origin_chunk_.chunk_buffer;
     uint32_t buffer_size = entry->origin_chunk_.chunk.length;
+#if defined(TARGET_ARCH_ARM)
+    address = (void *)((addr_t)address - 1);
+#endif
     CodePatch(address, buffer, buffer_size);
     return RT_SUCCESS;
   }
