@@ -19,7 +19,7 @@ PUBLIC int DobbyHook(void *function_address, void *replace_call, void **origin_c
   if (entry) {
     FunctionInlineReplaceRouting *route = (FunctionInlineReplaceRouting *)entry->route;
     if (route->GetTrampolineTarget() == replace_call) {
-      ERROR_LOG("function %s already been hooked.", function_address);
+      ERROR_LOG("function %p already been hooked.", function_address);
       return RS_FAILED;
     }
   }
