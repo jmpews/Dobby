@@ -104,18 +104,18 @@ char *mach_msg_to_str(mach_msg_header_t *msg) {
   return NULL;
 }
 
-static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
+static addr_t getCallFirstArg(RegisterContext *ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
-  result = reg_ctx->general.regs.rcx;
+  result = ctx->general.regs.rcx;
 #else
-  result = reg_ctx->general.regs.rdi;
+  result = ctx->general.regs.rdi;
 #endif
 #elif defined(__arm64__) || defined(__aarch64__)
-  result = reg_ctx->general.regs.x0;
+  result = ctx->general.regs.x0;
 #elif defined(__arm__)
-  result = reg_ctx->general.regs.r0;
+  result = ctx->general.regs.r0;
 #else
 #error "Not Support Architecture."
 #endif
@@ -137,13 +137,12 @@ static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");
     slide             = main_header - text_segment->vmaddr;
 
-    auto text_section =
-        macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
+    auto text_section  = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
     text_section_start = main_header + (addr_t)text_section->offset;
     text_section_end   = text_section_start + text_section->size;
   }
-  
-  if(ctx == NULL)
+
+  if (ctx == NULL)
     return 0;
 
   addr_t lr = getRealLr(ctx);
@@ -152,29 +151,29 @@ static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
 
 #define MAX_STACK_ITERATE_LEVEL 8
   addr_t fp = ctx->fp;
-  if(fp == 0)
+  if (fp == 0)
     return 0;
   for (int i = 0; i < MAX_STACK_ITERATE_LEVEL; i++) {
     addr_t lr = *(addr_t *)(fp + sizeof(addr_t));
     if (lr > text_section_start && lr < text_section_end)
       return lr - slide;
     fp = *(addr_t *)fp;
-    if(fp == 0)
+    if (fp == 0)
       return 0;
   }
   return 0;
 }
 
-static void mach_syscall_log_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  addr_t caller = fast_get_caller_from_main_binary(reg_ctx);
+static void mach_syscall_log_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+  addr_t caller = fast_get_caller_from_main_binary(ctx);
   if (caller == 0)
     return;
 
   char buffer[256] = {0};
-  int  syscall_rum = reg_ctx->general.regs.x16;
+  int  syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == -31) {
     // mach_msg_trap
-    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(reg_ctx);
+    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
     char *             mach_msg_name = mach_msg_to_str(msg);
     if (mach_msg_name) {
       sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);

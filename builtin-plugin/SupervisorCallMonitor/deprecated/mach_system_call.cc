@@ -40,31 +40,31 @@ void mach_system_call_monitor() {
 }
 #endif
 
-static addr_t getCallFirstArg(RegisterContext *reg_ctx) {
+static addr_t getCallFirstArg(RegisterContext *ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
-  result = reg_ctx->general.regs.rcx;
+  result = ctx->general.regs.rcx;
 #else
-  result = reg_ctx->general.regs.rdi;
+  result = ctx->general.regs.rdi;
 #endif
 #elif defined(__arm64__) || defined(__aarch64__)
-  result = reg_ctx->general.regs.x0;
+  result = ctx->general.regs.x0;
 #elif defined(__arm__)
-  result = reg_ctx->general.regs.r0;
+  result = ctx->general.regs.r0;
 #else
 #error "Not Support Architecture."
 #endif
   return result;
 }
 
-static void common_handler(RegisterContext *reg_ctx, const HookEntryInfo *info) {
-  addr_t caller = get_caller_from_main_binary(reg_ctx);
+static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+  addr_t caller = get_caller_from_main_binary(ctx);
   if (caller == 0)
     return;
 
   char               buffer[256]   = {0};
-  mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(reg_ctx);
+  mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
   char *             mach_msg_name = mach_msg_to_str(msg);
   if (mach_msg_name) {
     sprintf(buffer, "[mach msg %p] %s\n", caller, mach_msg_name);
