@@ -22,6 +22,8 @@
 #undef LOG_TAG
 #define LOG_TAG "AndroidLinkerRestriction"
 
+#undef Q
+#define Q 29
 // impl at "dobby_symbol_resolver.cc"
 extern void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_name);
 
@@ -35,13 +37,13 @@ static int get_android_system_version() {
 
 static char *get_android_linker_path() {
 #if __LP64__
-  if (get_android_system_version() >= 10) {
+  if (get_android_system_version() >= Q) {
     return "/apex/com.android.runtime/bin/linker64";
   } else {
     return "/system/bin/linker64";
   }
 #else
-  if (get_android_system_version() >= 10) {
+  if (get_android_system_version() >= Q) {
     return "/apex/com.android.runtime/bin/linker";
   } else {
     return "/system/bin/linker";
@@ -152,7 +154,7 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
   *(uint8_t *)((addr_t)ns + STRUCT_OFFSET(android_namespace_t, is_isolated_)) = false;
 
   std::vector<std::string> ld_library_paths = {"/system/lib64", "/sytem/lib"};
-  if (get_android_system_version() >= 10) {
+  if (get_android_system_version() >= Q) {
     ld_library_paths.push_back("/apex/com.android.runtime/lib64");
     ld_library_paths.push_back("/apex/com.android.runtime/lib");
   }
