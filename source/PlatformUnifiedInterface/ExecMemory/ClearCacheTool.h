@@ -1,6 +1,11 @@
-#ifndef PLATFORM_INTERFACE_CLEAR_CACHE_TOOL_H
-#define PLATFORM_INTERFACE_CLEAR_CACHE_TOOL_H
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void ClearCache(void *start, void *end);
 
+#ifdef __cplusplus
+}
 #endif
