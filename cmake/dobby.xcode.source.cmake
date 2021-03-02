@@ -57,14 +57,14 @@ set(dobby.SOURCE_FILE_LIST
   # unified interface
 
   # platform util
-  source/UserMode/PlatformUtil/${platform2}/ProcesssRuntimeUtility.cc
+  source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
   # user mode - platform interface
   source/UserMode/UnifiedInterface/platform-${platform1}.cc
 
   # user mode - executable memory
   source/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
-  source/UserMode/ExecMemory/clear-cache-tool-all.cc
+  source/UserMode/ExecMemory/clear-cache-tool-all.c
 
   # main
   source/dobby.cpp
