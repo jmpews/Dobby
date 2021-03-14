@@ -35,7 +35,7 @@ static int get_android_system_version() {
   return os_version_int;
 }
 
-static char *get_android_linker_path() {
+static const char *get_android_linker_path() {
 #if __LP64__
   if (get_android_system_version() >= Q) {
     return "/apex/com.android.runtime/bin/linker64";
