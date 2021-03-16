@@ -73,3 +73,8 @@ xcuserdata/
 *.exe
 *.out
 *.app
+
+# Prefab
+/prefab/**/*.a
+/prefab/**/*.h
+/AndroidManifest.xml
