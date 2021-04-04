@@ -385,6 +385,13 @@ endif()
 
 target_include_directories(${dobby_output_name} PUBLIC include)
 
+if(COMPILER.Clang)
+  if(NOT DOBBY_DEBUG)
+    target_compile_options(${dobby_output_name}
+        PRIVATE "$<$<CONFIG:RELEASE>:-O3>")
+  endif()
+endif()
+
 if(SYSTEM.Darwin AND GenerateDarwinFramework)
   # set framework property
   set_target_properties(Dobby PROPERTIES
