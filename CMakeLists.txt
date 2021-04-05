@@ -19,8 +19,6 @@ if(0)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
-
 # ===== Handle Option =====
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
@@ -52,10 +50,10 @@ option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker rest
 #   add_definitions(-DENABLE_CLOSURE_BRIDGE_TEMPLATE)
 # endif()
 
-# Enable debug will log more infomation
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(DOBBY_DEBUG ON)
-endif()
+# Enable debug will log more information
+#if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#  set(DOBBY_DEBUG ON)
+#endif()
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
@@ -69,16 +67,18 @@ if(FullFloatingPointRegisterPack)
   message(STATUS "[Dobby] Save and pack all floating-point registers")
 endif()
 
-
 if(SYSTEM.Darwin)
   # -lstdc++
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
   if (NOT DOBBY_DEBUG)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_log_internal_impl")
+    # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-x -Wl,-S")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_log_internal_impl -Wl,-exported_symbol,_log_set_level")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_CodePatch")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyBuildVersion -Wl,-exported_symbol,_DobbyHook -Wl,-exported_symbol,_DobbyInstrument")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyBuildVersion -Wl,-exported_symbol,_DobbyHook -Wl,-exported_symbol,_DobbyInstrument -Wl,-exported_symbol,_DobbyDestroy")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbyGlobalOffsetTableReplace")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbySymbolResolver")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_intercept_routing_common_bridge_handler")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_dobby_enable_near_branch_trampoline -Wl,-exported_symbol,_dobby_disable_near_branch_trampoline")
   endif()
 elseif(SYSTEM.Android)
@@ -99,7 +99,8 @@ endif()
 
 if(COMPILER.Clang)
   if(NOT DOBBY_DEBUG)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden")
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden")
   endif()
   if(PROCESSOR.ARM)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7 -x assembler-with-cpp")
@@ -108,11 +109,13 @@ if(COMPILER.Clang)
   endif()
 endif()
 
-# refer apple ld
-# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-unexported_symbol -Wl,_DobbyHook -Wl,-unexported_symbol -Wl,_DobbyInstrument -Wl,-unexported_symbol -Wl,_DobbySymbolResolver -Wl,-unexported_symbol -Wl,_svc_0x80_stub -Wl,-unexported_symbol -Wl,_svc_mprotect")
-# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip -Wl,-exported_symbol,_main")
-
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")
+message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
+message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_SHARED_LINKER_FLAGS: ${CMAKE_SHARED_LINKER_FLAGS}")
 
 # arch prefix
 if(PROCESSOR.ARM)
@@ -259,7 +262,7 @@ if(NearBranch)
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 
-add_subdirectory(external/external_helper)
+add_subdirectory(external/external-helper)
 
 # add logging library
 # add_subdirectory(external/logging)
@@ -368,24 +371,30 @@ set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
-# upper framework output name
-set(dobby_output_name dobby)
-if(SYSTEM.Darwin AND GenerateDarwinFramework)
-  message(STATUS "[Dobby] Generate darwin framework")
-  set(dobby_output_name Dobby)
-endif()
-
 if(DOBBY_GENERATE_SHARED)
   message(STATUS "[Dobby] Generate shared library")
-  add_library(${dobby_output_name} SHARED ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  set(DOBBY_LIBRARY_TYPE SHARED)
 else()
   message(STATUS "[Dobby] Generate static library")
-  add_library(${dobby_output_name} STATIC ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  set(DOBBY_LIBRARY_TYPE STATIC)
 endif()
+add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 
-target_include_directories(${dobby_output_name} PUBLIC include)
+target_include_directories(dobby PUBLIC include)
 
-if(SYSTEM.Darwin AND GenerateDarwinFramework)
+# set(CMAKE_MACOSX_RPATH ON)
+# SET(CMAKE_SKIP_BUILD_RPATH ON)
+# SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+# SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+# set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_RPATH};@loader_path;@loader_path/../../Frameworks;@loader_path/../Frameworks;@executable_path/Gollum.framework;/usr/local/Gollum.framework")
+# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};@loader_path;@loader_path/../../Frameworks;@loader_path/../Frameworks;@executable_path/Gollum.framework;/usr/local/Gollum.framework")
+# message(STATUS "set global rpath done")
+if(SYSTEM.Darwin)
+  # set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
+  set(CMAKE_INSTALL_NAME_DIR "@rpath")
+  set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
+  add_library(Dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+
   # set framework property
   set_target_properties(Dobby PROPERTIES
     FRAMEWORK TRUE
@@ -397,6 +406,9 @@ if(SYSTEM.Darwin AND GenerateDarwinFramework)
     PUBLIC_HEADER include/dobby.h
     XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
   )
+#  set_target_properties(Dobby PROPERTIES
+#    LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}"
+#    )
 
   # message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
   # add_custom_command(TARGET Dobby
@@ -415,7 +427,7 @@ if(SYSTEM.Linux)
 endif()
 
 if(SYSTEM.Darwin)
-  target_link_libraries(${dobby_output_name}
+  target_link_libraries(Dobby
     "-framework Foundation")
 endif()
 
