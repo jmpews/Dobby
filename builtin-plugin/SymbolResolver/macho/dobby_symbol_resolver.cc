@@ -54,12 +54,12 @@ uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
   int      bit    = 0;
   do {
     if (p == end)
-      assert(p == end);
+      ASSERT(p == end);
 
     uint64_t slice = *p & 0x7f;
 
     if (bit > 63)
-      assert(bit > 63);
+      ASSERT(bit > 63);
     else {
       result |= (slice << bit);
       bit += 7;
@@ -79,7 +79,7 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
   uint8_t byte;
   do {
     if (p == end)
-      assert(p == end);
+      ASSERT(p == end);
     byte = *p++;
     result |= (((int64_t)(byte & 0x7f)) << bit);
     bit += 7;
@@ -378,7 +378,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
       memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
       shared_cache_ctx_init(&shared_cache_ctx);
     }
-    if(shared_cache_ctx.runtime_shared_cache) {
+    if (shared_cache_ctx.runtime_shared_cache) {
       // shared cache library
       if (shared_cache_is_contain(&shared_cache_ctx, (addr_t)header, 0)) {
         shared_cache_get_symbol_table(&shared_cache_ctx, header, &symtab, &symtab_count, &strtab);

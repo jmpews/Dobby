@@ -393,10 +393,10 @@ if(SYSTEM.Darwin)
   # set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
-  add_library(Dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+  add_library(DobbyX ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 
   # set framework property
-  set_target_properties(Dobby PROPERTIES
+  set_target_properties(DobbyX PROPERTIES
     FRAMEWORK TRUE
     FRAMEWORK_VERSION A
     MACOSX_FRAMEWORK_IDENTIFIER "com.dobby.dobby"
@@ -427,7 +427,7 @@ if(SYSTEM.Linux)
 endif()
 
 if(SYSTEM.Darwin)
-  target_link_libraries(Dobby
+  target_link_libraries(DobbyX
     "-framework Foundation")
 endif()
 

@@ -1,6 +1,5 @@
 #include "./x86_insn_decode.h"
 
-#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -311,7 +310,7 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
 
     uint8_t has_sib = 0;
     if ((rm & 7) == 4) {
-      assert(modrm.rm == (rm & 7));
+      ASSERT(modrm.rm == (rm & 7));
       has_sib = 1;
     }
 

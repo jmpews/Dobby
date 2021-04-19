@@ -24,6 +24,10 @@ void log_switch_to_file(const char *path);
 #endif
 int log_internal_impl(unsigned int level, const char *, ...);
 
+#if defined(LOGGING_DISABLE)
+#define LOG_FUNCTION_IMPL(...)
+#endif
+
 #ifdef __cplusplus
 }
 #endif
@@ -52,14 +56,12 @@ extern "C" {
 
 #if defined(LOGGING_DEBUG)
 #define DLOG(level, fmt, ...) LOG(level, fmt, ##__VA_ARGS__)
-
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
     RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
     RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
     abort();                                                                                                           \
   } while (0)
-
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
     RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
@@ -67,9 +69,7 @@ extern "C" {
   } while (0)
 #else
 #define DLOG(level, fmt, ...)
-
 #define FATAL(fmt, ...)
-
 #define ERROR_LOG(fmt, ...)
 #endif
 
