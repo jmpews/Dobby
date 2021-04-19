@@ -30,6 +30,8 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
+option(EnableObfuscation "Enable llvm obfuscation" OFF)
+
 option(GenerateDarwinFramework "Build darwin framework library" ON)
 
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
@@ -71,7 +73,6 @@ if(SYSTEM.Darwin)
   # -lstdc++
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
   if (NOT DOBBY_DEBUG)
-    # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-s -Wl,-X -Wl,-dead_strip")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-x -Wl,-S")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_log_internal_impl -Wl,-exported_symbol,_log_set_level")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_CodePatch")
@@ -382,18 +383,21 @@ add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE
 
 target_include_directories(dobby PUBLIC include)
 
-# set(CMAKE_MACOSX_RPATH ON)
-# SET(CMAKE_SKIP_BUILD_RPATH ON)
-# SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-# SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-# set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_RPATH};@loader_path;@loader_path/../../Frameworks;@loader_path/../Frameworks;@executable_path/Gollum.framework;/usr/local/Gollum.framework")
-# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};@loader_path;@loader_path/../../Frameworks;@loader_path/../Frameworks;@executable_path/Gollum.framework;/usr/local/Gollum.framework")
-# message(STATUS "set global rpath done")
+if(EnableObfuscation)
+set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
+endif()
+set_target_properties(dobby
+  PROPERTIES LINK_FLAGS "${linker_flags}"
+  )
 if(SYSTEM.Darwin)
   # set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
   add_library(DobbyX ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${xnucxx.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+
+  set_target_properties(DobbyX
+    PROPERTIES LINK_FLAGS "${linker_flags}"
+  )
 
   # set framework property
   set_target_properties(DobbyX PROPERTIES
@@ -406,9 +410,9 @@ if(SYSTEM.Darwin)
     PUBLIC_HEADER include/dobby.h
     XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
   )
-#  set_target_properties(Dobby PROPERTIES
-#    LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}"
-#    )
+  # set_target_properties(Dobby PROPERTIES
+  #  LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}"
+  #  )
 
   # message(STATUS "[Dobby] Enable Gollum.framework(iOS: 11.0 <= version, version <= 12.2, version == 12.4 )")
   # add_custom_command(TARGET Dobby
