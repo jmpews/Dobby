@@ -76,12 +76,15 @@ __attribute__((constructor)) static void ctor() {
   pthread_t socket_client;
   uint64_t  socket_demo_client(void *ctx);
   pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
+
+  pthread_join(socket_client, 0);
+  pthread_join(socket_server, 0);
 }
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#define PORT 8080
+#define PORT 8989
 
 uint64_t socket_demo_server(void *ctx) {
   int                server_fd, new_socket, valread;

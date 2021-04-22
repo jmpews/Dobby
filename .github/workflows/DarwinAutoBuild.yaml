@@ -17,7 +17,7 @@ jobs:
         export ANDROID_NDK_DIR=$ANDROID_NDK_18R_PATH
         current_date_time="`date +%Y%m%d`";
         export DOBBY_BUILD_OUTPUT_NAME=dobby_static_${current_date_time}.tar.gz
-        ./auto-build.sh
+        ./build-workspace/auto-build.sh
         echo "DOBBY_BUILD_OUTPUT_NAME=$DOBBY_BUILD_OUTPUT_NAME" >> $GITHUB_ENV
       shell: bash
 
