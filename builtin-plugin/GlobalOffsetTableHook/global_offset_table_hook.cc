@@ -15,7 +15,7 @@
 
 #include <vector>
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include "logging/logging.h"
 

@@ -2,7 +2,7 @@
 #define X86_INSN_DECODE_H
 
 #include <stdint.h>
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 typedef enum {
   X86_INSN_SPEC_DEFAULT_64_BIT = 1 << 0,
@@ -159,7 +159,7 @@ typedef struct x86_insn_decode_t {
 
   x86_insn_operand_t operands[3];
 
-  struct {  // insn field combine
+  struct { // insn field combine
     // insn prefix
     x86_insn_prefix_t prefix;
 

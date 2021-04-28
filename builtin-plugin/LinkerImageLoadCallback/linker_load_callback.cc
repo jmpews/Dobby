@@ -1,5 +1,5 @@
 #include "dobby.h"
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include <dlfcn.h>
 

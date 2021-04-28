@@ -17,7 +17,7 @@
 #include "dobby.h"
 #include "dobby_symbol_resolver.h"
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #undef LOG_TAG
 #define LOG_TAG "AndroidLinkerRestriction"

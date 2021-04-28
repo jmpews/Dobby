@@ -345,6 +345,7 @@ include_directories(
   ./include
 
   ./source
+  ./source/include
   ./source/UserMode
 
   ./external

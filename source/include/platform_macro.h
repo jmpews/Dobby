@@ -1,5 +1,4 @@
-#ifndef PLATFORM_HEADER_H
-#define PLATFORM_HEADER_H
+#pragma once
 
 #if defined(_M_X64) || defined(__x86_64__)
 #define TARGET_ARCH_X64 1
@@ -17,6 +16,4 @@
 #define TARGET_ARCH_PPC 1
 #else
 #error Target architecture was not detected as supported by Dobby
-#endif
-
 #endif

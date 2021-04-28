@@ -1,5 +1,5 @@
-#ifndef UTILITIES_MACRO_H
-#define UTILITIES_MACRO_H
+#pragma once
+
 // offset of struct member
 #define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
 
@@ -60,6 +60,4 @@
 #else
 #define PUBLIC   __attribute__((visibility("default")))
 #define INTERNAL __attribute__((visibility("internal")))
-#endif
-
 #endif

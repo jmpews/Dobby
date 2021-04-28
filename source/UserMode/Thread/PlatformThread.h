@@ -1,7 +1,7 @@
 #ifndef USER_MODE_PLATFORM_THREAD_H
 #define USER_MODE_PLATFORM_THREAD_H
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 namespace zz {
 

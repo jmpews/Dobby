@@ -1,7 +1,7 @@
 #ifndef CORE_ASSEMBLER_ARM64_H
 #define CORE_ASSEMBLER_ARM64_H
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include "core/arch/arm64/constants-arm64.h"
 #include "core/arch/arm64/registers-arm64.h"

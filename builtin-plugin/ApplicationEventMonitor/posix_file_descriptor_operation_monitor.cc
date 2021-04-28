@@ -17,7 +17,7 @@
 #include <sys/param.h>
 
 #include "dobby.h"
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #define LOG_TAG "PosixFileOperationMonitor"
 
@@ -68,7 +68,7 @@ int fake___open(const char *pathname, int flags, int mode) {
 }
 
 static const char *get_traced_filename(int fd, bool removed) {
-  if(posix_file_descriptors == NULL)
+  if (posix_file_descriptors == NULL)
     return NULL;
   std::unordered_map<int, const char *>::iterator it;
   it = posix_file_descriptors->find(fd);

@@ -1,5 +1,4 @@
-#ifndef TYPES_HEADER_H
-#define TYPES_HEADER_H
+#pragma once
 
 #include <stdint.h>
 
@@ -36,6 +35,4 @@ typedef int dword;
 
 #ifndef NULL
 #define NULL 0
-#endif
-
 #endif

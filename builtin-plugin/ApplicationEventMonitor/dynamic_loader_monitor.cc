@@ -13,7 +13,7 @@
 
 #include "dobby.h"
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #define LOG_TAG "DynamicLoaderMonitor"
 

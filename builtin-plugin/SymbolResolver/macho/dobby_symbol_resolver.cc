@@ -15,7 +15,7 @@
 #include "SymbolResolver/dobby_symbol_resolver.h"
 #include "SymbolResolver/macho/shared_cache_internal.h"
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include "logging/logging.h"
 

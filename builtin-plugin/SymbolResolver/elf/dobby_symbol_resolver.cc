@@ -1,5 +1,5 @@
 #include "SymbolResolver/dobby_symbol_resolver.h"
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include <elf.h>
 #include <dlfcn.h>
@@ -129,7 +129,7 @@ int elf_ctx_init(elf_ctx_t *ctx, void *header_) {
         dyn = reinterpret_cast<ElfW(Dyn) *>(ehdr_addr + phdr[i].p_offset);
       } else if (phdr[i].p_type == PT_LOAD) {
         addr = ehdr_addr + phdr[i].p_offset - phdr[i].p_vaddr;
-        if(ctx->load_bias == 0)
+        if (ctx->load_bias == 0)
           ctx->load_bias = ehdr_addr - (phdr[i].p_vaddr - phdr[i].p_offset);
       } else if (phdr[i].p_type == PT_PHDR) {
         ctx->load_bias = (ElfW(Addr))phdr - phdr[i].p_vaddr;
@@ -254,7 +254,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
       }
 
       if (result)
-        result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)file_mem-(addr_t)ctx.load_bias));
+        result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)file_mem - (addr_t)ctx.load_bias));
 
       if (file_mem)
         file_unmap(file_mem, file_mem_size);

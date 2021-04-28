@@ -1,7 +1,7 @@
 #ifndef UNIFIED_INTERFACE_STD_MEMORY_H
 #define UNIFIED_INTERFACE_STD_MEMORY_H
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 

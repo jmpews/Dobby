@@ -1,7 +1,7 @@
 #ifndef CORE_ASSEMBLER_X86_H
 #define CORE_ASSEMBLER_X86_H
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include "core/arch/x86/registers-x86.h"
 #include "core/modules/assembler/assembler.h"

@@ -1,7 +1,7 @@
 #ifndef CORE_ASSEMBLER_ARM_H
 #define CORE_ASSEMBLER_ARM_H
 
-#include "common/headers/common_header.h"
+#include "common_header.h"
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/arch/arm/registers-arm.h"
