@@ -10,7 +10,7 @@ set(SOURCE_HEADER_LIST
   variable_cache.h
 )
 
-add_library(external_helper STATIC
+add_library(external-helper STATIC
   ${SOURCE_FILE_LIST}
   ${SOURCE_HEADER_LIST}
 )

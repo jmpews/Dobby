@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "external_helper/async_logger.h"
+#include "external-helper/async_logger.h"
 
 static addr_t getCallFirstArg(RegisterContext *ctx) {
   addr_t result;

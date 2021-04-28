@@ -5,7 +5,7 @@
 #include <objc/runtime.h>
 
 extern "C" {
-#include "external_helper/variable_cache.h"
+#include "external-helper/variable_cache.h"
 }
 
 /* clang -rewrite-objc main.m */

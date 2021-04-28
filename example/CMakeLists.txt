@@ -5,7 +5,7 @@ if(SYSTEM.Darwin)
   )
 
   target_link_libraries(darwin_example
-    ${dobby_output_name}
+    DobbyX
   )
 endif()
 

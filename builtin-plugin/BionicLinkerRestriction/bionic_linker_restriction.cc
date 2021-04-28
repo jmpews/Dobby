@@ -38,15 +38,15 @@ static int get_android_system_version() {
 static const char *get_android_linker_path() {
 #if __LP64__
   if (get_android_system_version() >= Q) {
-    return "/apex/com.android.runtime/bin/linker64";
+    return (const char *)"/apex/com.android.runtime/bin/linker64";
   } else {
-    return "/system/bin/linker64";
+    return (const char *)"/system/bin/linker64";
   }
 #else
   if (get_android_system_version() >= Q) {
-    return "/apex/com.android.runtime/bin/linker";
+    return (const char *)"/apex/com.android.runtime/bin/linker";
   } else {
-    return "/system/bin/linker";
+    return (const char *)"/system/bin/linker";
   }
 #endif
 }

@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "external_helper/async_logger.h"
+#include "external-helper/async_logger.h"
 
 extern char *mach_msg_to_str(mach_msg_header_t *msg);
 

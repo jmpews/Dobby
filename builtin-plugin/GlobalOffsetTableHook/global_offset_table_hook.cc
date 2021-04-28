@@ -40,12 +40,12 @@ static void *iterate_indirect_symtab(char *symbol_name, section_t *section, intp
   const bool is_data_const            = strcmp(section->segname, "__DATA_CONST") == 0;
   uint32_t * indirect_symbol_indices  = indirect_symtab + section->reserved1;
   void **    indirect_symbol_bindings = (void **)((uintptr_t)slide + section->addr);
-  
-  vm_prot_t  old_protection           = VM_PROT_READ;
+
+  vm_prot_t old_protection = VM_PROT_READ;
   if (is_data_const) {
     mprotect(indirect_symbol_bindings, section->size, PROT_READ | PROT_WRITE);
   }
-  
+
   for (uint i = 0; i < section->size / sizeof(void *); i++) {
     uint32_t symtab_index = indirect_symbol_indices[i];
     if (symtab_index == INDIRECT_SYMBOL_ABS || symtab_index == INDIRECT_SYMBOL_LOCAL ||
@@ -64,7 +64,7 @@ static void *iterate_indirect_symtab(char *symbol_name, section_t *section, intp
       }
     }
   }
-  
+
   if (is_data_const && 0) {
     int protection = 0;
     if (old_protection & VM_PROT_READ) {
@@ -143,7 +143,7 @@ static void *get_global_offset_table_stub(mach_header_t *header, char *symbol_na
   return NULL;
 }
 
-int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func_ptr) {
+PUBLIC int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func_ptr) {
   std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
 
   for (auto module : ProcessModuleMap) {
@@ -177,7 +177,7 @@ int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fak
       orig_func = ptrauth_sign_unauthenticated(orig_func, ptrauth_key_asia, 0);
 #endif
       *orig_func_ptr = orig_func;
-      
+
 #if __has_feature(ptrauth_calls)
       fake_func = (void *)ptrauth_strip(fake_func, ptrauth_key_asia);
       fake_func = ptrauth_sign_unauthenticated(fake_func, ptrauth_key_asia, stub);

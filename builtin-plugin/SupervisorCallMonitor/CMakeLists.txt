@@ -6,8 +6,8 @@ add_library(supervisor_call_monitor STATIC
   misc_utility.cc
   )
 target_link_libraries(supervisor_call_monitor
-  external_helper
-  ${dobby_output_name}
+  external-helper
+  Dobby
   )
 
 add_library(test_supervisor_call_monitor SHARED

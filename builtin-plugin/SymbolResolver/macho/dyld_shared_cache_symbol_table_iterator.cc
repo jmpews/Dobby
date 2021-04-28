@@ -144,7 +144,7 @@ int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
   mmap_shared_cache =
       (struct dyld_cache_header *)mmap(0, mmap_length, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_offset);
   if (mmap_shared_cache == MAP_FAILED) {
-    ERROR_LOG("mmap shared cache failed");
+    DLOG(0, "mmap shared cache failed");
     return KERN_FAILURE;
   }
 
