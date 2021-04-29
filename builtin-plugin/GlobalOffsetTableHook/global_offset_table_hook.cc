@@ -1,4 +1,4 @@
-#include "GlobalOffsetTableHook/global_offset_table_hook.h"
+#include "global_offset_table_hook.h"
 
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
@@ -183,8 +183,8 @@ PUBLIC int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, vo
       fake_func = ptrauth_sign_unauthenticated(fake_func, ptrauth_key_asia, stub);
 #endif
       *(void **)stub = fake_func;
-      return RT_SUCCESS;
+      return 0;
     }
   }
-  return RT_FAILED;
+  return -1;
 }

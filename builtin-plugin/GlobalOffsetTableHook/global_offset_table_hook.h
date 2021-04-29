@@ -1,5 +1,4 @@
-#ifndef DOBBY_GLOBAL_OFFSET_TABLE_HOOK
-#define DOBBY_GLOBAL_OFFSET_TABLE_HOOK
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,6 +8,4 @@ int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fak
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
