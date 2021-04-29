@@ -20,7 +20,7 @@
 
 #include "logging/check_logging.h"
 
-#include "common/macros/platform_macro.h"
+#include "platform_macro.h"
 #if defined(CODE_PATCH_WITH_SUBSTRATED) && defined(TARGET_ARCH_ARM64)
 #include <mach/mach.h>
 #include "bootstrap.h"

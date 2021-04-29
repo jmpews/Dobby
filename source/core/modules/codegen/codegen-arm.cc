@@ -1,4 +1,4 @@
-#include "common/macros/platform_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
 #include "core/modules/codegen/codegen-arm.h"

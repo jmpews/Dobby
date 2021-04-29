@@ -1,4 +1,4 @@
-#include "common/macros/platform_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_X64)
 
 #include "MemoryAllocator/CodeBuffer/code-buffer-x64.h"

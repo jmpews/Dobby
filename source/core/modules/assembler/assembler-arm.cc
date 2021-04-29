@@ -1,4 +1,4 @@
-#include "common/macros/platform_macro.h"
+#include "platform_macro.h"
 #if TARGET_ARCH_ARM
 
 #include "core/modules/assembler/assembler-arm.h"

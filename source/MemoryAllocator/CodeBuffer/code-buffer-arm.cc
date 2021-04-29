@@ -1,10 +1,9 @@
-#include "common/macros/platform_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
 #include <string.h>
 
 #include "MemoryAllocator/CodeBuffer/code-buffer-arm.h"
-
 
 arm_inst_t CodeBuffer::LoadARMInst(int offset) {
   return *reinterpret_cast<arm_inst_t *>(buffer + offset);
