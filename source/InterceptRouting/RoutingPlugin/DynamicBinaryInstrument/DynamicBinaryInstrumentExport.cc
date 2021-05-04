@@ -8,6 +8,8 @@ PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
     ERROR_LOG("the function address is 0x0.\n");
     return RS_FAILED;
   }
+
+  RAW_LOG(1, "\n\n");
   DLOG(1, "[DobbyInstrument] Initialize at %p", address);
 
   // check if we already instruemnt
@@ -20,17 +22,15 @@ PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
     }
   }
 
-  entry                      = new HookEntry();
-  entry->id                  = Interceptor::SharedInstance()->GetHookEntryCount();
-  entry->type                = kDynamicBinaryInstrument;
+  entry = new HookEntry();
+  entry->id = Interceptor::SharedInstance()->GetHookEntryCount();
+  entry->type = kDynamicBinaryInstrument;
   entry->instruction_address = address;
 
-  DLOG(1, "================ DynamicBinaryInstrumentRouting Start ================");
   DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry, (void *)handler);
   route->Dispatch();
   Interceptor::SharedInstance()->AddHookEntry(entry);
   route->Commit();
-  DLOG(1, "================ DynamicBinaryInstrumentRouting End ================");
 
   return RS_SUCCESS;
 }
