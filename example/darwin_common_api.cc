@@ -44,7 +44,6 @@ const char *func_array[] = {
 
 typeof(pthread_create) *orig_pthread_create;
 int fake_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
-
   LOG(1, "pthread_create: %p", start_routine);
   return orig_pthread_create(thread, attr, start_routine, arg);
 }
@@ -52,7 +51,7 @@ int fake_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*s
 #if 1
 __attribute__((constructor)) static void ctor() {
   void *func = NULL;
-  log_set_level(0);
+  log_set_level(1);
 
   func_map = new std::map<void *, const char *>();
 
@@ -63,7 +62,10 @@ __attribute__((constructor)) static void ctor() {
       continue;
     }
     func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
-    DobbyInstrument(func, common_handler);
+  }
+  
+  for(auto i = func_map->begin(), e = func_map->end(); i !=e ; i++) {
+    DobbyInstrument(i->first, common_handler);
   }
 
   DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
@@ -95,7 +97,7 @@ uint64_t socket_demo_server(void *ctx) {
   char *             hello        = "Hello from server";
 
   // Creating socket file descriptor
-  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     perror("socket failed");
     exit(EXIT_FAILURE);
   }
