@@ -161,7 +161,7 @@ PUBLIC int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, vo
 #endif
 
 #if 0
-    LOG(1, "resolve image: %s", path);
+    LOG(1, "resolve image: %s", module.path);
 #endif
 
     uint32_t nlist_count = 0;
@@ -183,8 +183,10 @@ PUBLIC int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, vo
       fake_func = ptrauth_sign_unauthenticated(fake_func, ptrauth_key_asia, stub);
 #endif
       *(void **)stub = fake_func;
-      return 0;
     }
+    
+    if(image_name)
+      return 0;
   }
   return -1;
 }

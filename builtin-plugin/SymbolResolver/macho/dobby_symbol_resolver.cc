@@ -373,8 +373,10 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     char *   strtab       = NULL;
 
 #if defined(__arm__) || defined(__aarch64__)
+    static int shared_cache_ctx_init_once = 0;
     static shared_cache_ctx_t shared_cache_ctx;
-    if (shared_cache_ctx.mmap_shared_cache == NULL) {
+    if (shared_cache_ctx_init_once == 0) {
+      shared_cache_ctx_init_once = 1;
       memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
       shared_cache_ctx_init(&shared_cache_ctx);
     }
