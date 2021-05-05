@@ -23,7 +23,7 @@ echo "prepare build ${output_dir_name}"
 
 mkdir -p ${CURRENT_DIR}/${output_dir_name}
 cmake -S ${SOURCE_DIR} -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
-  -DDOBBY_GENERATE_SHARED=OFF -DGenerateDarwinFramework=OFF -DDOBBY_DEBUG=OFF
+  -DDOBBY_GENERATE_SHARED=OFF -DDOBBY_DEBUG=OFF
 cmake --build ${output_dir_name} --parallel 4 --target dobby
 
 mkdir -p ${summary_output_dir_name}/darwin/x86_64
@@ -37,7 +37,7 @@ echo "prepare build ${output_dir_name}"
 mkdir -p ${CURRENT_DIR}/${output_dir_name}
 cmake -S ${SOURCE_DIR} -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.3 \
-  -DDOBBY_GENERATE_SHARED=OFF -DGenerateDarwinFramework=OFF -DDOBBY_DEBUG=OFF
+  -DDOBBY_GENERATE_SHARED=OFF -DDOBBY_DEBUG=OFF
 cmake --build ${output_dir_name} --parallel 4 --target dobby
 
 mkdir -p ${summary_output_dir_name}/darwin/arm64
@@ -53,7 +53,7 @@ cmake -S ${SOURCE_DIR} -B ${output_dir_name} -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
   -DPLATFORM=OS64 -DARCHS="arm64e" -DCMAKE_SYSTEM_PROCESSOR=arm64e \
   -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
-  -DDOBBY_GENERATE_SHARED=OFF -DGenerateDarwinFramework=OFF -DDOBBY_DEBUG=OFF
+  -DDOBBY_GENERATE_SHARED=OFF -DDOBBY_DEBUG=OFF
 cmake --build ${output_dir_name} --parallel 4 --target dobby
 
 mkdir -p ${summary_output_dir_name}/darwin/arm64e

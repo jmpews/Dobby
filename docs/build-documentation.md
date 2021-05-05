@@ -19,8 +19,6 @@ option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-option(GenerateDarwinFramework "Build darwin framework library" ON)
-
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
 option(Plugin.LinkerLoadCallback "Register image load callback " OFF)

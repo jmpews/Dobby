@@ -32,8 +32,6 @@ option(FullFloatingPointRegisterPack "Save and pack all floating-point registers
 
 option(EnableObfuscation "Enable llvm obfuscation" OFF)
 
-option(GenerateDarwinFramework "Build darwin framework library" ON)
-
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
 option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " ON)
