@@ -6,7 +6,7 @@ add_library(supervisor_call_monitor STATIC
   misc_utility.cc
   )
 target_link_libraries(supervisor_call_monitor
-  external-helper
+  misc-helper
   Dobby
   )
 

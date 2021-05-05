@@ -5,7 +5,7 @@
 #include <sys/syscall.h>
 
 #include "SupervisorCallMonitor/supervisor_call_monitor.h"
-#include "external-helper/async_logger.h"
+#include "misc-helper/async_logger.h"
 
 #define PT_DENY_ATTACH 31
 

@@ -1,14 +1,8 @@
 include_directories(.)
 
 set(SOURCE_FILE_LIST
-  ./cxxlogging.cc
-  ./logging.c
-)
-
-set(SOURCE_HEADER_LIST
-  logging/logging.h
-  logging/check_logging.h
-  logging/cxxlogging.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/cxxlogging.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/logging.c
 )
 
 add_library(logging STATIC

@@ -6,16 +6,14 @@ if(KERNELMODE)
 endif()
 
 set(xnucxx.SOURCE_FILE_LIST
-  LiteMemOpt.cc
-  LiteObject.cc
-  LiteIterator.cc
-  LiteCollection.cc
-  LiteMutableBuffer.cc
-  LiteMutableArray.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteMemOpt.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteObject.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteIterator.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteCollection.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteMutableBuffer.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LiteMutableArray.cc
 )
 
-if(BUILD_INDEPENDENT_LIBRARY)
 add_library(xnucxx STATIC
   ${xnucxx.SOURCE_FILE_LIST}
 )
-endif()

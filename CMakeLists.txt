@@ -153,6 +153,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 endif()
 include(cmake/dobby.xcode.source.cmake)
 
+set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # cpu
   source/core/arch/CpuFeature.cc
@@ -261,59 +262,37 @@ if(NearBranch)
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 
-add_subdirectory(external/external-helper)
+add_subdirectory(external/misc-helper)
+get_target_property(misc_helper.SOURCE_FILE_LIST misc_helper SOURCES)
 
 # add logging library
-# add_subdirectory(external/logging)
-set(logging.SOURCE_FILE_LIST
-  external/logging/logging.c
-  external/logging/cxxlogging.cc
-  )
+add_subdirectory(external/logging)
+get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 
 # add xnucxx library
-# add_subdirectory(external/xnucxx)
-set(xnucxx.SOURCE_FILE_LIST
-  external/xnucxx/LiteObject.cc
-  external/xnucxx/LiteMemOpt.cc
-  external/xnucxx/LiteCollection.cc
-  external/xnucxx/LiteIterator.cc
-  external/xnucxx/LiteMutableArray.cc
-  external/xnucxx/LiteMutableBuffer.cc
-  )
-
-set(dobby.plugin.SOURCE_FILE_LIST
-)
-
-set(dobby.HEADER_FILE_LIST
-  include/dobby.h
-  )
+add_subdirectory(external/xnucxx)
+get_target_property(xnucxx.SOURCE_FILE_LIST xnucxx SOURCES)
 
 if(Plugin.GlobalOffsetTableHook)
-  include_directories(builtin-plugin/GlobalOffsetTableHook)
-
   message(STATUS "[Dobby] Enable Global offset table hook")
-  if(SYSTEM.Darwin)
-    set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/GlobalOffsetTableHook/global_offset_table_hook.cc
+
+  include_directories(builtin-plugin/GlobalOffsetTableHook)
+  add_subdirectory(builtin-plugin/GlobalOffsetTableHook)
+  get_target_property(global_offset_table_hook.SOURCE_FILE_LIST global_offset_table_hook SOURCES)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    ${global_offset_table_hook.SOURCE_FILE_LIST}
     )
-  endif()
 endif()
 
 if(Plugin.SymbolResolver)
-  include_directories(builtin-plugin/SymbolResolver)
-
   message(STATUS "[Dobby] Enable symbol resolver")
-  if(SYSTEM.Darwin)
-    set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/SymbolResolver/macho/dyld_shared_cache_symbol_table_iterator.cc
-      builtin-plugin/SymbolResolver/macho/dobby_symbol_resolver.cc
+
+  include_directories(builtin-plugin/SymbolResolver)
+  add_subdirectory(builtin-plugin/SymbolResolver)
+  get_target_property(symbol_resolver.SOURCE_FILE_LIST symbol_resolver SOURCES)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    ${symbol_resolver.SOURCE_FILE_LIST}
     )
-  endif()
-  if(SYSTEM.Linux OR SYSTEM.Android)
-    set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-      builtin-plugin/SymbolResolver/elf/dobby_symbol_resolver.cc
-    )
-  endif()
 endif()
 
 if(Plugin.Android.BionicLinkerRestriction)
@@ -349,9 +328,14 @@ include_directories(
   ./external
   ./external/logging
   ./external/xnucxx
+  ./external/misc-heler
 
   builtin-plugin
 )
+
+set(dobby.HEADER_FILE_LIST
+  include/dobby.h
+  )
 
 # add build version
 string(TIMESTAMP TODAY "%Y%m%d")

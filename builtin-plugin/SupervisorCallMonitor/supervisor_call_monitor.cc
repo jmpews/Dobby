@@ -2,7 +2,7 @@
 #include "dobby_internal.h"
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
-#include "external-helper/async_logger.h"
+#include "misc-helper/async_logger.h"
 
 #include <vector>
 std::vector<DBICallTy> *g_supervisor_call_handlers;
