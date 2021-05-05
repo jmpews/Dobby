@@ -32,13 +32,13 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 
   // branch
   void **branch_stub = AllocIndirectStub(from);
-  *branch_stub       = (void *)to;
+  *branch_stub = (void *)to;
 
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpNearIndirect((uint64_t)branch_stub);
 
   CodeBufferBase *result = NULL;
-  result                 = turbo_assembler_.GetCodeBuffer()->Copy();
+  result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
 

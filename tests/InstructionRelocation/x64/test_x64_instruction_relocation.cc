@@ -104,14 +104,14 @@ int instrLenArray[] = {
 // clang-format on
 
 TEST_CASE(">>> InstructionRelocation/x64", "[InstructionRelocation]") {
-  void *        TargetFunction = hexData;
-  uintptr_t     srcIP          = (uintptr_t)TargetFunction;
-  uintptr_t     currIP         = srcIP;
-  int           funcLen        = sizeof(hexData);
-  unsigned char opcode1        = 0;
-  InstrMnemonic instr          = {0};
+  void *TargetFunction = hexData;
+  uintptr_t srcIP = (uintptr_t)TargetFunction;
+  uintptr_t currIP = srcIP;
+  int funcLen = sizeof(hexData);
+  unsigned char opcode1 = 0;
+  InstrMnemonic instr = {0};
 
-  int i   = 0;
+  int i = 0;
   opcode1 = *(byte *)srcIP;
 
   do {

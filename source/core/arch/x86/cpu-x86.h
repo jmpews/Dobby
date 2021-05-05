@@ -79,8 +79,8 @@ private:
   char vendor_[13];
 
   // General features
-  int  icache_line_size_;
-  int  dcache_line_size_;
+  int icache_line_size_;
+  int dcache_line_size_;
   bool has_fpu_;
 
   // x86 features

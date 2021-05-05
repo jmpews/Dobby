@@ -93,12 +93,12 @@ __attribute__((constructor)) static void ctor() {
   DobbyInstrument((void *)((addr_t)art::gc::Heap::_11::PreZygoteFork + 1), common_handler);
 
   pthread_t socket_server;
-  uint64_t  socket_demo_server(void *ctx);
+  uint64_t socket_demo_server(void *ctx);
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);
 
   usleep(1000);
   pthread_t socket_client;
-  uint64_t  socket_demo_client(void *ctx);
+  uint64_t socket_demo_client(void *ctx);
   pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
 }
 
@@ -108,12 +108,12 @@ __attribute__((constructor)) static void ctor() {
 #define PORT 8080
 
 uint64_t socket_demo_server(void *ctx) {
-  int                server_fd, new_socket, valread;
+  int server_fd, new_socket, valread;
   struct sockaddr_in address;
-  int                opt          = 1;
-  int                addrlen      = sizeof(address);
-  char               buffer[1024] = {0};
-  char *             hello        = "Hello from server";
+  int opt = 1;
+  int addrlen = sizeof(address);
+  char buffer[1024] = {0};
+  char *hello = "Hello from server";
 
   // Creating socket file descriptor
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
@@ -126,9 +126,9 @@ uint64_t socket_demo_server(void *ctx) {
     perror("setsockopt");
     exit(EXIT_FAILURE);
   }
-  address.sin_family      = AF_INET;
+  address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
-  address.sin_port        = htons(PORT);
+  address.sin_port = htons(PORT);
 
   // Forcefully attaching socket to the port 8080
   if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
@@ -151,17 +151,17 @@ uint64_t socket_demo_server(void *ctx) {
 }
 
 uint64_t socket_demo_client(void *ctx) {
-  int                sock = 0, valread;
+  int sock = 0, valread;
   struct sockaddr_in serv_addr;
-  char *             hello        = "Hello from client";
-  char               buffer[1024] = {0};
+  char *hello = "Hello from client";
+  char buffer[1024] = {0};
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     printf("\n Socket creation error \n");
     return -1;
   }
 
   serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port   = htons(PORT);
+  serv_addr.sin_port = htons(PORT);
 
   // Convert IPv4 and IPv6 addresses from text to binary form
   if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {

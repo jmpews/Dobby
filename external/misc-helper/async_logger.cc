@@ -10,7 +10,7 @@
 #include <fcntl.h>
 
 #define aync_logger_buffer_size (20 * 1024 * 1024)
-int  async_logger_buffer_cursor = 0;
+int async_logger_buffer_cursor = 0;
 char async_logger_buffer[aync_logger_buffer_size];
 
 static pthread_mutex_t async_logger_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -54,12 +54,12 @@ void async_logger_init(char *logger_path) {
 
   output_fd = STDOUT_FILENO;
   if (logger_path) {
-    int fd    = open(logger_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    int fd = open(logger_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
     output_fd = fd;
   }
 
   // init async logger
   pthread_mutex_init(&async_logger_mutex, NULL);
   pthread_t async_logger_thread;
-  int       ret = pthread_create(&async_logger_thread, NULL, async_logger_print_impl, NULL);
+  int ret = pthread_create(&async_logger_thread, NULL, async_logger_print_impl, NULL);
 }

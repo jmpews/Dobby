@@ -80,7 +80,7 @@ void *get_closure_bridge() {
   _ mov(pc, Operand(r12));
 
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge          = (void *)code->raw_instruction_start();
+  closure_bridge = (void *)code->raw_instruction_start();
 
   DLOG(1, "[closure bridge] Build the closure bridge at %p", closure_bridge);
 #endif

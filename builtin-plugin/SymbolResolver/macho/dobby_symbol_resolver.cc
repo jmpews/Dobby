@@ -31,27 +31,27 @@ typedef struct macho_ctx {
   uintptr_t linkedit_base;
 
   segment_command_t *segments[16];
-  int                segments_count;
+  int segments_count;
 
   segment_command_t *text_seg;
   segment_command_t *data_seg;
   segment_command_t *data_const_seg;
   segment_command_t *linkedit_seg;
 
-  struct symtab_command *   symtab_cmd;
-  struct dysymtab_command * dysymtab_cmd;
+  struct symtab_command *symtab_cmd;
+  struct dysymtab_command *dysymtab_cmd;
   struct dyld_info_command *dyld_info_cmd;
 
-  nlist_t * symtab;
-  char *    strtab;
+  nlist_t *symtab;
+  char *strtab;
   uint32_t *indirect_symtab;
 
 } macho_ctx_t;
 
 uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
-  uint8_t *p      = (uint8_t *)*pp;
+  uint8_t *p = (uint8_t *)*pp;
   uint64_t result = 0;
-  int      bit    = 0;
+  int bit = 0;
   do {
     if (p == end)
       ASSERT(p == end);
@@ -75,7 +75,7 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
   uint8_t *p = (uint8_t *)*pp;
 
   int64_t result = 0;
-  int     bit    = 0;
+  int bit = 0;
   uint8_t byte;
   do {
     if (p == end)
@@ -97,9 +97,9 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
 // bool MachOLoaded::findExportedSymbol
 uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
   uint32_t visitedNodeOffsets[128];
-  int      visitedNodeOffsetCount              = 0;
+  int visitedNodeOffsetCount = 0;
   visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
-  const uint8_t *p                             = start;
+  const uint8_t *p = start;
   while (p < end) {
     uint64_t terminalSize = *p++;
     if (terminalSize > 127) {
@@ -119,11 +119,11 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
       return NULL;
     }
     uint8_t childrenRemaining = *children++;
-    p                         = children;
-    uint64_t nodeOffset       = 0;
+    p = children;
+    uint64_t nodeOffset = 0;
     for (; childrenRemaining > 0; --childrenRemaining) {
-      const char *ss        = symbol;
-      bool        wrongEdge = false;
+      const char *ss = symbol;
+      bool wrongEdge = false;
       // scan whole edge to get to next edge
       // if edge is longer than target symbol name, don't read past end of symbol name
       char c = *p;
@@ -184,10 +184,10 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
 }
 
 uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name, uint64_t *out_flags) {
-  segment_command_t *           curr_seg_cmd;
-  struct dyld_info_command *    dyld_info_cmd    = NULL;
+  segment_command_t *curr_seg_cmd;
+  struct dyld_info_command *dyld_info_cmd = NULL;
   struct linkedit_data_command *exports_trie_cmd = NULL;
-  segment_command_t *           text_segment, *data_segment, *linkedit_segment;
+  segment_command_t *text_segment, *data_segment, *linkedit_segment;
 
   curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
@@ -220,9 +220,9 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
     return 0;
 
   uint32_t trieFileOffset = dyld_info_cmd ? dyld_info_cmd->export_off : exports_trie_cmd->dataoff;
-  uint32_t trieFileSize   = dyld_info_cmd ? dyld_info_cmd->export_size : exports_trie_cmd->datasize;
+  uint32_t trieFileSize = dyld_info_cmd ? dyld_info_cmd->export_size : exports_trie_cmd->datasize;
 
-  uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
+  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
   void *exports = (void *)(linkedit_base + trieFileOffset);
@@ -230,11 +230,11 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
     return 0;
 
   uint8_t *exports_start = (uint8_t *)exports;
-  uint8_t *exports_end   = exports_start + trieFileSize;
-  uint8_t *node          = (uint8_t *)walk_exported_trie(exports_start, exports_end, symbol_name);
+  uint8_t *exports_end = exports_start + trieFileSize;
+  uint8_t *node = (uint8_t *)walk_exported_trie(exports_start, exports_end, symbol_name);
   if (node == NULL)
     return 0;
-  const uint8_t * p     = node;
+  const uint8_t *p = node;
   const uintptr_t flags = read_uleb128(&p, exports_end);
   if (flags & EXPORT_SYMBOL_FLAGS_REEXPORT) {
     return 0;
@@ -257,10 +257,10 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
 
 void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   ctx->header = header;
-  segment_command_t *       curr_seg_cmd;
-  segment_command_t *       text_segment, *data_segment, *data_const_segment, *linkedit_segment;
-  struct symtab_command *   symtab_cmd    = NULL;
-  struct dysymtab_command * dysymtab_cmd  = NULL;
+  segment_command_t *curr_seg_cmd;
+  segment_command_t *text_segment, *data_segment, *data_const_segment, *linkedit_segment;
+  struct symtab_command *symtab_cmd = NULL;
+  struct dysymtab_command *dysymtab_cmd = NULL;
   struct dyld_info_command *dyld_info_cmd = NULL;
 
   curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
@@ -288,23 +288,23 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
     curr_seg_cmd = (segment_command_t *)((uintptr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
-  uintptr_t slide         = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
+  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
-  ctx->text_seg       = text_segment;
-  ctx->data_seg       = data_segment;
+  ctx->text_seg = text_segment;
+  ctx->data_seg = data_segment;
   ctx->data_const_seg = data_const_segment;
-  ctx->linkedit_seg   = linkedit_segment;
+  ctx->linkedit_seg = linkedit_segment;
 
-  ctx->symtab_cmd    = symtab_cmd;
-  ctx->dysymtab_cmd  = dysymtab_cmd;
+  ctx->symtab_cmd = symtab_cmd;
+  ctx->dysymtab_cmd = dysymtab_cmd;
   ctx->dyld_info_cmd = dyld_info_cmd;
 
-  ctx->slide         = slide;
+  ctx->slide = slide;
   ctx->linkedit_base = linkedit_base;
 
-  ctx->symtab          = (nlist_t *)(ctx->linkedit_base + ctx->symtab_cmd->symoff);
-  ctx->strtab          = (char *)(ctx->linkedit_base + ctx->symtab_cmd->stroff);
+  ctx->symtab = (nlist_t *)(ctx->linkedit_base + ctx->symtab_cmd->symoff);
+  ctx->strtab = (char *)(ctx->linkedit_base + ctx->symtab_cmd->stroff);
   ctx->indirect_symtab = (uint32_t *)(ctx->linkedit_base + ctx->dysymtab_cmd->indirectsymoff);
 }
 
@@ -312,7 +312,7 @@ uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *symtab, uint32_t sym
   for (uint32_t i = 0; i < symtab_count; i++) {
     if (symtab[i].n_value) {
       uint32_t strtab_offset = symtab[i].n_un.n_strx;
-      char *   symbol_name   = strtab + strtab_offset;
+      char *symbol_name = strtab + strtab_offset;
 #if 0
       LOG(1, "> %s", symbol_name);
 #endif
@@ -357,7 +357,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
       continue;
 
     mach_header_t *header = (mach_header_t *)module.load_address;
-    size_t         slide  = 0;
+    size_t slide = 0;
 
     if (header) {
       if (header->magic == MH_MAGIC_64)
@@ -368,9 +368,9 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     LOG(1, "resolve image: %s", path);
 #endif
 
-    nlist_t *symtab       = NULL;
+    nlist_t *symtab = NULL;
     uint32_t symtab_count = 0;
-    char *   strtab       = NULL;
+    char *strtab = NULL;
 
 #if defined(__arm__) || defined(__aarch64__)
     static int shared_cache_ctx_init_once = 0;
@@ -429,7 +429,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
   mach_header_t *dyld_header = NULL;
   if (image_name != NULL && strcmp(image_name, "dyld") == 0) {
     // task info
-    task_dyld_info_data_t  task_dyld_info;
+    task_dyld_info_data_t task_dyld_info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
       return NULL;
@@ -456,7 +456,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 #if defined(DOBBY_DEBUG) && 0
 __attribute__((constructor)) static void ctor() {
   mach_header_t *header = NULL;
-  header                = (mach_header_t *)_dyld_get_image_header(0);
+  header = (mach_header_t *)_dyld_get_image_header(0);
 
   void *addr = (void *)((addr_t)iterate_exported_symbol(header, "_mainxx") + (addr_t)header);
   LOG(1, "export %p", addr);

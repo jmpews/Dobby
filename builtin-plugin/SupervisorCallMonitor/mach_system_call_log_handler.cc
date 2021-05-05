@@ -37,7 +37,7 @@
 
 typedef struct {
   char *mach_msg_name;
-  int   mach_msg_id;
+  int mach_msg_id;
 } mach_msg_entry_t;
 
 // clang-format off
@@ -63,7 +63,7 @@ mach_msg_entry_t mach_msg_array[] = {
 // clang-format on
 
 #define PRIME_NUMBER 8387
-char *     mach_msg_name_table[PRIME_NUMBER] = {0};
+char *mach_msg_name_table[PRIME_NUMBER] = {0};
 static int hash_mach_msg_num_to_ndx(int mach_msg_num) {
   return mach_msg_num % PRIME_NUMBER;
 }
@@ -76,8 +76,8 @@ static void mach_msg_id_hash_table_init() {
 
   int count = sizeof(mach_msg_array) / sizeof(mach_msg_array[0]);
   for (size_t i = 0; i < count; i++) {
-    mach_msg_entry_t entry   = mach_msg_array[i];
-    int              ndx     = hash_mach_msg_num_to_ndx(entry.mach_msg_id);
+    mach_msg_entry_t entry = mach_msg_array[i];
+    int ndx = hash_mach_msg_num_to_ndx(entry.mach_msg_id);
     mach_msg_name_table[ndx] = entry.mach_msg_name;
   }
 }
@@ -131,15 +131,15 @@ static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
   if (text_section_start == 0 || text_section_end == 0) {
-    auto   main        = ProcessRuntimeUtility::GetProcessModule("mobilex");
+    auto main = ProcessRuntimeUtility::GetProcessModule("mobilex");
     addr_t main_header = (addr_t)main.load_address;
 
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");
-    slide             = main_header - text_segment->vmaddr;
+    slide = main_header - text_segment->vmaddr;
 
-    auto text_section  = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
+    auto text_section = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
     text_section_start = main_header + (addr_t)text_section->offset;
-    text_section_end   = text_section_start + text_section->size;
+    text_section_end = text_section_start + text_section->size;
   }
 
   if (ctx == NULL)
@@ -170,11 +170,11 @@ static void mach_syscall_log_handler(RegisterContext *ctx, const HookEntryInfo *
     return;
 
   char buffer[256] = {0};
-  int  syscall_rum = ctx->general.regs.x16;
+  int syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == -31) {
     // mach_msg_trap
-    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
-    char *             mach_msg_name = mach_msg_to_str(msg);
+    mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(ctx);
+    char *mach_msg_name = mach_msg_to_str(msg);
     if (mach_msg_name) {
       sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);
     } else {

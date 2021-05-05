@@ -83,7 +83,7 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
   thread_handle_t *handle_impl = new thread_handle_t;
 
   int err = 0;
-  err     = pthread_create(&(handle_impl->thread), nullptr, thread_handler_wrapper, delegate);
+  err = pthread_create(&(handle_impl->thread), nullptr, thread_handler_wrapper, delegate);
   if (err != 0) {
     FATAL("pthread create failed");
     return false;
@@ -159,7 +159,7 @@ bool OSMemory::SetPermission(void *address, int size, MemoryPermission access) {
   DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
-  int ret  = mprotect(address, size, prot);
+  int ret = mprotect(address, size, prot);
   if (ret == 0 && access == MemoryPermission::kNoAccess) {
     // This is advisory; ignore errors and continue execution.
     // ReclaimInaccessibleMemory(address, size);

@@ -6,7 +6,7 @@ bool LiteMutableBuffer::initWithCapacity(uint32_t initCapacity) {
     return false;
 
   this->buffer = (uint8_t *)LiteMemOpt::alloc(initCapacity);
-  this->buffer_cursor   = buffer;
+  this->buffer_cursor = buffer;
   this->buffer_capacity = initCapacity;
   return true;
 }
@@ -21,7 +21,7 @@ uint32_t LiteMutableBuffer::ensureCapacity(uint32_t newCapacity) {
   // alloc new buffer
   uint8_t *newBuffer;
   newBuffer = (uint8_t *)LiteMemOpt::alloc(newCapacity);
-  if(newBuffer == nullptr) {
+  if (newBuffer == nullptr) {
     return 0;
   }
 
@@ -37,8 +37,8 @@ uint32_t LiteMutableBuffer::ensureCapacity(uint32_t newCapacity) {
   LiteMemOpt::free(buffer, originBufferSize);
 
   // update info
-  this->buffer          = newBuffer;
-  this->buffer_cursor   = newBuffer + originContentSize;
+  this->buffer = newBuffer;
+  this->buffer_cursor = newBuffer + originContentSize;
   this->buffer_capacity = newCapacity;
 
   return newCapacity;

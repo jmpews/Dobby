@@ -7,7 +7,7 @@ void LiteCollectionIterator::reset() {
 }
 
 bool LiteCollectionIterator::initWithCollection(const LiteCollectionInterface *inCollection) {
-  int *ndxPtr         = (int *)LiteMemOpt::alloc(sizeof(int));
+  int *ndxPtr = (int *)LiteMemOpt::alloc(sizeof(int));
   innerIterator = (void *)ndxPtr;
 
   inCollection->initIterator(this->innerIterator);
@@ -23,7 +23,7 @@ LiteObject *LiteCollectionIterator::getNextObject() {
 }
 
 void LiteCollectionIterator::release() {
-  if(innerIterator) {
+  if (innerIterator) {
     LiteMemOpt::free(innerIterator, sizeof(int));
 
     innerIterator = NULL;

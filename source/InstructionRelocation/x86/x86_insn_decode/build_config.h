@@ -9,7 +9,7 @@
 #define OS_MACOSX 1
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OS_IOS 1
-#endif  // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#endif // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #elif defined(__linux__)
 #define OS_LINUX 1
 // include a system header to pull in features.h for glibc/uclibc macros.
@@ -50,10 +50,9 @@
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) ||    \
-    defined(OS_FREEBSD) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) ||  \
-    defined(OS_QNX) || defined(OS_SOLARIS)
+#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) || defined(OS_FREEBSD) || defined(OS_LINUX) ||         \
+    defined(OS_MACOSX) || defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) || defined(OS_QNX) ||          \
+    defined(OS_SOLARIS)
 #define OS_POSIX 1
 #endif
 

@@ -50,8 +50,8 @@ int _main(int argc, const char **argv) {
 
   char *relo_buffer = (char *)malloc(0x1000);
 
-  int               relo_size = (uint64_t)pc_relative_instructions_end - (uint64_t)pc_relative_instructions;
-  zz::AssemblyCode *code      = GenRelocateCodeAndBranch((void *)pc_relative_instructions, &relo_size, 0, 0);
+  int relo_size = (uint64_t)pc_relative_instructions_end - (uint64_t)pc_relative_instructions;
+  zz::AssemblyCode *code = GenRelocateCodeAndBranch((void *)pc_relative_instructions, &relo_size, 0, 0);
 
   unsigned char *instruction_bytes = (unsigned char *)code->raw_instruction_start();
   for (int i = 0; i < code->raw_instruction_size(); i += 1) {

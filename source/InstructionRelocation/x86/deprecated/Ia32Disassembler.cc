@@ -16,7 +16,7 @@ bool supports_rex_ = false;
 
 void DecodeInstruction(uint8_t *instr) {
   bool have_prefixes = true;
-  uint8_t prefix[4]  = {0, 0, 0, 0};
+  uint8_t prefix[4] = {0, 0, 0, 0};
 
   // decode legacy prefix
   do {
@@ -59,7 +59,7 @@ void DecodeInstruction(uint8_t *instr) {
     instr++;
   }
 
-  bool has_modrm     = false;
+  bool has_modrm = false;
   bool reg_is_opcode = false;
 
   size_t immediate_bytes = 0;

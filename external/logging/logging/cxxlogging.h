@@ -4,10 +4,10 @@
 #include "logging.h"
 
 typedef enum {
-  LOG_LEVEL_FATAL   = 0,
-  LOG_LEVEL_ERROR   = 1,
+  LOG_LEVEL_FATAL = 0,
+  LOG_LEVEL_ERROR = 1,
   LOG_LEVEL_WARNING = 2,
-  LOG_LEVEL_DEBUG   = 3,
+  LOG_LEVEL_DEBUG = 3,
   LOG_LEVEL_VERBOSE = 4
 } LogLevel;
 

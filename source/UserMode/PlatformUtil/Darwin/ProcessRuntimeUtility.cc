@@ -44,10 +44,10 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   std::vector<MemoryRegion> ProcessMemoryLayout;
 
   struct vm_region_submap_short_info_64 submap_info;
-  mach_msg_type_number_t                count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
-  mach_vm_address_t                     addr  = 0;
-  mach_vm_size_t                        size  = 0;
-  natural_t                             depth = 0;
+  mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  mach_vm_address_t addr = 0;
+  mach_vm_size_t size = 0;
+  natural_t depth = 0;
   while (true) {
     count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     kern_return_t kr =
@@ -94,17 +94,17 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   std::vector<RuntimeModule> ProcessModuleMap;
 
   kern_return_t kr;
-  task_dyld_info_data_t  task_dyld_info;
+  task_dyld_info_data_t task_dyld_info;
   mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-  kr                           = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count);
+  kr = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count);
   if (kr != KERN_SUCCESS) {
     return ProcessModuleMap;
   }
 
   struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *)task_dyld_info.all_image_info_addr;
-    const struct dyld_image_info *infoArray = infos->infoArray;
+  const struct dyld_image_info *infoArray = infos->infoArray;
   uint32_t infoArrayCount = infos->infoArrayCount;
-  
+
   for (int i = 0; i < infoArrayCount; ++i) {
     const struct dyld_image_info *info = &infoArray[i];
 

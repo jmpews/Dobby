@@ -61,10 +61,10 @@ struct Instr {
   };
 
   byte_t Displacement[4];
-  int    DisplacementOffset;
+  int DisplacementOffset;
 
   byte_t Immediate[4];
-  int    ImmediateOffset;
+  int ImmediateOffset;
 };
 
 // clang-format off

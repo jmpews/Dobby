@@ -44,14 +44,14 @@ extern "C" {
 #define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
     if (LOG_TAG)                                                                                                       \
-      LOG_FUNCTION_IMPL(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                                    \
+      LOG_FUNCTION_IMPL(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                          \
     else                                                                                                               \
-      LOG_FUNCTION_IMPL(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                                  \
+      LOG_FUNCTION_IMPL(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                        \
   } while (0)
 
 #define RAW_LOG(level, fmt, ...)                                                                                       \
   do {                                                                                                                 \
-    LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                                \
+    LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                      \
   } while (0)
 
 #if defined(LOGGING_DEBUG)
@@ -74,6 +74,6 @@ extern "C" {
 #endif
 
 #define UNIMPLEMENTED() FATAL("%s\n", "unimplemented code!!!")
-#define UNREACHABLE()   FATAL("%s\n", "unreachable code!!!")
+#define UNREACHABLE() FATAL("%s\n", "unreachable code!!!")
 
 #endif

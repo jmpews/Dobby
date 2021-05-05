@@ -5,7 +5,7 @@
 
 AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromAddress(addr_t address, int size) {
   AssemblyCodeChunk *result = NULL;
-  result                    = new AssemblyCodeChunk;
+  result = new AssemblyCodeChunk;
   result->init_region_range(address, size);
   return result;
 }
@@ -13,7 +13,7 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromAddress(addr_t address, int 
 AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
   AssemblyCodeChunk *result = NULL;
 
-  CodeBufferBase *code_buffer =NULL;
+  CodeBufferBase *code_buffer = NULL;
   code_buffer = (CodeBufferBase *)assembler->GetCodeBuffer();
 
   void *realized_address = assembler->GetRealizedAddress();
@@ -36,7 +36,7 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase
     realized_address = (void *)result->raw_instruction_start();
     assembler->SetRealizedAddress(realized_address);
   } else {
-    result                    = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)realized_address, code_buffer->getSize());
+    result = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)realized_address, code_buffer->getSize());
   }
 
   // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative

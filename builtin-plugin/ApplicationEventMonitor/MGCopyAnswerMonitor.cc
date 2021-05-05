@@ -25,7 +25,7 @@ static uintptr_t getCallFirstArg(RegisterContext *ctx) {
 
 void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   CFStringRef key_ = 0;
-  key_             = (CFStringRef)getCallFirstArg(ctx);
+  key_ = (CFStringRef)getCallFirstArg(ctx);
 
   char str_key[256] = {0};
   CFStringGetCString(key_, str_key, 256, kCFStringEncodingUTF8);

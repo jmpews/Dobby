@@ -86,7 +86,7 @@ public:
 
 private:
   RegisterType reg_type_;
-  int          reg_size_;
+  int reg_size_;
 };
 
 typedef CPURegister Register;
@@ -124,19 +124,19 @@ GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 constexpr Register wzr = w31;
 constexpr Register xzr = x31;
 
-constexpr Register SP  = x31;
+constexpr Register SP = x31;
 constexpr Register wSP = w31;
-constexpr Register FP  = x29;
+constexpr Register FP = x29;
 constexpr Register wFP = w29;
-constexpr Register LR  = x30;
+constexpr Register LR = x30;
 constexpr Register wLR = w30;
 
 } // namespace arm64
 } // namespace zz
 
-#define W(code)         CPURegister::W(code)
-#define X(code)         CPURegister::X(code)
-#define Q(code)         CPURegister::Q(code)
+#define W(code) CPURegister::W(code)
+#define X(code) CPURegister::X(code)
+#define Q(code) CPURegister::Q(code)
 #define InvalidRegister CPURegister::InvalidRegister()
 
 #endif

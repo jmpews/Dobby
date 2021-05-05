@@ -35,11 +35,11 @@ namespace arm64 {
 
 constexpr Register TMP_REG_0 = X(ARM64_TMP_REG_NDX_0);
 
-#define Rd(rd)  (rd.code() << kRdShift)
-#define Rt(rt)  (rt.code() << kRtShift)
+#define Rd(rd) (rd.code() << kRdShift)
+#define Rt(rt) (rt.code() << kRtShift)
 #define Rt2(rt) (rt.code() << kRt2Shift)
-#define Rn(rn)  (rn.code() << kRnShift)
-#define Rm(rm)  (rm.code() << kRmShift)
+#define Rn(rn) (rn.code() << kRnShift)
+#define Rm(rm) (rm.code() << kRmShift)
 
 // ================================================================
 // PseudoLabel
@@ -49,7 +49,7 @@ public:
   enum PseudoLabelType { kLdrLiteral };
 
   typedef struct _PseudoLabelInstruction {
-    int             position_;
+    int position_;
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
@@ -77,9 +77,9 @@ public:
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
-      int32_t       offset  = pos() - instruction->position_;
-      const int32_t inst32  = _buffer->LoadInst(instruction->position_);
-      int32_t       encoded = 0;
+      int32_t offset = pos() - instruction->position_;
+      const int32_t inst32 = _buffer->LoadInst(instruction->position_);
+      int32_t encoded = 0;
 
       switch (instruction->type_) {
       case kLdrLiteral: {
@@ -96,8 +96,8 @@ public:
 
   void link_to(int pos, PseudoLabelType type) {
     PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
-    instruction->position_              = pos;
-    instruction->type_                  = type;
+    instruction->position_ = pos;
+    instruction->type_ = type;
     instructions_.pushObject((LiteObject *)instruction);
   }
 
@@ -182,8 +182,8 @@ private:
 
   Register reg_;
 
-  Shift   shift_;
-  Extend  extend_;
+  Shift shift_;
+  Extend extend_;
   int32_t shift_extent_imm_;
 };
 
@@ -210,18 +210,18 @@ public:
   inline explicit MemOperand(Register base, const Operand &offset, AddrMode addrmode = Offset)
       : base_(base), regoffset_(InvalidRegister), addrmode_(addrmode) {
     if (offset.IsShiftedRegister()) {
-      regoffset_        = offset.reg();
-      shift_            = offset.shift();
+      regoffset_ = offset.reg();
+      shift_ = offset.shift();
       shift_extend_imm_ = offset.shift_extend_imm();
 
       extend_ = NO_EXTEND;
       offset_ = 0;
     } else if (offset.IsExtendedRegister()) {
-      regoffset_        = offset.reg();
-      extend_           = offset.extend();
+      regoffset_ = offset.reg();
+      extend_ = offset.extend();
       shift_extend_imm_ = offset.shift_extend_imm();
 
-      shift_  = NO_SHIFT;
+      shift_ = NO_SHIFT;
       offset_ = 0;
     }
   }
@@ -267,8 +267,8 @@ private:
 
   int64_t offset_;
 
-  Shift    shift_;
-  Extend   extend_;
+  Shift shift_;
+  Extend extend_;
   uint32_t shift_extend_imm_;
 
   AddrMode addrmode_;
@@ -320,7 +320,7 @@ public:
     int32_t N, imms, immr;
     immr = bits(imm, 0, 5);
     imms = bits(imm, 6, 11);
-    N    = bit(imm, 12);
+    N = bit(imm, 12);
 
     return (sf(rd) | LeftShift(immr, 6, 16) | LeftShift(imms, 6, 10) | Rd(rd) | Rn(rn));
   }
@@ -334,8 +334,8 @@ public:
   // LoadStore
   static int32_t LoadStorePair(LoadStorePairOp op, CPURegister rt, CPURegister rt2, const MemOperand &addr) {
     int32_t scale = 2;
-    int32_t opc   = 0;
-    int     imm7;
+    int32_t opc = 0;
+    int imm7;
     opc = bits(op, 30, 31);
     if (rt.IsRegister()) {
       scale += bit(opc, 1);
@@ -527,7 +527,7 @@ public:
 private:
   // label helpers.
   static constexpr int kStartOfLabelLinkChain = 0;
-  int                  LinkAndGetByteOffsetTo(Label *label);
+  int LinkAndGetByteOffsetTo(Label *label);
 
   // load helpers.
   void EmitLoadRegLiteral(LoadRegLiteralOp op, CPURegister rt, int64_t imm) {
@@ -578,7 +578,7 @@ private:
   void AddSubImmediate(const Register &rd, const Register &rn, const Operand &operand, AddSubImmediateOp op) {
     if (operand.IsImmediate()) {
       int64_t immediate = operand.Immediate();
-      int32_t imm12     = LeftShift(immediate, 12, 10);
+      int32_t imm12 = LeftShift(immediate, 12, 10);
       Emit(op | Rd(rd) | Rn(rn) | imm12);
     } else {
       UNREACHABLE();
@@ -652,8 +652,8 @@ public:
   }
 
   void AdrpAdd(Register rd, uint64_t from, uint64_t to) {
-    uint64_t from_PAGE  = ALIGN(from, 0x1000);
-    uint64_t to_PAGE    = ALIGN(to, 0x1000);
+    uint64_t from_PAGE = ALIGN(from, 0x1000);
+    uint64_t to_PAGE = ALIGN(to, 0x1000);
     uint64_t to_PAGEOFF = (uint64_t)to % 0x1000;
 
     adrp(rd, to_PAGE - from_PAGE);

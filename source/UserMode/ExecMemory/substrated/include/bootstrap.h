@@ -19,31 +19,31 @@ __BEGIN_DECLS;
 #include <stdbool.h>
 
 #define BOOTSTRAP_MAX_NAME_LEN 128
-#define BOOTSTRAP_MAX_CMD_LEN  512
+#define BOOTSTRAP_MAX_CMD_LEN 512
 
-typedef char                  name_t[BOOTSTRAP_MAX_NAME_LEN];
-typedef char                  cmd_t[BOOTSTRAP_MAX_CMD_LEN];
-typedef name_t *              name_array_t;
-typedef int                   bootstrap_status_t;
-typedef bootstrap_status_t *  bootstrap_status_array_t;
-typedef unsigned int          bootstrap_property_t;
+typedef char name_t[BOOTSTRAP_MAX_NAME_LEN];
+typedef char cmd_t[BOOTSTRAP_MAX_CMD_LEN];
+typedef name_t *name_array_t;
+typedef int bootstrap_status_t;
+typedef bootstrap_status_t *bootstrap_status_array_t;
+typedef unsigned int bootstrap_property_t;
 typedef bootstrap_property_t *bootstrap_property_array_t;
 
 typedef boolean_t *bool_array_t;
 
 #define BOOTSTRAP_MAX_LOOKUP_COUNT 20
 
-#define BOOTSTRAP_SUCCESS         0
-#define BOOTSTRAP_NOT_PRIVILEGED  1100
-#define BOOTSTRAP_NAME_IN_USE     1101
+#define BOOTSTRAP_SUCCESS 0
+#define BOOTSTRAP_NOT_PRIVILEGED 1100
+#define BOOTSTRAP_NAME_IN_USE 1101
 #define BOOTSTRAP_UNKNOWN_SERVICE 1102
-#define BOOTSTRAP_SERVICE_ACTIVE  1103
-#define BOOTSTRAP_BAD_COUNT       1104
-#define BOOTSTRAP_NO_MEMORY       1105
-#define BOOTSTRAP_NO_CHILDREN     1106
+#define BOOTSTRAP_SERVICE_ACTIVE 1103
+#define BOOTSTRAP_BAD_COUNT 1104
+#define BOOTSTRAP_NO_MEMORY 1105
+#define BOOTSTRAP_NO_CHILDREN 1106
 
-#define BOOTSTRAP_STATUS_INACTIVE  0
-#define BOOTSTRAP_STATUS_ACTIVE    1
+#define BOOTSTRAP_STATUS_INACTIVE 0
+#define BOOTSTRAP_STATUS_ACTIVE 1
 #define BOOTSTRAP_STATUS_ON_DEMAND 2
 
 XPC_EXPORT

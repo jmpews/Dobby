@@ -22,7 +22,7 @@ PUBLIC int DobbyDestroy(void *address) {
   // check if we already hook
   HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);
   if (entry) {
-    uint8_t *buffer      = entry->origin_chunk_.chunk_buffer;
+    uint8_t *buffer = entry->origin_chunk_.chunk_buffer;
     uint32_t buffer_size = entry->origin_chunk_.chunk.length;
 #if defined(TARGET_ARCH_ARM)
     address = (void *)((addr_t)address - 1);

@@ -64,7 +64,7 @@ extern int mig_strncpy_zerofill(char *dest, const char *src, int len) __attribut
 #define FUNCTION_PTR_T
 typedef void (*function_ptr_t)(mach_port_t, char *, mach_msg_type_number_t);
 typedef struct {
-  char *         name;
+  char *name;
   function_ptr_t function;
 } function_table_entry;
 typedef function_table_entry *function_table_t;
@@ -121,12 +121,12 @@ __END_DECLS
 typedef struct {
   mach_msg_header_t Head;
   /* start of the kernel processed data */
-  mach_msg_body_t            msgh_body;
+  mach_msg_body_t msgh_body;
   mach_msg_port_descriptor_t task;
   /* end of the kernel processed data */
-  NDR_record_t      NDR;
+  NDR_record_t NDR;
   mach_vm_address_t source_address;
-  mach_vm_size_t    source_size;
+  mach_vm_size_t source_size;
   mach_vm_address_t target_address;
 } __Request__substrated_mark_t __attribute__((unused));
 #ifdef __MigPackStructs
@@ -152,8 +152,8 @@ union __RequestUnion__substrated_subsystem {
 #endif
 typedef struct {
   mach_msg_header_t Head;
-  NDR_record_t      NDR;
-  kern_return_t     RetCode;
+  NDR_record_t NDR;
+  kern_return_t RetCode;
   mach_vm_address_t target_address;
 } __Reply__substrated_mark_t __attribute__((unused));
 #ifdef __MigPackStructs

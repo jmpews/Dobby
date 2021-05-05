@@ -4,8 +4,8 @@
 // obfuscated interface
 #if 0
 #define DobbyBuildVersion c343f74888dffad84d9ad08d9c433456
-#define DobbyHook         c8dc3ffa44f22dbd10ccae213dd8b1f8
-#define DobbyInstrument   b71e27bca2c362de90c1034f19d839f9
+#define DobbyHook c8dc3ffa44f22dbd10ccae213dd8b1f8
+#define DobbyInstrument b71e27bca2c362de90c1034f19d839f9
 #endif
 
 #ifdef __cplusplus
@@ -27,8 +27,8 @@ typedef enum {
 MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 typedef uintptr_t addr_t;
-typedef uint32_t  addr32_t;
-typedef uint64_t  addr64_t;
+typedef uint32_t addr32_t;
+typedef uint64_t addr64_t;
 
 #if defined(__arm64__) || defined(__aarch64__)
 
@@ -125,7 +125,7 @@ typedef struct _RegisterContext {
 } RegisterContext;
 #endif
 
-#define RT_FAILED  -1
+#define RT_FAILED -1
 #define RT_SUCCESS 0
 typedef enum _RetStatus { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 

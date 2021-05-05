@@ -40,15 +40,15 @@ static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
   if (text_section_start == 0 || text_section_end == 0) {
-    auto   main        = ProcessRuntimeUtility::GetProcessModule("mobilex");
+    auto main = ProcessRuntimeUtility::GetProcessModule("mobilex");
     addr_t main_header = (addr_t)main.load_address;
 
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");
-    slide             = main_header - text_segment->vmaddr;
+    slide = main_header - text_segment->vmaddr;
 
-    auto text_section  = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
+    auto text_section = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
     text_section_start = main_header + (addr_t)text_section->offset;
-    text_section_end   = text_section_start + text_section->size;
+    text_section_end = text_section_start + text_section->size;
   }
 
   if (ctx == NULL)
@@ -79,7 +79,7 @@ static void syscall_log_handler(RegisterContext *ctx, const HookEntryInfo *info)
     return;
 
   char buffer[2048] = {0};
-  int  syscall_rum  = ctx->general.regs.x16;
+  int syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == 0) {
     syscall_rum = (int)getCallFirstArg(ctx);
     sprintf(buffer, "[syscall svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));

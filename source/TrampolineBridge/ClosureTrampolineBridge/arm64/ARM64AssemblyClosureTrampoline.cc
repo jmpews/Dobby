@@ -52,10 +52,10 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   AssemblyCodeChunk *code =
       AssemblyCodeBuilder::FinalizeFromTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
-  entry->address       = (void *)code->raw_instruction_start();
-  entry->carry_data    = carry_data;
+  entry->address = (void *)code->raw_instruction_start();
+  entry->carry_data = carry_data;
   entry->carry_handler = carry_handler;
-  entry->size          = code->raw_instruction_size();
+  entry->size = code->raw_instruction_size();
   return entry;
 }
 

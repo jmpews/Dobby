@@ -5,11 +5,11 @@ namespace zz {
 namespace x64 {
 
 enum ScaleFactor {
-  TIMES_1              = 0,
-  TIMES_2              = 1,
-  TIMES_4              = 2,
-  TIMES_8              = 3,
-  TIMES_16             = 4,
+  TIMES_1 = 0,
+  TIMES_2 = 1,
+  TIMES_4 = 2,
+  TIMES_8 = 3,
+  TIMES_16 = 4,
   TIMES_HALF_WORD_SIZE = sizeof(void *) / 2 - 1
 };
 

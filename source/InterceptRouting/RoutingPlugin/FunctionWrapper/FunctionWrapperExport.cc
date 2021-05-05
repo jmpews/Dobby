@@ -12,9 +12,9 @@ PUBLIC int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
-  HookEntry *entry        = new HookEntry();
-  entry->id               = interceptor->entries->getCount();
-  entry->type             = kFunctionWrapper;
+  HookEntry *entry = new HookEntry();
+  entry->id = interceptor->entries->getCount();
+  entry->type = kFunctionWrapper;
   entry->function_address = function_address;
 
   FunctionWrapperRouting *route = new FunctionWrapperRouting(entry);

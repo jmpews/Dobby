@@ -63,9 +63,9 @@ static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   if (caller == 0)
     return;
 
-  char               buffer[256]   = {0};
-  mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
-  char *             mach_msg_name = mach_msg_to_str(msg);
+  char buffer[256] = {0};
+  mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(ctx);
+  char *mach_msg_name = mach_msg_to_str(msg);
   if (mach_msg_name) {
     sprintf(buffer, "[mach msg %p] %s\n", caller, mach_msg_name);
   } else {

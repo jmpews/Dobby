@@ -34,11 +34,11 @@ public:
         UNREACHABLE();
       } break;
       case kThumb2LiteralLdr: {
-        int32_t  offset = pos() - ALIGN(instruction->position_, 4) - Thumb_PC_OFFSET;
-        uint32_t imm12  = offset;
+        int32_t offset = pos() - ALIGN(instruction->position_, 4) - Thumb_PC_OFFSET;
+        uint32_t imm12 = offset;
         CHECK(imm12 < (1 << 12));
         uint16_t encoding = inst2 & 0xf000;
-        encoding          = encoding | imm12;
+        encoding = encoding | imm12;
         _buffer->RewriteThumb1Inst(instruction->position_, inst1 | B7); // add = (U == '1');
         _buffer->RewriteThumb1Inst(instruction->position_ + Thumb1_INST_LEN, encoding);
 
@@ -163,9 +163,9 @@ public:
 
 private:
   void EmitThumb2LoadLiteral(Register rt, const MemOperand x) {
-    bool     add = true;
+    bool add = true;
     uint32_t U, imm12;
-    int32_t  offset = x.offset();
+    int32_t offset = x.offset();
 
 #if 0
     // literal ldr, base = ALIGN(pc, 4)
@@ -179,10 +179,10 @@ private:
 #endif
 
     if (offset > 0) {
-      U     = B7;
+      U = B7;
       imm12 = offset;
     } else {
-      U     = 0;
+      U = 0;
       imm12 = -offset;
     }
     EmitInt16(0xf85f | U);
@@ -204,14 +204,14 @@ private:
       // use bit accelerate
       uint32_t P = 0, W = 0, U = 0;
       uint32_t imm8 = x.offset() > 0 ? x.offset() : -x.offset();
-      U             = x.offset() > 0 ? 0 : B9;
+      U = x.offset() > 0 ? 0 : B9;
       if (x.IsPostIndex()) {
         P = 0, W = B8;
       } else if (x.IsPreIndex()) {
         P = B10, W = B8;
       }
       index = (P == B10);
-      add   = (U == B9);
+      add = (U == B9);
       wback = (W == B8);
       EmitInt16(0xf850 | (x.rn().code() << 0));
       EmitInt16(0x0800 | (rt.code() << 12) | P | U | W | imm8);
@@ -225,12 +225,12 @@ private:
     ASSERT(CheckAlign(operand, 2));
 
     uint32_t signbit = (imm >> 31) & 0x1;
-    uint32_t i1      = (operand >> 22) & 0x1;
-    uint32_t i2      = (operand >> 21) & 0x1;
-    uint32_t imm10   = (operand >> 11) & 0x03ff;
-    uint32_t imm11   = operand & 0x07ff;
-    uint32_t j1      = (!(i1 ^ signbit));
-    uint32_t j2      = (!(i2 ^ signbit));
+    uint32_t i1 = (operand >> 22) & 0x1;
+    uint32_t i2 = (operand >> 21) & 0x1;
+    uint32_t imm10 = (operand >> 11) & 0x03ff;
+    uint32_t imm11 = operand & 0x07ff;
+    uint32_t j1 = (!(i1 ^ signbit));
+    uint32_t j2 = (!(i2 ^ signbit));
 
     if (cond != AL) {
       UNIMPLEMENTED();

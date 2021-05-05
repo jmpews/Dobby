@@ -79,8 +79,8 @@ void Semaphore::Wait() {
 
 bool Semaphore::WaitFor(const TimeDelta &rel_time) {
   // Compute the time for end of timeout.
-  const Time            time = Time::NowFromSystemTime() + rel_time;
-  const struct timespec ts   = time.ToTimespec();
+  const Time time = Time::NowFromSystemTime() + rel_time;
+  const struct timespec ts = time.ToTimespec();
 
   // Wait for semaphore signalled or timeout.
   while (true) {
@@ -90,7 +90,7 @@ bool Semaphore::WaitFor(const TimeDelta &rel_time) {
 #if V8_LIBC_GLIBC && !V8_GLIBC_PREREQ(2, 4)
     if (result > 0) {
       // sem_timedwait in glibc prior to 2.3.4 returns the errno instead of -1.
-      errno  = result;
+      errno = result;
       result = -1;
     }
 #endif

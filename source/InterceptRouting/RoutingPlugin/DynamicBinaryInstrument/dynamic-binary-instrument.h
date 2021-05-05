@@ -9,7 +9,7 @@
 
 #include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
-#define X64InterceptRouting   InterceptRouting
+#define X64InterceptRouting InterceptRouting
 #define ARM64InterceptRouting InterceptRouting
 
 class DynamicBinaryInstrumentRouting : public X64InterceptRouting {

@@ -11,18 +11,18 @@ void InterceptRouting::Prepare() {
 // Generate relocated code
 void InterceptRouting::GenerateRelocatedCode() {
   // generate original code
-  AssemblyCodeChunk *origin         = NULL;
-  int                trampoline_len = trampoline_buffer_->getSize();
-  origin  = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
+  AssemblyCodeChunk *origin = NULL;
+  int trampoline_len = trampoline_buffer_->getSize();
+  origin = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
   origin_ = origin;
 
   // generate the relocated code
   AssemblyCodeChunk *relocated = NULL;
-  relocated                    = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
-  relocated_                   = relocated;
+  relocated = AssemblyCodeBuilder::FinalizeFromAddress(0, 0);
+  relocated_ = relocated;
 
   void *relocate_buffer = NULL;
-  relocate_buffer       = entry_->target_address;
+  relocate_buffer = entry_->target_address;
 
   GenRelocateCodeAndBranch(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
@@ -63,7 +63,7 @@ ARM - 8 bytes:
 // Patch the address with branch instr
 void InterceptRouting::Active() {
   void *patch_address = NULL;
-  patch_address       = (void *)origin_->raw_instruction_start();
+  patch_address = (void *)origin_->raw_instruction_start();
 
   CodePatch(patch_address, (uint8_t *)trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
   DLOG(1, "[intercept routing] Active patch %p", patch_address);
@@ -88,7 +88,7 @@ void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
   // if near branch trampoline plugin enabled
   if (ExtraInternalPlugin::near_branch_trampoline) {
     RoutingPlugin *plugin = NULL;
-    plugin                = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
+    plugin = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
     if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
       DLOG(0, "Failed enable near branch trampoline plugin");
     }

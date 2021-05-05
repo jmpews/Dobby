@@ -44,7 +44,7 @@ void CpuFeatures::FlushICache(void *startp, void *endp) {
 
       "  pop {r7}\n"
       :
-      : "r"(beg), "r"(end), "r"(flg), [ scno ] "i"(__ARM_NR_cacheflush)
+      : "r"(beg), "r"(end), "r"(flg), [scno] "i"(__ARM_NR_cacheflush)
       : "memory");
 #endif
 #endif

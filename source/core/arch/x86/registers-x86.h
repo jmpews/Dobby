@@ -58,7 +58,7 @@ public:
 
 private:
   RegisterType reg_type_;
-  int          reg_size_;
+  int reg_size_;
 };
 
 typedef CPURegister Register;
@@ -77,11 +77,11 @@ GENERAL_REGISTERS(DEFINE_REGISTER)
   V(xmm6)                                                                                                              \
   V(xmm7)
 
-#define FLOAT_REGISTERS   DOUBLE_REGISTERS
+#define FLOAT_REGISTERS DOUBLE_REGISTERS
 #define SIMD128_REGISTERS DOUBLE_REGISTERS
 
-constexpr bool kPadArguments      = false;
-constexpr bool kSimpleFPAliasing  = true;
+constexpr bool kPadArguments = false;
+constexpr bool kSimpleFPAliasing = true;
 constexpr bool kSimdMaskRegisters = false;
 
 enum DoubleRegisterCode {

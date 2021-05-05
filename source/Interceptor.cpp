@@ -26,7 +26,7 @@ HookEntryNode *Interceptor::find_hook_entry_node(void *address) {
 HookEntry *Interceptor::FindHookEntry(void *address) {
   HookEntryNode *entry_node = nullptr;
   entry_node = find_hook_entry_node(address);
-  if(entry_node) {
+  if (entry_node) {
     return entry_node->entry;
   }
 
@@ -41,7 +41,7 @@ void Interceptor::AddHookEntry(HookEntry *entry) {
 }
 
 void Interceptor::RemoveHookEntry(void *address) {
-  if(HookEntryNode *entry_node = find_hook_entry_node(address)) {
+  if (HookEntryNode *entry_node = find_hook_entry_node(address)) {
     list_del(&entry_node->list_node);
   }
 }

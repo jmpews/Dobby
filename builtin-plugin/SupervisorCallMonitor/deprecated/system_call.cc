@@ -41,14 +41,14 @@ extern char *mach_msg_to_str(mach_msg_header_t *msg);
 
 static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
   char buffer[256] = {0};
-  int  syscall_rum = ctx->general.regs.x16;
+  int syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == 0) {
     syscall_rum = (int)getCallFirstArg(ctx);
     sprintf(buffer, "[syscall svc-%d] %s\n", syscall_rum, syscall_num_to_str(syscall_rum));
   } else if (syscall_rum == -31) {
     // mach_msg_trap
-    mach_msg_header_t *msg           = (typeof(msg))getCallFirstArg(ctx);
-    char *             mach_msg_name = mach_msg_to_str(msg);
+    mach_msg_header_t *msg = (typeof(msg))getCallFirstArg(ctx);
+    char *mach_msg_name = mach_msg_to_str(msg);
     if (mach_msg_name) {
       sprintf(buffer, "[mach msg svc] %s\n", mach_msg_name);
     } else {
@@ -65,14 +65,14 @@ static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
 typedef int32_t arm64_instr_t;
 
 void monitor_libsystem_kernel_dylib() {
-  auto   libsystem_c        = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
+  auto libsystem_c = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
   addr_t libsystem_c_header = (addr_t)libsystem_c.load_address;
-  auto   text_section =
+  auto text_section =
       mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)libsystem_c_header, "__TEXT", "__text");
 
   addr_t shared_cache_load_addr = (addr_t)mach_kit::macho_get_shared_cache();
-  addr_t insn_addr              = shared_cache_load_addr + (addr_t)text_section->offset;
-  addr_t insn_addr_end          = insn_addr + text_section->size;
+  addr_t insn_addr = shared_cache_load_addr + (addr_t)text_section->offset;
+  addr_t insn_addr_end = insn_addr + text_section->size;
 
   addr_t write_svc_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", "write");
   write_svc_addr += 4;
@@ -95,11 +95,11 @@ void monitor_libsystem_kernel_dylib() {
 }
 
 void monitor_main_binary() {
-  auto   main        = ProcessRuntimeUtility::GetProcessModuleMap()[0];
+  auto main = ProcessRuntimeUtility::GetProcessModuleMap()[0];
   addr_t main_header = (addr_t)main.load_address;
-  auto text_section  = mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
+  auto text_section = mach_kit::macho_get_section_by_name_64((struct mach_header_64 *)main_header, "__TEXT", "__text");
 
-  addr_t insn_addr     = main_header + (addr_t)text_section->offset;
+  addr_t insn_addr = main_header + (addr_t)text_section->offset;
   addr_t insn_addr_end = insn_addr + text_section->size;
 
   for (; insn_addr < insn_addr_end; insn_addr += sizeof(arm64_instr_t)) {

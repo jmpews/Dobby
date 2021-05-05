@@ -14,7 +14,7 @@ __attribute__((constructor)) static void ctor() {
 #if defined(__LP64__)
   lib = "/system/lib64/libandroid_runtime.so";
 #else
-  lib          = "/system/lib/libandroid_runtime.so";
+  lib = "/system/lib/libandroid_runtime.so";
 #endif
 
   void *vm = NULL;
@@ -29,8 +29,8 @@ __attribute__((constructor)) static void ctor() {
   vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 #else
   void *handle = NULL;
-  handle       = linker_dlopen(lib, RTLD_LAZY);
-  vm           = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
+  handle = linker_dlopen(lib, RTLD_LAZY);
+  vm = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 #endif
   LOG(1, "vm %p", vm);
 }

@@ -28,14 +28,10 @@
 
 typedef struct _AssemblyCodeChunkBuffer {
   AssemblyCodeChunk chunk;
-  uint8_t           chunk_buffer[64];
+  uint8_t chunk_buffer[64];
 } AssemblyCodeChunkBuffer;
 
-typedef enum {
-  kFunctionWrapper,
-  kFunctionInlineHook,
-  kDynamicBinaryInstrument
-} HookEntryType;
+typedef enum { kFunctionWrapper, kFunctionInlineHook, kDynamicBinaryInstrument } HookEntryType;
 
 typedef struct {
   int id;

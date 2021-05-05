@@ -17,7 +17,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
 
 #include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
-#define _  turbo_assembler_.
+#define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
   AssemblyCodeChunk *cchunk = MemoryArena::AllocateCodeChunk(32);
@@ -33,10 +33,10 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ mov(Address(esp, 4 * 0), Immediate((int32_t)entry, 32));
   _ jmp(Immediate(offset, 32));
 
-  entry->address       = (void *)cchunk->raw_instruction_start();
-  entry->carry_data    = carry_data;
+  entry->address = (void *)cchunk->raw_instruction_start();
+  entry->carry_data = carry_data;
   entry->carry_handler = carry_handler;
-  entry->size          = cchunk->raw_instruction_size();
+  entry->size = cchunk->raw_instruction_size();
 
   CodeBufferBase *buffer = reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
   CodePatch(cchunk->address, (uint8_t *)buffer->getRawBuffer(), buffer->getSize());

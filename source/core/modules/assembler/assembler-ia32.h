@@ -26,7 +26,7 @@ public:
   enum PseudoLabelType { kDisp32_off_7 };
 
   typedef struct _PseudoLabelInstruction {
-    int             position_;
+    int position_;
     PseudoLabelType type_;
   } PseudoLabelInstruction;
 
@@ -74,8 +74,8 @@ public:
 
   void link_to(int pos, PseudoLabelType type) {
     PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
-    instruction->position_              = pos;
-    instruction->type_                  = type;
+    instruction->position_ = pos;
+    instruction->type_ = type;
     instructions_.pushObject((LiteObject *)instruction);
   }
 
@@ -99,9 +99,9 @@ private:
   int data_size_;
 };
 
-#define ModRM_Mod(byte)       ((byte & 0b11000000) >> 6)
+#define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
-#define ModRM_RM(byte)        (byte & 0b00000111)
+#define ModRM_RM(byte) (byte & 0b00000111)
 
 typedef union _ModRM {
   byte_t ModRM;
@@ -203,14 +203,14 @@ protected:
   void SetModRM(int mod, Register rm) {
     ASSERT((mod & ~3) == 0);
     encoding_[0] = (mod << 6) | rm.code();
-    length_      = 1;
+    length_ = 1;
   }
 
   void SetSIB(ScaleFactor scale, Register index, Register base) {
     ASSERT(length_ == 1);
     ASSERT((scale & ~3) == 0);
     encoding_[1] = (scale << 6) | (index.code() << 3) | base.code();
-    length_      = 2;
+    length_ = 2;
   }
 
   void SetDisp8(int8_t disp) {
@@ -245,8 +245,8 @@ class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
     int base_ = base.code();
-    int ebp_  = ebp.code();
-    int esp_  = esp.code();
+    int ebp_ = ebp.code();
+    int esp_ = esp.code();
     if ((disp == 0) && (base_ != ebp_)) {
       SetModRM(0, base);
       if (base_ == esp_)

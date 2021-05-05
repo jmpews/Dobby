@@ -6,7 +6,7 @@ using namespace zz;
 
 PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   DWORD oldProtect;
-  int   pageSize;
+  int pageSize;
 
   // Get page size
   SYSTEM_INFO si;

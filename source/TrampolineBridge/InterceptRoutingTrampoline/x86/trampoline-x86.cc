@@ -21,7 +21,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   codegen.JmpNear((uint32_t)to);
 
   CodeBufferBase *result = NULL;
-  result                 = turbo_assembler_.GetCodeBuffer()->Copy();
+  result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
 

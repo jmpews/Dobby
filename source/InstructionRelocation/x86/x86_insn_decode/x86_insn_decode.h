@@ -25,22 +25,22 @@ typedef enum {
 
   /* Group 1: lock and repeat prefixes */
   INSN_PREFIX_GROUP1 = 0x07,
-  INSN_PREFIX_LOCK   = 0x01, /* F0 */
-  INSN_PREFIX_REPNZ  = 0x02, /* F2 */
-  INSN_PREFIX_REPNE  = INSN_PREFIX_REPNZ,
-  INSN_PREFIX_REP    = 0x04, /* F3 */
-  INSN_PREFIX_REPZ   = INSN_PREFIX_REP,
-  INSN_PREFIX_REPE   = INSN_PREFIX_REPZ,
+  INSN_PREFIX_LOCK = 0x01,  /* F0 */
+  INSN_PREFIX_REPNZ = 0x02, /* F2 */
+  INSN_PREFIX_REPNE = INSN_PREFIX_REPNZ,
+  INSN_PREFIX_REP = 0x04, /* F3 */
+  INSN_PREFIX_REPZ = INSN_PREFIX_REP,
+  INSN_PREFIX_REPE = INSN_PREFIX_REPZ,
 
   /* Group 2: segment override or branch hints */
-  INSN_PREFIX_GROUP2           = 0x01f8,
-  INSN_PREFIX_ES               = 0x0008,         /* 26 */
-  INSN_PREFIX_CS               = 0x0010,         /* 2E */
-  INSN_PREFIX_SS               = 0x0020,         /* 36 */
-  INSN_PREFIX_DS               = 0x0040,         /* 3E */
-  INSN_PREFIX_FS               = 0x0080,         /* 64 */
-  INSN_PREFIX_GS               = 0x0100,         /* 65 */
-  INSN_PREFIX_BRANCH_TAKEN     = INSN_PREFIX_CS, /* 2E */
+  INSN_PREFIX_GROUP2 = 0x01f8,
+  INSN_PREFIX_ES = 0x0008,                       /* 26 */
+  INSN_PREFIX_CS = 0x0010,                       /* 2E */
+  INSN_PREFIX_SS = 0x0020,                       /* 36 */
+  INSN_PREFIX_DS = 0x0040,                       /* 3E */
+  INSN_PREFIX_FS = 0x0080,                       /* 64 */
+  INSN_PREFIX_GS = 0x0100,                       /* 65 */
+  INSN_PREFIX_BRANCH_TAKEN = INSN_PREFIX_CS,     /* 2E */
   INSN_PREFIX_BRANCH_NOT_TAKEN = INSN_PREFIX_DS, /* 3E */
 
   /* Group 3: operand-size override */
@@ -67,8 +67,8 @@ typedef struct {
 
   // insn flag
   uint16_t flags;
-#define X86_INSN_FLAG_SET_SSE_GROUP(n)       ((n) << 5)
-#define X86_INSN_FLAG_GET_SSE_GROUP(f)       (((f) >> 5) & 0x1f)
+#define X86_INSN_FLAG_SET_SSE_GROUP(n) ((n) << 5)
+#define X86_INSN_FLAG_GET_SSE_GROUP(f) (((f) >> 5) & 0x1f)
 #define X86_INSN_FLAG_SET_MODRM_REG_GROUP(n) (((n)&0x3f) << 10)
 #define X86_INSN_FLAG_GET_MODRM_REG_GROUP(f) (((f) >> 10) & 0x3f)
 } x86_insn_spec_t;
@@ -124,9 +124,9 @@ typedef struct {
   uint8_t reg;
 
   struct {
-    uint8_t  base;
-    uint8_t  index;
-    uint8_t  scale;
+    uint8_t base;
+    uint8_t index;
+    uint8_t scale;
     uint32_t disp;
   } mem;
 } x86_insn_operand_t;

@@ -14,7 +14,6 @@ class NearBranchTrampolinePlugin : public RoutingPlugin {
   bool Active(InterceptRouting *routing);
 
   bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst);
-
 };
 
 #endif

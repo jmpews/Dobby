@@ -17,7 +17,7 @@ std::unordered_map<FILE *, const char *> *TracedFopenFileList;
 FILE *(*orig_fopen)(const char *filename, const char *mode);
 FILE *fake_fopen(const char *filename, const char *mode) {
   FILE *result = NULL;
-  result       = orig_fopen(filename, mode);
+  result = orig_fopen(filename, mode);
   if (result != NULL) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
@@ -74,7 +74,7 @@ __attribute__((constructor)) void __main() {
   //   DobbyHook((void *)fwrite, (void *)fake_fwrite, (void **)&orig_fwrite);
   //   DobbyHook((void *)fread, (void *)fake_fread, (void **)&orig_fread);
 
-  char *home   = getenv("HOME");
+  char *home = getenv("HOME");
   char *subdir = (char *)"/Library/Caches/";
 
   std::string filePath = std::string(home) + std::string(subdir) + "temp.log";

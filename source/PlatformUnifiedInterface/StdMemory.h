@@ -6,13 +6,13 @@
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
 typedef struct _MemoryRange {
-  void * address;
+  void *address;
   size_t length;
 } MemoryRange;
 
 typedef struct _MemoryRegion {
-  void *           address;
-  size_t           length;
+  void *address;
+  size_t length;
   MemoryPermission permission;
 } MemoryRegion;
 

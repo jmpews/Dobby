@@ -13,7 +13,7 @@ public:
   InterceptRouting(HookEntry *entry) : entry_(entry) {
     entry->route = this;
 
-    trampoline_        = NULL;
+    trampoline_ = NULL;
     trampoline_buffer_ = NULL;
     trampoline_target_ = NULL;
   }

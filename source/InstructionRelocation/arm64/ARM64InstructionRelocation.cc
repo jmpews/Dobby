@@ -13,25 +13,25 @@ using namespace zz::arm64;
 
 // Compare and branch.
 enum CompareBranchOp {
-  CompareBranchFixed     = 0x34000000,
+  CompareBranchFixed = 0x34000000,
   CompareBranchFixedMask = 0x7E000000,
-  CompareBranchMask      = 0xFF000000,
+  CompareBranchMask = 0xFF000000,
 };
 
 // Conditional branch.
 enum ConditionalBranchOp {
-  ConditionalBranchFixed     = 0x54000000,
+  ConditionalBranchFixed = 0x54000000,
   ConditionalBranchFixedMask = 0xFE000000,
-  ConditionalBranchMask      = 0xFF000010,
+  ConditionalBranchMask = 0xFF000010,
 };
 
 // Test and branch.
 enum TestBranchOp {
-  TestBranchFixed     = 0x36000000,
+  TestBranchFixed = 0x36000000,
   TestBranchFixedMask = 0x7E000000,
-  TestBranchMask      = 0x7F000000,
-  TBZ                 = TestBranchFixed | 0x00000000,
-  TBNZ                = TestBranchFixed | 0x01000000
+  TestBranchMask = 0x7F000000,
+  TBZ = TestBranchFixed | 0x00000000,
+  TBNZ = TestBranchFixed | 0x01000000
 };
 
 static inline int64_t SignExtend(unsigned long x, int M, int N) {
@@ -58,7 +58,7 @@ static inline int64_t decode_imm14_offset(uint32_t instr) {
   int64_t offset;
   {
     int64_t imm19 = bits(instr, 5, 18);
-    offset        = (imm19 << 2);
+    offset = (imm19 << 2);
   }
   offset = SignExtend(offset, 2 + 14, 64);
   return offset;
@@ -68,7 +68,7 @@ static inline int64_t decode_imm19_offset(uint32_t instr) {
   int64_t offset;
   {
     int64_t imm19 = bits(instr, 5, 23);
-    offset        = (imm19 << 2);
+    offset = (imm19 << 2);
   }
   offset = SignExtend(offset, 2 + 19, 64);
   return offset;
@@ -78,7 +78,7 @@ static inline int64_t decode_imm26_offset(uint32_t instr) {
   int64_t offset;
   {
     int64_t imm26 = bits(instr, 0, 25);
-    offset        = (imm26 << 2);
+    offset = (imm26 << 2);
   }
   offset = SignExtend(offset, 2 + 26, 64);
   return offset;
@@ -97,13 +97,13 @@ static inline int64_t decode_immhi_immlo_offset(uint32_t instr) {
   *(instr_t *)&instr_decode = instr;
 
   int64_t imm = instr_decode.immlo + (instr_decode.immhi << 2);
-  imm         = SignExtend(imm, 2 + 19, 64);
+  imm = SignExtend(imm, 2 + 19, 64);
   return imm;
 }
 
 static inline int64_t decode_immhi_immlo_zero12_offset(uint32_t instr) {
   int64_t imm = decode_immhi_immlo_offset(instr);
-  imm         = imm << 12;
+  imm = imm << 12;
   return imm;
 }
 
@@ -128,8 +128,8 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
   uint64_t curr_orig_pc = origin->raw_instruction_start();
   uint64_t curr_relo_pc = relocated->raw_instruction_start();
 
-  addr_t       buffer_cursor = (addr_t)buffer;
-  arm64_inst_t instr         = *(arm64_inst_t *)buffer_cursor;
+  addr_t buffer_cursor = (addr_t)buffer;
+  arm64_inst_t instr = *(arm64_inst_t *)buffer_cursor;
 
   int predefined_relocate_size = origin->raw_instruction_size();
 
@@ -137,8 +137,8 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->getSize();
 
     if ((instr & LoadRegLiteralFixedMask) == LoadRegLiteralFixed) { // ldr x0, #16
-      int      rt             = decode_rt(instr);
-      char     opc            = bits(instr, 30, 31);
+      int rt = decode_rt(instr);
+      char opc = bits(instr, 30, 31);
       addr64_t memory_address = decode_imm19_offset(instr) + curr_orig_pc;
 
 #define MEM(reg, offset) MemOperand(reg, offset)
@@ -157,13 +157,13 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
     } else if ((instr & PCRelAddressingFixedMask) == PCRelAddressingFixed) {
       int rd = decode_rd(instr);
 
-      int64_t  imm             = 0;
+      int64_t imm = 0;
       addr64_t runtime_address = 0;
       if ((instr & PCRelAddressingMask) == ADR) {
-        imm             = decode_immhi_immlo_offset(instr);
+        imm = decode_immhi_immlo_offset(instr);
         runtime_address = curr_orig_pc + imm;
       } else {
-        imm             = decode_immhi_immlo_zero12_offset(instr);
+        imm = decode_immhi_immlo_zero12_offset(instr);
         runtime_address = ALIGN_FLOOR(curr_orig_pc, (1 << 12)) + imm;
       }
 
@@ -175,9 +175,9 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
       debug_nop();
 
     } else if ((instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed) { // b xxx
-      addr_t           branch_address     = decode_imm26_offset(instr) + curr_orig_pc;
+      addr_t branch_address = decode_imm26_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _                AppendRelocLabelEntry(branchAddressLabel);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       debug_nop();
       {
@@ -190,18 +190,18 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
       }
       debug_nop();
     } else if ((instr & TestBranchFixedMask) == TestBranchFixed) { // tbz, tbnz
-      addr64_t         branch_address     = decode_imm14_offset(instr) + curr_orig_pc;
+      addr64_t branch_address = decode_imm14_offset(instr) + curr_orig_pc;
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _                AppendRelocLabelEntry(branchAddressLabel);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       arm64_inst_t branch_instr = instr;
 
       char op = bit(instr, 24);
-      op      = op ^ 1;
+      op = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t  offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
-      uint32_t imm14  = offset >> 2;
+      int64_t offset = 4 * 3; // branch_instr; ldr x17, #label; br x17
+      uint32_t imm14 = offset >> 2;
       set_bits(branch_instr, 5, 18, imm14);
 
       debug_nop();
@@ -220,15 +220,15 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
       arm64_inst_t branch_instr = instr;
 
       char op = bit(instr, 24);
-      op      = op ^ 1;
+      op = op ^ 1;
       set_bit(branch_instr, 24, op);
 
-      int64_t  offset = 4 * 3;
-      uint32_t imm19  = offset >> 2;
+      int64_t offset = 4 * 3;
+      uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _                AppendRelocLabelEntry(branchAddressLabel);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       debug_nop();
       {
@@ -245,15 +245,15 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
       arm64_inst_t branch_instr = instr;
 
       char cond = bits(instr, 0, 3);
-      cond      = cond ^ 1;
+      cond = cond ^ 1;
       set_bits(branch_instr, 0, 3, cond);
 
-      int64_t  offset = 4 * 3;
-      uint32_t imm19  = offset >> 2;
+      int64_t offset = 4 * 3;
+      uint32_t imm19 = offset >> 2;
       set_bits(branch_instr, 5, 23, imm19);
 
       RelocLabelEntry *branchAddressLabel = new RelocLabelEntry(branch_address);
-      _                AppendRelocLabelEntry(branchAddressLabel);
+      _ AppendRelocLabelEntry(branchAddressLabel);
 
       debug_nop();
       {
@@ -309,7 +309,7 @@ void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyC
   // Generate executable code
   {
     AssemblyCodeChunk *code = NULL;
-    code                    = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+    code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     relocated->re_init_region_range(code->raw_instruction_start(), code->raw_instruction_size());
     delete code;
   }

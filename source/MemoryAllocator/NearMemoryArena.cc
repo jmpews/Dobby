@@ -41,8 +41,8 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
   }
 
   // check last region
-  MemoryRegion last_region     = process_memory_layout[process_memory_layout.size() - 1];
-  addr_t       last_region_end = (addr_t)last_region.address + last_region.length;
+  MemoryRegion last_region = process_memory_layout[process_memory_layout.size() - 1];
+  addr_t last_region_end = (addr_t)last_region.address + last_region.length;
   if (max_page_addr < last_region_end) {
     resultPageAddr = last_region_end + OSMemory::PageSize();
     resultPageAddr =
@@ -54,7 +54,7 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
   for (int i = 0; i < process_memory_layout.size(); ++i) {
     MemoryRegion region = process_memory_layout[i];
     // check if assume-page-addr in memory-layout
-    addr_t region_end   = (addr_t)region.address + region.length;
+    addr_t region_end = (addr_t)region.address + region.length;
     addr_t region_start = (addr_t)region.address;
 
     if (region_end < max_page_addr) {
@@ -63,7 +63,7 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
         // find the region locate in the [min_page_addr, max_page_addr]
         if (assumePageAddr == min_page_addr) {
           MemoryRegion prev_region;
-          prev_region            = process_memory_layout[i - 1];
+          prev_region = process_memory_layout[i - 1];
           addr_t prev_region_end = (addr_t)prev_region.address + prev_region.length;
           // check if have blank cave page
           if (region_start > prev_region_end) {
@@ -135,12 +135,12 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, size_t alloc_range, int
 #endif
 
 int NearMemoryArena::PushPage(addr_t page_addr, MemoryPermission permission) {
-  PageChunk *newPage    = new PageChunk;
+  PageChunk *newPage = new PageChunk;
   newPage->page.address = (void *)page_addr;
-  newPage->page.length  = OSMemory::PageSize();
-  newPage->page_cursor  = page_addr;
-  newPage->permission   = permission;
-  newPage->chunks       = new LiteMutableArray(8);
+  newPage->page.length = OSMemory::PageSize();
+  newPage->page_cursor = page_addr;
+  newPage->permission = permission;
+  newPage->chunks = new LiteMutableArray(8);
   NearMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
   return RT_SUCCESS;
 }
@@ -163,7 +163,7 @@ MemoryChunk *NearMemoryArena::AllocateChunk(addr_t position, size_t alloc_range,
 
 search_once_more:
   LiteCollectionIterator iter(NearMemoryArena::page_chunks);
-  PageChunk *            page = NULL;
+  PageChunk *page = NULL;
   while ((page = reinterpret_cast<PageChunk *>(iter.getNextObject())) != NULL) {
     if (page->permission == permission) {
       if (llabs((intptr_t)(page->page_cursor - position)) < alloc_range) {
@@ -176,9 +176,9 @@ search_once_more:
 
   MemoryChunk *chunk = NULL;
   if (page) {
-    chunk          = new MemoryChunk;
+    chunk = new MemoryChunk;
     chunk->address = (void *)page->page_cursor;
-    chunk->length  = alloc_size;
+    chunk->length = alloc_size;
 
     // update page cursor
     page->chunks->pushObject(reinterpret_cast<LiteObject *>(chunk));
@@ -187,7 +187,7 @@ search_once_more:
   }
 
   addr_t blank_page_addr = 0;
-  blank_page_addr        = search_near_blank_page(position, alloc_range);
+  blank_page_addr = search_near_blank_page(position, alloc_range);
   if (blank_page_addr) {
     OSMemory::SetPermission((void *)blank_page_addr, OSMemory::PageSize(), permission);
     NearMemoryArena::PushPage(blank_page_addr, permission);
@@ -200,12 +200,12 @@ search_once_more:
   }
 
   addr_t blank_chunk_addr = 0;
-  blank_chunk_addr        = search_near_blank_memory_chunk(position, alloc_range, alloc_size);
+  blank_chunk_addr = search_near_blank_memory_chunk(position, alloc_range, alloc_size);
   if (blank_chunk_addr) {
     MemoryChunk *chunk = NULL;
-    chunk              = new MemoryChunk;
-    chunk->address     = (void *)blank_chunk_addr;
-    chunk->length      = alloc_size;
+    chunk = new MemoryChunk;
+    chunk->address = (void *)blank_chunk_addr;
+    chunk->length = alloc_size;
     return chunk;
   }
 

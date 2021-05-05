@@ -17,7 +17,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
-  uint64_t distance   = llabs((int64_t)(from - to));
+  uint64_t distance = llabs((int64_t)(from - to));
   uint64_t adrp_range = ((uint64_t)1 << (2 + 19 + 12 - 1));
   if (distance < adrp_range) {
     // adrp, add, br
@@ -32,7 +32,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   }
 
   CodeBufferBase *result = NULL;
-  result                 = turbo_assembler_.GetCodeBuffer()->Copy();
+  result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
 
@@ -52,7 +52,7 @@ static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, a
   }
 
   // Use adrp + add branch
-  uint64_t distance   = llabs((int64_t)((addr_t)cchunk->address - target_address));
+  uint64_t distance = llabs((int64_t)((addr_t)cchunk->address - target_address));
   uint64_t adrp_range = ((uint64_t)1 << (2 + 19 + 12 - 1));
   if (distance < adrp_range) { // Use adrp + add branch == (3 * 4) trampoline size
     _ AdrpAdd(TMP_REG_0, (addr_t)cchunk->address, target_address);
@@ -80,7 +80,7 @@ static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, a
 #endif
 
     size_t tramp_size = turbo_assembler_.GetCodeBuffer()->getSize();
-    cchunk            = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_B_XXX_RANGE, tramp_size);
+    cchunk = NearMemoryArena::AllocateCodeChunk((addr_t)source_address, ARM64_B_XXX_RANGE, tramp_size);
     if (cchunk == nullptr) {
       ERROR_LOG("Can't found near code chunk");
       return NULL;
@@ -90,7 +90,7 @@ static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, a
   turbo_assembler_.SetRealizedAddress(cchunk->address);
 
   AssemblyCodeChunk *result = NULL;
-  result                    = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  result = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
 
   { // release
     delete cchunk;
@@ -109,12 +109,12 @@ CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t s
     _ b(dst - src);
   } else {
     AssemblyCodeChunk *fast_forward_trampoline = NULL;
-    fast_forward_trampoline                    = GenerateFastForwardTrampoline(src, dst);
+    fast_forward_trampoline = GenerateFastForwardTrampoline(src, dst);
     if (!fast_forward_trampoline)
       return NULL;
     // trampoline => fast_forward_trampoline
     addr_t fast_forward_trampoline_addr = fast_forward_trampoline->raw_instruction_start();
-    _      b(fast_forward_trampoline_addr - src);
+    _ b(fast_forward_trampoline_addr - src);
   }
 
   // free the original trampoline
