@@ -273,8 +273,8 @@ get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 add_subdirectory(external/xnucxx)
 get_target_property(xnucxx.SOURCE_FILE_LIST xnucxx SOURCES)
 
-if(Plugin.GlobalOffsetTableHook)
-  message(STATUS "[Dobby] Enable Global offset table hook")
+if(Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
+  message(STATUS "[Dobby] Enable global offset table hook")
 
   include_directories(builtin-plugin/GlobalOffsetTableHook)
   add_subdirectory(builtin-plugin/GlobalOffsetTableHook)
