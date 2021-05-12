@@ -62,10 +62,13 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
       // dword orig_disp = *(dword *)(buffer_cursor + insn.operands[1].mem.disp);
       dword orig_disp = insn.operands[1].mem.disp;
-      dword disp = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
+      dword new_disp = (dword)(curr_orig_ip + orig_disp - curr_relo_ip);
 
       __ EmitBuffer((void *)buffer_cursor, insn.displacement_offset);
-      __ Emit32(disp);
+      __ Emit32(new_disp);
+      if(insn.immediate_offset) {
+        __ EmitBuffer((void *)(buffer_cursor + insn.immediate_offset), insn.length - insn.immediate_offset);
+      }
     } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
       DLOG(1, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
 
