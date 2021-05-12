@@ -45,7 +45,7 @@ void cache_set(const char *name, uint64_t value) {
   entry->value = value;
 
   entry->entry_.next = (struct queue_entry *)root;
-  root               = entry;
+  root = entry;
 }
 
 uint64_t cache_get(const char *name) {
@@ -64,7 +64,7 @@ typedef struct entry_block {
 } entry_block_t;
 
 int serialized_to_file(const char *filepath) {
-  int fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC);
+  int fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC, 0660);
   if (fd == -1) {
     printf("open %s failed: %s\n", filepath, strerror(errno));
     return -1;
@@ -75,7 +75,7 @@ int serialized_to_file(const char *filepath) {
   while (entry != NULL) {
     entry_block_t block = {0};
     {
-      block.key_length   = strlen(entry->key) + 1;
+      block.key_length = strlen(entry->key) + 1;
       block.value_length = sizeof(uint64_t);
       write(fd, &block, sizeof(block));
     }
@@ -98,7 +98,7 @@ int unserialized_from_file(const char *filepath) {
 
   entry_block_t block = {0};
   while (read(fd, &block, sizeof(block)) > 0) {
-    char key[128]  = {0};
+    char key[128] = {0};
     uint64_t value = 0;
 
     read(fd, (void *)&key, block.key_length);
@@ -110,7 +110,7 @@ int unserialized_from_file(const char *filepath) {
       entry->value = value;
 
       entry->entry_.next = (struct queue_entry *)root;
-      root               = entry;
+      root = entry;
     }
   }
 
