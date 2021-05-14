@@ -4,7 +4,7 @@
 
 #include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.h"
 
 void instrument_call_forward_handler(RegisterContext *ctx, HookEntry *entry) {
   DynamicBinaryInstrumentRouting *route = (DynamicBinaryInstrumentRouting *)entry->route;

@@ -3,9 +3,8 @@
 
 #include "dobby_internal.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
-
 #include "Interceptor.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
 
 extern "C" {
 void intercept_routing_common_bridge_handler(RegisterContext *ctx, ClosureTrampolineEntry *entry);

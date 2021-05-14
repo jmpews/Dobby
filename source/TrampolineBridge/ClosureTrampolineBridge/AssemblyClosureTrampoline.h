@@ -3,24 +3,27 @@
 
 #include "dobby_internal.h"
 
-#include "xnucxx/LiteMutableArray.h"
+#ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+void closure_trampoline_template();
+void closure_bridge_template();
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
 
 typedef struct _ClosureTrampolineEntry {
+  void *address;
+  int size;
   void *carry_handler;
   void *carry_data;
-  void *address;
-  uintptr_t size;
 } ClosureTrampolineEntry;
-
-typedef void (*USER_CODE_CALL)(RegisterContext *ctx, ClosureTrampolineEntry *entry);
-
-void closure_trampoline_template();
-
-void closure_bridge_template();
 
 void *get_closure_bridge();
 

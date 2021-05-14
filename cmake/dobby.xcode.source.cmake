@@ -42,10 +42,10 @@ set(dobby.SOURCE_FILE_LIST
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/TrampolineBridge/InterceptRoutingTrampoline/arm/trampoline-arm.cc
-  source/TrampolineBridge/InterceptRoutingTrampoline/arm64/trampoline-arm64.cc
-  source/TrampolineBridge/InterceptRoutingTrampoline/x86/trampoline-x86.cc
-  source/TrampolineBridge/InterceptRoutingTrampoline/x64/trampoline-x64.cc
+  source/TrampolineBridge/Trampoline/arm/trampoline-arm.cc
+  source/TrampolineBridge/Trampoline/arm64/trampoline-arm64.cc
+  source/TrampolineBridge/Trampoline/x86/trampoline-x86.cc
+  source/TrampolineBridge/Trampoline/x64/trampoline-x64.cc
 
   # intercept routing plugin (buildin)
   source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
@@ -74,7 +74,7 @@ set(dobby.SOURCE_FILE_LIST
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
-    source/TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.cc
 
     source/TrampolineBridge/ClosureTrampolineBridge/arm/helper-arm.cc
     source/TrampolineBridge/ClosureTrampolineBridge/arm/closure-bridge-arm.cc

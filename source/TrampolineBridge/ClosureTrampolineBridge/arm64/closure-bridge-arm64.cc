@@ -6,7 +6,7 @@
 #include "core/modules/assembler/assembler.h"
 #include "core/modules/assembler/assembler-arm64.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/closure-trampoline-common-handler.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.h"
 
 using namespace zz;
 using namespace zz::arm64;
@@ -14,7 +14,6 @@ using namespace zz::arm64;
 static void *closure_bridge = NULL;
 
 void *get_closure_bridge() {
-
   // if already initialized, just return.
   if (closure_bridge)
     return closure_bridge;
@@ -81,7 +80,7 @@ void *get_closure_bridge() {
   _ add(TMP_REG_0, SP, 2 * 8);                          // closure trampoline reserved
   _ add(TMP_REG_0, TMP_REG_0, 2 * 8 + 30 * 8 + 8 * 16); // x0, x1-x30, q0-q7 reserved
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-  _ add(TMP_REG_0, TMP_REG_0, 24 * 16);                 // q8-q31 reserved
+  _ add(TMP_REG_0, TMP_REG_0, 24 * 16); // q8-q31 reserved
 #endif
 
   // alloc stack, store original sp
