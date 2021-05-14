@@ -9,7 +9,7 @@
 #include "InstructionRelocation/x64/X64InstructionRelocation.h"
 
 #include "MemoryAllocator/NearMemoryArena.h"
-#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
 using namespace zz::x64;
 

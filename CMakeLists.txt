@@ -182,11 +182,11 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/TrampolineBridge/Trampoline/${arch1}/trampoline-${arch1}.cc
 
   # intercept routing plugin (buildin)
-  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/Routing/FunctionInlineReplace/function-inline-replace.cc
+  source/InterceptRouting/Routing/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
   # plugin register
-  source/InterceptRouting/ExtraInternalPlugin/RegisterPlugin.cc
+  source/InterceptRouting/RoutingPlugin/RoutingPlugin.cc
 
   # platform util
   source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
@@ -249,16 +249,16 @@ endif()
 if(DynamicBinaryInstrument)
   message(STATUS "[Dobby] Enable dynamic binary instrument(hook instruction with register context)")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-    source/InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.cc
+    source/InterceptRouting/Routing/DynamicBinaryInstrument/dynamic-binary-instrument.cc
+    source/InterceptRouting/Routing/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
+    source/InterceptRouting/Routing/DynamicBinaryInstrument/intercept_routing_handler.cc
     )
 endif()
 
 if(NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline(trampoline within single instruction)")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
+    source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/NeaBranchTrampoline.cc
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 

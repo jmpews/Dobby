@@ -7,7 +7,7 @@
 #include "InstructionRelocation/arm/ARMInstructionRelocation.h"
 
 #include "MemoryAllocator/NearMemoryArena.h"
-#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
 using namespace zz::arm;
 

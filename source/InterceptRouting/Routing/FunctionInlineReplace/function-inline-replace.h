@@ -14,7 +14,7 @@ public:
     this->replace_call = replace_call;
   }
 
-  void Dispatch() override;
+  void DispatchRouting() override;
 
 private:
   virtual void BuildReplaceRouting();

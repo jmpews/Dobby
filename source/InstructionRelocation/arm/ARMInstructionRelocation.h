@@ -350,8 +350,9 @@ private:
   LiteMutableArray *data_labels_;
 };
 
-// Generate the relocated instruction
+#if 0
 void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+#endif
 
 } // namespace arm
 } // namespace zz

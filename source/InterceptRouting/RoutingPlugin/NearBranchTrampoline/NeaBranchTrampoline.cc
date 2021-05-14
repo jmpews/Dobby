@@ -1,23 +1,23 @@
-#include "InterceptRouting/ExtraInternalPlugin/NearBranchTrampoline/NearBranchTrampoline.h"
+#include "InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.h"
 
 #include "dobby_internal.h"
 
 #include "MemoryAllocator/NearMemoryArena.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
 using namespace zz;
 
 PUBLIC void dobby_enable_near_branch_trampoline() {
-  RoutingPlugin *plugin = new NearBranchTrampolinePlugin;
-  ExtraInternalPlugin::registerPlugin("near_branch_trampoline", plugin);
-  ExtraInternalPlugin::near_branch_trampoline = plugin;
+  RoutingPluginInterface *plugin = new NearBranchTrampolinePlugin;
+  RoutingPluginManager::registerPlugin("near_branch_trampoline", plugin);
+  RoutingPluginManager::near_branch_trampoline = plugin;
 }
 
 PUBLIC void dobby_disable_near_branch_trampoline() {
-  NearBranchTrampolinePlugin *plugin = (NearBranchTrampolinePlugin *)ExtraInternalPlugin::near_branch_trampoline;
+  NearBranchTrampolinePlugin *plugin = (NearBranchTrampolinePlugin *)RoutingPluginManager::near_branch_trampoline;
   delete plugin;
-  ExtraInternalPlugin::near_branch_trampoline = NULL;
+  RoutingPluginManager::near_branch_trampoline = NULL;
 }
 
 #if 0

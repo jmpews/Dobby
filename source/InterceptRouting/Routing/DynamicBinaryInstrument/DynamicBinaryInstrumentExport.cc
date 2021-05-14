@@ -1,7 +1,7 @@
 #include "dobby_internal.h"
 
 #include "InterceptRouting/InterceptRouting.h"
-#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
+#include "InterceptRouting/Routing/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
 PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
   if (!address) {
@@ -28,7 +28,8 @@ PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
   entry->instruction_address = address;
 
   DynamicBinaryInstrumentRouting *route = new DynamicBinaryInstrumentRouting(entry, (void *)handler);
-  route->Dispatch();
+  route->Prepare();
+  route->DispatchRouting();
   Interceptor::SharedInstance()->AddHookEntry(entry);
   route->Commit();
 

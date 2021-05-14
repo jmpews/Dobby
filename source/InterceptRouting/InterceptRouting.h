@@ -3,10 +3,8 @@
 
 #include "Interceptor.h"
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
-
-extern CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
-
-extern void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+#include "InstructionRelocation/InstructionRelocation.h"
+#include "TrampolineBridge/Trampoline/Trampoline.h"
 
 class InterceptRouting {
 public:
@@ -18,7 +16,7 @@ public:
     trampoline_target_ = NULL;
   }
 
-  virtual void Dispatch() = 0;
+  virtual void DispatchRouting() = 0;
 
   virtual void Prepare();
 
@@ -27,10 +25,6 @@ public:
   void Commit();
 
   HookEntry *GetHookEntry();
-
-  void GenerateRelocatedCode();
-
-  void GenerateTrampolineBuffer(void *src, void *dst);
 
   void SetTrampolineBuffer(CodeBufferBase *buffer) {
     trampoline_buffer_ = buffer;
@@ -47,6 +41,11 @@ public:
   void *GetTrampolineTarget() {
     return trampoline_target_;
   }
+
+protected:
+  bool GenerateRelocatedCode(int tramp_size);
+
+  bool GenerateTrampolineBuffer(void *src, void *dst);
 
 protected:
   HookEntry *entry_;

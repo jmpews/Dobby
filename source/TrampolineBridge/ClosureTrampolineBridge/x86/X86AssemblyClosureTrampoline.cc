@@ -11,6 +11,9 @@ using namespace zz;
 using namespace zz::x86;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
+  ClosureTrampolineEntry *entry = nullptr;
+  entry = new ClosureTrampolineEntry;
+
   AssemblyCodeChunk *cchunk = MemoryArena::AllocateCodeChunk(32);
   if (cchunk == nullptr) {
     return NULL;
@@ -26,7 +29,6 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ mov(Address(esp, 4 * 0), Immediate((int32_t)entry, 32));
   _ jmp(Immediate(offset, 32));
 
-  ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
   entry->address = (void *)cchunk->raw_instruction_start();
   entry->size = cchunk->raw_instruction_size();
   entry->carry_data = carry_data;

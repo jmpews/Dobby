@@ -18,7 +18,7 @@ public:
     this->handler = handler;
   }
 
-  void Dispatch();
+  void DispatchRouting();
 
 public:
   void *handler;

@@ -6,7 +6,7 @@
 
 #include "function-wrapper.h"
 
-void FunctionWrapperRouting::Dispatch() {
+void FunctionWrapperRouting::DispatchRouting() {
   Prepare();
   BuildPreCallRouting();
   BuildPostCallRouting();

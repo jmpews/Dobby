@@ -1,7 +1,7 @@
 #include "dobby_internal.h"
 
 #include "InterceptRouting/InterceptRouting.h"
-#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
 using namespace zz;
 
@@ -9,11 +9,10 @@ void InterceptRouting::Prepare() {
 }
 
 // Generate relocated code
-void InterceptRouting::GenerateRelocatedCode() {
+bool InterceptRouting::GenerateRelocatedCode(int tramp_size) {
   // generate original code
   AssemblyCodeChunk *origin = NULL;
-  int trampoline_len = trampoline_buffer_->getSize();
-  origin = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, trampoline_len);
+  origin = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)entry_->target_address, tramp_size);
   origin_ = origin;
 
   // generate the relocated code
@@ -26,7 +25,7 @@ void InterceptRouting::GenerateRelocatedCode() {
 
   GenRelocateCodeAndBranch(relocate_buffer, origin, relocated);
   if (relocated->raw_instruction_start() == 0)
-    return;
+    return false;
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
@@ -37,27 +36,28 @@ void InterceptRouting::GenerateRelocatedCode() {
   memcpy((void *)entry_->origin_chunk_.chunk_buffer, (void *)origin_->raw_instruction_start(),
          origin_->raw_instruction_size());
   entry_->origin_chunk_.chunk.re_init_region_range(origin_);
+  return true;
 }
 
-/*
-X86_64 (14 bytes)
-  [jmp rip]
-  [branch_address]
+bool InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
+  CodeBufferBase *trampoline_buffer = NULL;
+  // if near branch trampoline plugin enabled
+  if (RoutingPluginManager::near_branch_trampoline) {
+    RoutingPluginInterface *plugin = NULL;
+    plugin = reinterpret_cast<RoutingPluginInterface *>(RoutingPluginManager::near_branch_trampoline);
+    if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
+      DLOG(0, "Failed enable near branch trampoline plugin");
+    }
+  }
 
-ARM64 - 16 bytes
-  [ldr literal]
-  [br]
-  [branch_address]
+  if (this->GetTrampolineBuffer() == NULL) {
+    trampoline_buffer = GenerateNormalTrampolineBuffer((addr_t)src, (addr_t)dst);
+    this->SetTrampolineBuffer(trampoline_buffer);
 
-ARM64 - 12 bytes
-  [adrp]
-  [add]
-  [br]
-
-ARM - 8 bytes:
-  [ldr pc literal]
-  [data_address]
-*/
+    DLOG(1, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
+  }
+  return true;
+}
 
 // Active routing, will patch the origin insturctions, and forward to our custom routing.
 // Patch the address with branch instr
@@ -82,25 +82,6 @@ int InterceptRouting::PredefinedTrampolineSize() {
 #endif
 }
 #endif
-
-void InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
-  CodeBufferBase *trampoline_buffer = NULL;
-  // if near branch trampoline plugin enabled
-  if (ExtraInternalPlugin::near_branch_trampoline) {
-    RoutingPlugin *plugin = NULL;
-    plugin = reinterpret_cast<RoutingPlugin *>(ExtraInternalPlugin::near_branch_trampoline);
-    if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
-      DLOG(0, "Failed enable near branch trampoline plugin");
-    }
-  }
-
-  if (this->GetTrampolineBuffer() == NULL) {
-    trampoline_buffer = GenerateNormalTrampolineBuffer((addr_t)src, (addr_t)dst);
-    this->SetTrampolineBuffer(trampoline_buffer);
-
-    DLOG(1, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
-  }
-}
 
 HookEntry *InterceptRouting::GetHookEntry() {
   return entry_;

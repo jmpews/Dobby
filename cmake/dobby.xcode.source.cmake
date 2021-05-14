@@ -48,11 +48,11 @@ set(dobby.SOURCE_FILE_LIST
   source/TrampolineBridge/Trampoline/x64/trampoline-x64.cc
 
   # intercept routing plugin (buildin)
-  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRouting/RoutingPlugin/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/Routing/FunctionInlineReplace/function-inline-replace.cc
+  source/InterceptRouting/Routing/FunctionInlineReplace/FunctionInlineReplaceExport.cc
 
   # plugin register
-  source/InterceptRouting/ExtraInternalPlugin/RegisterPlugin.cc
+  source/InterceptRouting/RoutingPlugin/RoutingPlugin.cc
 
   # unified interface
 

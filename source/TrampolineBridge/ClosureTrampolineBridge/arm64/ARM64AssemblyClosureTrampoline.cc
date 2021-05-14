@@ -16,6 +16,8 @@ using namespace zz::arm64;
 
 // use assembler and codegen modules instead of template_code
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
+  ClosureTrampolineEntry *entry = nullptr;
+  entry = new ClosureTrampolineEntry;
 
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
@@ -49,7 +51,6 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   AssemblyCodeChunk *code = nullptr;
   code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
-  ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
   entry->address = (void *)code->raw_instruction_start();
   entry->size = code->raw_instruction_size();
   entry->carry_data = carry_data;

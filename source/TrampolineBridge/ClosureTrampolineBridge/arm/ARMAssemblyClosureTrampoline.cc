@@ -11,6 +11,9 @@ using namespace zz;
 using namespace zz::arm;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
+  ClosureTrampolineEntry *entry = nullptr;
+  entry = new ClosureTrampolineEntry;
+
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
   // use closure trampoline template code, find the executable memory and patch it.
@@ -35,7 +38,6 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   AssemblyCodeChunk *code = nullptr;
   code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
 
-  ClosureTrampolineEntry *entry = new ClosureTrampolineEntry;
   entry->address = (void *)code->raw_instruction_start();
   entry->size = code->raw_instruction_size();
   entry->carry_data = carry_data;

@@ -5,20 +5,7 @@
 
 #include "InterceptRouting/InterceptRouting.h"
 
-// Internal Plugin
-class ExtraInternalPlugin {
-public:
-  static void registerPlugin(const char *name, ExtraInternalPlugin *plugin);
-
-public:
-  // global plugin array
-  static LiteMutableArray *plugins;
-
-  static ExtraInternalPlugin *near_branch_trampoline;
-};
-
-// Plugin for Intercept Routing
-class RoutingPlugin : public ExtraInternalPlugin {
+class RoutingPluginInterface {
 public:
   // @Return: if false will continue to iter next plugin
   virtual bool Prepare(InterceptRouting *routing) = 0;
@@ -32,5 +19,18 @@ public:
 private:
   char name_[256];
 };
+
+class RoutingPluginManager {
+public:
+  static void registerPlugin(const char *name, RoutingPluginInterface *plugin);
+
+public:
+  // global plugin array
+  static LiteMutableArray *plugins;
+
+  static RoutingPluginInterface *near_branch_trampoline;
+};
+
+
 
 #endif

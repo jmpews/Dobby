@@ -2,7 +2,7 @@
 
 #include "Interceptor.h"
 #include "InterceptRouting/InterceptRouting.h"
-#include "InterceptRouting/RoutingPlugin/FunctionInlineReplace/function-inline-replace.h"
+#include "InterceptRouting/Routing/FunctionInlineReplace/function-inline-replace.h"
 
 PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
   if (!address) {
@@ -29,7 +29,8 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
   entry->function_address = address;
 
   FunctionInlineReplaceRouting *route = new FunctionInlineReplaceRouting(entry, replace_call);
-  route->Dispatch();
+  route->Prepare();
+  route->DispatchRouting();
   Interceptor::SharedInstance()->AddHookEntry(entry);
 
   // set origin call with relocated function

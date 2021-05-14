@@ -18,7 +18,7 @@ PUBLIC int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post
   entry->function_address = function_address;
 
   FunctionWrapperRouting *route = new FunctionWrapperRouting(entry);
-  route->Dispatch();
+  route->DispatchRouting();
   interceptor->AddHookEntry(entry);
   route->Commit();
 

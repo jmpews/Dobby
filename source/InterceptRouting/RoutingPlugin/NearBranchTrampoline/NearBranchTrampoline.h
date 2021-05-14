@@ -3,9 +3,9 @@
 
 #include "dobby_internal.h"
 
-#include "InterceptRouting/ExtraInternalPlugin/RegisterPlugin.h"
+#include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
-class NearBranchTrampolinePlugin : public RoutingPlugin {
+class NearBranchTrampolinePlugin : public RoutingPluginInterface {
   // @Return: if false will continue to iter next plugin
   bool Prepare(InterceptRouting *routing) {
     return false;

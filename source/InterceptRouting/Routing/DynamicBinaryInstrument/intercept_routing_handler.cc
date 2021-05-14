@@ -1,8 +1,8 @@
-#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/intercept_routing_handler.h"
+#include "InterceptRouting/Routing/DynamicBinaryInstrument/intercept_routing_handler.h"
 
 #include "dobby_internal.h"
 
-#include "InterceptRouting/RoutingPlugin/DynamicBinaryInstrument/dynamic-binary-instrument.h"
+#include "InterceptRouting/Routing/DynamicBinaryInstrument/dynamic-binary-instrument.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.h"
 
