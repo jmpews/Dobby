@@ -195,7 +195,7 @@ static x86_insn_prefix_t x86_insn_decode_prefix(x86_insn_reader_t *rd, x86_insn_
 
 int x86_insn_has_modrm_byte(x86_insn_spec_t *insn) {
   int i;
-  for (i = 0; i < sizeof(insn->operands); i++)
+  for (i = 0; i < sizeof(insn->operands) / sizeof(x86_insn_operand_spec_t); i++)
     switch (insn->operands[i].code) {
     case 'G':
     case 'E':
@@ -221,7 +221,7 @@ int x86_insn_immediate_type(x86_insn_spec_t *insn) {
 
 int x86_insn_has_immediate(x86_insn_spec_t *insn) {
   int i;
-  for (i = 0; i < sizeof(insn->operands); i++) {
+  for (i = 0; i < sizeof(insn->operands) / sizeof(x86_insn_operand_spec_t); i++) {
     switch (insn->operands[i].code) {
     case 'J':
     case 'I':
