@@ -328,7 +328,7 @@ include_directories(
   ./external
   ./external/logging
   ./external/xnucxx
-  ./external/misc-heler
+  ./external/misc-helper
 
   builtin-plugin
 )
