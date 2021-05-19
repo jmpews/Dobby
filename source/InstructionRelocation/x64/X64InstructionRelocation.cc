@@ -27,7 +27,8 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
   addr_t buffer_cursor = (addr_t)buffer;
 
-  x86_options_t conf = {.mode = 64};
+  x86_options_t conf = {0};
+  conf.mode = 64;
 
   int predefined_relocate_size = origin->raw_instruction_size();
 

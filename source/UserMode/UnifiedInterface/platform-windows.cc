@@ -2,6 +2,11 @@
 
 #include <windows.h>
 
+
+#include "logging/logging.h"
+#include "logging/check_logging.h"
+#include "UnifiedInterface/platform.h"
+
 int GetProtectionFromMemoryPermission(MemoryPermission access) {
   if (kReadWriteExecute == access)
     return PAGE_EXECUTE_READWRITE;

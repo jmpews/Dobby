@@ -35,7 +35,7 @@ public:
   }
 
   ~PseudoLabel(void) {
-    for (size_t i = 0; i < instructions_.getCount(); i++) {
+    for (int i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
       delete item;
     }
@@ -52,7 +52,7 @@ public:
       UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
-    for (size_t i = 0; i < instructions_.getCount(); i++) {
+    for (int i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
       int32_t offset = pos() - instruction->position_;
@@ -661,7 +661,7 @@ public:
 
   ~TurboAssembler() {
     if (data_labels_) {
-      for (size_t i = 0; i < data_labels_->getCount(); i++) {
+      for (int i = 0; i < data_labels_->getCount(); i++) {
         RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
         delete label;
       }

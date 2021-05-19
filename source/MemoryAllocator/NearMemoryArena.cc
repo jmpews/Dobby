@@ -15,6 +15,31 @@ using namespace zz;
 
 LiteMutableArray *NearMemoryArena::page_chunks;
 
+#if defined(WIN32)
+static const void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_t needlelen)
+{
+  if (!haystack || !needle) {
+    return haystack;
+  } else {
+    const char* h = (const char*)haystack;
+    const char* n = (const char*)needle;
+    size_t l = needlelen;
+    const char* r = h;
+    while (l && (l <= haystacklen)) {
+      if (*n++ != *h++) {
+        r = h;
+        n = (const char*)needle;
+        l = needlelen;
+      } else {
+        --l;
+      }
+      --haystacklen;
+    }
+    return l ? NULL : r;
+  }
+}
+#endif
+
 #if 1
 static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
   addr_t min_page_addr, max_page_addr;
