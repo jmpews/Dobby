@@ -153,6 +153,23 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 endif()
 include(cmake/dobby.xcode.source.cmake)
 
+include_directories(
+  .
+
+  ./include
+
+  ./source
+  ./source/include
+  ./source/UserMode
+
+  ./external
+  ./external/logging
+  ./external/xnucxx
+  ./external/misc-helper
+
+  builtin-plugin
+)
+
 set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # cpu
@@ -315,23 +332,6 @@ if(Plugin.LinkerLoadCallback)
     builtin-plugin/LinkerImageLoadCallback/linker_load_callback.cc
     )
 endif()
-
-include_directories(
-  .
-
-  ./include
-
-  ./source
-  ./source/include
-  ./source/UserMode
-
-  ./external
-  ./external/logging
-  ./external/xnucxx
-  ./external/misc-helper
-
-  builtin-plugin
-)
 
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
