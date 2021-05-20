@@ -2,7 +2,7 @@
 
 a lightweight, multi-platform, multi-architecture exploit hook framework.
 
-**tips: any question [go to Discord](https://discordapp.com/invite/dAEEywt)**
+**tips: any question [go to Telegram](https://t.me/dobby_group)**
 
 - Minimal and modular library
 - Multi-platform support(Windows/macOS/iOS/Android/Linux)

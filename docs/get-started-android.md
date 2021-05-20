@@ -3,34 +3,28 @@
 ## create native project and update CMakeLists.txt
 
 ```
-set(DobbyHome D:/TimeDisk/Workspace/Project.wrk/Dobby)
-include_directories(
-  ${DobbyHome}/include
-  ${DobbyHome}/builtin-plugin
-  ${DobbyHome}/builtin-plugin/SymbolResolver
-  ${DobbyHome}/builtin-plugin/AndroidRestriction
-  ${DobbyHome}/external/logging
-)
-
-add_library( # Sets the name of the library.
-  native-lib
-  # Sets the library as a shared library.
-  SHARED
-
-  ${DobbyHome}/builtin-plugin/AndroidRestriction/android_restriction_demo.cc
-
-  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
-  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
-
-  # Provides a relative path to your source file(s).
-  native-lib.cpp)
-
+if(NOT TARGET dobby)
+set(DOBBY_DIR /Users/jmpews/Workspace/Project.wrk/Dobby)
 macro(SET_OPTION option value)
   set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
-SET_OPTION(DOBBY_DEBUG ON)
+SET_OPTION(DOBBY_DEBUG OFF)
 SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-add_subdirectory(${DobbyHome} dobby)
+add_subdirectory(${DOBBY_DIR} dobby)
+get_property(DOBBY_INCLUDE_DIRECTORIES
+  TARGET dobby
+  PROPERTY INCLUDE_DIRECTORIES)
+include_directories(
+  .
+  ${DOBBY_INCLUDE_DIRECTORIES}
+  $<TARGET_PROPERTY:dobby,INCLUDE_DIRECTORIES>
+)
+endif()
+
+add_library(native-lib SHARED
+  ${DOBBY_DIR}/example/android_common_api.cc
+
+  native-lib.cpp)
 ```
 
 ## replace hook function

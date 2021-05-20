@@ -1,19 +1,13 @@
-# Getting Started With iOS
+# Getting Started
 
-available build option within iOS:
-
-## add Dobby.framework to your project
+## add DobbyX.framework to your project
 
 ```
-cmake .. -G Xcode \
--DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
--DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3 \
--DDOBBY_GENERATE_SHARED=OFF
+cmake .. -G Xcode -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.3
 
 ```
 
-**drag the `Dobby.xcodeproj` to your project**
+**drag the `DobbyX.xcodeproj` to your project**
 
 
 ## replace hook function

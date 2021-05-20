@@ -1,10 +1,4 @@
-# Installation
-
-## Clone the project
-
-```
-git clone --depth 1 git@github.com:jmpews/Dobby.git
-```
+# Build 
 
 ## Cmake build options
 
@@ -21,8 +15,14 @@ option(FullFloatingPointRegisterPack "Save and pack all floating-point registers
 
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
+option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " ON)
+
 option(Plugin.LinkerLoadCallback "Register image load callback " OFF)
 ```
+
+## Build script
+
+refer: [build-workspace/auto-build.sh](build-workspace/auto-build.sh)
 
 ## Build for host
 
@@ -52,10 +52,7 @@ make -j4
 ```
 cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64
 
-cmake .. \
--DCMAKE_TOOLCHAIN_FILE=cmake/ios.toolchain.cmake \
--DPLATFORM=OS64 -DARCHS="arm64" -DCMAKE_SYSTEM_PROCESSOR=arm64 \
--DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=1 -DDEPLOYMENT_TARGET=9.3
+cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.3
 
 make -j4
 ```
@@ -94,35 +91,26 @@ make -j4
 #### Android Studio CMake
 
 ```
-set(DobbyHome D:/TimeDisk/Workspace/Project.wrk/Dobby)
-include_directories(
-  ${DobbyHome}/include
-  ${DobbyHome}/builtin-plugin
-  ${DobbyHome}/builtin-plugin/SymbolResolver
-  ${DobbyHome}/builtin-plugin/AndroidRestriction
-  ${DobbyHome}/external/logging
-)
-
-add_library( # Sets the name of the library.
-  native-lib
-  # Sets the library as a shared library.
-  SHARED
-
-  ${DobbyHome}/builtin-plugin/AndroidRestriction/android_restriction_demo.cc
-
-  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/posix_file_descriptor_operation_monitor.cc
-  ${DobbyHome}/builtin-plugin/ApplicationEventMonitor/dynamic_loader_monitor.cc
-
-  # Provides a relative path to your source file(s).
-  native-lib.cpp)
-
+if(NOT TARGET dobby)
+set(DOBBY_DIR /Users/jmpews/Workspace/Project.wrk/Dobby)
 macro(SET_OPTION option value)
   set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
-SET_OPTION(DOBBY_DEBUG ON)
+SET_OPTION(DOBBY_DEBUG OFF)
 SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-SET_OPTION(DynamicBinaryInstrument ON)
-SET_OPTION(NearBranch ON)
-SET_OPTION(Plugin.SymbolResolver ON)
-add_subdirectory(${DobbyHome} dobby)
+add_subdirectory(${DOBBY_DIR} dobby)
+get_property(DOBBY_INCLUDE_DIRECTORIES
+  TARGET dobby
+  PROPERTY INCLUDE_DIRECTORIES)
+include_directories(
+  .
+  ${DOBBY_INCLUDE_DIRECTORIES}
+  $<TARGET_PROPERTY:dobby,INCLUDE_DIRECTORIES>
+)
+endif()
+
+add_library(native-lib SHARED
+  ${DOBBY_DIR}/example/android_common_api.cc
+
+  native-lib.cpp)
 ```
