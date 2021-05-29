@@ -54,23 +54,28 @@ extern "C" {
     LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                      \
   } while (0)
 
-#if defined(LOGGING_DEBUG)
-#define DLOG(level, fmt, ...) LOG(level, fmt, ##__VA_ARGS__)
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
     RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
     RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
     abort();                                                                                                           \
   } while (0)
+
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
     RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
     RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
   } while (0)
+
+#define ERROR_TRACE_LOG()                                                                                            \
+  do {                                                                                                                 \
+    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+  } while (0)
+
+#if defined(LOGGING_DEBUG)
+#define DLOG(level, fmt, ...) LOG(level, fmt, ##__VA_ARGS__)
 #else
 #define DLOG(level, fmt, ...)
-#define FATAL(fmt, ...)
-#define ERROR_LOG(fmt, ...)
 #endif
 
 #define UNIMPLEMENTED() FATAL("%s\n", "unimplemented code!!!")
