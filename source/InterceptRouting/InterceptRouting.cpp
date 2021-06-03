@@ -29,8 +29,8 @@ bool InterceptRouting::GenerateRelocatedCode(int tramp_size) {
 
   // set the relocated instruction address
   entry_->relocated_origin_instructions = (void *)relocated->raw_instruction_start();
-  DLOG(1, "[insn relocate] origin %p - %d", origin->raw_instruction_start(), origin->raw_instruction_size());
-  DLOG(1, "[insn relocate] relocated %p - %d", relocated->raw_instruction_start(), relocated->raw_instruction_size());
+  DLOG(0, "[insn relocate] origin %p - %d", origin->raw_instruction_start(), origin->raw_instruction_size());
+  DLOG(0, "[insn relocate] relocated %p - %d", relocated->raw_instruction_start(), relocated->raw_instruction_size());
 
   // save original prologue
   memcpy((void *)entry_->origin_chunk_.chunk_buffer, (void *)origin_->raw_instruction_start(),
@@ -54,7 +54,7 @@ bool InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
     trampoline_buffer = GenerateNormalTrampolineBuffer((addr_t)src, (addr_t)dst);
     this->SetTrampolineBuffer(trampoline_buffer);
 
-    DLOG(1, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
+    DLOG(0, "[trampoline] Generate trampoline buffer %p -> %p", src, dst);
   }
   return true;
 }
@@ -66,7 +66,7 @@ void InterceptRouting::Active() {
   patch_address = (void *)origin_->raw_instruction_start();
 
   CodePatch(patch_address, (uint8_t *)trampoline_buffer_->getRawBuffer(), trampoline_buffer_->getSize());
-  DLOG(1, "[intercept routing] Active patch %p", patch_address);
+  DLOG(0, "[intercept routing] Active patch %p", patch_address);
 }
 
 void InterceptRouting::Commit() {

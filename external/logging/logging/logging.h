@@ -67,9 +67,14 @@ extern "C" {
     RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
   } while (0)
 
-#define ERROR_TRACE_LOG()                                                                                            \
+#define ERROR_TRACE_LOG()                                                                                              \
   do {                                                                                                                 \
-    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+    RAW_LOG(-1, "[!] %s:%d:%s\n", __FILE__, __LINE__, __func__);                                                       \
+  } while (0)
+
+#define INVOKE_TRACE_LOG()                                                                                             \
+  do {                                                                                                                 \
+    RAW_LOG(-1, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                                       \
   } while (0)
 
 #if defined(LOGGING_DEBUG)

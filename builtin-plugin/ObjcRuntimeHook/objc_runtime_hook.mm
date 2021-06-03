@@ -16,7 +16,7 @@ IMP DobbyObjcReplace(Class class_, SEL sel_, IMP fake_impl) {
     method_ = class_getClassMethod(class_, sel_);
 
   if (!method_) {
-    DLOG(1, "Not found class: %s, selector: %s method\n", class_getName(class_), sel_getName(sel_));
+    DLOG(0, "Not found class: %s, selector: %s method\n", class_getName(class_), sel_getName(sel_));
     return NULL;
   }
 
@@ -32,7 +32,7 @@ void DobbyObjcReplaceEx(const char *class_name, const char *selector_name, void 
     method_ = class_getClassMethod(class_, sel_);
 
   if (!method_) {
-    DLOG(1, "Not found class: %s, selector: %s method\n", class_name, selector_name);
+    DLOG(0, "Not found class: %s, selector: %s method\n", class_name, selector_name);
     return;
   }
 
@@ -53,7 +53,7 @@ void *DobbyObjcResolveMethodImp(const char *class_name, const char *selector_nam
     method_ = class_getClassMethod(class_, sel_);
 
   if (!method_) {
-    DLOG(1, "Not found class: %s, selector: %s method\n", class_name, selector_name);
+    DLOG(0, "Not found class: %s, selector: %s method\n", class_name, selector_name);
     return NULL;
   }
   return (void *)method_getImplementation(method_);

@@ -10,8 +10,7 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
     return RS_FAILED;
   }
 
-  RAW_LOG(1, "\n\n");
-  DLOG(1, "[DobbyHook] Initialize at %p", address);
+  DLOG(0, "[DobbyHook] Initialize at %p", address);
 
   // check if already hooked
   HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);

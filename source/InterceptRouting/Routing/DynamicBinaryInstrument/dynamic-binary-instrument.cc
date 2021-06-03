@@ -27,8 +27,8 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
 
   closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   this->SetTrampolineTarget(closure_trampoline->address);
-  DLOG(1, "[closure bridge] Carry data %p ", entry_);
-  DLOG(1, "[closure bridge] Create prologue_dispatch_bridge %p", closure_trampoline->address);
+  DLOG(0, "[closure bridge] Carry data %p ", entry_);
+  DLOG(0, "[closure bridge] Create prologue_dispatch_bridge %p", closure_trampoline->address);
 
   // generate trampoline buffer, run before `GenerateRelocatedCode`
   GenerateTrampolineBuffer(entry_->target_address, GetTrampolineTarget());

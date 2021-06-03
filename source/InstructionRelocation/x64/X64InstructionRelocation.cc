@@ -41,7 +41,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
     x86_insn_decode(&insn, (uint8_t *)buffer_cursor, &conf);
 
     if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jc rel8
-      DLOG(1, "[x86 relo] jc rel8, %p", buffer_cursor);
+      DLOG(0, "[x86 relo] jc rel8, %p", buffer_cursor);
 
       int8_t orig_offset = insn.immediate;
       int new_offset = (int)(curr_orig_ip + orig_offset - curr_relo_ip);
@@ -51,7 +51,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
       __ Emit8(opcode);
       __ Emit32(new_offset);
     } else if (insn.primary_opcode == 0xEB) { // jmp rel8
-      DLOG(1, "[x86 relo] jmp rel8, %p", buffer_cursor);
+      DLOG(0, "[x86 relo] jmp rel8, %p", buffer_cursor);
 
       int8_t orig_offset = insn.immediate;
       int8_t new_offset = (int8_t)(curr_orig_ip + orig_offset - curr_relo_ip);
@@ -59,7 +59,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
       __ Emit8(0xE9);
       __ Emit32(new_offset);
     } else if ((insn.flags & X86_INSN_DECODE_FLAG_IP_RELATIVE) && (insn.operands[1].mem.base == RIP)) { // RIP
-      DLOG(1, "[x86 relo] rip, %p", buffer_cursor);
+      DLOG(0, "[x86 relo] rip, %p", buffer_cursor);
 
       // dword orig_disp = *(dword *)(buffer_cursor + insn.operands[1].mem.disp);
       dword orig_disp = insn.operands[1].mem.disp;
@@ -67,11 +67,11 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
       __ EmitBuffer((void *)buffer_cursor, insn.displacement_offset);
       __ Emit32(new_disp);
-      if(insn.immediate_offset) {
+      if (insn.immediate_offset) {
         __ EmitBuffer((void *)(buffer_cursor + insn.immediate_offset), insn.length - insn.immediate_offset);
       }
     } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
-      DLOG(1, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
+      DLOG(0, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
 
       dword orig_offset = insn.immediate;
       dword offset = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);

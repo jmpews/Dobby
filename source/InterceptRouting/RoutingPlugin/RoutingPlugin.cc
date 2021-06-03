@@ -5,7 +5,7 @@ LiteMutableArray *RoutingPluginManager::plugins;
 RoutingPluginInterface *RoutingPluginManager::near_branch_trampoline = NULL;
 
 void RoutingPluginManager::registerPlugin(const char *name, RoutingPluginInterface *plugin) {
-  DLOG(1, "register %s plugin", name);
+  DLOG(0, "register %s plugin", name);
 
   if (RoutingPluginManager::plugins == NULL) {
     RoutingPluginManager::plugins = new LiteMutableArray(8);

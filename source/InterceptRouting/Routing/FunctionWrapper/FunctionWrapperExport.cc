@@ -8,7 +8,7 @@
 #include "function-wrapper.h"
 
 PUBLIC int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call) {
-  DLOG(1, "Initialize 'DobbyWrap' hook at %p", function_address);
+  DLOG(0, "Initialize 'DobbyWrap' hook at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 

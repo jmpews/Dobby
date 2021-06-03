@@ -10,7 +10,7 @@ PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
   }
 
   RAW_LOG(1, "\n\n");
-  DLOG(1, "[DobbyInstrument] Initialize at %p", address);
+  DLOG(0, "[DobbyInstrument] Initialize at %p", address);
 
   // check if we already instruemnt
   HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);
