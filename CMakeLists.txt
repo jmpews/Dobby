@@ -420,8 +420,11 @@ endif()
 
 if(SYSTEM.Darwin)
   add_subdirectory(builtin-plugin/Dyld2HideLibrary)
-  add_subdirectory(builtin-plugin/SupervisorCallMonitor)
+
   add_subdirectory(builtin-plugin/ObjcRuntimeHook)
+  if(PROCESSOR.AARCH64)
+    add_subdirectory(builtin-plugin/SupervisorCallMonitor)
+  endif()
 endif()
 
 add_subdirectory(example)
