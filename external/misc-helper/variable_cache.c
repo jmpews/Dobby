@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+
+#include <fcntl.h>
+#include "unistd_helper.h"
 
 #include <errno.h>
 
@@ -55,8 +57,6 @@ uint64_t cache_get(const char *name) {
   }
   return 0;
 }
-
-#include <fcntl.h>
 
 typedef struct entry_block {
   int key_length;
