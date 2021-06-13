@@ -428,3 +428,9 @@ if(SYSTEM.Darwin)
 endif()
 
 add_subdirectory(example)
+
+if(SYSTEM.Darwin)
+  install(TARGETS DobbyX)
+else()
+  install(TARGETS dobby)
+endif()
