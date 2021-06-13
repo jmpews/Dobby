@@ -32,7 +32,7 @@ public:
 
   bool getNextObjectForIterator(void *iterator, LiteObject **ret) const override;
 
-  virtual LiteObject *getObject(int index);
+  virtual LiteObject *getObject(unsigned int index);
 
   virtual bool pushObject(const LiteObject *object);
 };

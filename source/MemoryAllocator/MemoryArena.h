@@ -6,7 +6,7 @@
 #include "PlatformUnifiedInterface/StdMemory.h"
 
 struct MemoryChunk : MemoryRange {
-  inline void init_region_range(addr_t address, int size) {
+  inline void init_region_range(addr_t address, size_t size) {
     this->address = (void *)address;
     this->length = size;
   }

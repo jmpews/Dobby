@@ -48,6 +48,7 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
 
   // region.start sorted
   std::vector<MemoryRegion> process_memory_layout = ProcessRuntimeUtility::GetProcessMemoryLayout();
+  assert(process_memory_layout.size() > 0);
 
   /*
    * min_page_addr/--special-blank--/==region==/--right-blank--/max_page_addr
