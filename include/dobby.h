@@ -15,6 +15,10 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+void log_set_level(int level);
+void log_switch_to_syslog();
+void log_switch_to_file(const char *path);
+
 typedef enum {
   kMemoryOperationSuccess,
   kMemoryOperationError,
