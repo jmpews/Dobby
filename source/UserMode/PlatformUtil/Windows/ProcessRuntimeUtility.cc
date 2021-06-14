@@ -29,7 +29,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   while(VirtualQuery(address,&region,sizeof(region)))
   {
     address +=  region.RegionSize;
-    if (region.State != MEM_COMMIT) {
+    if (!(region.State & (MEM_COMMIT | MEM_RESERVE))) {
       continue;
     }
 
