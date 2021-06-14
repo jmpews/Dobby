@@ -22,7 +22,7 @@ endif()
 # ===== Handle Option =====
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(DOBBY_DEBUG "Enable debug logging" ON)
+option(DOBBY_DEBUG "Enable debug logging" OFF)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
@@ -51,9 +51,10 @@ option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker rest
 # endif()
 
 # Enable debug will log more information
-#if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#  set(DOBBY_DEBUG ON)
-#endif()
+if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+  message(STATUS "[Dobby] Enabling debug logging because CMAKE_BUILD_TYPE is Debug or undefined")
+  set(DOBBY_DEBUG ON)
+endif()
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
