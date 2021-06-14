@@ -109,7 +109,7 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
       if (region_start >= min_page_addr) {
 
         // find the region locate in the [min_page_addr, max_page_addr]
-        if (assumePageAddr == min_page_addr) {
+        if (i >= 1 && assumePageAddr == min_page_addr) {
           MemoryRegion prev_region;
           prev_region = process_memory_layout[i - 1];
           addr_t prev_region_end = next_page((addr_t)prev_region.address + prev_region.length, OSMemory::AllocPageSize());
@@ -123,15 +123,17 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
           }
         }
 
-        // right-blank
-        MemoryRegion next_region = process_memory_layout[i + 1];
-        // check if have blank cave page
-        if (region_end < (addr_t)next_region.address) {
-          assumePageAddr = next_page((addr_t)region.address + region.length, OSMemory::AllocPageSize());
-          resultPageAddr =
-              (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
-          if (resultPageAddr)
-            break;
+        if (i <= process_memory_layout.size() - 2) {
+          // right-blank
+          MemoryRegion next_region = process_memory_layout[i + 1];
+          // check if have blank cave page
+          if (region_end < (addr_t)next_region.address) {
+            assumePageAddr = next_page((addr_t)region.address + region.length, OSMemory::AllocPageSize());
+            resultPageAddr =
+                (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
+            if (resultPageAddr)
+              break;
+          }
         }
       }
     }
