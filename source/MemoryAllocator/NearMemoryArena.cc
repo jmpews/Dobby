@@ -16,19 +16,18 @@ using namespace zz;
 LiteMutableArray *NearMemoryArena::page_chunks;
 
 #if defined(WIN32)
-static const void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_t needlelen)
-{
+static const void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen) {
   if (!haystack || !needle) {
     return haystack;
   } else {
-    const char* h = (const char*)haystack;
-    const char* n = (const char*)needle;
+    const char *h = (const char *)haystack;
+    const char *n = (const char *)needle;
     size_t l = needlelen;
-    const char* r = h;
+    const char *r = h;
     while (l && (l <= haystacklen)) {
       if (*n++ != *h++) {
         r = h;
-        n = (const char*)needle;
+        n = (const char *)needle;
         l = needlelen;
       } else {
         --l;
@@ -40,6 +39,9 @@ static const void* memmem(const void* haystack, size_t haystacklen, const void* 
 }
 #endif
 
+static addr_t addr_max(addr_t a, addr_t b) {
+  return a > b ? a : b;
+}
 
 static addr_t addr_sub(addr_t a, addr_t b) {
   return a > a - b ? a - b : 0;
@@ -60,7 +62,6 @@ static addr_t next_page(addr_t cur, int pagesize) {
   addr_t ret = aligned_addr + pagesize;
   return ret >= aligned_addr ? ret : aligned_addr;
 }
-
 
 #if 1
 static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
@@ -112,10 +113,11 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
         if (i >= 1 && assumePageAddr == min_page_addr) {
           MemoryRegion prev_region;
           prev_region = process_memory_layout[i - 1];
-          addr_t prev_region_end = next_page((addr_t)prev_region.address + prev_region.length, OSMemory::AllocPageSize());
+          addr_t prev_region_end =
+              next_page((addr_t)prev_region.address + prev_region.length, OSMemory::AllocPageSize());
           // check if have blank cave page
           if (region_start > prev_region_end) {
-            assumePageAddr = __max(min_page_addr, prev_region_end);
+            assumePageAddr = addr_max(min_page_addr, prev_region_end);
             resultPageAddr = (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(),
                                                         MemoryPermission::kReadExecute);
             if (resultPageAddr)
@@ -129,8 +131,8 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
           // check if have blank cave page
           if (region_end < (addr_t)next_region.address) {
             assumePageAddr = next_page((addr_t)region.address + region.length, OSMemory::AllocPageSize());
-            resultPageAddr =
-                (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
+            resultPageAddr = (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(),
+                                                        MemoryPermission::kReadExecute);
             if (resultPageAddr)
               break;
           }
