@@ -121,6 +121,10 @@ static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   UNREACHABLE();
 }
 
+int OSMemory::AllocPageSize() {
+  return OSMemory::PageSize();
+}
+
 int OSMemory::PageSize() {
   return static_cast<int>(sysconf(_SC_PAGESIZE));
 }

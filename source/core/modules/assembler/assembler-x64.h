@@ -35,7 +35,7 @@ public:
   }
 
   ~PseudoLabel(void) {
-    for (int i = 0; i < instructions_.getCount(); i++) {
+    for (unsigned i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
       delete item;
     }
@@ -52,7 +52,7 @@ public:
       UNREACHABLE();
     CodeBuffer *_buffer = buffer;
 
-    for (int i = 0; i < instructions_.getCount(); i++) {
+    for (unsigned i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
 
       int32_t offset = pos() - instruction->position_;
@@ -661,7 +661,7 @@ public:
 
   ~TurboAssembler() {
     if (data_labels_) {
-      for (int i = 0; i < data_labels_->getCount(); i++) {
+      for (unsigned i = 0; i < data_labels_->getCount(); i++) {
         RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
         delete label;
       }
@@ -698,7 +698,7 @@ public:
   // RelocLabelEntry
 
   void PseudoBind(PseudoLabel *label) {
-    const addr_t bound_pc = buffer_->getSize();
+    const uint32_t bound_pc = buffer_->getSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
@@ -709,7 +709,7 @@ public:
   void RelocBind() {
     if (data_labels_ == NULL)
       return;
-    for (size_t i = 0; i < data_labels_->getCount(); i++) {
+    for (unsigned i = 0; i < data_labels_->getCount(); i++) {
       RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
       PseudoBind(label);
       EmitInt64(label->data());

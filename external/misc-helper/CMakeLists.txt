@@ -6,6 +6,8 @@ set(SOURCE_FILE_LIST
 
   # async logger
   ${CMAKE_CURRENT_SOURCE_DIR}/async_logger.cc
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/pthread_helper.cc
 )
 
 add_library(misc_helper STATIC

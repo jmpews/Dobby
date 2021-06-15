@@ -67,6 +67,8 @@ private:
 class OSMemory {
 public:
   static int PageSize();
+  
+  static int AllocPageSize();
 
   static void *Allocate(void *address, int size, MemoryPermission access);
 

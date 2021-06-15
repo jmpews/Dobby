@@ -22,7 +22,7 @@ endif()
 # ===== Handle Option =====
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
-option(DOBBY_DEBUG "Enable debug logging" ON)
+option(DOBBY_DEBUG "Enable debug logging" OFF)
 
 option(NearBranch "Enable Near Branch Trampoline" ON)
 
@@ -51,9 +51,10 @@ option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker rest
 # endif()
 
 # Enable debug will log more information
-#if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#  set(DOBBY_DEBUG ON)
-#endif()
+if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+  message(STATUS "[Dobby] Enabling debug logging because CMAKE_BUILD_TYPE is Debug or undefined")
+  set(DOBBY_DEBUG ON)
+endif()
 if(DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
@@ -89,6 +90,7 @@ elseif(SYSTEM.Android)
 elseif(SYSTEM.Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 elseif(SYSTEM.Windows)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
   if(NOT DOBBY_DEBUG)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:log_internal_impl")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:DobbyHook /export:DobbyInstrument /export:DobbySymbolResolver")
@@ -428,3 +430,9 @@ if(SYSTEM.Darwin)
 endif()
 
 add_subdirectory(example)
+
+if(SYSTEM.Darwin)
+  install(TARGETS DobbyX)
+else()
+  install(TARGETS dobby)
+endif()

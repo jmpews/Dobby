@@ -13,7 +13,7 @@ LiteMutableArray::~LiteMutableArray() {
   release();
 }
 
-LiteObject *LiteMutableArray::getObject(const int index) {
+LiteObject *LiteMutableArray::getObject(const unsigned int index) {
   return (LiteObject *)array[index];
 }
 

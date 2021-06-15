@@ -21,7 +21,9 @@ if(SYSTEM.Linux OR SYSTEM.Android)
 endif()
 if(SYSTEM.Windows)
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
-  ${DOBBY_DIR}/source/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/pe/dobby_symbol_resolver.cc
+    
+    ${DOBBY_DIR}/source/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
   )
 endif()
 

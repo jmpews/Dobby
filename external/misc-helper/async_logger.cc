@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <pthread.h>
+#include "pthread_helper.h"
+#include "unistd_helper.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -13,7 +13,7 @@
 int async_logger_buffer_cursor = 0;
 char async_logger_buffer[aync_logger_buffer_size];
 
-static pthread_mutex_t async_logger_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t async_logger_mutex;
 
 static int output_fd = -1;
 

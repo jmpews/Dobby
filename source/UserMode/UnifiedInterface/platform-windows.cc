@@ -14,14 +14,28 @@ int GetProtectionFromMemoryPermission(MemoryPermission access) {
     return PAGE_EXECUTE_READ;
 }
 
+int OSMemory::AllocPageSize() {
+  static int lastRet = -1;
+  if (lastRet == -1) {
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    lastRet = si.dwAllocationGranularity; // should be used with VirtualAlloc(MEM_RESERVE)
+  }
+  return lastRet;
+}
+
 int OSMemory::PageSize() {
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  return si.dwPageSize;
+  static int lastRet = -1;
+  if (lastRet == -1) {
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    lastRet = si.dwPageSize; // should be used with VirtualAlloc(MEM_RESERVE)
+  }
+  return lastRet;
 }
 
 void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
-  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
+  DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % AllocPageSize());
   DCHECK_EQ(0, size % PageSize());
 
   void *result = VirtualAlloc(address, size, MEM_COMMIT | MEM_RESERVE, PAGE_NOACCESS);

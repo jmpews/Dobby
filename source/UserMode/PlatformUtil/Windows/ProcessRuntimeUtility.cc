@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <windows.h>
+
 #define LINE_MAX 2048
 
 // ================================================================
@@ -11,12 +13,52 @@ static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
   return (a.address > b.address);
 }
 
+
+// https://gist.github.com/jedwardsol/9d4fe1fd806043a5767affbd200088ca
+    
+
 std::vector<MemoryRegion> ProcessMemoryLayout;
 std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
+  
+  char                        *address{nullptr};
+  MEMORY_BASIC_INFORMATION     region;
 
+  while(VirtualQuery(address,&region,sizeof(region)))
+  {
+    address +=  region.RegionSize;
+    if (!(region.State & (MEM_COMMIT | MEM_RESERVE))) {
+      continue;
+    }
+
+    MemoryPermission permission = MemoryPermission::kNoAccess;
+    auto mask = PAGE_GUARD | PAGE_NOCACHE | PAGE_WRITECOMBINE;
+    switch(region.Protect & ~mask)
+    {
+    case PAGE_NOACCESS:
+    case PAGE_READONLY:
+      break;
+
+    case PAGE_EXECUTE:
+    case PAGE_EXECUTE_READ:
+      permission = MemoryPermission::kReadExecute;
+      break;
+
+    case PAGE_READWRITE:
+    case PAGE_WRITECOPY:
+      permission = MemoryPermission::kReadWrite;
+      break;
+    
+    case PAGE_EXECUTE_READWRITE:
+    case PAGE_EXECUTE_WRITECOPY:
+      permission = MemoryPermission::kReadWriteExecute;
+      break;
+    }
+    
+    ProcessMemoryLayout.push_back(MemoryRegion{(void *)region.BaseAddress, region.RegionSize, permission});
+  }
   return ProcessMemoryLayout;
 }
 
