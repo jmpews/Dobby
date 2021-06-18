@@ -409,6 +409,8 @@ endif()
 
 if(SYSTEM.Android)
   target_link_libraries(dobby log)
+  target_compile_options(${dobby_output_name}
+        PRIVATE "$<$<CONFIG:RELEASE>:-O3>")
 endif()
 
 if(SYSTEM.Linux)
