@@ -3,7 +3,7 @@
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler-arm.h"
+#include "core/assembler/assembler-arm.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.h"
 
@@ -80,9 +80,9 @@ void *get_closure_bridge() {
   _ mov(pc, Operand(r12));
 
   AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = (void *)code->raw_instruction_start();
+  closure_bridge = code->address;
 
-  DLOG(0, "[closure bridge] Build the closure bridge at %p", closure_bridge);
+  DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif
   return (void *)closure_bridge;
 }

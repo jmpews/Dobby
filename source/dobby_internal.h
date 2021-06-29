@@ -1,15 +1,14 @@
 #ifndef DOBBY_INTERNAL_H
 #define DOBBY_INTERNAL_H
 
+#include "common_header.h"
+
 #include "dobby.h"
 
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
-#include "xnucxx/LiteMemOpt.h"
-#include "xnucxx/LiteMutableArray.h"
-#include "xnucxx/LiteMutableBuffer.h"
-#include "xnucxx/LiteIterator.h"
+#include "format_printer.h"
 
 #include "UnifiedInterface/platform.h"
 
@@ -19,12 +18,6 @@
 
 #include "MemoryAllocator/MemoryArena.h"
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdarg.h>
 
 typedef struct _AssemblyCodeChunkBuffer {
   AssemblyCodeChunk chunk;

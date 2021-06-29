@@ -4,16 +4,13 @@
 
 #include "UserMode/PlatformUtil/ProcessRuntimeUtility.h"
 
-#include <iostream>
-#include <vector>
-
 using namespace zz;
 
 #define KB (1024uLL)
 #define MB (1024uLL * KB)
 #define GB (1024uLL * MB)
 
-LiteMutableArray *NearMemoryArena::page_chunks;
+std::vector<PageChunk> NearMemoryArena::page_chunks;
 
 #if defined(WIN32)
 static const void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen) {
@@ -34,7 +31,7 @@ static const void *memmem(const void *haystack, size_t haystacklen, const void *
       }
       --haystacklen;
     }
-    return l ? NULL : r;
+    return l ? nullptr : r;
   }
 }
 #endif
@@ -71,20 +68,19 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
 
   // region.start sorted
   std::vector<MemoryRegion> process_memory_layout = ProcessRuntimeUtility::GetProcessMemoryLayout();
-  assert(process_memory_layout.size() > 0);
 
   /*
    * min_page_addr/--special-blank--/==region==/--right-blank--/max_page_addr
    */
 
-  addr_t resultPageAddr = 0, assumePageAddr = min_page_addr;
+  addr_t resultPageAddr = 0, assume_page_addr = min_page_addr;
 
   // check first region
   addr_t first_region_start = (addr_t)process_memory_layout[0].address;
   if (min_page_addr < first_region_start) {
     resultPageAddr = prev_page(first_region_start, OSMemory::AllocPageSize());
     resultPageAddr =
-        (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
+        (addr_t)OSMemory::Allocate((void *)assume_page_addr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
     if (resultPageAddr)
       return resultPageAddr;
   }
@@ -95,7 +91,7 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
   if (max_page_addr < last_region_end) {
     resultPageAddr = next_page(last_region_end, OSMemory::AllocPageSize());
     resultPageAddr =
-        (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
+        (addr_t)OSMemory::Allocate((void *)assume_page_addr, OSMemory::AllocPageSize(), MemoryPermission::kReadExecute);
     if (resultPageAddr)
       return resultPageAddr;
   }
@@ -110,15 +106,15 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
       if (region_start >= min_page_addr) {
 
         // find the region locate in the [min_page_addr, max_page_addr]
-        if (i >= 1 && assumePageAddr == min_page_addr) {
+        if (i >= 1 && assume_page_addr == min_page_addr) {
           MemoryRegion prev_region;
           prev_region = process_memory_layout[i - 1];
           addr_t prev_region_end =
               next_page((addr_t)prev_region.address + prev_region.length, OSMemory::AllocPageSize());
           // check if have blank cave page
           if (region_start > prev_region_end) {
-            assumePageAddr = addr_max(min_page_addr, prev_region_end);
-            resultPageAddr = (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(),
+            assume_page_addr = addr_max(min_page_addr, prev_region_end);
+            resultPageAddr = (addr_t)OSMemory::Allocate((void *)assume_page_addr, OSMemory::AllocPageSize(),
                                                         MemoryPermission::kReadExecute);
             if (resultPageAddr)
               break;
@@ -130,8 +126,8 @@ static addr_t search_near_blank_page(addr_t pos, size_t alloc_range) {
           MemoryRegion next_region = process_memory_layout[i + 1];
           // check if have blank cave page
           if (region_end < (addr_t)next_region.address) {
-            assumePageAddr = next_page((addr_t)region.address + region.length, OSMemory::AllocPageSize());
-            resultPageAddr = (addr_t)OSMemory::Allocate((void *)assumePageAddr, OSMemory::AllocPageSize(),
+            assume_page_addr = next_page((addr_t)region.address + region.length, OSMemory::AllocPageSize());
+            resultPageAddr = (addr_t)OSMemory::Allocate((void *)assume_page_addr, OSMemory::AllocPageSize(),
                                                         MemoryPermission::kReadExecute);
             if (resultPageAddr)
               break;
@@ -153,7 +149,7 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, size_t alloc_range, int
 
   std::vector<MemoryRegion> process_memory_layout = ProcessRuntimeUtility::GetProcessMemoryLayout();
 
-  uint8_t *blank_chunk_addr = NULL;
+  uint8_t *blank_chunk_addr = nullptr;
   for (auto region : process_memory_layout) {
     // check if assume-page-addr in memory-layout
     if (region.permission == kReadExecute || region.permission == kRead) {
@@ -189,13 +185,12 @@ static addr_t search_near_blank_memory_chunk(addr_t pos, size_t alloc_range, int
 #define NEAR_PAGE_ARRAYLEN 8
 
 int NearMemoryArena::PushPage(addr_t page_addr, MemoryPermission permission) {
-  PageChunk *newPage = new PageChunk;
-  newPage->page.address = (void *)page_addr;
-  newPage->page.length = OSMemory::PageSize();
-  newPage->page_cursor = page_addr;
-  newPage->permission = permission;
-  newPage->chunks = new LiteMutableArray(NEAR_PAGE_ARRAYLEN);
-  NearMemoryArena::page_chunks->pushObject(reinterpret_cast<LiteObject *>(newPage));
+  PageChunk alloc_page;
+  alloc_page.mem.address = (void *)page_addr;
+  alloc_page.mem.length = OSMemory::PageSize();
+  alloc_page.cursor = page_addr;
+  alloc_page.permission = permission;
+  NearMemoryArena::page_chunks.push_back(alloc_page);
   return RT_SUCCESS;
 }
 
@@ -209,35 +204,27 @@ AssemblyCodeChunk *NearMemoryArena::AllocateCodeChunk(addr_t position, size_t al
 
 MemoryChunk *NearMemoryArena::AllocateChunk(addr_t position, size_t alloc_range, int alloc_size,
                                             MemoryPermission permission) {
+  MemoryChunk *result = nullptr;
 
-  if (page_chunks == NULL) {
-    page_chunks = new LiteMutableArray(NEAR_PAGE_ARRAYLEN);
-  }
-  MemoryChunk *result = NULL;
-
-search_once_more:
-  LiteCollectionIterator iter(NearMemoryArena::page_chunks);
-  PageChunk *page = NULL;
-  while ((page = reinterpret_cast<PageChunk *>(iter.getNextObject())) != NULL) {
-    if (page->permission == permission) {
-      if (llabs((intptr_t)(page->page_cursor - position)) < alloc_range) {
-        if ((page->page_cursor + alloc_size) < ((addr_t)page->page.address + page->page.length)) {
-          break;
-        }
+  PageChunk *found_page = nullptr;
+try_alloc_page_again:
+  for (auto &page : page_chunks) {
+    if (page.permission == permission) {
+      if ((page.cursor + alloc_size) < ((addr_t)page.mem.address + page.mem.length)) {
+        found_page = &page;
+        break;
       }
     }
   }
 
-  MemoryChunk *chunk = NULL;
-  if (page) {
-    chunk = new MemoryChunk;
-    chunk->address = (void *)page->page_cursor;
-    chunk->length = alloc_size;
+  if (found_page) {
+    result = new MemoryChunk;
+    result->address = (void *)found_page->cursor;
+    result->length = alloc_size;
 
     // update page cursor
-    page->chunks->pushObject(reinterpret_cast<LiteObject *>(chunk));
-    page->page_cursor += alloc_size;
-    return chunk;
+    found_page->chunks.push_back(result);
+    found_page->cursor += alloc_size;
   }
 
   addr_t blank_page_addr = 0;
@@ -245,23 +232,21 @@ search_once_more:
   if (blank_page_addr) {
     OSMemory::SetPermission((void *)blank_page_addr, OSMemory::PageSize(), permission);
     NearMemoryArena::PushPage(blank_page_addr, permission);
-    goto search_once_more;
+    goto try_alloc_page_again;
   }
 
-  // TODO: fix up
   if (permission == kReadWrite) {
-    return NULL;
+    return nullptr;
   }
 
   addr_t blank_chunk_addr = 0;
   blank_chunk_addr = search_near_blank_memory_chunk(position, alloc_range, alloc_size);
   if (blank_chunk_addr) {
-    MemoryChunk *chunk = NULL;
-    chunk = new MemoryChunk;
-    chunk->address = (void *)blank_chunk_addr;
-    chunk->length = alloc_size;
-    return chunk;
+    result = new MemoryChunk;
+    result->address = (void *)blank_chunk_addr;
+    result->length = alloc_size;
+    return result;
   }
 
-  return NULL;
+  return nullptr;
 }

@@ -7,34 +7,31 @@ set(dobby.SOURCE_FILE_LIST
   source/core/arch/x86/cpu-x86.cc
 
   # assembler
-  source/core/modules/assembler/assembler.cc
-  source/core/modules/assembler/assembler-arm.cc
-  source/core/modules/assembler/assembler-arm64.cc
-  source/core/modules/assembler/assembler-ia32.cc
-  source/core/modules/assembler/assembler-x64.cc
+  source/core/assembler/assembler.cc
+  source/core/assembler/assembler-arm.cc
+  source/core/assembler/assembler-arm64.cc
+  source/core/assembler/assembler-ia32.cc
+  source/core/assembler/assembler-x64.cc
 
   # codegen
-  source/core/modules/codegen/codegen-arm.cc
-  source/core/modules/codegen/codegen-arm64.cc
-  source/core/modules/codegen/codegen-ia32.cc
-  source/core/modules/codegen/codegen-x64.cc
+  source/core/codegen/codegen-arm.cc
+  source/core/codegen/codegen-arm64.cc
+  source/core/codegen/codegen-ia32.cc
+  source/core/codegen/codegen-x64.cc
 
   # executable memory - code buffer
   source/MemoryAllocator/CodeBuffer/CodeBufferBase.cc
-  source/MemoryAllocator/CodeBuffer/code-buffer-arm.cc
-  source/MemoryAllocator/CodeBuffer/code-buffer-arm64.cc
   source/MemoryAllocator/CodeBuffer/code-buffer-x86.cc
-  source/MemoryAllocator/CodeBuffer/code-buffer-x64.cc
 
   # executable memory
   source/MemoryAllocator/AssemblyCodeBuilder.cc
   source/MemoryAllocator/MemoryArena.cc
 
   # instruction relocation
-  source/InstructionRelocation/arm/ARMInstructionRelocation.cc
-  source/InstructionRelocation/arm64/ARM64InstructionRelocation.cc
+  source/InstructionRelocation/arm/InstructionRelocationARM.cc
+  source/InstructionRelocation/arm64/InstructionRelocationARM64.cc
   source/InstructionRelocation/x86/X86InstructionRelocation.cc
-  source/InstructionRelocation/x64/X64InstructionRelocation.cc
+  source/InstructionRelocation/x64/InstructionRelocationX64.cc
 
   source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c
 
@@ -78,15 +75,15 @@ if(FunctionWrapper OR DynamicBinaryInstrument)
 
     source/TrampolineBridge/ClosureTrampolineBridge/arm/helper-arm.cc
     source/TrampolineBridge/ClosureTrampolineBridge/arm/closure-bridge-arm.cc
-    source/TrampolineBridge/ClosureTrampolineBridge/arm/ARMAssemblyClosureTrampoline.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/arm/ClosureTrampolineARM.cc
 
     source/TrampolineBridge/ClosureTrampolineBridge/arm64/helper-arm64.cc
     source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure-bridge-arm64.cc
-    source/TrampolineBridge/ClosureTrampolineBridge/arm64/ARM64AssemblyClosureTrampoline.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/arm64/ClosureTrampolineARM64.cc
 
     source/TrampolineBridge/ClosureTrampolineBridge/x64/helper-x64.cc
     source/TrampolineBridge/ClosureTrampolineBridge/x64/closure-bridge-x64.cc
-    source/TrampolineBridge/ClosureTrampolineBridge/x64/X64AssemblyClosureTrampoline.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/x64/ClosureTrampolineX64.cc
 
     # user mode - multi thread support
     source/UserMode/MultiThreadSupport/ThreadSupport.cpp

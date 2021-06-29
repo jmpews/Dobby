@@ -12,7 +12,9 @@
 
 #include <vector>
 
+#define INTERNAL_BUILDING 1
 #include "SymbolResolver/dobby_symbol_resolver.h"
+
 #include "SymbolResolver/macho/shared_cache_internal.h"
 
 #include "common_header.h"
@@ -23,30 +25,6 @@
 
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
-
-typedef struct macho_ctx {
-  mach_header_t *header;
-
-  uintptr_t slide;
-  uintptr_t linkedit_base;
-
-  segment_command_t *segments[16];
-  int segments_count;
-
-  segment_command_t *text_seg;
-  segment_command_t *data_seg;
-  segment_command_t *data_const_seg;
-  segment_command_t *linkedit_seg;
-
-  struct symtab_command *symtab_cmd;
-  struct dysymtab_command *dysymtab_cmd;
-  struct dyld_info_command *dyld_info_cmd;
-
-  nlist_t *symtab;
-  char *strtab;
-  uint32_t *indirect_symtab;
-
-} macho_ctx_t;
 
 uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
   uint8_t *p = (uint8_t *)*pp;

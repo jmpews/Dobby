@@ -10,7 +10,8 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
     return RS_FAILED;
   }
 
-  DLOG(0, "[DobbyHook] Initialize at %p", address);
+  RAW_LOG(1, "\n\n");
+  DLOG(0, "----- [DobbyHook:%p] -----", address);
 
   // check if already hooked
   HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);
@@ -33,7 +34,9 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
   Interceptor::SharedInstance()->AddHookEntry(entry);
 
   // set origin call with relocated function
-  *origin_call = entry->relocated_origin_function;
+  if (origin_call) {
+    *origin_call = entry->relocated_origin_function;
+  }
 
   // code patch & hijack original control flow entry
   route->Commit();

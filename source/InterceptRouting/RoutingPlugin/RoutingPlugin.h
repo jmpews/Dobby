@@ -25,8 +25,7 @@ public:
   static void registerPlugin(const char *name, RoutingPluginInterface *plugin);
 
 public:
-  // global plugin array
-  static LiteMutableArray *plugins;
+  static std::vector<RoutingPluginInterface *> plugins;
 
   static RoutingPluginInterface *near_branch_trampoline;
 };

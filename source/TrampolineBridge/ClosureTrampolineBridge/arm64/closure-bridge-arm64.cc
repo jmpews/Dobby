@@ -3,8 +3,8 @@
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler.h"
-#include "core/modules/assembler/assembler-arm64.h"
+#include "core/assembler/assembler.h"
+#include "core/assembler/assembler-arm64.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.h"
 
@@ -26,7 +26,6 @@ void *get_closure_bridge() {
 #else
 #define _ turbo_assembler_.
 #define MEM(reg, offset) MemOperand(reg, offset)
-#define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
   TurboAssembler turbo_assembler_(0);
 
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
@@ -101,10 +100,11 @@ void *get_closure_bridge() {
   // restore sp placeholder stack
   _ add(SP, SP, 2 * 8);
 
-  // restore x0
+  // restore {x0}
   _ ldr(X(0), MEM(SP, 8));
   _ add(SP, SP, 2 * 8);
 
+#define MEM_EXT(reg, offset, addrmode) MemOperand(reg, offset, addrmode)
   // restore {x1-x30}
   _ ldp(X(1), X(2), MEM_EXT(SP, 16, PostIndex));
   _ ldp(X(3), X(4), MEM_EXT(SP, 16, PostIndex));
@@ -148,10 +148,10 @@ void *get_closure_bridge() {
   // return to closure trampoline, but TMP_REG_0, had been modified with next hop address
   _ ret(); // AKA br x30
 
-  AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = (void *)code->raw_instruction_start();
+  AssemblyCodeChunk *chunk = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge = chunk->address;
 
-  DLOG(0, "[closure bridge] Build the closure bridge at %p", closure_bridge);
+  DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif
   return (void *)closure_bridge;
 }

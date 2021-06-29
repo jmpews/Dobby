@@ -5,7 +5,7 @@ set(SOURCE_FILE_LIST
   ${CMAKE_CURRENT_SOURCE_DIR}/logging.c
 )
 
-add_library(logging STATIC
+add_library(logging INTERFACE
   ${SOURCE_FILE_LIST}
   ${SOURCE_HEADER_LIST}
 )

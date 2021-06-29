@@ -1,6 +1,6 @@
 #include "dobby_internal.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
 #include "intercept_routing_handler.h"
 

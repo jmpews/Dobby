@@ -14,31 +14,47 @@ public:
   CodeBuffer() : CodeBufferBase() {
   }
 
-  CodeBuffer(int size) : CodeBufferBase(size) {
-  }
 
 public:
-  arm_inst_t LoadARMInst(int offset);
+  arm_inst_t LoadARMInst(uint32_t offset) {
+    return *reinterpret_cast<arm_inst_t *>(GetBuffer() + offset);
+  }
 
-  thumb1_inst_t LoadThumb1Inst(int offset);
+  thumb1_inst_t LoadThumb1Inst(uint32_t offset) {
+    return *reinterpret_cast<thumb1_inst_t *>(GetBuffer() + offset);
+  }
 
-  thumb2_inst_t LoadThumb2Inst(int offset);
+  thumb2_inst_t LoadThumb2Inst(uint32_t offset) {
+    return *reinterpret_cast<thumb2_inst_t *>(GetBuffer() + offset);
+  }
 
-  void RewriteAddr(int offset, addr32_t addr);
+  void RewriteAddr(uint32_t offset, addr32_t addr) {
+    memcpy(GetBuffer() + offset, &addr, sizeof(addr));
+  }
 
-  void RewriteARMInst(int offset, arm_inst_t instr);
+  void RewriteARMInst(uint32_t offset, arm_inst_t instr) {
+    *reinterpret_cast<arm_inst_t *>(GetBuffer() + offset) = instr;
+  }
 
-  void RewriteThumb1Inst(int offset, thumb1_inst_t instr);
+  void RewriteThumb1Inst(uint32_t offset, thumb1_inst_t instr) {
+    *reinterpret_cast<thumb1_inst_t *>(GetBuffer() + offset) = instr;
+  }
 
-  void RewriteThumb2Inst(int offset, thumb2_inst_t instr);
+  void RewriteThumb2Inst(uint32_t offset, thumb2_inst_t instr) {
+    memcpy(GetBuffer() + offset, &instr, sizeof(instr));
+  }
 
-  void EmitARMInst(arm_inst_t instr);
+  void EmitARMInst(arm_inst_t instr) {
+    Emit(instr);
+  }
 
-  void EmitThumb1Inst(thumb1_inst_t instr);
+  void EmitThumb1Inst(thumb1_inst_t instr) {
+    Emit(instr);
+  }
 
-  void EmitThumb2Inst(thumb2_inst_t instr);
-
-  void Emit32(int32_t data);
+  void EmitThumb2Inst(thumb2_inst_t instr) {
+    Emit(instr);
+  }
 };
 
 #endif

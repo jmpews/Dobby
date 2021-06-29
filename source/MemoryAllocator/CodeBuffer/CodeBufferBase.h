@@ -1,16 +1,12 @@
-#ifndef CODE_BUFFER_BASE_H
-#define CODE_BUFFER_BASE_H
+#pragma once
 
-#include "xnucxx/LiteMutableBuffer.h"
+#include "common_header.h"
 
-class CodeBufferBase : public LiteMutableBuffer {
+class CodeBufferBase {
 public:
-  CodeBufferBase() : LiteMutableBuffer() {
-  }
+  CodeBufferBase() {
 
-  CodeBufferBase(int size) : LiteMutableBuffer(size) {
   }
-
 public:
   virtual CodeBufferBase *Copy();
 
@@ -22,17 +18,26 @@ public:
 
   void Emit64(uint64_t data);
 
-  void EmitBuffer(void *buffer, int len);
+  template <typename T>
+  T Load(int offset) {
+    return *(T *)(buffer_.data() + offset);
+  }
 
-  void EmitObject(LiteObject *object);
+  template <typename T>
+  void Store(int offset, T value) {
+    *(T *)(buffer_.data() + offset);
+  }
 
-#if 0 // Template Advanced won't enable even in userspace
-  template <typename T> T Load(int offset);
+  template <typename T>
+  void Emit(T value) {
+    EmitBuffer((uint8_t *)&value, sizeof (value));
+  }
 
-  template <typename T> void Store(int offset, T value);
+  void EmitBuffer(uint8_t *buffer, int len);
 
-  template <typename T> void Emit(T value);
-#endif
+  uint8_t *GetBuffer();
+  size_t GetBufferSize();
+
+private:
+  std::vector<uint8_t> buffer_;
 };
-
-#endif

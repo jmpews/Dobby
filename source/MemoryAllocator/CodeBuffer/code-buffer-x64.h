@@ -8,15 +8,10 @@ public:
   CodeBuffer() : CodeBufferBase() {
   }
 
-  CodeBuffer(int size) : CodeBufferBase(size) {
-  }
-
 public:
-  void FixBindLabel(int offset, int32_t disp);
-
-  void Emit32(int32_t data);
-
-  void Emit64(int64_t data);
+  void FixBindLabel(int offset, int32_t disp) {
+    Store(offset, disp);
+  }
 };
 
 #endif

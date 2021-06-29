@@ -1,0 +1,18 @@
+{
+    "name": "ArxContainer",
+    "keywords": "ringbuffer, vector, deque, map",
+    "description": "C++ container-like classes (vector, map, etc.) for Arduino which cannot use STL",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hideakitai/ArxContainer.git"
+    },
+    "authors": {
+        "name": "Hideaki Tai",
+        "url": "https://github.com/hideakitai",
+        "maintainer": true
+    },
+    "version": "0.3.14",
+    "license": "MIT",
+    "frameworks": "arduino",
+    "platforms": "*"
+}

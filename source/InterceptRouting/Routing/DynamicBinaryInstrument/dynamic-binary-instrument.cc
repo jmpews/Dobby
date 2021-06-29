@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
 #include "InterceptRouting/Routing/DynamicBinaryInstrument/intercept_routing_handler.h"
 
@@ -10,7 +10,7 @@ void DynamicBinaryInstrumentRouting::DispatchRouting() {
   BuildDynamicBinaryInstrumentRouting();
 
   // generate relocated code which size == trampoline size
-  GenerateRelocatedCode(trampoline_buffer_->getSize());
+  GenerateRelocatedCode(trampoline_buffer_->GetBufferSize());
 }
 
 // Add dbi_call handler before running the origin instructions
@@ -27,8 +27,8 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
 
   closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   this->SetTrampolineTarget(closure_trampoline->address);
-  DLOG(0, "[closure bridge] Carry data %p ", entry_);
-  DLOG(0, "[closure bridge] Create prologue_dispatch_bridge %p", closure_trampoline->address);
+  DLOG(0, "[closure trampoline] data %p ", entry_);
+  DLOG(0, "[closure trampoline] closure trampoline %p", closure_trampoline->address);
 
   // generate trampoline buffer, run before `GenerateRelocatedCode`
   GenerateTrampolineBuffer(entry_->target_address, GetTrampolineTarget());

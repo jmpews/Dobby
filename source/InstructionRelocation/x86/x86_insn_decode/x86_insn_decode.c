@@ -1,4 +1,4 @@
-#include "./x86_insn_decode.h"
+#include "x86_insn_decode.h"
 
 #include <stdint.h>
 #include <stdio.h>

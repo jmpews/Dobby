@@ -37,7 +37,7 @@ __attribute__((naked)) void pc_relative_instructions() {
 __attribute__((naked)) void pc_relative_instructions_end() {
 }
 
-#include "InstructionRelocation/arm64/ARM64InstructionRelocation.h"
+#include "InstructionRelocation/arm64/InstructionRelocationARM64.h"
 
 extern zz::AssemblyCode *GenRelocateCodeAndBranch(void *buffer, int *relocate_size, addr_t from_pc, addr_t to_pc);
 

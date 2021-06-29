@@ -1,5 +1,4 @@
-#ifndef GET_PROCESS_MODULE_MAP_H
-#define GET_PROCESS_MODULE_MAP_H
+#pragma once
 
 #include "PlatformUnifiedInterface/StdMemory.h"
 
@@ -13,17 +12,9 @@ typedef struct _RuntimeModule {
 
 class ProcessRuntimeUtility {
 public:
-  // ================================================================
-  // Process Memory
-
   static std::vector<MemoryRegion> GetProcessMemoryLayout();
-
-  // ================================================================
-  // Process Module
 
   static std::vector<RuntimeModule> GetProcessModuleMap();
 
   static RuntimeModule GetProcessModule(const char *name);
 };
-
-#endif

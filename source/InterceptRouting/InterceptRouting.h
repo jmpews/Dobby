@@ -43,7 +43,7 @@ public:
   }
 
 protected:
-  bool GenerateRelocatedCode(int tramp_size);
+  bool GenerateRelocatedCode(uint32_t trampoline_size);
 
   bool GenerateTrampolineBuffer(void *src, void *dst);
 

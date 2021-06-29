@@ -23,20 +23,20 @@ void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
 // clang-format off
 const char *func_array[] = {
    "__loader_dlopen",
-   "dlsym",
-   "dlclose",
-
-   "open",
-   "write",
-   "read",
-   "close",
-
-   "socket",
-   "connect",
-   "bind",
-   "listen",
-   "accept",
-   "send",
+//   "dlsym",
+//   "dlclose",
+//
+//   "open",
+//   "write",
+//   "read",
+//   "close",
+//
+//   "socket",
+//   "connect",
+//   "bind",
+//   "listen",
+//   "accept",
+//   "send",
    "recv",
 
 };
@@ -51,7 +51,7 @@ int fake_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*s
 #if 1
 __attribute__((constructor)) static void ctor() {
   void *func = NULL;
-  log_set_level(1);
+  log_set_level(0);
 
   func_map = new std::map<void *, const char *>();
 
@@ -68,7 +68,10 @@ __attribute__((constructor)) static void ctor() {
     DobbyInstrument(i->first, common_handler);
   }
 
-  DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
+  
+  // DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
+  void *_pthread_create = DobbySymbolResolver(nullptr, "_pthread_create");
+  DobbyHook((void *)_pthread_create, (void *)fake_pthread_create, (void **)&orig_pthread_create);
 
   pthread_t socket_server;
   uint64_t socket_demo_server(void *ctx);
@@ -81,6 +84,8 @@ __attribute__((constructor)) static void ctor() {
 
   pthread_join(socket_client, 0);
   pthread_join(socket_server, 0);
+  
+  sleep(1000);
 }
 
 #include <sys/socket.h>

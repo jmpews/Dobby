@@ -27,7 +27,7 @@ if(SYSTEM.Windows)
   )
 endif()
 
-add_library(symbol_resolver STATIC
+add_library(symbol_resolver INTERFACE
   ${SOURCE_FILE_LIST}
   )
 

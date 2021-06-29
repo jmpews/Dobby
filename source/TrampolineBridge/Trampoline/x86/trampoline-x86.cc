@@ -3,8 +3,8 @@
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler-ia32.h"
-#include "core/modules/codegen/codegen-ia32.h"
+#include "core/assembler/assembler-ia32.h"
+#include "core/codegen/codegen-ia32.h"
 
 #include "InstructionRelocation/x86/X86InstructionRelocation.h"
 

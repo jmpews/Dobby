@@ -3,10 +3,10 @@
 
 #include "dobby_internal.h"
 
-#include "core/modules/assembler/assembler-x64.h"
-#include "core/modules/codegen/codegen-x64.h"
+#include "core/assembler/assembler-x64.h"
+#include "core/codegen/codegen-x64.h"
 
-#include "InstructionRelocation/x64/X64InstructionRelocation.h"
+#include "InstructionRelocation/x64/InstructionRelocationX64.h"
 
 #include "MemoryAllocator/NearMemoryArena.h"
 #include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"

@@ -7,7 +7,7 @@
 
 #include "InterceptRouting/InterceptRouting.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
 #define X64InterceptRouting InterceptRouting
 #define ARM64InterceptRouting InterceptRouting

@@ -71,6 +71,11 @@ int code_remap_with_substrated(uint8_t *buffer, uint32_t buffer_size, addr_t add
 #endif
 
 PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
+  if(address == nullptr || buffer == nullptr || buffer_size == 0) {
+    FATAL("invalide argument");
+    return kMemoryOperationError;
+  }
+  
   kern_return_t kr;
 
   int page_size = (int)sysconf(_SC_PAGESIZE);
@@ -79,7 +84,6 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   static mach_port_t self_port = mach_task_self();
 #ifdef __APPLE__
-  // try modify with substrated (steal from frida-gum)
   addr_t remap_dummy_page =
       (addr_t)mmap(0, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, VM_MAKE_TAG(255), 0);
   if ((void *)remap_dummy_page == MAP_FAILED)
@@ -96,6 +100,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   int ret = RT_FAILED;
 #if 0 && defined(CODE_PATCH_WITH_SUBSTRATED) && defined(TARGET_ARCH_ARM64)
+  // try modify with substrated (steal from frida-gum)
   ret = code_remap_with_substrated((uint8_t *)remap_dummy_page, (uint32_t)page_size, (addr_t)page_aligned_address);
   if (0 && ret == RT_FAILED)
     DLOG(0, "substrated failed, use vm_remap");

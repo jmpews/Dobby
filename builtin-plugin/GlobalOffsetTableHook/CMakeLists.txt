@@ -4,7 +4,7 @@ set(SOURCE_FILE_LIST
   )
 endif()
 
-add_library(global_offset_table_hook STATIC
+add_library(global_offset_table_hook INTERFACE
   ${SOURCE_FILE_LIST}
   )
 

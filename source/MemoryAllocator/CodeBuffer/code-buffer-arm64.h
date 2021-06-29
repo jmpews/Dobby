@@ -11,17 +11,14 @@ public:
   CodeBuffer() : CodeBufferBase() {
   }
 
-  CodeBuffer(int size) : CodeBufferBase(size) {
+public:
+  arm64_inst_t LoadInst(uint32_t offset) {
+    return *reinterpret_cast<int32_t *>(GetBuffer() + offset);
   }
 
-public:
-  arm64_inst_t LoadInst(int offset);
-
-  void FixBindLabel(int offset, arm64_inst_t instr);
-
-  void EmitInst(arm64_inst_t instr);
-
-  void Emit64(int64_t data);
+  void RewriteInst(uint32_t offset, arm64_inst_t instr) {
+    *reinterpret_cast<arm64_inst_t *>(GetBuffer() + offset) = instr;
+  }
 };
 
 #endif

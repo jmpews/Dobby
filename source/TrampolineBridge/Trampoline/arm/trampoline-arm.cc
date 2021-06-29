@@ -1,10 +1,10 @@
 #include "platform_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
-#include "core/modules/assembler/assembler-arm.h"
-#include "core/modules/codegen/codegen-arm.h"
+#include "core/assembler/assembler-arm.h"
+#include "core/codegen/codegen-arm.h"
 
-#include "InstructionRelocation/arm/ARMInstructionRelocation.h"
+#include "InstructionRelocation/arm/InstructionRelocationARM.h"
 
 #include "MemoryAllocator/NearMemoryArena.h"
 #include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"

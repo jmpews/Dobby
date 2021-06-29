@@ -1,29 +1,19 @@
 #ifndef MemoryAllocator_MemoryArena_h
 #define MemoryAllocator_MemoryArena_h
 
-#include "xnucxx/LiteMutableArray.h"
-
 #include "PlatformUnifiedInterface/StdMemory.h"
 
 struct MemoryChunk : MemoryRange {
-  inline void init_region_range(addr_t address, size_t size) {
-    this->address = (void *)address;
-    this->length = size;
+  inline void copy(MemoryChunk *chunk) {
+    address = chunk->address;
+    length = chunk->length;
   }
 
-  inline void re_init_region_range(addr_t address, int size) {
-    init_region_range(address, size);
-  }
-
-  inline void re_init_region_range(MemoryChunk *chunk) {
-    init_region_range((addr_t)chunk->address, chunk->length);
-  }
-
-  inline addr_t raw_instruction_start() {
+  inline addr_t start() {
     return (addr_t)address;
   };
 
-  inline size_t raw_instruction_size() {
+  inline size_t size() {
     return length;
   };
 };
@@ -31,10 +21,10 @@ struct MemoryChunk : MemoryRange {
 typedef MemoryChunk AssemblyCodeChunk, WritableDataChunk;
 
 typedef struct {
-  MemoryChunk page;
-  addr_t page_cursor;
+  MemoryChunk mem;
+  addr_t cursor;
   MemoryPermission permission;
-  LiteMutableArray *chunks;
+  std::vector<MemoryChunk *> chunks;
 } PageChunk;
 
 class MemoryArena {
@@ -48,7 +38,7 @@ public:
   static void Destroy(MemoryChunk *chunk);
 
 public:
-  static LiteMutableArray *page_chunks;
+  static std::vector<PageChunk *> page_chunks;
 };
 
 #endif

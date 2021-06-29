@@ -19,7 +19,7 @@ public:
   static void Destroy(MemoryChunk *chunk);
 
 private:
-  static LiteMutableArray *page_chunks;
+  static std::vector<PageChunk> page_chunks;
 };
 
 #endif

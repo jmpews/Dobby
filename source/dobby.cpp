@@ -1,9 +1,4 @@
-#if defined(__linux__) || defined(__APPLE__)
-#include <unistd.h>
-#include <syslog.h>
-
 #include "dobby_internal.h"
-
 #include "Interceptor.h"
 
 __attribute__((constructor)) static void ctor() {
@@ -34,5 +29,3 @@ PUBLIC int DobbyDestroy(void *address) {
 
   return RT_FAILED;
 }
-
-#endif

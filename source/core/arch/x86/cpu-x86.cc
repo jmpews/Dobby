@@ -1,8 +1,7 @@
 #include "platform_macro.h"
 #if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 
-#include "./cpu-x86.h"
-#include "xnucxx/LiteMemOpt.h"
+#include "cpu-x86.h"
 
 X86CpuInfo::X86CpuInfo() {
   icache_line_size_ = 0;
@@ -27,7 +26,7 @@ X86CpuInfo::X86CpuInfo() {
   has_popcnt_ = false;
   is_atom_ = false;
 
-  _memcpy(vendor_, (void *)"Unknown", 8);
+  memcpy(vendor_, (void *)"Unknown", 8);
 #if V8_HOST_ARCH_IA32 || V8_HOST_ARCH_X64
   int cpu_info[4];
   __cpuid(cpu_info, 0);

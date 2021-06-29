@@ -3,7 +3,7 @@
 
 #include "dobby_internal.h"
 
-#include "TrampolineBridge/ClosureTrampolineBridge/AssemblyClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
 extern "C" {
 void instrument_routing_dispatch(RegisterContext *ctx, ClosureTrampolineEntry *entry);
