@@ -12,17 +12,17 @@
 
 #include "UnifiedInterface/platform.h"
 
-#include "PlatformUnifiedInterface/StdMemory.h"
+#include "PlatformUnifiedInterface/MemoryAllocator.h"
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 #include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
 
 #include "MemoryAllocator/MemoryArena.h"
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
 
-typedef struct _AssemblyCodeChunkBuffer {
-  AssemblyCodeChunk chunk;
-  uint8_t chunk_buffer[64];
-} AssemblyCodeChunkBuffer;
+typedef struct {
+  AssemblyCode *origin_code;
+  uint8_t origin_code_buffer[64];
+} AssemblyCodeBuffer;
 
 typedef enum { kFunctionWrapper, kFunctionInlineHook, kDynamicBinaryInstrument } HookEntryType;
 
@@ -44,7 +44,7 @@ typedef struct {
     void *relocated_origin_function;
   };
 
-  AssemblyCodeChunkBuffer origin_chunk_;
+  AssemblyCodeBuffer origin_code_;
 } HookEntry;
 
 #endif

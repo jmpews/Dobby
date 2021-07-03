@@ -130,8 +130,9 @@ void *get_closure_bridge() {
 
   _ RelocBind();
 
-  AssemblyCodeChunk *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = (void *)code->length;
+  AssemblyCode *code = nullptr;
+  code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge = code->begin;
 
   DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif

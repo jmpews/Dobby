@@ -11,33 +11,30 @@ void InterceptRouting::Prepare() {
 // Generate relocated code
 bool InterceptRouting::GenerateRelocatedCode(uint32_t trampoline_size) {
   CHECK_EQ(GetTrampolineBuffer()->GetBufferSize(), trampoline_size);
-  
+
   // generate original code
-  origin_ = new AssemblyCodeChunk;
-  origin_->address = entry_->target_address;
-  origin_->length = trampoline_size;
+  origin_ = new AssemblyCode {.begin = entry_->target_address, .size = trampoline_size};
 
   // generate the relocated code
-  relocated_ = new AssemblyCodeChunk();
+  relocated_ = new AssemblyCode();
 
   void *relocate_buffer = nullptr;
   relocate_buffer = entry_->target_address;
 
   GenRelocateCodeAndBranch(relocate_buffer, origin_, relocated_);
-  if (relocated_->length == 0)
+  if (relocated_->size == 0)
     return false;
 
   // set the relocated instruction address
-  entry_->relocated_origin_instructions = relocated_->address;
-  DLOG(0, "[insn relocate] origin %p - %d", origin_->address, origin_->length);
-  hexdump((uint8_t *)origin_->address, origin_->length);
-  
-  DLOG(0, "[insn relocate] relocated %p - %d", relocated_->address, relocated_->length);
-  hexdump((uint8_t *)relocated_->address, relocated_->length);
+  entry_->relocated_origin_instructions = relocated_->begin;
+  DLOG(0, "[insn relocate] origin %p - %d", origin_->begin, origin_->size);
+  hexdump((uint8_t *)origin_->begin, origin_->size);
+
+  DLOG(0, "[insn relocate] relocated %p - %d", relocated_->begin, relocated_->size);
+  hexdump((uint8_t *)relocated_->begin, relocated_->size);
 
   // save original prologue
-  memcpy((void *)entry_->origin_chunk_.chunk_buffer, origin_->address, origin_->length);
-  entry_->origin_chunk_.chunk.copy(origin_);
+  memcpy((void *)entry_->origin_code_.origin_code_buffer, origin_->begin, origin_->size);
   return true;
 }
 
@@ -63,7 +60,7 @@ bool InterceptRouting::GenerateTrampolineBuffer(void *src, void *dst) {
 // Patch the address with branch instr
 void InterceptRouting::Active() {
   void *patch_addr = nullptr;
-  patch_addr = origin_->address;
+  patch_addr = origin_->begin;
   MemoryOperationError err;
   err = CodePatch(patch_addr, (uint8_t *)trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
   if (err == kMemoryOperationSuccess) {

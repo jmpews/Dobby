@@ -8,7 +8,7 @@
 #if 0
 namespace zz {
 namespace arm64 {
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
 } // namespace arm64
 } // namespace zz
 #endif

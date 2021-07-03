@@ -36,8 +36,6 @@ option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " OFF)
 
 option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " OFF)
 
-option(Plugin.LinkerLoadCallback "Register image load callback " OFF)
-
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
 add_definitions(-DBUILDING_INTERNAL)

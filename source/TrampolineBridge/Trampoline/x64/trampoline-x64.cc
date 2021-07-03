@@ -14,16 +14,14 @@
 using namespace zz::x64;
 
 static void **AllocIndirectStub(addr_t branch_address) {
-  WritableDataChunk *forwardStub = NULL;
-
-  forwardStub =
-      NearMemoryArena::AllocateDataChunk((addr_t)branch_address, (size_t)2 * 1024 * 1024 * 1024, (int)sizeof(void *));
+  DataBlock *forwardStub = nullptr;
+  forwardStub = NearMemoryArena::SharedInstance()->allocNearDataBlock((addr_t)branch_address, (size_t)2 * 1024 * 1024 * 1024, (int)sizeof(void *));
   if (forwardStub == nullptr) {
     ERROR_LOG("Not found near forward stub");
-    return NULL;
+    return nullptr;
   }
 
-  return (void **)forwardStub->address;
+  return (void **)forwardStub->addr;
 }
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {

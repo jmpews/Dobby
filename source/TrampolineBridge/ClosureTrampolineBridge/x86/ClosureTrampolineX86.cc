@@ -14,7 +14,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   ClosureTrampolineEntry *entry = nullptr;
   entry = new ClosureTrampolineEntry;
 
-  AssemblyCodeChunk *chunk = MemoryArena::AllocateCodeChunk(32);
+  AssemblyCode *code = Code(32);
   if (chunk == nullptr) {
     return NULL;
   }

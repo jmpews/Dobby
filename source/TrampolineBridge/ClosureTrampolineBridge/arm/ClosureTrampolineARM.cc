@@ -35,7 +35,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ PseudoBind(&forward_bridge_label);
   _ EmitAddress((uint32_t)get_closure_bridge());
 
-  AssemblyCodeChunk *code = nullptr;
+  AssemblyCode *code = nullptr;
   code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   entry->address = code->address;
   entry->size = code->length;

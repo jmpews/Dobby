@@ -33,7 +33,7 @@ typedef struct _relo_ctx {
   vmaddr_t src_vmaddr;
   vmaddr_t dst_vmaddr;
 
-  AssemblyCodeChunk *relocated_chunk;
+  AssemblyCode *relocated_chunk;
 
   std::map<off_t, off_t> relocated_offset_map;
 
@@ -319,26 +319,26 @@ int relo_relocate(relo_ctx_t *ctx) {
 
   // Generate executable code
   {
-    AssemblyCodeChunk *code = NULL;
+    AssemblyCode *code = NULL;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     ctx->relocated_chunk = code;
   }
   return 0;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *o_relocated) {
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *o_relocated) {
   relo_ctx_t ctx;
 
   ctx.buffer = ctx.buffer_cursor = (uint8_t *)buffer;
-  ctx.buffer_size = origin->length;
+  ctx.buffer_size = origin->size;
 
-  ctx.src_vmaddr = (vmaddr_t)origin->address;
+  ctx.src_vmaddr = (vmaddr_t)origin->begin;
   ctx.dst_vmaddr = 0;
 
   relo_relocate(&ctx);
 
-  o_relocated->address = ctx.relocated_chunk->address;
-  o_relocated->length = ctx.relocated_chunk->length;
+  o_relocated->begin = ctx.relocated_chunk->begin;
+  o_relocated->size = ctx.relocated_chunk->size;
 }
 
 #endif

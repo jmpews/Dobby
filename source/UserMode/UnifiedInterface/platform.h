@@ -3,8 +3,6 @@
 
 #include <stdarg.h>
 
-#include "PlatformUnifiedInterface/StdMemory.h"
-
 namespace base {
 // ================================================================
 // base :: ThreadLocalStorageInterface
@@ -14,15 +12,21 @@ class ThreadLocalStorageInterface {
 
   // Thread-local storage.
   static LocalStorageKey CreateThreadLocalKey();
+
   static void DeleteThreadLocalKey(LocalStorageKey key);
+
   static void *GetThreadLocal(LocalStorageKey key);
+
   static int GetThreadLocalInt(LocalStorageKey key) {
     return static_cast<int>(reinterpret_cast<intptr_t>(GetThreadLocal(key)));
   }
+
   static void SetThreadLocal(LocalStorageKey key, void *value);
+
   static void SetThreadLocalInt(LocalStorageKey key, int value) {
     SetThreadLocal(key, reinterpret_cast<void *>(static_cast<intptr_t>(value)));
   }
+
   static bool HasThreadLocal(LocalStorageKey key) {
     return GetThreadLocal(key) != nullptr;
   }
@@ -64,19 +68,21 @@ private:
 // ================================================================
 // base :: OSMemory
 
+enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+
 class OSMemory {
 public:
   static int PageSize();
-  
-  static int AllocPageSize();
 
-  static void *Allocate(void *address, int size, MemoryPermission access);
+  static void *Allocate(size_t size, MemoryPermission access);
 
-  static bool Free(void *address, const int size);
+  static void *Allocate(size_t size, MemoryPermission access, void *fixed_address);
 
-  static bool Release(void *address, int size);
+  static bool Free(void *address, size_t size);
 
-  static bool SetPermission(void *address, int size, MemoryPermission access);
+  static bool Release(void *address, size_t size);
+
+  static bool SetPermission(void *address, size_t size, MemoryPermission access);
 };
 
 // ================================================================

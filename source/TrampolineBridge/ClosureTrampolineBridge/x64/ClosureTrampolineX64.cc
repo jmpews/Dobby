@@ -14,8 +14,8 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   ClosureTrampolineEntry *entry = nullptr;
   entry = new ClosureTrampolineEntry;
 
-  AssemblyCodeChunk *chunk = MemoryArena::AllocateCodeChunk(32);
-  if (chunk == nullptr) {
+  auto *block = CodeMemoryArena::SharedInstance()->allocCodeBlock(32);
+  if (block == nullptr) {
     return NULL;
   }
 #define _ turbo_assembler_.
@@ -30,13 +30,13 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   __ Emit64((uint64_t)entry);
   __ Emit64((uint64_t)get_closure_bridge());
 
-  entry->address = chunk->address;
-  entry->size = chunk->length;
+  entry->address = (void *)block->addr;
+  entry->size = block->size;
   entry->carry_data = carry_data;
   entry->carry_handler = carry_handler;
 
   CodeBufferBase *buffer = reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
-  CodePatch(chunk->address, (uint8_t *)buffer->GetBuffer(), buffer->GetBufferSize());
+  CodePatch((void *)block->addr, (uint8_t *)buffer->GetBuffer(), buffer->GetBufferSize());
 
   return entry;
 }

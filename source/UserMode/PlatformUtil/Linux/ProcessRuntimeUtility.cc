@@ -15,12 +15,12 @@
 // ================================================================
 // GetProcessMemoryLayout
 
-static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
+static bool memory_region_comparator(MemRange a, MemRange b) {
   return ((addr_t)a.address < (addr_t)b.address);
 }
 
-std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  std::vector<MemoryRegion> ProcessMemoryLayout;
+std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
+  std::vector<MemRange> ProcessMemoryLayout;
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
@@ -83,7 +83,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       DLOG(0, "%p --- %p", region_start, region_end);
 #endif
 
-    ProcessMemoryLayout.push_back(MemoryRegion{(void *)region_start, region_end - region_start, permission});
+    ProcessMemoryLayout.push_back(MemRange{(void *)region_start, region_end - region_start, permission});
   }
   std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 

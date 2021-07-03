@@ -274,7 +274,7 @@ struct CaseSensitive {
 
 class NonCopyable {
   NonCopyable(NonCopyable const &) = delete;
-  NonCopyable(NonCopyable &&)      = delete;
+  NonCopyable(NonCopyable &&) = delete;
   NonCopyable &operator=(NonCopyable const &) = delete;
   NonCopyable &operator=(NonCopyable &&) = delete;
 
@@ -290,7 +290,7 @@ struct SourceLineInfo {
   }
 
   SourceLineInfo(SourceLineInfo const &other) = default;
-  SourceLineInfo(SourceLineInfo &&)           = default;
+  SourceLineInfo(SourceLineInfo &&) = default;
   SourceLineInfo &operator=(SourceLineInfo const &) = default;
   SourceLineInfo &operator=(SourceLineInfo &&) = default;
 
@@ -359,7 +359,7 @@ struct IConfig;
 
 struct ITestCaseRegistry {
   virtual ~ITestCaseRegistry();
-  virtual std::vector<TestCase> const &getAllTests() const                            = 0;
+  virtual std::vector<TestCase> const &getAllTests() const = 0;
   virtual std::vector<TestCase> const &getAllTestsSorted(IConfig const &config) const = 0;
 };
 
@@ -429,9 +429,9 @@ public: // construction/ assignment
 
   auto operator=(StringRef const &other) noexcept -> StringRef & {
     delete[] m_data;
-    m_data  = nullptr;
+    m_data = nullptr;
     m_start = other.m_start;
-    m_size  = other.m_size;
+    m_size = other.m_size;
     return *this;
   }
 
@@ -595,18 +595,18 @@ namespace Catch {
 struct ResultWas {
   enum OfType {
     Unknown = -1,
-    Ok      = 0,
-    Info    = 1,
+    Ok = 0,
+    Info = 1,
     Warning = 2,
 
     FailureBit = 0x10,
 
     ExpressionFailed = FailureBit | 1,
-    ExplicitFailure  = FailureBit | 2,
+    ExplicitFailure = FailureBit | 2,
 
     Exception = 0x100 | FailureBit,
 
-    ThrewException      = Exception | 1,
+    ThrewException = Exception | 1,
     DidntThrowException = Exception | 2,
 
     FatalErrorCondition = 0x200 | FailureBit
@@ -623,8 +623,8 @@ struct ResultDisposition {
     Normal = 0x01,
 
     ContinueOnFailure = 0x02, // Failures fail test, but execution continues
-    FalseTest         = 0x04, // Prefix expression with !
-    SuppressFail      = 0x08  // Failures are reported but do not fail the test
+    FalseTest = 0x04,         // Prefix expression with !
+    SuppressFail = 0x08       // Failures are reported but do not fail the test
   };
 };
 
@@ -812,7 +812,7 @@ typename std::enable_if<std::is_enum<T>::value, std::string>::type convertUnstre
 template <typename T> std::string clrReferenceToString(T ^ ref) {
   if (ref == nullptr)
     return std::string("null");
-  auto bytes                   = System::Text::Encoding::UTF8->GetBytes(ref->ToString());
+  auto bytes = System::Text::Encoding::UTF8->GetBytes(ref->ToString());
   cli::pin_ptr<System::Byte> p = &bytes[0];
   return std::string(reinterpret_cast<char const *>(p), bytes->Length);
 }
@@ -1053,7 +1053,7 @@ template <typename T> struct is_range {
 template <typename T> struct is_range<T ^> { static const bool value = false; };
 #endif
 
-template <typename Range> std::string rangeToString(Range const &range) {
+template <typename MemRange> std::string rangeToString(MemRange const &range) {
   return ::Catch::Detail::rangeToString(begin(range), end(range));
 }
 
@@ -1362,33 +1362,33 @@ struct IResultCapture {
   virtual ~IResultCapture();
 
   virtual bool sectionStarted(SectionInfo const &sectionInfo, Counts &assertions) = 0;
-  virtual void sectionEnded(SectionEndInfo const &endInfo)                        = 0;
-  virtual void sectionEndedEarly(SectionEndInfo const &endInfo)                   = 0;
+  virtual void sectionEnded(SectionEndInfo const &endInfo) = 0;
+  virtual void sectionEndedEarly(SectionEndInfo const &endInfo) = 0;
 
   virtual void benchmarkStarting(BenchmarkInfo const &info) = 0;
-  virtual void benchmarkEnded(BenchmarkStats const &stats)  = 0;
+  virtual void benchmarkEnded(BenchmarkStats const &stats) = 0;
 
   virtual void pushScopedMessage(MessageInfo const &message) = 0;
-  virtual void popScopedMessage(MessageInfo const &message)  = 0;
+  virtual void popScopedMessage(MessageInfo const &message) = 0;
 
   virtual void handleFatalErrorCondition(StringRef message) = 0;
 
   virtual void handleExpr(AssertionInfo const &info, ITransientExpression const &expr, AssertionReaction &reaction) = 0;
   virtual void handleMessage(AssertionInfo const &info, ResultWas::OfType resultType, StringRef const &message,
-                             AssertionReaction &reaction)                                                           = 0;
-  virtual void handleUnexpectedExceptionNotThrown(AssertionInfo const &info, AssertionReaction &reaction)           = 0;
+                             AssertionReaction &reaction) = 0;
+  virtual void handleUnexpectedExceptionNotThrown(AssertionInfo const &info, AssertionReaction &reaction) = 0;
   virtual void handleUnexpectedInflightException(AssertionInfo const &info, std::string const &message,
-                                                 AssertionReaction &reaction)                                       = 0;
-  virtual void handleIncomplete(AssertionInfo const &info)                                                          = 0;
-  virtual void handleNonExpr(AssertionInfo const &info, ResultWas::OfType resultType, AssertionReaction &reaction)  = 0;
+                                                 AssertionReaction &reaction) = 0;
+  virtual void handleIncomplete(AssertionInfo const &info) = 0;
+  virtual void handleNonExpr(AssertionInfo const &info, ResultWas::OfType resultType, AssertionReaction &reaction) = 0;
 
   virtual bool lastAssertionPassed() = 0;
-  virtual void assertionPassed()     = 0;
+  virtual void assertionPassed() = 0;
 
   // Deprecated, do not use:
-  virtual std::string getCurrentTestName() const       = 0;
+  virtual std::string getCurrentTestName() const = 0;
   virtual const AssertionResult *getLastResult() const = 0;
-  virtual void exceptionEarlyReported()                = 0;
+  virtual void exceptionEarlyReported() = 0;
 };
 
 IResultCapture &getResultCapture();
@@ -1422,7 +1422,7 @@ public:
 
 struct AssertionReaction {
   bool shouldDebugBreak = false;
-  bool shouldThrow      = false;
+  bool shouldThrow = false;
 };
 
 class AssertionHandler {
@@ -1681,8 +1681,8 @@ struct Counts {
   bool allPassed() const;
   bool allOk() const;
 
-  std::size_t passed      = 0;
-  std::size_t failed      = 0;
+  std::size_t passed = 0;
+  std::size_t failed = 0;
   std::size_t failedButOk = 0;
 };
 
@@ -1785,7 +1785,7 @@ namespace Catch {
 class BenchmarkLooper {
 
   std::string m_name;
-  std::size_t m_count           = 0;
+  std::size_t m_count = 0;
   std::size_t m_iterationsToRun = 1;
   uint64_t m_resolution;
   Timer m_timer;
@@ -1852,12 +1852,12 @@ struct IRegistryHub {
 
 struct IMutableRegistryHub {
   virtual ~IMutableRegistryHub();
-  virtual void registerReporter(std::string const &name, IReporterFactoryPtr const &factory)                      = 0;
-  virtual void registerListener(IReporterFactoryPtr const &factory)                                               = 0;
-  virtual void registerTest(TestCase const &testInfo)                                                             = 0;
-  virtual void registerTranslator(const IExceptionTranslator *translator)                                         = 0;
+  virtual void registerReporter(std::string const &name, IReporterFactoryPtr const &factory) = 0;
+  virtual void registerListener(IReporterFactoryPtr const &factory) = 0;
+  virtual void registerTest(TestCase const &testInfo) = 0;
+  virtual void registerTranslator(const IExceptionTranslator *translator) = 0;
   virtual void registerTagAlias(std::string const &alias, std::string const &tag, SourceLineInfo const &lineInfo) = 0;
-  virtual void registerStartupException() noexcept                                                                = 0;
+  virtual void registerStartupException() noexcept = 0;
 };
 
 IRegistryHub &getRegistryHub();
@@ -2100,7 +2100,7 @@ template <typename ArgT> struct MatchNotOf;
 
 class MatcherUntypedBase {
 public:
-  MatcherUntypedBase()                           = default;
+  MatcherUntypedBase() = default;
   MatcherUntypedBase(MatcherUntypedBase const &) = default;
   MatcherUntypedBase &operator=(MatcherUntypedBase const &) = delete;
   std::string toString() const;
@@ -2639,13 +2639,13 @@ struct ITestInvoker;
 
 struct TestCaseInfo {
   enum SpecialProperties {
-    None        = 0,
-    IsHidden    = 1 << 1,
-    ShouldFail  = 1 << 2,
-    MayFail     = 1 << 3,
-    Throws      = 1 << 4,
+    None = 0,
+    IsHidden = 1 << 1,
+    ShouldFail = 1 << 2,
+    MayFail = 1 << 3,
+    Throws = 1 << 4,
     NonPortable = 1 << 5,
-    Benchmark   = 1 << 6
+    Benchmark = 1 << 6
   };
 
   TestCaseInfo(std::string const &_name, std::string const &_className, std::string const &_description,
@@ -2760,7 +2760,7 @@ namespace Detail {
 
 inline std::string getAnnotation(Class cls, std::string const &annotationName, std::string const &testCaseName) {
   NSString *selStr = [[NSString alloc] initWithFormat:@"Catch_%s_%s", annotationName.c_str(), testCaseName.c_str()];
-  SEL sel          = NSSelectorFromString(selStr);
+  SEL sel = NSSelectorFromString(selStr);
   arcSafeRelease(selStr);
   id value = performOptionalSelector(cls, sel);
   if (value)
@@ -2771,7 +2771,7 @@ inline std::string getAnnotation(Class cls, std::string const &annotationName, s
 
 inline std::size_t registerTestMethods() {
   std::size_t noTestMethods = 0;
-  int noClasses             = objc_getClassList(nullptr, 0);
+  int noClasses = objc_getClassList(nullptr, 0);
 
   Class *classes = (CATCH_UNSAFE_UNRETAINED Class *)malloc(sizeof(Class) * noClasses);
   objc_getClassList(classes, noClasses);
@@ -2782,13 +2782,13 @@ inline std::size_t registerTestMethods() {
       u_int count;
       Method *methods = class_copyMethodList(cls, &count);
       for (u_int m = 0; m < count; m++) {
-        SEL selector           = method_getName(methods[m]);
+        SEL selector = method_getName(methods[m]);
         std::string methodName = sel_getName(selector);
         if (startsWith(methodName, "Catch_TestCase_")) {
           std::string testCaseName = methodName.substr(15);
-          std::string name         = Detail::getAnnotation(cls, "Name", testCaseName);
-          std::string desc         = Detail::getAnnotation(cls, "Description", testCaseName);
-          const char *className    = class_getName(cls);
+          std::string name = Detail::getAnnotation(cls, "Name", testCaseName);
+          std::string desc = Detail::getAnnotation(cls, "Description", testCaseName);
+          const char *className = class_getName(cls);
 
           getMutableRegistryHub().registerTest(
               makeTestCase(new OcMethod(cls, selector), className, name.c_str(), desc.c_str(), SourceLineInfo("", 0)));
@@ -2945,9 +2945,9 @@ using namespace Matchers;
 namespace Catch {
 class WildcardPattern {
   enum WildcardPosition {
-    NoWildcard         = 0,
-    WildcardAtStart    = 1,
-    WildcardAtEnd      = 2,
+    NoWildcard = 0,
+    WildcardAtStart = 1,
+    WildcardAtEnd = 2,
     WildcardAtBothEnds = WildcardAtStart | WildcardAtEnd
   };
 
@@ -3041,7 +3041,7 @@ struct TagAlias;
 struct ITagAliasRegistry {
   virtual ~ITagAliasRegistry();
   // Nullptr if not present
-  virtual TagAlias const *find(std::string const &alias) const                   = 0;
+  virtual TagAlias const *find(std::string const &alias) const = 0;
   virtual std::string expandAliases(std::string const &unexpandedTestSpec) const = 0;
 
   static ITagAliasRegistry const &get();
@@ -3054,8 +3054,8 @@ namespace Catch {
 
 class TestSpecParser {
   enum Mode { None, Name, QuotedName, Tag, EscapedName };
-  Mode m_mode         = None;
-  bool m_exclusion    = false;
+  Mode m_mode = None;
+  bool m_exclusion = false;
   std::size_t m_start = std::string::npos, m_pos = 0;
   std::string m_arg;
   std::vector<std::size_t> m_escapeChars;
@@ -3082,7 +3082,7 @@ private:
     m_escapeChars.clear();
     if (startsWith(token, "exclude:")) {
       m_exclusion = true;
-      token       = token.substr(8);
+      token = token.substr(8);
     }
     if (!token.empty()) {
       TestSpec::PatternPtr pattern = std::make_shared<T>(token);
@@ -3091,7 +3091,7 @@ private:
       m_currentFilter.m_patterns.push_back(pattern);
     }
     m_exclusion = false;
-    m_mode      = None;
+    m_mode = None;
   }
 
   void addFilter();
@@ -3139,24 +3139,24 @@ struct IConfig : NonCopyable {
 
   virtual ~IConfig();
 
-  virtual bool allowThrows() const                                 = 0;
-  virtual std::ostream &stream() const                             = 0;
-  virtual std::string name() const                                 = 0;
-  virtual bool includeSuccessfulResults() const                    = 0;
-  virtual bool shouldDebugBreak() const                            = 0;
-  virtual bool warnAboutMissingAssertions() const                  = 0;
-  virtual bool warnAboutNoTests() const                            = 0;
-  virtual int abortAfter() const                                   = 0;
-  virtual bool showInvisibles() const                              = 0;
-  virtual ShowDurations::OrNot showDurations() const               = 0;
-  virtual TestSpec const &testSpec() const                         = 0;
-  virtual bool hasTestFilters() const                              = 0;
-  virtual RunTests::InWhatOrder runOrder() const                   = 0;
-  virtual unsigned int rngSeed() const                             = 0;
-  virtual int benchmarkResolutionMultiple() const                  = 0;
-  virtual UseColour::YesOrNo useColour() const                     = 0;
+  virtual bool allowThrows() const = 0;
+  virtual std::ostream &stream() const = 0;
+  virtual std::string name() const = 0;
+  virtual bool includeSuccessfulResults() const = 0;
+  virtual bool shouldDebugBreak() const = 0;
+  virtual bool warnAboutMissingAssertions() const = 0;
+  virtual bool warnAboutNoTests() const = 0;
+  virtual int abortAfter() const = 0;
+  virtual bool showInvisibles() const = 0;
+  virtual ShowDurations::OrNot showDurations() const = 0;
+  virtual TestSpec const &testSpec() const = 0;
+  virtual bool hasTestFilters() const = 0;
+  virtual RunTests::InWhatOrder runOrder() const = 0;
+  virtual unsigned int rngSeed() const = 0;
+  virtual int benchmarkResolutionMultiple() const = 0;
+  virtual UseColour::YesOrNo useColour() const = 0;
   virtual std::vector<std::string> const &getSectionsToRun() const = 0;
-  virtual Verbosity verbosity() const                              = 0;
+  virtual Verbosity verbosity() const = 0;
 };
 
 using IConfigPtr = std::shared_ptr<IConfig const>;
@@ -3178,28 +3178,28 @@ namespace Catch {
 struct IStream;
 
 struct ConfigData {
-  bool listTests         = false;
-  bool listTags          = false;
-  bool listReporters     = false;
+  bool listTests = false;
+  bool listTags = false;
+  bool listReporters = false;
   bool listTestNamesOnly = false;
 
   bool showSuccessfulTests = false;
-  bool shouldDebugBreak    = false;
-  bool noThrow             = false;
-  bool showHelp            = false;
-  bool showInvisibles      = false;
-  bool filenamesAsTags     = false;
-  bool libIdentify         = false;
+  bool shouldDebugBreak = false;
+  bool noThrow = false;
+  bool showHelp = false;
+  bool showInvisibles = false;
+  bool filenamesAsTags = false;
+  bool libIdentify = false;
 
-  int abortAfter                  = -1;
-  unsigned int rngSeed            = 0;
+  int abortAfter = -1;
+  unsigned int rngSeed = 0;
   int benchmarkResolutionMultiple = 100;
 
-  Verbosity verbosity                   = Verbosity::Normal;
-  WarnAbout::What warnings              = WarnAbout::Nothing;
-  ShowDurations::OrNot showDurations    = ShowDurations::DefaultForReporter;
-  RunTests::InWhatOrder runOrder        = RunTests::InDeclarationOrder;
-  UseColour::YesOrNo useColour          = UseColour::Auto;
+  Verbosity verbosity = Verbosity::Normal;
+  WarnAbout::What warnings = WarnAbout::Nothing;
+  ShowDurations::OrNot showDurations = ShowDurations::DefaultForReporter;
+  RunTests::InWhatOrder runOrder = RunTests::InDeclarationOrder;
+  UseColour::YesOrNo useColour = UseColour::Auto;
   WaitForKeypress::When waitForKeypress = WaitForKeypress::Never;
 
   std::string outputFilename;
@@ -3418,7 +3418,7 @@ struct ReporterPreferences {
 template <typename T> struct LazyStat : Option<T> {
   LazyStat &operator=(T const &_value) {
     Option<T>::operator=(_value);
-    used               = false;
+    used = false;
     return *this;
   }
   void reset() {
@@ -3445,7 +3445,7 @@ struct AssertionStats {
                  Totals const &_totals);
 
   AssertionStats(AssertionStats const &) = default;
-  AssertionStats(AssertionStats &&)      = default;
+  AssertionStats(AssertionStats &&) = default;
   AssertionStats &operator=(AssertionStats const &) = default;
   AssertionStats &operator=(AssertionStats &&) = default;
   virtual ~AssertionStats();
@@ -3459,7 +3459,7 @@ struct SectionStats {
   SectionStats(SectionInfo const &_sectionInfo, Counts const &_assertions, double _durationInSeconds,
                bool _missingAssertions);
   SectionStats(SectionStats const &) = default;
-  SectionStats(SectionStats &&)      = default;
+  SectionStats(SectionStats &&) = default;
   SectionStats &operator=(SectionStats const &) = default;
   SectionStats &operator=(SectionStats &&) = default;
   virtual ~SectionStats();
@@ -3475,7 +3475,7 @@ struct TestCaseStats {
                 std::string const &_stdErr, bool _aborting);
 
   TestCaseStats(TestCaseStats const &) = default;
-  TestCaseStats(TestCaseStats &&)      = default;
+  TestCaseStats(TestCaseStats &&) = default;
   TestCaseStats &operator=(TestCaseStats const &) = default;
   TestCaseStats &operator=(TestCaseStats &&) = default;
   virtual ~TestCaseStats();
@@ -3492,7 +3492,7 @@ struct TestGroupStats {
   TestGroupStats(GroupInfo const &_groupInfo);
 
   TestGroupStats(TestGroupStats const &) = default;
-  TestGroupStats(TestGroupStats &&)      = default;
+  TestGroupStats(TestGroupStats &&) = default;
   TestGroupStats &operator=(TestGroupStats const &) = default;
   TestGroupStats &operator=(TestGroupStats &&) = default;
   virtual ~TestGroupStats();
@@ -3506,7 +3506,7 @@ struct TestRunStats {
   TestRunStats(TestRunInfo const &_runInfo, Totals const &_totals, bool _aborting);
 
   TestRunStats(TestRunStats const &) = default;
-  TestRunStats(TestRunStats &&)      = default;
+  TestRunStats(TestRunStats &&) = default;
   TestRunStats &operator=(TestRunStats const &) = default;
   TestRunStats &operator=(TestRunStats &&) = default;
   virtual ~TestRunStats();
@@ -3537,9 +3537,9 @@ struct IStreamingReporter {
   virtual void noMatchingTestCases(std::string const &spec) = 0;
 
   virtual void testRunStarting(TestRunInfo const &testRunInfo) = 0;
-  virtual void testGroupStarting(GroupInfo const &groupInfo)   = 0;
+  virtual void testGroupStarting(GroupInfo const &groupInfo) = 0;
 
-  virtual void testCaseStarting(TestCaseInfo const &testInfo)  = 0;
+  virtual void testCaseStarting(TestCaseInfo const &testInfo) = 0;
   virtual void sectionStarting(SectionInfo const &sectionInfo) = 0;
 
   // *** experimental ***
@@ -3555,10 +3555,10 @@ struct IStreamingReporter {
   virtual void benchmarkEnded(BenchmarkStats const &) {
   }
 
-  virtual void sectionEnded(SectionStats const &sectionStats)       = 0;
-  virtual void testCaseEnded(TestCaseStats const &testCaseStats)    = 0;
+  virtual void sectionEnded(SectionStats const &sectionStats) = 0;
+  virtual void testCaseEnded(TestCaseStats const &testCaseStats) = 0;
   virtual void testGroupEnded(TestGroupStats const &testGroupStats) = 0;
-  virtual void testRunEnded(TestRunStats const &testRunStats)       = 0;
+  virtual void testRunEnded(TestRunStats const &testRunStats) = 0;
 
   virtual void skipTest(TestCaseInfo const &testInfo) = 0;
 
@@ -3572,18 +3572,18 @@ using IStreamingReporterPtr = std::unique_ptr<IStreamingReporter>;
 struct IReporterFactory {
   virtual ~IReporterFactory();
   virtual IStreamingReporterPtr create(ReporterConfig const &config) const = 0;
-  virtual std::string getDescription() const                               = 0;
+  virtual std::string getDescription() const = 0;
 };
 using IReporterFactoryPtr = std::shared_ptr<IReporterFactory>;
 
 struct IReporterRegistry {
   using FactoryMap = std::map<std::string, IReporterFactoryPtr>;
-  using Listeners  = std::vector<IReporterFactoryPtr>;
+  using Listeners = std::vector<IReporterFactoryPtr>;
 
   virtual ~IReporterRegistry();
   virtual IStreamingReporterPtr create(std::string const &name, IConfigPtr const &config) const = 0;
-  virtual FactoryMap const &getFactories() const                                                = 0;
-  virtual Listeners const &getListeners() const                                                 = 0;
+  virtual FactoryMap const &getFactories() const = 0;
+  virtual Listeners const &getListeners() const = 0;
 };
 
 } // end namespace Catch
@@ -3694,7 +3694,7 @@ template <typename DerivedT> struct CumulativeReporterBase : IStreamingReporter 
 
     SectionStats stats;
     using ChildSections = std::vector<std::shared_ptr<SectionNode>>;
-    using Assertions    = std::vector<AssertionStats>;
+    using Assertions = std::vector<AssertionStats>;
     ChildSections childSections;
     Assertions assertions;
     std::string stdOut;
@@ -3715,9 +3715,9 @@ template <typename DerivedT> struct CumulativeReporterBase : IStreamingReporter 
     SectionInfo const &m_other;
   };
 
-  using TestCaseNode  = Node<TestCaseStats, SectionNode>;
+  using TestCaseNode = Node<TestCaseStats, SectionNode>;
   using TestGroupNode = Node<TestGroupStats, TestCaseNode>;
-  using TestRunNode   = Node<TestRunStats, TestGroupNode>;
+  using TestRunNode = Node<TestRunStats, TestGroupNode>;
 
   CumulativeReporterBase(ReporterConfig const &_config) : m_config(_config.fullConfig()), stream(_config.stream()) {
     m_reporterPrefs.shouldRedirectStdOut = false;
@@ -3781,7 +3781,7 @@ template <typename DerivedT> struct CumulativeReporterBase : IStreamingReporter 
   void sectionEnded(SectionStats const &sectionStats) override {
     assert(!m_sectionStack.empty());
     SectionNode &node = *m_sectionStack.back();
-    node.stats        = sectionStats;
+    node.stats = sectionStats;
     m_sectionStack.pop_back();
   }
   void testCaseEnded(TestCaseStats const &testCaseStats) override {
@@ -3863,27 +3863,27 @@ struct Colour {
 
     Bright = 0x10,
 
-    BrightRed    = Bright | Red,
-    BrightGreen  = Bright | Green,
-    LightGrey    = Bright | Grey,
-    BrightWhite  = Bright | White,
+    BrightRed = Bright | Red,
+    BrightGreen = Bright | Green,
+    LightGrey = Bright | Grey,
+    BrightWhite = Bright | White,
     BrightYellow = Bright | Yellow,
 
     // By intention
-    FileName              = LightGrey,
-    Warning               = BrightYellow,
-    ResultError           = BrightRed,
-    ResultSuccess         = BrightGreen,
+    FileName = LightGrey,
+    Warning = BrightYellow,
+    ResultError = BrightRed,
+    ResultSuccess = BrightGreen,
     ResultExpectedFailure = Warning,
 
-    Error   = BrightRed,
+    Error = BrightRed,
     Success = Green,
 
-    OriginalExpression      = Cyan,
+    OriginalExpression = Cyan,
     ReconstructedExpression = BrightYellow,
 
     SecondaryText = LightGrey,
-    Headers       = White
+    Headers = White
   };
 
   // Use constructed object for RAII guard
@@ -4150,7 +4150,7 @@ private:
 
   void newlineIfNecessary();
 
-  bool m_tagIsOpen    = false;
+  bool m_tagIsOpen = false;
   bool m_needsNewline = false;
   std::vector<std::string> m_tags;
   std::string m_indent;
@@ -4199,7 +4199,7 @@ public:
   std::string stdOutForSuite;
   std::string stdErrForSuite;
   unsigned int unexpectedExceptions = 0;
-  bool m_okToFail                   = false;
+  bool m_okToFail = false;
 };
 
 } // end namespace Catch
@@ -4294,25 +4294,25 @@ struct ITracker {
   virtual NameAndLocation const &nameAndLocation() const = 0;
 
   // dynamic queries
-  virtual bool isComplete() const              = 0; // Successfully completed or failed
+  virtual bool isComplete() const = 0; // Successfully completed or failed
   virtual bool isSuccessfullyCompleted() const = 0;
-  virtual bool isOpen() const                  = 0; // Started but not complete
-  virtual bool hasChildren() const             = 0;
+  virtual bool isOpen() const = 0; // Started but not complete
+  virtual bool hasChildren() const = 0;
 
   virtual ITracker &parent() = 0;
 
   // actions
-  virtual void close()                   = 0; // Successfully complete
-  virtual void fail()                    = 0;
+  virtual void close() = 0; // Successfully complete
+  virtual void fail() = 0;
   virtual void markAsNeedingAnotherRun() = 0;
 
-  virtual void addChild(ITrackerPtr const &child)                       = 0;
+  virtual void addChild(ITrackerPtr const &child) = 0;
   virtual ITrackerPtr findChild(NameAndLocation const &nameAndLocation) = 0;
-  virtual void openChild()                                              = 0;
+  virtual void openChild() = 0;
 
   // Debug/ checking
   virtual bool isSectionTracker() const = 0;
-  virtual bool isIndexTracker() const   = 0;
+  virtual bool isIndexTracker() const = 0;
 };
 
 class TrackerContext {
@@ -4321,7 +4321,7 @@ class TrackerContext {
 
   ITrackerPtr m_rootTracker;
   ITracker *m_currentTracker = nullptr;
-  RunState m_runState        = NotStarted;
+  RunState m_runState = NotStarted;
 
 public:
   static TrackerContext &instance();
@@ -4421,10 +4421,10 @@ public:
 
 } // namespace TestCaseTracking
 
-using TestCaseTracking::ITracker;
-using TestCaseTracking::TrackerContext;
-using TestCaseTracking::SectionTracker;
 using TestCaseTracking::IndexTracker;
+using TestCaseTracking::ITracker;
+using TestCaseTracking::SectionTracker;
+using TestCaseTracking::TrackerContext;
 
 } // namespace Catch
 
@@ -4506,16 +4506,16 @@ using IConfigPtr = std::shared_ptr<IConfig const>;
 struct IContext {
   virtual ~IContext();
 
-  virtual IResultCapture *getResultCapture()  = 0;
-  virtual IRunner *getRunner()                = 0;
+  virtual IResultCapture *getResultCapture() = 0;
+  virtual IRunner *getRunner() = 0;
   virtual IConfigPtr const &getConfig() const = 0;
 };
 
 struct IMutableContext : IContext {
   virtual ~IMutableContext();
   virtual void setResultCapture(IResultCapture *resultCapture) = 0;
-  virtual void setRunner(IRunner *runner)                      = 0;
-  virtual void setConfig(IConfigPtr const &config)             = 0;
+  virtual void setRunner(IRunner *runner) = 0;
+  virtual void setConfig(IConfigPtr const &config) = 0;
 
 private:
   static IMutableContext *currentContext;
@@ -4760,7 +4760,7 @@ private:
   std::vector<SectionEndInfo> m_unfinishedSections;
   std::vector<ITracker *> m_activeSections;
   TrackerContext m_trackerContext;
-  bool m_lastAssertionPassed    = false;
+  bool m_lastAssertionPassed = false;
   bool m_shouldReportUnexpected = true;
   bool m_includeSuccessfulResults;
 };
@@ -5079,8 +5079,8 @@ class Columns;
 
 class Column {
   std::vector<std::string> m_strings;
-  size_t m_width         = CATCH_CLARA_TEXTFLOW_CONFIG_CONSOLE_WIDTH;
-  size_t m_indent        = 0;
+  size_t m_width = CATCH_CLARA_TEXTFLOW_CONFIG_CONSOLE_WIDTH;
+  size_t m_indent = 0;
   size_t m_initialIndent = std::string::npos;
 
 public:
@@ -5089,10 +5089,10 @@ public:
 
     Column const &m_column;
     size_t m_stringIndex = 0;
-    size_t m_pos         = 0;
+    size_t m_pos = 0;
 
-    size_t m_len  = 0;
-    size_t m_end  = 0;
+    size_t m_len = 0;
+    size_t m_end = 0;
     bool m_suffix = false;
 
     iterator(Column const &column, size_t stringIndex) : m_column(column), m_stringIndex(stringIndex) {
@@ -5113,9 +5113,9 @@ public:
     void calcLength() {
       assert(m_stringIndex < m_column.m_strings.size());
 
-      m_suffix   = false;
+      m_suffix = false;
       auto width = m_column.m_width - indent();
-      m_end      = m_pos;
+      m_end = m_pos;
       while (m_end < line().size() && line()[m_end] != '\n')
         ++m_end;
 
@@ -5132,7 +5132,7 @@ public:
           m_len = len;
         } else {
           m_suffix = true;
-          m_len    = width - 1;
+          m_len = width - 1;
         }
       }
     }
@@ -5390,8 +5390,8 @@ struct UnaryLambdaTraits<ReturnT (ClassT::*)(Args...) const> {
 
 template <typename ClassT, typename ReturnT, typename ArgT> struct UnaryLambdaTraits<ReturnT (ClassT::*)(ArgT) const> {
   static const bool isValid = true;
-  using ArgType             = typename std::remove_const<typename std::remove_reference<ArgT>::type>::type;
-  using ReturnType          = ReturnT;
+  using ArgType = typename std::remove_const<typename std::remove_reference<ArgT>::type>::type;
+  using ReturnType = ReturnT;
 };
 
 class TokenStream;
@@ -5489,7 +5489,7 @@ public:
     return m_tokenBuffer.front();
   }
 
-  auto operator-> () const -> Token const * {
+  auto operator->() const -> Token const * {
     assert(!m_tokenBuffer.empty());
     return &m_tokenBuffer.front();
   }
@@ -5636,8 +5636,8 @@ private:
   TokenStream m_remainingTokens;
 };
 
-using Result              = BasicResult<void>;
-using ParserResult        = BasicResult<ParseResultType>;
+using Result = BasicResult<void>;
+using ParserResult = BasicResult<ParseResultType>;
 using InternalParseResult = BasicResult<ParseState>;
 
 struct HelpColumns {
@@ -5681,9 +5681,9 @@ inline auto convertInto(std::string const &source, CLARA_CONFIG_OPTIONAL_TYPE<T>
 #endif // CLARA_CONFIG_OPTIONAL_TYPE
 
 struct NonCopyable {
-  NonCopyable()                    = default;
+  NonCopyable() = default;
   NonCopyable(NonCopyable const &) = delete;
-  NonCopyable(NonCopyable &&)      = delete;
+  NonCopyable(NonCopyable &&) = delete;
   NonCopyable &operator=(NonCopyable const &) = delete;
   NonCopyable &operator=(NonCopyable &&) = delete;
 };
@@ -5907,7 +5907,7 @@ public:
   auto set(std::string const &newName) -> ParserResult {
 
     auto lastSlash = newName.find_last_of("\\/");
-    auto filename  = (lastSlash == std::string::npos) ? newName : newName.substr(lastSlash + 1);
+    auto filename = (lastSlash == std::string::npos) ? newName : newName.substr(lastSlash + 1);
 
     *m_name = filename;
     if (m_ref)
@@ -5927,7 +5927,7 @@ public:
       return InternalParseResult(validationResult);
 
     auto remainingTokens = tokens;
-    auto const &token    = *remainingTokens;
+    auto const &token = *remainingTokens;
     if (token.type != TokenType::Argument)
       return InternalParseResult::ok(ParseState(ParseResultType::NoMatch, remainingTokens));
 
@@ -6011,7 +6011,7 @@ public:
       if (isMatch(token.token)) {
         if (m_ref->isFlag()) {
           auto flagRef = static_cast<detail::BoundFlagRefBase *>(m_ref.get());
-          auto result  = flagRef->setFlag(true);
+          auto result = flagRef->setFlag(true);
           if (!result)
             return InternalParseResult(result);
           if (result.value() == ParseResultType::ShortCircuitAll)
@@ -6137,9 +6137,9 @@ struct Parser : ParserBase {
       os << "\n\nwhere options are:" << std::endl;
     }
 
-    auto rows           = getHelpColumns();
+    auto rows = getHelpColumns();
     size_t consoleWidth = CATCH_CLARA_CONFIG_CONSOLE_WIDTH;
-    size_t optWidth     = 0;
+    size_t optWidth = 0;
     for (auto const &cols : rows)
       optWidth = (std::max)(optWidth, cols.left.size() + 2);
 
@@ -6177,7 +6177,7 @@ struct Parser : ParserBase {
 
     struct ParserInfo {
       ParserBase const *parser = nullptr;
-      size_t count             = 0;
+      size_t count = 0;
     };
     const size_t totalParsers = m_options.size() + m_args.size();
     assert(totalParsers < 512);
@@ -6439,7 +6439,7 @@ std::string StreamEndStop::operator+() const {
   return std::string();
 }
 
-NonCopyable::NonCopyable()  = default;
+NonCopyable::NonCopyable() = default;
 NonCopyable::~NonCopyable() = default;
 
 } // namespace Catch
@@ -6599,7 +6599,7 @@ namespace Catch {
 namespace {
 
 struct IColourImpl {
-  virtual ~IColourImpl()                     = default;
+  virtual ~IColourImpl() = default;
   virtual void use(Colour::Code _colourCode) = 0;
 };
 
@@ -6690,7 +6690,7 @@ private:
 IColourImpl *platformColourInstance() {
   static Win32ColourImpl s_instance;
 
-  IConfigPtr config             = getCurrentContext().getConfig();
+  IConfigPtr config = getCurrentContext().getConfig();
   UseColour::YesOrNo colourMode = config ? config->useColour() : UseColour::Auto;
   if (colourMode == UseColour::Auto)
     colourMode = UseColour::Yes;
@@ -6801,11 +6801,11 @@ Colour::Colour(Code _colourCode) {
   use(_colourCode);
 }
 Colour::Colour(Colour &&rhs) noexcept {
-  m_moved     = rhs.m_moved;
+  m_moved = rhs.m_moved;
   rhs.m_moved = true;
 }
 Colour &Colour::operator=(Colour &&rhs) noexcept {
-  m_moved     = rhs.m_moved;
+  m_moved = rhs.m_moved;
   rhs.m_moved = true;
   return *this;
 }
@@ -6866,7 +6866,7 @@ public: // IMutableContext
 
 private:
   IConfigPtr m_config;
-  IRunner *m_runner               = nullptr;
+  IRunner *m_runner = nullptr;
   IResultCapture *m_resultCapture = nullptr;
 };
 
@@ -6880,9 +6880,9 @@ void cleanUpContext() {
   delete IMutableContext::currentContext;
   IMutableContext::currentContext = nullptr;
 }
-IContext::~IContext()               = default;
+IContext::~IContext() = default;
 IMutableContext::~IMutableContext() = default;
-Context::~Context()                 = default;
+Context::~Context() = default;
 } // namespace Catch
 // end catch_context.cpp
 // start catch_debug_console.cpp
@@ -7176,7 +7176,7 @@ FatalConditionHandler::FatalConditionHandler() {
   isSet = true;
   // 32k seems enough for Catch to handle stack overflow,
   // but the value was found experimentally, so there is no strong guarantee
-  guaranteeSize          = 32 * 1024;
+  guaranteeSize = 32 * 1024;
   exceptionHandlerHandle = nullptr;
   // Register as first handler in current chain
   exceptionHandlerHandle = AddVectoredExceptionHandler(1, handleVectoredException);
@@ -7189,7 +7189,7 @@ void FatalConditionHandler::reset() {
     RemoveVectoredExceptionHandler(exceptionHandlerHandle);
     SetThreadStackGuarantee(&guaranteeSize);
     exceptionHandlerHandle = nullptr;
-    isSet                  = false;
+    isSet = false;
   }
 }
 
@@ -7197,8 +7197,8 @@ FatalConditionHandler::~FatalConditionHandler() {
   reset();
 }
 
-bool FatalConditionHandler::isSet                   = false;
-ULONG FatalConditionHandler::guaranteeSize          = 0;
+bool FatalConditionHandler::isSet = false;
+ULONG FatalConditionHandler::guaranteeSize = 0;
 PVOID FatalConditionHandler::exceptionHandlerHandle = nullptr;
 
 } // namespace Catch
@@ -7301,14 +7301,14 @@ IConfig::~IConfig() = default;
 // start catch_interfaces_exception.cpp
 
 namespace Catch {
-IExceptionTranslator::~IExceptionTranslator()                 = default;
+IExceptionTranslator::~IExceptionTranslator() = default;
 IExceptionTranslatorRegistry::~IExceptionTranslatorRegistry() = default;
 } // namespace Catch
 // end catch_interfaces_exception.cpp
 // start catch_interfaces_registry_hub.cpp
 
 namespace Catch {
-IRegistryHub::~IRegistryHub()               = default;
+IRegistryHub::~IRegistryHub() = default;
 IMutableRegistryHub::~IMutableRegistryHub() = default;
 } // namespace Catch
 // end catch_interfaces_registry_hub.cpp
@@ -7437,7 +7437,7 @@ bool IStreamingReporter::isMulti() const {
   return false;
 }
 
-IReporterFactory::~IReporterFactory()   = default;
+IReporterFactory::~IReporterFactory() = default;
 IReporterRegistry::~IReporterRegistry() = default;
 
 } // end namespace Catch
@@ -7451,7 +7451,7 @@ IRunner::~IRunner() = default;
 // start catch_interfaces_testcase.cpp
 
 namespace Catch {
-ITestInvoker::~ITestInvoker()           = default;
+ITestInvoker::~ITestInvoker() = default;
 ITestCaseRegistry::~ITestCaseRegistry() = default;
 } // namespace Catch
 // end catch_interfaces_testcase.cpp
@@ -7556,8 +7556,8 @@ std::size_t listTests(Config const &config) {
 }
 
 std::size_t listTestsNamesOnly(Config const &config) {
-  TestSpec testSpec                      = config.testSpec();
-  std::size_t matchedTests               = 0;
+  TestSpec testSpec = config.testSpec();
+  std::size_t matchedTests = 0;
   std::vector<TestCase> matchedTestCases = filterTests(getAllTestCasesSorted(config), testSpec, config);
   for (auto const &testCaseInfo : matchedTestCases) {
     matchedTests++;
@@ -7598,7 +7598,7 @@ std::size_t listTags(Config const &config) {
   for (auto const &testCase : matchedTestCases) {
     for (auto const &tagName : testCase.getTestCaseInfo().tags) {
       std::string lcaseTagName = toLower(tagName);
-      auto countIt             = tagCounts.find(lcaseTagName);
+      auto countIt = tagCounts.find(lcaseTagName);
       if (countIt == tagCounts.end())
         countIt = tagCounts.insert(std::make_pair(lcaseTagName, TagInfo())).first;
       countIt->second.add(tagName);
@@ -7620,7 +7620,7 @@ std::size_t listTags(Config const &config) {
 std::size_t listReporters(Config const & /*config*/) {
   Catch::cout() << "Available reporters:\n";
   IReporterRegistry::FactoryMap const &factories = getRegistryHub().getReporterRegistry().getFactories();
-  std::size_t maxNameLen                         = 0;
+  std::size_t maxNameLen = 0;
   for (auto const &factoryKvp : factories)
     maxNameLen = (std::max)(maxNameLen, factoryKvp.first.size());
 
@@ -8021,7 +8021,7 @@ class TempFile {
 public:
   TempFile(TempFile const &) = delete;
   TempFile &operator=(TempFile const &) = delete;
-  TempFile(TempFile &&)                 = delete;
+  TempFile(TempFile &&) = delete;
   TempFile &operator=(TempFile &&) = delete;
 
   TempFile();
@@ -8041,7 +8041,7 @@ class OutputRedirect {
 public:
   OutputRedirect(OutputRedirect const &) = delete;
   OutputRedirect &operator=(OutputRedirect const &) = delete;
-  OutputRedirect(OutputRedirect &&)                 = delete;
+  OutputRedirect(OutputRedirect &&) = delete;
   OutputRedirect &operator=(OutputRedirect &&) = delete;
 
   OutputRedirect(std::string &stdout_dest, std::string &stderr_dest);
@@ -8566,7 +8566,7 @@ Totals RunContext::runTest(TestCase const &testCase) {
   m_totals.testCases += deltaTotals.testCases;
   m_reporter->testCaseEnded(TestCaseStats(testInfo, deltaTotals, redirectedCout, redirectedCerr, aborting()));
 
-  m_activeTestCase  = nullptr;
+  m_activeTestCase = nullptr;
   m_testCaseTracker = nullptr;
 
   return deltaTotals;
@@ -8603,7 +8603,7 @@ void RunContext::assertionEnded(AssertionResult const &result) {
   m_lastResult = result;
 }
 void RunContext::resetAssertionInfo() {
-  m_lastAssertionInfo.macroName          = StringRef();
+  m_lastAssertionInfo.macroName = StringRef();
   m_lastAssertionInfo.capturedExpression = "{Unknown expression after the reported line}"_sr;
 }
 
@@ -8636,7 +8636,7 @@ bool RunContext::testForMissingAssertions(Counts &assertions) {
 }
 
 void RunContext::sectionEnded(SectionEndInfo const &endInfo) {
-  Counts assertions      = m_totals.assertions - endInfo.prevAssertions;
+  Counts assertions = m_totals.assertions - endInfo.prevAssertions;
   bool missingAssertions = testForMissingAssertions(assertions);
 
   if (!m_activeSections.empty()) {
@@ -8710,7 +8710,7 @@ void RunContext::handleFatalErrorCondition(StringRef message) {
   auto const &testInfo = m_activeTestCase->getTestCaseInfo();
 
   Totals deltaTotals;
-  deltaTotals.testCases.failed  = 1;
+  deltaTotals.testCases.failed = 1;
   deltaTotals.assertions.failed = 1;
   m_reporter->testCaseEnded(TestCaseStats(testInfo, deltaTotals, std::string(), std::string(), false));
   m_totals.testCases.failed++;
@@ -8736,10 +8736,10 @@ void RunContext::runCurrentTest(std::string &redirectedCout, std::string &redire
   auto const &testCaseInfo = m_activeTestCase->getTestCaseInfo();
   SectionInfo testCaseSection(testCaseInfo.lineInfo, testCaseInfo.name, testCaseInfo.description);
   m_reporter->sectionStarting(testCaseSection);
-  Counts prevAssertions    = m_totals.assertions;
-  double duration          = 0;
+  Counts prevAssertions = m_totals.assertions;
+  double duration = 0;
   m_shouldReportUnexpected = true;
-  m_lastAssertionInfo      = {"TEST_CASE"_sr, testCaseInfo.lineInfo, StringRef(), ResultDisposition::Normal};
+  m_lastAssertionInfo = {"TEST_CASE"_sr, testCaseInfo.lineInfo, StringRef(), ResultDisposition::Normal};
 
   seedRng(*m_config);
 
@@ -8774,7 +8774,7 @@ void RunContext::runCurrentTest(std::string &redirectedCout, std::string &redire
       handleUnexpectedInflightException(m_lastAssertionInfo, translateActiveException(), dummyReaction);
     }
   }
-  Counts assertions      = m_totals.assertions - prevAssertions;
+  Counts assertions = m_totals.assertions - prevAssertions;
   bool missingAssertions = testForMissingAssertions(assertions);
 
   m_testCaseTracker->close();
@@ -8803,7 +8803,7 @@ void RunContext::handleExpr(AssertionInfo const &info, ITransientExpression cons
   m_reporter->assertionStarting(info);
 
   bool negated = isFalseTest(info.resultDisposition);
-  bool result  = expr.getResult() != negated;
+  bool result = expr.getResult() != negated;
 
   if (result) {
     if (!m_includeSuccessfulResults) {
@@ -8858,7 +8858,7 @@ void RunContext::handleUnexpectedInflightException(AssertionInfo const &info, st
 
 void RunContext::populateReaction(AssertionReaction &reaction) {
   reaction.shouldDebugBreak = m_config->shouldDebugBreak();
-  reaction.shouldThrow      = aborting() || (m_lastAssertionInfo.resultDisposition & ResultDisposition::Normal);
+  reaction.shouldThrow = aborting() || (m_lastAssertionInfo.resultDisposition & ResultDisposition::Normal);
 }
 
 void RunContext::handleIncomplete(AssertionInfo const &info) {
@@ -9077,7 +9077,7 @@ void applyFilenamesAsTags(Catch::IConfig const &config) {
     auto tags = testCase.tags;
 
     std::string filename = testCase.lineInfo.file;
-    auto lastSlash       = filename.find_last_of("\\/");
+    auto lastSlash = filename.find_last_of("\\/");
     if (lastSlash != std::string::npos) {
       filename.erase(0, lastSlash);
       filename[0] = '#';
@@ -9121,7 +9121,7 @@ Session::Session() {
   }
 
   alreadyInstantiated = true;
-  m_cli               = makeCommandLineParser(m_configData);
+  m_cli = makeCommandLineParser(m_configData);
 }
 Session::~Session() {
   Catch::cleanUp();
@@ -9524,8 +9524,8 @@ std::string toLower(std::string const &s) {
 }
 std::string trim(std::string const &str) {
   static char const *whitespaceChars = "\n\r\t ";
-  std::string::size_type start       = str.find_first_not_of(whitespaceChars);
-  std::string::size_type end         = str.find_last_not_of(whitespaceChars);
+  std::string::size_type start = str.find_first_not_of(whitespaceChars);
+  std::string::size_type end = str.find_last_not_of(whitespaceChars);
 
   return start != std::string::npos ? str.substr(start, 1 + end - start) : std::string();
 }
@@ -9535,7 +9535,7 @@ bool replaceInPlace(std::string &str, std::string const &replaceThis, std::strin
   std::size_t i = str.find(replaceThis);
   while (i != std::string::npos) {
     replaced = true;
-    str      = str.substr(0, i) + withThis + str.substr(i + replaceThis.size());
+    str = str.substr(0, i) + withThis + str.substr(i + replaceThis.size());
     if (i < str.size() - withThis.size())
       i = str.find(replaceThis, i + withThis.size());
     else
@@ -9609,7 +9609,7 @@ void StringRef::takeOwnership() {
     m_data = new char[m_size + 1];
     memcpy(m_data, m_start, m_size);
     m_data[m_size] = '\0';
-    m_start        = m_data;
+    m_start = m_data;
   }
 }
 auto StringRef::substr(size_type start, size_type size) const noexcept -> StringRef {
@@ -9788,7 +9788,7 @@ TestCase makeTestCase(ITestInvoker *_testCase, std::string const &_className, Na
   // Parse out tags
   std::vector<std::string> tags;
   std::string desc, tag;
-  bool inTag              = false;
+  bool inTag = false;
   std::string _descOrTags = nameAndTags.tags;
   for (char c : _descOrTags) {
     if (!inTag) {
@@ -9966,7 +9966,7 @@ std::vector<TestCase> const &TestRegistry::getAllTestsSorted(IConfig const &conf
     enforceNoDuplicateTestCases(m_functions);
 
   if (m_currentSortOrder != config.runOrder() || m_sortedFunctions.empty()) {
-    m_sortedFunctions  = sortTests(config, m_functions);
+    m_sortedFunctions = sortTests(config, m_functions);
     m_currentSortOrder = config.runOrder();
   }
   return m_sortedFunctions;
@@ -9983,7 +9983,7 @@ void TestInvokerAsFunction::invoke() const {
 std::string extractClassName(StringRef const &classOrQualifiedMethodName) {
   std::string className = classOrQualifiedMethodName;
   if (startsWith(className, '&')) {
-    std::size_t lastColons        = className.rfind("::");
+    std::size_t lastColons = className.rfind("::");
     std::size_t penultimateColons = className.rfind("::", lastColons - 1);
     if (penultimateColons == std::string::npos)
       penultimateColons = 1;
@@ -10024,19 +10024,19 @@ TrackerContext &TrackerContext::instance() {
 ITracker &TrackerContext::startRun() {
   m_rootTracker = std::make_shared<SectionTracker>(NameAndLocation("{root}", CATCH_INTERNAL_LINEINFO), *this, nullptr);
   m_currentTracker = nullptr;
-  m_runState       = Executing;
+  m_runState = Executing;
   return *m_rootTracker;
 }
 
 void TrackerContext::endRun() {
   m_rootTracker.reset();
   m_currentTracker = nullptr;
-  m_runState       = NotStarted;
+  m_runState = NotStarted;
 }
 
 void TrackerContext::startCycle() {
   m_currentTracker = m_rootTracker.get();
-  m_runState       = Executing;
+  m_runState = Executing;
 }
 void TrackerContext::completeCycle() {
   m_runState = CompletedCycle;
@@ -10259,10 +10259,10 @@ void IndexTracker::close() {
 
 } // namespace TestCaseTracking
 
-using TestCaseTracking::ITracker;
-using TestCaseTracking::TrackerContext;
-using TestCaseTracking::SectionTracker;
 using TestCaseTracking::IndexTracker;
+using TestCaseTracking::ITracker;
+using TestCaseTracking::SectionTracker;
+using TestCaseTracking::TrackerContext;
 
 } // namespace Catch
 
@@ -10303,9 +10303,9 @@ AutoReg::~AutoReg() = default;
 
 namespace Catch {
 
-TestSpec::Pattern::~Pattern()                 = default;
-TestSpec::NamePattern::~NamePattern()         = default;
-TestSpec::TagPattern::~TagPattern()           = default;
+TestSpec::Pattern::~Pattern() = default;
+TestSpec::NamePattern::~NamePattern() = default;
+TestSpec::TagPattern::~TagPattern() = default;
 TestSpec::ExcludedPattern::~ExcludedPattern() = default;
 
 TestSpec::NamePattern::NamePattern(std::string const &name) : m_wildcardPattern(toLower(name), CaseSensitive::No) {
@@ -10356,10 +10356,10 @@ TestSpecParser::TestSpecParser(ITagAliasRegistry const &tagAliases) : m_tagAlias
 }
 
 TestSpecParser &TestSpecParser::parse(std::string const &arg) {
-  m_mode      = None;
+  m_mode = None;
   m_exclusion = false;
-  m_start     = std::string::npos;
-  m_arg       = m_tagAliases->expandAliases(arg);
+  m_start = std::string::npos;
+  m_arg = m_tagAliases->expandAliases(arg);
   m_escapeChars.clear();
   for (m_pos = 0; m_pos < m_arg.size(); ++m_pos)
     visitChar(m_arg[m_pos]);
@@ -10411,7 +10411,7 @@ void TestSpecParser::visitChar(char c) {
     addPattern<TestSpec::TagPattern>();
 }
 void TestSpecParser::startNewMode(Mode mode, std::size_t start) {
-  m_mode  = mode;
+  m_mode = mode;
   m_start = start;
 }
 void TestSpecParser::escape() {
@@ -10452,7 +10452,7 @@ auto getCurrentNanosecondsSinceEpoch() -> uint64_t {
 }
 
 auto estimateClockResolution() -> uint64_t {
-  uint64_t sum                     = 0;
+  uint64_t sum = 0;
   static const uint64_t iterations = 1000000;
 
   auto startTime = getCurrentNanosecondsSinceEpoch();
@@ -10547,7 +10547,7 @@ std::string rawMemoryToString(const void *object, std::size_t size) {
   // Reverse order for little endian architectures
   int i = 0, end = static_cast<int>(size), inc = 1;
   if (Endianness::which() == Endianness::Little) {
-    i   = end - 1;
+    i = end - 1;
     end = inc = -1;
   }
 
@@ -10695,7 +10695,7 @@ std::string StringMaker<char>::convert(char value) {
     return ::Catch::Detail::stringify(static_cast<unsigned int>(value));
   } else {
     char chstr[] = "' '";
-    chstr[1]     = value;
+    chstr[1] = value;
     return chstr;
   }
 }
@@ -10749,8 +10749,8 @@ namespace Catch {
 
 Counts Counts::operator-(Counts const &other) const {
   Counts diff;
-  diff.passed      = passed - other.passed;
-  diff.failed      = failed - other.failed;
+  diff.passed = passed - other.passed;
+  diff.failed = failed - other.failed;
   diff.failedButOk = failedButOk - other.failedButOk;
   return diff;
 }
@@ -10775,7 +10775,7 @@ bool Counts::allOk() const {
 Totals Totals::operator-(Totals const &other) const {
   Totals diff;
   diff.assertions = assertions - other.assertions;
-  diff.testCases  = testCases - other.testCases;
+  diff.testCases = testCases - other.testCases;
   return diff;
 }
 
@@ -10849,11 +10849,11 @@ namespace Catch {
 WildcardPattern::WildcardPattern(std::string const &pattern, CaseSensitive::Choice caseSensitivity)
     : m_caseSensitivity(caseSensitivity), m_pattern(adjustCase(pattern)) {
   if (startsWith(m_pattern, '*')) {
-    m_pattern  = m_pattern.substr(1);
+    m_pattern = m_pattern.substr(1);
     m_wildcard = WildcardAtStart;
   }
   if (endsWith(m_pattern, '*')) {
-    m_pattern  = m_pattern.substr(0, m_pattern.size() - 1);
+    m_pattern = m_pattern.substr(0, m_pattern.size() - 1);
     m_wildcard = static_cast<WildcardPosition>(m_wildcard | WildcardAtEnd);
   }
 }
@@ -10988,7 +10988,7 @@ void XmlEncode::encodeTo(std::ostream &os) const {
       // The header is valid, check data
       // The next encBytes bytes must together be a valid utf-8
       // This means: bitpattern 10XX XXXX and the extracted value is sane (ish)
-      bool valid     = true;
+      bool valid = true;
       uint32_t value = headerValue(c);
       for (std::size_t n = 1; n < encBytes; ++n) {
         uchar nc = m_str[idx + n];
@@ -11033,7 +11033,7 @@ XmlWriter::ScopedElement &XmlWriter::ScopedElement::operator=(ScopedElement &&ot
   if (m_writer) {
     m_writer->endElement();
   }
-  m_writer       = other.m_writer;
+  m_writer = other.m_writer;
   other.m_writer = nullptr;
   return *this;
 }
@@ -11220,7 +11220,7 @@ std::string bothOrAll(std::size_t count) {
   return count == 1 ? std::string() : count == 2 ? "both " : "all ";
 }
 
-} // anon namespace
+} // namespace
 
 namespace Catch {
 namespace {
@@ -11261,7 +11261,7 @@ void printTotals(std::ostream &out, const Totals &totals) {
 class AssertionPrinter {
 public:
   AssertionPrinter &operator=(AssertionPrinter const &) = delete;
-  AssertionPrinter(AssertionPrinter const &)            = delete;
+  AssertionPrinter(AssertionPrinter const &) = delete;
   AssertionPrinter(std::ostream &_stream, AssertionStats const &_stats, bool _printInfoMessages)
       : stream(_stream), result(_stats.assertionResult), messages(_stats.infoMessages),
         itMessage(_stats.infoMessages.begin()), printInfoMessages(_printInfoMessages) {
@@ -11395,7 +11395,7 @@ private:
 
     // using messages.end() directly yields (or auto) compilation error:
     std::vector<MessageInfo>::const_iterator itEnd = messages.end();
-    const std::size_t N                            = static_cast<std::size_t>(std::distance(itMessage, itEnd));
+    const std::size_t N = static_cast<std::size_t>(std::distance(itMessage, itEnd));
 
     {
       Colour colourGuard(colour);
@@ -11501,13 +11501,13 @@ namespace {
 class ConsoleAssertionPrinter {
 public:
   ConsoleAssertionPrinter &operator=(ConsoleAssertionPrinter const &) = delete;
-  ConsoleAssertionPrinter(ConsoleAssertionPrinter const &)            = delete;
+  ConsoleAssertionPrinter(ConsoleAssertionPrinter const &) = delete;
   ConsoleAssertionPrinter(std::ostream &_stream, AssertionStats const &_stats, bool _printInfoMessages)
       : stream(_stream), stats(_stats), result(_stats.assertionResult), colour(Colour::None),
         message(result.getMessage()), messages(_stats.infoMessages), printInfoMessages(_printInfoMessages) {
     switch (result.getResultType()) {
     case ResultWas::Ok:
-      colour     = Colour::Success;
+      colour = Colour::Success;
       passOrFail = "PASSED";
       //if( result.hasMessage() )
       if (_stats.infoMessages.size() == 1)
@@ -11517,10 +11517,10 @@ public:
       break;
     case ResultWas::ExpressionFailed:
       if (result.isOk()) {
-        colour     = Colour::Success;
+        colour = Colour::Success;
         passOrFail = "FAILED - but was ok";
       } else {
-        colour     = Colour::Error;
+        colour = Colour::Error;
         passOrFail = "FAILED";
       }
       if (_stats.infoMessages.size() == 1)
@@ -11529,8 +11529,8 @@ public:
         messageLabel = "with messages";
       break;
     case ResultWas::ThrewException:
-      colour       = Colour::Error;
-      passOrFail   = "FAILED";
+      colour = Colour::Error;
+      passOrFail = "FAILED";
       messageLabel = "due to unexpected exception with ";
       if (_stats.infoMessages.size() == 1)
         messageLabel += "message";
@@ -11538,13 +11538,13 @@ public:
         messageLabel += "messages";
       break;
     case ResultWas::FatalErrorCondition:
-      colour       = Colour::Error;
-      passOrFail   = "FAILED";
+      colour = Colour::Error;
+      passOrFail = "FAILED";
       messageLabel = "due to a fatal error condition";
       break;
     case ResultWas::DidntThrowException:
-      colour       = Colour::Error;
-      passOrFail   = "FAILED";
+      colour = Colour::Error;
+      passOrFail = "FAILED";
       messageLabel = "because no exception was thrown where one was expected";
       break;
     case ResultWas::Info:
@@ -11555,7 +11555,7 @@ public:
       break;
     case ResultWas::ExplicitFailure:
       passOrFail = "FAILED";
-      colour     = Colour::Error;
+      colour = Colour::Error;
       if (_stats.infoMessages.size() == 1)
         messageLabel = "explicitly with message";
       if (_stats.infoMessages.size() > 1)
@@ -11566,7 +11566,7 @@ public:
     case ResultWas::FailureBit:
     case ResultWas::Exception:
       passOrFail = "** internal error **";
-      colour     = Colour::Error;
+      colour = Colour::Error;
       break;
     }
   }
@@ -11659,8 +11659,8 @@ class Duration {
   enum class Unit { Auto, Nanoseconds, Microseconds, Milliseconds, Seconds, Minutes };
   static const uint64_t s_nanosecondsInAMicrosecond = 1000;
   static const uint64_t s_nanosecondsInAMillisecond = 1000 * s_nanosecondsInAMicrosecond;
-  static const uint64_t s_nanosecondsInASecond      = 1000 * s_nanosecondsInAMillisecond;
-  static const uint64_t s_nanosecondsInAMinute      = 60 * s_nanosecondsInASecond;
+  static const uint64_t s_nanosecondsInASecond = 1000 * s_nanosecondsInAMillisecond;
+  static const uint64_t s_nanosecondsInAMinute = 60 * s_nanosecondsInASecond;
 
   uint64_t m_inNanoseconds;
   Unit m_units;
@@ -11722,7 +11722,7 @@ class TablePrinter {
   std::vector<ColumnInfo> m_columnInfos;
   std::ostringstream m_oss;
   int m_currentColumn = -1;
-  bool m_isOpen       = false;
+  bool m_isOpen = false;
 
 public:
   TablePrinter(std::ostream &os, std::vector<ColumnInfo> columnInfos)
@@ -11935,7 +11935,7 @@ void ConsoleReporter::printTestCaseAndSectionHeader() {
   if (m_sectionStack.size() > 1) {
     Colour colourGuard(Colour::Headers);
 
-    auto it   = m_sectionStack.begin() + 1, // Skip first section (test case)
+    auto it = m_sectionStack.begin() + 1, // Skip first section (test case)
         itEnd = m_sectionStack.end();
     for (; it != itEnd; ++it)
       printHeaderString(it->name, 2);
@@ -12041,9 +12041,9 @@ void ConsoleReporter::printSummaryRow(std::string const &label, std::vector<Summ
 
 void ConsoleReporter::printTotalsDivider(Totals const &totals) {
   if (totals.testCases.total() > 0) {
-    std::size_t failedRatio      = makeRatio(totals.testCases.failed, totals.testCases.total());
+    std::size_t failedRatio = makeRatio(totals.testCases.failed, totals.testCases.total());
     std::size_t failedButOkRatio = makeRatio(totals.testCases.failedButOk, totals.testCases.total());
-    std::size_t passedRatio      = makeRatio(totals.testCases.passed, totals.testCases.total());
+    std::size_t passedRatio = makeRatio(totals.testCases.passed, totals.testCases.total());
     while (failedRatio + failedButOkRatio + passedRatio < CATCH_CONFIG_CONSOLE_WIDTH - 1)
       findMax(failedRatio, failedButOkRatio, passedRatio)++;
     while (failedRatio + failedButOkRatio + passedRatio > CATCH_CONFIG_CONSOLE_WIDTH - 1)
@@ -12170,7 +12170,7 @@ void JunitReporter::testRunEndedCumulative() {
 }
 
 void JunitReporter::writeGroup(TestGroupNode const &groupNode, double suiteTime) {
-  XmlWriter::ScopedElement e  = xml.scopedElement("testsuite");
+  XmlWriter::ScopedElement e = xml.scopedElement("testsuite");
   TestGroupStats const &stats = groupNode.value;
   xml.writeAttribute("name", stats.groupInfo.name);
   xml.writeAttribute("errors", unexpectedExceptions);

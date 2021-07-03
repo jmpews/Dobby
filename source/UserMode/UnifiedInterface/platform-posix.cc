@@ -121,36 +121,35 @@ static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   UNREACHABLE();
 }
 
-int OSMemory::AllocPageSize() {
-  return OSMemory::PageSize();
-}
-
 int OSMemory::PageSize() {
   return static_cast<int>(sysconf(_SC_PAGESIZE));
 }
 
-void *OSMemory::Allocate(void *address, int size, MemoryPermission access) {
+void *OSMemory::Allocate(size_t size, MemoryPermission access) {
+}
+
+void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_address) {
   int prot = GetProtectionFromMemoryPermission(access);
 
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if (address != NULL) {
+  if (fixed_address != NULL) {
     flags = flags | MAP_FIXED;
   }
-  void *result = mmap(address, size, prot, flags, kMmapFd, kMmapFdOffset);
+  void *result = mmap(fixed_address, size, prot, flags, kMmapFd, kMmapFdOffset);
   if (result == MAP_FAILED)
     return nullptr;
 
   return result;
 }
 
-bool OSMemory::Free(void *address, const int size) {
+bool OSMemory::Free(void *address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
   return munmap(address, size) == 0;
 }
 
-bool OSMemory::Release(void *address, int size) {
+bool OSMemory::Release(void *address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
@@ -158,7 +157,7 @@ bool OSMemory::Release(void *address, int size) {
 }
 
 // static
-bool OSMemory::SetPermission(void *address, int size, MemoryPermission access) {
+bool OSMemory::SetPermission(void *address, size_t size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
@@ -170,19 +169,8 @@ bool OSMemory::SetPermission(void *address, int size, MemoryPermission access) {
   }
 
   if (ret) {
-    FATAL("[!] %s\n", ((const char *)strerror(errno)));
+    FATAL("%s\n", ((const char *)strerror(errno)));
   }
-
-// For accounting purposes, we want to call MADV_FREE_REUSE on macOS after
-// changing permissions away from MemoryPermission::kNoAccess. Since this
-// state is not kept at this layer, we always call this if access != kNoAccess.
-// The cost is a syscall that effectively no-ops.
-// TODO(erikchen): Fix this to only call MADV_FREE_REUSE when necessary.
-// https://crbug.com/823915
-#if defined(OS_MACOSX)
-  if (access != MemoryPermission::kNoAccess)
-    madvise(address, size, MADV_FREE_REUSE);
-#endif
 
   return ret == 0;
 }

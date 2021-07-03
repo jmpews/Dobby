@@ -50,11 +50,11 @@ protected:
 protected:
   HookEntry *entry_;
 
-  AssemblyCodeChunk *origin_;
+  AssemblyCode *origin_;
 
-  AssemblyCodeChunk *relocated_;
+  AssemblyCode *relocated_;
 
-  AssemblyCodeChunk *trampoline_;
+  AssemblyCode *trampoline_;
 
   // trampoline buffer before active
   CodeBufferBase *trampoline_buffer_;

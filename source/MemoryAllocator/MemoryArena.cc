@@ -2,61 +2,25 @@
 
 #include "dobby_internal.h"
 
-std::vector<PageChunk *> MemoryArena::page_chunks;
-
-void MemoryArena::Destroy(AssemblyCodeChunk *chunk) {
-  return;
-}
-
-MemoryChunk *MemoryArena::AllocateChunk(int alloc_size, MemoryPermission permission) {
-  MemoryChunk *result = nullptr;
-
-  PageChunk *found_page = nullptr;
-  for (auto *page : page_chunks) {
-    if (page->permission == permission) {
-      // check the page remain space is enough for the new chunk
-      if ((page->cursor + alloc_size) < ((addr_t)page->mem.address + page->mem.length)) {
-        found_page = page;
-        break;
-      }
-    }
-  }
-
-  // alloc a new executable page
-  if (!found_page) {
-    int page_size = OSMemory::PageSize();
-    void *page_addr = OSMemory::Allocate(NULL, page_size, permission);
-    if (page_addr == NULL) {
-      ERROR_LOG("Failed to alloc page");
-      return NULL;
+MemBlock * MemoryArena::allocBlock(size_t alloc_size) {
+    MemBlock *result;
+    for (auto *chunk : chunks_) {
+      result = chunk->allocBlock(alloc_size);
+      if(result)
+        return result;
     }
 
-    PageChunk *alloc_page = new PageChunk;
-    alloc_page->mem.address = page_addr;
-    alloc_page->mem.length = page_size;
-    alloc_page->cursor = (addr_t)page_addr;
-    alloc_page->permission = permission;
-    MemoryArena::page_chunks.push_back(alloc_page);
-    found_page = alloc_page;
-  }
+  auto allocNewChunk = [&](size_t new_alloc_size) -> MemChunk * {
+    size_t chunk_size = ALIGN_CEIL(new_alloc_size, OSMemory::PageSize());
+    addr_t chunk_addr = (addr_t)OSMemory::Allocate(chunk_size, kNoAccess);
 
-  if (found_page) {
-    result = new MemoryChunk;
-    result->address = (void *)found_page->cursor;
-    result->length = alloc_size;
+    MemChunk *chunk = new MemChunk{.addr = chunk_addr, .cursor_addr = chunk_addr, .size = chunk_size};
+    return chunk;
+    };
 
-    // update page cursor
-    found_page->chunks.push_back(result);
-    found_page->cursor += alloc_size;
-  }
+  MemChunk *new_chunk = allocNewChunk(alloc_size);
+  chunks_.push_back(new_chunk);
 
+  result = new_chunk->allocBlock(alloc_size);
   return result;
-}
-
-AssemblyCodeChunk *MemoryArena::AllocateCodeChunk(int alloc_size) {
-  return MemoryArena::AllocateChunk(alloc_size, kReadExecute);
-}
-
-WritableDataChunk *MemoryArena::AllocateDataChunk(int alloc_size) {
-  return MemoryArena::AllocateChunk(alloc_size, kReadWrite);
 }

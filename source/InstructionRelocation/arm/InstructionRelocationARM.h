@@ -339,7 +339,7 @@ private:
 };
 
 #if 0
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated);
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
 #endif
 
 } // namespace arm

@@ -36,12 +36,12 @@
 // ================================================================
 // GetProcessMemoryLayout
 
-static bool memory_region_comparator(MemoryRegion a, MemoryRegion b) {
-  return (a.address < b.address);
+static bool memory_region_comparator(MemRegion a, MemRegion b) {
+  return (a.mem.begin < b.mem.begin);
 }
 
-std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  std::vector<MemoryRegion> ProcessMemoryLayout;
+std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
+  std::vector<MemRegion> ProcessMemoryLayout;
 
   struct vm_region_submap_short_info_64 submap_info;
   mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
@@ -73,7 +73,7 @@ std::vector<MemoryRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       } else {
         continue;
       }
-      MemoryRegion region = {(void *)addr, static_cast<size_t>(size), permission};
+      MemRegion region = {(void *)addr, static_cast<size_t>(size), permission};
 #if 0
       DLOG(0, "%p --- %p", addr, addr + size);
 #endif

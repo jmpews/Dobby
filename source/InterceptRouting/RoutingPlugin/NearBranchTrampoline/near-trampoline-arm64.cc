@@ -16,8 +16,8 @@ using namespace zz::arm64;
 
 // If BranchType is B_Branch and the branch_range of `B` is not enough
 // build the transfer to forward the b branch
-static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, addr_t target_address) {
-  AssemblyCodeChunk *chunk = NULL;
+static AssemblyCode *GenerateFastForwardTrampoline(addr_t source_address, addr_t target_address) {
+  AssemblyCode *chunk = NULL;
 
   TurboAssembler turbo_assembler_(0);
 
@@ -66,7 +66,7 @@ static AssemblyCodeChunk *GenerateFastForwardTrampoline(addr_t source_address, a
 
   turbo_assembler_.SetRealizedAddress(chunk->address);
 
-  AssemblyCodeChunk *result = NULL;
+  AssemblyCode *result = NULL;
   result = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
 
   { // release
@@ -85,7 +85,7 @@ CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t s
   if (llabs((long long)dst - (long long)src) < ARM64_B_XXX_RANGE) {
     _ b(dst - src);
   } else {
-    AssemblyCodeChunk *fast_forward_trampoline = NULL;
+    AssemblyCode *fast_forward_trampoline = NULL;
     fast_forward_trampoline = GenerateFastForwardTrampoline(src, dst);
     if (!fast_forward_trampoline)
       return NULL;

@@ -4,22 +4,17 @@
 
 #include "MemoryAllocator/MemoryArena.h"
 
-class NearMemoryArena : public MemoryArena {
+class NearMemoryArena : public DataMemoryArena {
 public:
-  NearMemoryArena();
+  static NearMemoryArena *SharedInstance() {
+    static NearMemoryArena *arena_priv_ = nullptr;
+    if (arena_priv_ == nullptr) {
+      arena_priv_ = new NearMemoryArena();
+    }
+    return arena_priv_;
+  }
 
-  static MemoryChunk *AllocateChunk(addr_t position, size_t alloc_range, int alloc_size, MemoryPermission permission);
-
-  static WritableDataChunk *AllocateDataChunk(addr_t position, size_t alloc_range, int alloc_size);
-
-  static AssemblyCodeChunk *AllocateCodeChunk(addr_t position, size_t alloc_range, int alloc_size);
-
-  static int PushPage(addr_t page_addr, MemoryPermission permission);
-
-  static void Destroy(MemoryChunk *chunk);
-
-private:
-  static std::vector<PageChunk *> page_chunks;
+  DataBlock *allocNearDataBlock(addr_t pos, size_t range_size, size_t alloc_size);
 };
 
 #endif

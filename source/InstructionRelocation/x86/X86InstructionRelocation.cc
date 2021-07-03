@@ -15,7 +15,7 @@
 
 using namespace zz::x86;
 
-static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
   turbo_assembler_.SetRealizedAddress((void *)relocated->raw_instruction_start());
@@ -109,7 +109,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
 
   // Generate executable code
   {
-    AssemblyCodeChunk *code = NULL;
+    AssemblyCode *code = NULL;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     delete code;
   }
@@ -117,9 +117,9 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
   return RT_SUCCESS;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   // pre-alloc code chunk
-  AssemblyCodeChunk *chunk = NULL;
+  AssemblyCode *chunk = NULL;
 
   int relo_code_chunk_size = 32;
   const int chunk_size_step = 16;

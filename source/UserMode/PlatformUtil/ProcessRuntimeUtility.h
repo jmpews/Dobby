@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PlatformUnifiedInterface/StdMemory.h"
+#include "PlatformUnifiedInterface/MemoryAllocator.h"
 
 #include <vector>
 #include <algorithm>
@@ -10,9 +10,14 @@ typedef struct _RuntimeModule {
   void *load_address;
 } RuntimeModule;
 
+typedef struct {
+  MemRange mem;
+  MemoryPermission permission;
+} MemRegion;
+
 class ProcessRuntimeUtility {
 public:
-  static std::vector<MemoryRegion> GetProcessMemoryLayout();
+  static std::vector<MemRegion> GetProcessMemoryLayout();
 
   static std::vector<RuntimeModule> GetProcessModuleMap();
 

@@ -3,17 +3,7 @@
 #include "dobby_internal.h"
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 
-AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromAddress(addr_t chunk_addr, size_t chunk_size) {
-  AssemblyCodeChunk *result = nullptr;
-  result = new AssemblyCodeChunk;
-  result->address = (void *)chunk_addr;
-  result->length = chunk_size;
-  return result;
-}
-
-AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
-  AssemblyCodeChunk *result = nullptr;
-
+AssemblyCode *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
   CodeBufferBase *buffer = nullptr;
   buffer = (CodeBufferBase *)assembler->GetCodeBuffer();
 
@@ -28,20 +18,18 @@ AssemblyCodeChunk *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase
 #endif
     }
 
-    // assembler without specific memory address
-    result = MemoryArena::AllocateCodeChunk(buffer_size);
-    if (result == nullptr)
+    auto *block = CodeMemoryArena::SharedInstance()->allocCodeBlock(buffer_size);
+    if (block == nullptr)
       return nullptr;
 
-    realized_addr = result->address;
+    realized_addr = (void *)block->addr;
     assembler->SetRealizedAddress(realized_addr);
-  } else {
-    result = AssemblyCodeBuilder::FinalizeFromAddress((addr_t)realized_addr, buffer->GetBufferSize());
   }
 
-  // Realize(Relocate) the buffer_code to the executable_memory_address, remove the ExternalLabels, etc, the pc-relative
+  // Realize the buffer code to the executable memory address, remove the ExternalLabel, etc, the pc-relative
   // instructions
   CodePatch(realized_addr, buffer->GetBuffer(), buffer->GetBufferSize());
 
-  return result;
+  AssemblyCode *code = new AssemblyCode{.begin = realized_addr, .size = buffer->GetBufferSize()};
+  return code;
 }

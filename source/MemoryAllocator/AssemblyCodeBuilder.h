@@ -1,5 +1,4 @@
-#ifndef MemoryAllocator_AssemblyCodeBuilder_h
-#define MemoryAllocator_AssemblyCodeBuilder_h
+#pragma once
 
 #include "MemoryAllocator/MemoryArena.h"
 
@@ -7,13 +6,9 @@
 
 using namespace zz;
 
-class AssemblyCodeBuilder {
+using AssemblyCode = MemRange;
+
+class AssemblyCodeBuilder : MemZone {
 public:
-  // realize the buffer address to runtime code, and create a corresponding Code Object
-  static AssemblyCodeChunk *FinalizeFromAddress(addr_t chunk_addr, size_t chunk_size);
-
-  // realize the buffer address to runtime code, and create a corresponding Code Object
-  static AssemblyCodeChunk *FinalizeFromTurboAssembler(AssemblerBase *assembler);
+  static AssemblyCode *FinalizeFromTurboAssembler(AssemblerBase *assembler);
 };
-
-#endif

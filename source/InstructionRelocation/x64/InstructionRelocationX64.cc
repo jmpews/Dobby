@@ -15,22 +15,22 @@
 
 using namespace zz::x64;
 
-static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
+static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
-  turbo_assembler_.SetRealizedAddress(relocated->address);
+  turbo_assembler_.SetRealizedAddress(relocated->begin);
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
-  addr64_t curr_orig_ip = (addr64_t)origin->address;
-  addr64_t curr_relo_ip = (addr64_t)relocated->address;
+  addr64_t curr_orig_ip = (addr64_t)origin->begin;
+  addr64_t curr_relo_ip = (addr64_t)relocated->begin;
 
   uint8_t *buffer_cursor = (uint8_t *)buffer;
 
   x86_options_t conf = {0};
   conf.mode = 64;
 
-  int predefined_relocate_size = origin->length;
+  int predefined_relocate_size = origin->size;
 
   while ((buffer_cursor < ((uint8_t *)buffer + predefined_relocate_size))) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
@@ -101,7 +101,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
       curr_relo_ip += relo_len;
     }
 #endif
-    curr_relo_ip = (addr64_t)relocated->address + turbo_assembler_.ip_offset();
+    curr_relo_ip = (addr64_t)relocated->begin + turbo_assembler_.ip_offset();
   }
 
   // jmp to the origin rest instructions
@@ -112,18 +112,18 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
   turbo_assembler_.GetCodeBuffer()->Emit64(curr_orig_ip);
 
   // update origin
-  int new_origin_len = curr_orig_ip - origin->length;
-  origin->length = new_origin_len;
+  int new_origin_len = curr_orig_ip - origin->size;
+  origin->size = new_origin_len;
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
-  if (relo_len > relocated->length) {
+  if (relo_len > relocated->size) {
     DLOG(0, "pre-alloc code chunk not enough");
     return RT_FAILED;
   }
 
   // Generate executable code
   {
-    AssemblyCodeChunk *code = NULL;
+    AssemblyCode *code = NULL;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     delete code;
   }
@@ -131,31 +131,27 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCodeChunk *origin, Assembl
   return RT_SUCCESS;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCodeChunk *origin, AssemblyCodeChunk *relocated) {
-  // pre-alloc code chunk
-  AssemblyCodeChunk *chunk = NULL;
-
+void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
   int relo_code_chunk_size = 32;
   const int chunk_size_step = 16;
 
 x64_try_again:
-  if (relocated->address == 0) {
-    chunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    if (chunk == nullptr) {
+  if (relocated->begin == nullptr) {
+    auto *block = CodeMemoryArena::SharedInstance()->allocCodeBlock(relo_code_chunk_size);
+    if (block == nullptr) {
       return;
     }
-    relocated->address = chunk->address;
-    relocated->length = chunk->length;
+    relocated->begin = (void *)block->addr;
+    relocated->size = block->size;
   }
 
   int ret = GenRelocateCodeFixed(buffer, origin, relocated);
   if (ret != RT_SUCCESS) {
-    // free the chunk
-    MemoryArena::Destroy(chunk);
+    // FIXME: destory
 
     relo_code_chunk_size += chunk_size_step;
-    relocated->address = 0;
-    relocated->length = 0;
+    relocated->begin = 0;
+    relocated->size = 0;
 
     goto x64_try_again;
   }

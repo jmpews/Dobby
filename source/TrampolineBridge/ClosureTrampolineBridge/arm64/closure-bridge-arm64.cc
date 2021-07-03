@@ -148,8 +148,8 @@ void *get_closure_bridge() {
   // return to closure trampoline, but TMP_REG_0, had been modified with next hop address
   _ ret(); // AKA br x30
 
-  AssemblyCodeChunk *chunk = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = chunk->address;
+  AssemblyCode *code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge = code->begin;
 
   DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif

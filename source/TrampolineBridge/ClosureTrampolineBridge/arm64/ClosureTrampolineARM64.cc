@@ -48,11 +48,11 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ PseudoBind(&forward_bridge_label);
   _ EmitInt64((uint64_t)get_closure_bridge());
 
-  AssemblyCodeChunk *code = nullptr;
+  AssemblyCode *code = nullptr;
   code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
 
-  entry->address = code->address;
-  entry->size = code->length;
+  entry->address = code->begin;
+  entry->size = code->size;
   entry->carry_data = carry_data;
   entry->carry_handler = carry_handler;
 
