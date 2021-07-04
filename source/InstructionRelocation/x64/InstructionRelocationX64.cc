@@ -112,7 +112,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
   turbo_assembler_.GetCodeBuffer()->Emit64(curr_orig_ip);
 
   // update origin
-  int new_origin_len = curr_orig_ip - origin->size;
+  int new_origin_len = curr_orig_ip - (addr_t)origin->begin;
   origin->size = new_origin_len;
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
@@ -123,7 +123,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
 
   // Generate executable code
   {
-    AssemblyCode *code = NULL;
+    AssemblyCode *code = nullptr;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     delete code;
   }

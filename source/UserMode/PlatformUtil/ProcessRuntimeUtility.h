@@ -2,6 +2,8 @@
 
 #include "PlatformUnifiedInterface/MemoryAllocator.h"
 
+#include "UnifiedInterface/platform.h"
+
 #include <vector>
 #include <algorithm>
 

@@ -14,7 +14,8 @@ public:
     return arena_priv_;
   }
 
-  DataBlock *allocNearDataBlock(addr_t pos, size_t range_size, size_t alloc_size);
+  DataBlock *allocNearDataBlock(size_t alloc_size, addr_t pos, size_t alloc_range);
+
 };
 
 #endif

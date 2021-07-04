@@ -126,13 +126,14 @@ int OSMemory::PageSize() {
 }
 
 void *OSMemory::Allocate(size_t size, MemoryPermission access) {
+  return OSMemory::Allocate(size, access, nullptr);
 }
 
 void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_address) {
   int prot = GetProtectionFromMemoryPermission(access);
 
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-  if (fixed_address != NULL) {
+  if (fixed_address != nullptr) {
     flags = flags | MAP_FIXED;
   }
   void *result = mmap(fixed_address, size, prot, flags, kMmapFd, kMmapFdOffset);

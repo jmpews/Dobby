@@ -33,12 +33,14 @@ struct MemChunk {
   size_t size;
 
   MemBlock *allocBlock(size_t alloc_size) {
-    if (cursor_addr - addr < alloc_size)
+    if ((addr + size )  - cursor_addr  < alloc_size)
       return nullptr;
-    cursor_addr += alloc_size;
 
     auto *block = new MemBlock{.addr = cursor_addr, .size = alloc_size};
     blocks_.push_back(block);
+
+    cursor_addr += alloc_size;
+
     return block;
   }
 
@@ -47,13 +49,14 @@ struct MemChunk {
 
 // ----- arena -----
 
-#include "UnifiedInterface/platform.h"
-
 class MemoryArena {
 public:
   MemBlock *allocBlock(size_t alloc_size);
 
-private:
+protected:
+  virtual MemChunk *allocChunk(size_t alloc_size);
+
+protected:
   std::vector<MemChunk *> chunks_;
 };
 
@@ -71,6 +74,9 @@ public:
     }
     return arena_priv_;
   }
+
+private:
+  MemChunk *allocChunk(size_t alloc_size) override;
 };
 
 using DataBlock = MemBlock;
@@ -87,4 +93,7 @@ public:
     }
     return arena_priv_;
   }
+
+private:
+  MemChunk *allocChunk(size_t alloc_size) override;
 };
