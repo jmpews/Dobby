@@ -15,7 +15,7 @@ message(STATUS "")
 message(STATUS "********* build-environment-detected ***********")
 
 
-# The Compilter ID
+# The Compiler ID
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   set(COMPILER.Clang 1)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -31,6 +31,11 @@ message(STATUS "\tCompiler: \t ${CMAKE_CXX_COMPILER_ID}")
 if(MSVC)
   string(TOLOWER ${MSVC_CXX_ARCHITECTURE_ID} CMAKE_SYSTEM_PROCESSOR)
   set(CMAKE_SYSTEM_PROCESSOR ${MSVC_CXX_ARCHITECTURE_ID})
+endif()
+
+
+if(BUILDING_SILICON)
+  set(CMAKE_SYSTEM_PROCESSOR "Arm64e")
 endif()
 
 string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} CMAKE_SYSTEM_PROCESSOR)

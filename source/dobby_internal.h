@@ -8,7 +8,7 @@
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
-#include "format_printer.h"
+#include "external/misc-helper/misc-helper/format_printer.h"
 
 #include "UnifiedInterface/platform.h"
 

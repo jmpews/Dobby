@@ -39,6 +39,8 @@ option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOff
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
 set(BUILDING_KERNEL 1)
+set(CMAKE_SYSTEM_PROCESSOR arm64e)
+
 add_definitions(-DBUILDING_INTERNAL)
 
 # Enable debug will log more information
@@ -162,11 +164,11 @@ include_directories(
 
 if(NOT BUILDING_KERNEL)
   include_directories(
-    ./source/UserMode
+    source/Backend/UserMode
   )
 else()
   include_directories(
-    ./source/KernelMode
+    source/Backend/KernelMode
   )
 endif()
 
@@ -212,22 +214,22 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
 if(NOT BUILDING_KERNEL)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # platform util
-  source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
+    source/Backend/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
   # user mode - platform interface
-  source/UserMode/UnifiedInterface/platform-${platform1}.cc
+    source/Backend/UserMode/UnifiedInterface/platform-${platform1}.cc
 
   # user mode - executable memory
-  source/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
-  source/UserMode/ExecMemory/clear-cache-tool-all.c
+    source/Backend/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
+    source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
   )
 else()
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # platform util
-    source/KernelMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
+    source/Backend/KernelMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
     # user mode - platform interface
-    source/KernelMode/UnifiedInterface/platform-darwin.cc
+    source/Backend/KernelMode/UnifiedInterface/platform-darwin.cc
     )
 endif()
 
@@ -237,17 +239,17 @@ endif()
 
 if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include_directories(
-    source/UserMode/ExecMemory/substrated/include
+    source/Backend/UserMode/ExecMemory/substrated/include
   )
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/UserMode/ExecMemory/code-patch-tool-darwin.cc
+    source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
   )
 endif()
 
 if(SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   add_definitions(-DCODE_PATCH_WITH_SUBSTRATED)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
+    source/Backend/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
   )
 endif()
 

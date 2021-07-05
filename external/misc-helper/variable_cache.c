@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include <fcntl.h>
-#include "unistd_helper.h"
+#include "deprecated/unistd_helper.h"
 
 #include <errno.h>
 

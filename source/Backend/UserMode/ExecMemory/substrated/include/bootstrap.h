@@ -5,7 +5,7 @@
 #define __XPC_INDIRECT__
 #endif // __XPC_INDIRECT__
 
-#include <xpc/base.h>
+#include <source/Backend/UserMode/ExecMemory/substrated/include/xpc/base.h>
 #include <Availability.h>
 
 // <rdar://problem/13536274>

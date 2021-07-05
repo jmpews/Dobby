@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "pthread_helper.h"
-#include "unistd_helper.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
