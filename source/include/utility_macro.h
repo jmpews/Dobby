@@ -10,10 +10,10 @@
 #define LeftShift(a, b, c) ((a & ((1 << b) - 1)) << c)
 #define RightShift(a, b, c) ((a >> c) & ((1 << b) - 1))
 
-#define abs(a)  ((a) < 0 ? -(a) : (a))
-#define	min(a,b)  ( ((a) < (b))? (a): (b) )
-#define	max(a,b)  ( ((a) > (b))? (a): (b) )
-
+#define abs(a) ((a) < 0 ? -(a) : (a))
+#define llabs(a) (((long long)a) < 0 ? -((long long)a) : ((long long)a))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 // align
 #ifndef ALIGN
@@ -31,8 +31,6 @@
 // make it easy
 #define set_bit(obj, st, bit) obj = (((~(1 << st)) & obj) | (bit << st))
 #define set_bits(obj, st, fn, bits) obj = (((~(submask(fn - st) << st)) & obj) | (bits << st))
-
-
 
 // definition to expand macro then apply to pragma message
 // #pragma message(VAR_NAME_VALUE(HOST_OS_IOS))

@@ -59,7 +59,7 @@ static int check_log_file_available() {
   return 0;
 }
 
-PUBLIC int log_internal_impl(unsigned int level, const char *fmt, ...) {
+PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
   if (level < _log_level)
     return 0;
 

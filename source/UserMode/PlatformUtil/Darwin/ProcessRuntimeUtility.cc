@@ -33,9 +33,6 @@
 
 #include <vector>
 
-// ================================================================
-// GetProcessMemoryLayout
-
 static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.mem.begin < b.mem.begin);
 }
@@ -86,9 +83,6 @@ std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
   return ProcessMemoryLayout;
 }
-
-// ================================================================
-// GetProcessModuleMap
 
 std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   std::vector<RuntimeModule> ProcessModuleMap;

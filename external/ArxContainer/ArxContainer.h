@@ -46,7 +46,7 @@ namespace container {
     }  // namespace detail
 }  // namespace container
 
-template <typename T, size_t N>
+template <typename T, int N>
 class RingBuffer {
     class Iterator {
         friend RingBuffer<T, N>;
@@ -256,7 +256,7 @@ public:
     virtual ~RingBuffer() {}
 
     size_t capacity() const { return N; };
-    size_t size() const { return abs(tail_.raw_pos() - head_.raw_pos()); }
+    size_t size() const { return (size_t)abs(tail_.raw_pos() - head_.raw_pos()); }
     inline const T* data() const { return &(get(head_)); }
     T* data() { return &(get(head_)); }
     bool empty() const { return tail_ == head_; }

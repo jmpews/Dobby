@@ -33,7 +33,7 @@ struct MemChunk {
   size_t size;
 
   MemBlock *allocBlock(size_t alloc_size) {
-    if ((addr + size )  - cursor_addr  < alloc_size)
+    if ((addr + size) - cursor_addr < alloc_size)
       return nullptr;
 
     auto *block = new MemBlock{.addr = cursor_addr, .size = alloc_size};

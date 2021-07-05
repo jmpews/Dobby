@@ -1,8 +1,7 @@
-#include "x86_insn_decode.h"
+#include "platform_macro.h"
+#if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include "x86_insn_decode.h"
 
 #include "logging/logging.h"
 
@@ -263,8 +262,8 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
   insn->modrm = modrm;
 
   mod = modrm.mode;
-  rm = (REX_B(insn->rex) << 3) | modrm.rm;
-  reg = (REX_R(insn->rex) << 3) | modrm.reg;
+  rm = (uint8_t)((REX_B(insn->rex) << 3) | modrm.rm);
+  reg = (uint8_t)((REX_R(insn->rex) << 3) | modrm.reg);
 
   x86_insn_operand_t *reg_op = &insn->operands[0];
   x86_insn_operand_t *mem_op = &insn->operands[1];
@@ -319,9 +318,9 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
       sib.byte = read_byte(rd);
       insn->sib = sib;
 
-      uint8_t base = sib.base | (REX_B(insn->rex) << 3);
-      uint8_t index = sib.index | (REX_X(insn->rex) << 3);
-      uint8_t scale = 1 << sib.log2_scale;
+      uint8_t base = (uint8_t)(sib.base | (REX_B(insn->rex) << 3));
+      uint8_t index = (uint8_t)(sib.index | (REX_X(insn->rex) << 3));
+      uint8_t scale = (uint8_t)(1 << sib.log2_scale);
 
       insn->flags |= X86_INSN_DECODE_FLAG_HAS_BASE;
 
@@ -424,7 +423,7 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
 
   if (disp_bits != 0) {
     // update displacement offset
-    insn->displacement_offset = reader_offset(rd);
+    insn->displacement_offset = (uint8_t)reader_offset(rd);
 
     int64_t disp;
     x86_insn_decode_number(rd, disp_bits, &disp);
@@ -513,6 +512,7 @@ void x86_insn_decode_immediate(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
   if (conf->mode == 64 || conf->mode == 32) {
     effective_operand_bits = (insn->prefix & INSN_PREFIX_OPERAND_SIZE) ? 16 : 32;
   }
+  effective_operand_bits = (insn->prefix & INSN_PREFIX_OPERAND_SIZE) ? 16 : 32;
 
   if (insn->flags & X86_INSN_DECODE_FLAG_OPERAND_SIZE_64)
     effective_operand_bits = 64;
@@ -526,7 +526,7 @@ void x86_insn_decode_immediate(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
     return;
 
   // update immediate offset
-  insn->immediate_offset = reader_offset(rd);
+  insn->immediate_offset = (uint8_t)reader_offset(rd);
 
   x86_insn_decode_number(rd, imm_bits, &immediate);
   insn->immediate = immediate;
@@ -560,3 +560,5 @@ void x86_insn_decode(x86_insn_decode_t *insn, uint8_t *buffer, x86_options_t *co
   // set insn length
   insn->length = rd.buffer_cursor - rd.buffer;
 }
+
+#endif

@@ -43,7 +43,7 @@ static uint16_t read_word(x86_insn_reader_t *rd) {
 
   const unsigned char *p = rd->buffer_cursor;
   rd->buffer_cursor += 2;
-  return (uint16_t)p[0] | ((uint16_t)p[1] << 8);
+  return (uint16_t)((uint16_t)p[0] | ((uint16_t)p[1] << 8));
 }
 
 #define read_uint32 read_dword

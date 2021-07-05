@@ -19,10 +19,10 @@ HookEntryNode *Interceptor::find_hook_entry_node(void *address) {
   for(entry_node = (HookEntryNode *)hook_entry_list_.next; &entry_node->list_node != &hook_entry_list_; entry_node = (HookEntryNode *)entry_node->list_node.next);
 #endif
   struct list_head *list_node = nullptr;
-  for(list_node = hook_entry_list_.next; list_node != &hook_entry_list_; list_node = list_node->next) {
+  for (list_node = hook_entry_list_.next; list_node != &hook_entry_list_; list_node = list_node->next) {
     entry_node = (HookEntryNode *)((char *)list_node - offsetof(HookEntryNode, list_node));
 #else
-    list_for_each_entry(entry_node, &hook_entry_list_, list_node) {
+  list_for_each_entry(entry_node, &hook_entry_list_, list_node) {
 #endif
     HookEntry *entry = entry_node->entry;
     if (entry->instruction_address == address) {
@@ -60,10 +60,10 @@ int Interceptor::GetHookEntryCount() {
   HookEntryNode *entry_node = nullptr;
 #if defined(_MSC_VER)
   struct list_head *list_node = nullptr;
-  for(list_node = hook_entry_list_.next; list_node != &hook_entry_list_; list_node = list_node->next) {
+  for (list_node = hook_entry_list_.next; list_node != &hook_entry_list_; list_node = list_node->next) {
     entry_node = (HookEntryNode *)((char *)list_node - offsetof(HookEntryNode, list_node));
 #else
-    list_for_each_entry(entry_node, &hook_entry_list_, list_node) {
+  list_for_each_entry(entry_node, &hook_entry_list_, list_node) {
 #endif
     count += 1;
   }

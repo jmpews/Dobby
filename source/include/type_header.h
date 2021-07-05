@@ -37,7 +37,6 @@ typedef int dword;
 #define NULL 0
 #endif
 
-
 #ifndef __vmaddr_t_defined
 #define __vmaddr_t_defined
 typedef uintptr_t vmaddr_t;

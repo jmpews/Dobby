@@ -14,7 +14,6 @@ public:
   CodeBuffer() : CodeBufferBase() {
   }
 
-
 public:
   arm_inst_t LoadARMInst(uint32_t offset) {
     return *reinterpret_cast<arm_inst_t *>(GetBuffer() + offset);

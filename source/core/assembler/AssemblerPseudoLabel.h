@@ -16,7 +16,7 @@ public:
   typedef struct {
     int type_;
     vmaddr_t vmaddr_;
-    uint32_t offset_;
+    off_t offset_;
   } ref_label_inst_t;
 
 public:

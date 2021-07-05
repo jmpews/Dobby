@@ -8,9 +8,9 @@ static inline int64_t SignExtend(unsigned long x, int M, int N) {
   unsigned long sign_mask = 0 - sign_bit;
   x |= ((sign_mask >> M) << M);
 #else
-  x = (long)(x << (N - M)) >> (N - M);
+  x = (unsigned long)(long)(x << (N - M)) >> (N - M);
 #endif
-  return x;
+  return (int64_t )x;
 }
 
 static inline int64_t decode_imm14_offset(uint32_t instr) {

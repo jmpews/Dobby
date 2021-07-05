@@ -3,7 +3,7 @@
 #ifndef ARX_TYPE_TRAITS_HAS_LIBSTDCPLUSPLUS_H
 #define ARX_TYPE_TRAITS_HAS_LIBSTDCPLUSPLUS_H
 
-#if !defined(ARX_HAVE_LIBSTDCPLUSPLUS)
+#if 0 && !defined(ARX_HAVE_LIBSTDCPLUSPLUS)
     #if ARX_SYSTEM_HAS_INCLUDE(<cstdlib>)
         #include <cstdlib>
         #if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)

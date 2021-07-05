@@ -16,11 +16,11 @@ AssemblerBase::~AssemblerBase() {
   buffer_ = nullptr;
 }
 
-int AssemblerBase::ip_offset() const {
+size_t AssemblerBase::ip_offset() const {
   return reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
 }
 
-int AssemblerBase::pc_offset() const {
+size_t AssemblerBase::pc_offset() const {
   return reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
 }
 
@@ -30,7 +30,7 @@ CodeBuffer *AssemblerBase::GetCodeBuffer() {
 
 // ----- next -----
 void AssemblerBase::PseudoBind(AssemblerPseudoLabel *label) {
-  const off_t bound_offset = reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
+  off_t bound_offset = reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
   label->bind_to(bound_offset);
   // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
   if (label->has_confused_instructions()) {

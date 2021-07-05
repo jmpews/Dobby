@@ -7,7 +7,7 @@
 // define it when <initializer_list> is really not available (e.g.
 // ArduinoSTL is C++98 but *does* define <initializer_list>) and not
 // already defined (e.g. by ArxContainer).
-#if ARX_SYSTEM_HAS_INCLUDE(<initializer_list>)
+#if 0 && ARX_SYSTEM_HAS_INCLUDE(<initializer_list>)
 #include <initializer_list>
 #else
 namespace std {

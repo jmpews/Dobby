@@ -5,7 +5,7 @@
 
 class CpuFeatures {
 private:
-  static void FlushICache(void *start, int size) {
+  static void FlushICache(void *start, size_t size) {
     ClearCache(start, (void *)((addr_t)start + size));
   }
 

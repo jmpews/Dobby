@@ -1,10 +1,11 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "common_header.h"
 
-#include <errno.h> // strerror
+#if defined(BUILDING_KERNEL)
+#define abort()
+#endif
 
 #define LOG_TAG NULL
 
@@ -22,7 +23,7 @@ void log_switch_to_file(const char *path);
 #if !defined(LOG_FUNCTION_IMPL)
 #define LOG_FUNCTION_IMPL log_internal_impl
 #endif
-int log_internal_impl(unsigned int level, const char *, ...);
+int log_internal_impl(int level, const char *, ...);
 
 #if defined(LOGGING_DISABLE)
 #define LOG_FUNCTION_IMPL(...)

@@ -1,4 +1,4 @@
-#include "./NearMemoryArena.h"
+#include "NearMemoryArena.h"
 
 #include "dobby_internal.h"
 
@@ -34,49 +34,25 @@ static const void *memmem(const void *haystack, size_t haystacklen, const void *
 }
 #endif
 
-static addr_t addr_max(addr_t a, addr_t b) {
-  return a > b ? a : b;
-}
-
-static addr_t addr_sub(addr_t a, addr_t b) {
-  return a > a - b ? a - b : 0;
-}
-
-static addr_t addr_add(addr_t a, addr_t b) {
-  return a < a + b ? a + b : (addr_t)-1;
-}
-
-static addr_t prev_page(addr_t cur, int pagesize) {
-  addr_t aligned_addr = ALIGN(cur, pagesize);
-  addr_t ret = aligned_addr - pagesize;
-  return ret <= aligned_addr ? ret : aligned_addr;
-}
-
-static addr_t next_page(addr_t cur, int pagesize) {
-  addr_t aligned_addr = ALIGN(cur, pagesize);
-  addr_t ret = aligned_addr + pagesize;
-  return ret >= aligned_addr ? ret : aligned_addr;
-}
-
 static addr_t search_near_unused_region(size_t alloc_size, addr_t pos, size_t alloc_range) {
   addr_t min_valid_addr, max_valid_addr;
   min_valid_addr = pos - alloc_range;
   max_valid_addr = pos + alloc_range;
 
-  auto check_region_has_free_space = [&] (MemRegion region_, MemRegion next_region_) -> addr_t {
+  auto check_region_has_free_space = [&](MemRegion region_, MemRegion next_region_) -> addr_t {
     MemRange region = region_.mem;
     MemRange next_region = next_region_.mem;
 
     addr_t unused_mem_start = (addr_t)region.begin + region.size;
     addr_t unused_mem_end = (addr_t)next_region.begin;
 
-    if(unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
+    if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
       return 0;
 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
 
-    if(unused_mem_end - unused_mem_start < alloc_size)
+    if (unused_mem_end - unused_mem_start < alloc_size)
       return 0;
 
     return unused_mem_start;
@@ -86,49 +62,49 @@ static addr_t search_near_unused_region(size_t alloc_size, addr_t pos, size_t al
   for (size_t i = 0; i + 1 < regions.size(); i++) {
     addr_t unused_mem_start = 0;
     unused_mem_start = check_region_has_free_space(regions[i], regions[i + 1]);
-    if(unused_mem_start == 0)
+    if (unused_mem_start == 0)
       continue;
     return unused_mem_start;
   }
   return 0;
 }
 
-DataBlock * NearMemoryArena::allocNearDataBlock(addr_t pos, size_t alloc_range, size_t alloc_size) {
+DataBlock *NearMemoryArena::allocNearBlock(addr_t pos, size_t alloc_range, size_t alloc_size, bool executable) {
   addr_t min_valid_addr, max_valid_addr;
   min_valid_addr = pos - alloc_range;
   min_valid_addr = pos + alloc_range;
 
-  auto check_chunk_has_free_space = [&] (MemChunk *chunk) -> addr_t {
+  auto check_chunk_has_free_space = [&](MemChunk *chunk) -> addr_t {
     addr_t unused_mem_start = chunk->cursor_addr;
     addr_t unused_mem_end = unused_mem_start + chunk->size;
 
-    if(unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
+    if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
       return 0;
 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
 
-    if(unused_mem_end - unused_mem_start < alloc_size)
+    if (unused_mem_end - unused_mem_start < alloc_size)
       return 0;
 
     return unused_mem_start;
   };
 
   MemBlock *block = nullptr;
-  for (auto *chunk : chunks_) {
+  for (auto *chunk : executable ? code_chunks_ : data_chunks_) {
     addr_t unused_mem_start = 0;
     unused_mem_start = check_chunk_has_free_space(chunk);
-    if(unused_mem_start == 0)
+    if (unused_mem_start == 0)
       continue;
 
     alloc_size += (unused_mem_start - chunk->cursor_addr);
-    if(unused_mem_start - chunk->cursor_addr > 0) {
+    if (unused_mem_start - chunk->cursor_addr > 0) {
       chunk->allocBlock(unused_mem_start - chunk->cursor_addr);
     }
     block = chunk->allocBlock(alloc_size);
   }
 
-  if(block) {
+  if (block) {
     return block;
   }
 
@@ -137,7 +113,7 @@ DataBlock * NearMemoryArena::allocNearDataBlock(addr_t pos, size_t alloc_range, 
 
   auto allocChunk = [&](void *pos, size_t new_alloc_size) -> MemChunk * {
     size_t chunk_size = ALIGN_CEIL(new_alloc_size, OSMemory::PageSize());
-    addr_t chunk_addr = (addr_t)OSMemory::Allocate(chunk_size, kReadWrite, pos);
+    addr_t chunk_addr = (addr_t)OSMemory::Allocate(chunk_size, executable ? kReadExecute : kReadWrite, pos);
 
     MemChunk *chunk = new MemChunk{.addr = chunk_addr, .cursor_addr = chunk_addr, .size = chunk_size};
     chunks_.push_back(chunk);
@@ -145,10 +121,10 @@ DataBlock * NearMemoryArena::allocNearDataBlock(addr_t pos, size_t alloc_range, 
   };
 
   MemChunk *new_chunk = nullptr;
-  new_chunk   = allocChunk((void *)unused_page_addr, alloc_size);
+  new_chunk = allocChunk((void *)unused_page_addr, alloc_size);
 
   // placeholder block
-  if(unused_addr - unused_page_addr > 0) {
+  if (unused_addr - unused_page_addr > 0) {
     new_chunk->allocBlock(unused_addr - unused_page_addr);
   }
   block = new_chunk->allocBlock(alloc_size);

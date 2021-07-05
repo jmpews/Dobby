@@ -2,7 +2,6 @@
 #define VARIABLE_CACHE_H
 
 #include <stdint.h>
-#include <assert.h>
 
 #define cache_set stash
 void cache_set(const char *name, uint64_t value);

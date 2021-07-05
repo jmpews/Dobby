@@ -31,9 +31,9 @@ public:
 
   ~AssemblerBase();
 
-  int ip_offset() const;
+  size_t ip_offset() const;
 
-  int pc_offset() const;
+  size_t pc_offset() const;
 
   CodeBuffer *GetCodeBuffer();
 

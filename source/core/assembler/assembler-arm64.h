@@ -11,20 +11,20 @@
 
 #include "InstructionRelocation/arm64/inst_decode_encode_kit.h"
 
-static inline int32_t Low16Bits(int32_t value) {
-  return static_cast<int32_t>(value & 0xffff);
+static inline uint16_t Low16Bits(uint32_t value) {
+  return static_cast<uint16_t>(value & 0xffff);
 }
 
-static inline int32_t High16Bits(int32_t value) {
-  return static_cast<int32_t>(value >> 16);
+static inline uint16_t High16Bits(uint32_t value) {
+  return static_cast<uint16_t>(value >> 16);
 }
 
-static inline int32_t Low32Bits(int64_t value) {
-  return static_cast<int32_t>(value);
+static inline uint32_t Low32Bits(uint64_t value) {
+  return static_cast<uint32_t>(value);
 }
 
-static inline int32_t High32Bits(int64_t value) {
-  return static_cast<int32_t>(value >> 32);
+static inline uint32_t High32Bits(uint64_t value) {
+  return static_cast<uint32_t>(value >> 32);
 }
 
 enum ref_label_type_t { kLabelImm19 };
@@ -281,7 +281,7 @@ public:
     AssemblerBase::SetRealizedAddress(address);
   }
 
-  void Emit(int32_t value) {
+  void Emit(uint32_t value) {
     buffer_->Emit32(value);
   }
 
@@ -307,8 +307,8 @@ public:
     DCHECK(rd.Is64Bits());
     DCHECK((abs(imm) >> 12) < (1 << 21));
 
-    int64_t immlo = LeftShift(bits(imm >> 12, 0, 1), 2, 29);
-    int64_t immhi = LeftShift(bits(imm >> 12, 2, 20), 19, 5);
+    uint32_t immlo = LeftShift(bits(imm >> 12, 0, 1), 2, 29);
+    uint32_t immhi = LeftShift(bits(imm >> 12, 2, 20), 19, 5);
     Emit(ADRP | Rd(rd) | immlo | immhi);
   }
 

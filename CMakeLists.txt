@@ -38,6 +38,7 @@ option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOff
 
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
+set(BUILDING_KERNEL 1)
 add_definitions(-DBUILDING_INTERNAL)
 
 # Enable debug will log more information
@@ -142,22 +143,32 @@ endif()
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
 endif()
-include(cmake/dobby.xcode.source.cmake)
+
+# include(cmake/dobby.xcode.source.cmake)
 
 include_directories(
   .
   ./include
   ./source
   ./source/include
-  ./source/UserMode
 
   ./external
   ./external/logging
   ./external/misc-helper
   ./external/ArxContainer
 
-  builtin-plugin
+  ./builtin-plugin
 )
+
+if(NOT BUILDING_KERNEL)
+  include_directories(
+    ./source/UserMode
+  )
+else()
+  include_directories(
+    ./source/KernelMode
+  )
+endif()
 
 set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -193,8 +204,15 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # plugin register
   source/InterceptRouting/RoutingPlugin/RoutingPlugin.cc
 
+  # main
+  source/dobby.cpp
+  source/Interceptor.cpp
+  )
+
+if(NOT BUILDING_KERNEL)
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # platform util
-  # source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
+  source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
   # user mode - platform interface
   source/UserMode/UnifiedInterface/platform-${platform1}.cc
@@ -202,17 +220,22 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # user mode - executable memory
   source/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
   source/UserMode/ExecMemory/clear-cache-tool-all.c
-
-  # main
-  source/dobby.cpp
-  source/Interceptor.cpp
   )
+else()
+  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    # platform util
+    source/KernelMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
+
+    # user mode - platform interface
+    source/KernelMode/UnifiedInterface/platform-darwin.cc
+    )
+endif()
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
   set(NearBranch ON)
 endif()
 
-if(SYSTEM.Darwin)
+if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include_directories(
     source/UserMode/ExecMemory/substrated/include
   )
@@ -221,7 +244,7 @@ if(SYSTEM.Darwin)
   )
 endif()
 
-if(SYSTEM.iOS)
+if(SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   add_definitions(-DCODE_PATCH_WITH_SUBSTRATED)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
@@ -260,6 +283,7 @@ endif()
 if(NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
+    source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/near-trampoline-arm64.cc
     source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.cc
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()

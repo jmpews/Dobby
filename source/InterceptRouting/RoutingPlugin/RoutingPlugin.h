@@ -30,6 +30,4 @@ public:
   static RoutingPluginInterface *near_branch_trampoline;
 };
 
-
-
 #endif

@@ -13,7 +13,7 @@ bool InterceptRouting::GenerateRelocatedCode(uint32_t trampoline_size) {
   CHECK_EQ(GetTrampolineBuffer()->GetBufferSize(), trampoline_size);
 
   // generate original code
-  origin_ = new AssemblyCode {.begin = entry_->target_address, .size = trampoline_size};
+  origin_ = new AssemblyCode{.begin = entry_->target_address, .size = trampoline_size};
 
   // generate the relocated code
   relocated_ = new AssemblyCode();
