@@ -1,7 +1,10 @@
 #include "logging/logging.h"
 
-static int _log_level = 1;
 
+#include <IOKit/IOLib.h>
+#include "utility_macro.h"
+
+static int _log_level = 1;
 PUBLIC void log_set_level(int level) {
   _log_level = level;
 }
@@ -13,6 +16,8 @@ PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
 
   va_list ap;
   va_start(ap, fmt);
+
+  IOLogv(fmt, ap);
 
   va_end(ap);
   return 0;

@@ -1,4 +1,4 @@
-#include <mach-o/dyld.h>
+#include <stddef.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
 

@@ -179,10 +179,6 @@ void dobby_enable_near_branch_trampoline();
 void dobby_disable_near_branch_trampoline();
 #endif
 
-// register linker load image callback
-typedef void (*linker_load_callback_t)(const char *image_name, void *handle);
-void dobby_register_image_load_callback(linker_load_callback_t func);
-
 #ifdef __cplusplus
 }
 #endif

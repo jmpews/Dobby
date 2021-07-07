@@ -1,8 +1,6 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include "common_header.h"
-
 #if defined(BUILDING_KERNEL)
 #define abort()
 #endif

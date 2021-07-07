@@ -166,7 +166,7 @@ if(NOT BUILDING_KERNEL)
   include_directories(
     source/Backend/UserMode
   )
-else()
+elseif(SYSTEM.Darwin AND BUILDING_KERNEL)
   include_directories(
     source/Backend/KernelMode
   )
@@ -223,7 +223,7 @@ if(NOT BUILDING_KERNEL)
     source/Backend/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
     source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
   )
-else()
+elseif(SYSTEM.Darwin AND BUILDING_KERNEL)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # platform util
     source/Backend/KernelMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
@@ -232,6 +232,8 @@ else()
     source/Backend/KernelMode/UnifiedInterface/platform-darwin.cc
     )
 endif()
+
+# ----- next -----
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
   set(NearBranch ON)
@@ -253,6 +255,7 @@ if(SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   )
 endif()
 
+# ----- next -----
 
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -273,6 +276,8 @@ if(FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
 endif()
 
+# ----- next -----
+
 if(DynamicBinaryInstrument)
   message(STATUS "[Dobby] Enable dynamic binary instrument")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -282,6 +287,8 @@ if(DynamicBinaryInstrument)
     )
 endif()
 
+# ----- next -----
+
 if(NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -290,12 +297,16 @@ if(NearBranch)
     source/MemoryAllocator/NearMemoryArena.cc)
 endif()
 
+# ----- next -----
+
 add_subdirectory(external/misc-helper)
 get_target_property(misc_helper.SOURCE_FILE_LIST misc_helper SOURCES)
 
 # add logging library
 add_subdirectory(external/logging)
 get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
+
+# ----- next -----
 
 if(Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
   message(STATUS "[Dobby] Enable global offset table hook")
@@ -340,9 +351,13 @@ if(Plugin.LinkerLoadCallback)
     )
 endif()
 
+# ----- next -----
+
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
   )
+
+# ----- next -----
 
 # add build version
 string(TIMESTAMP TODAY "%Y%m%d")
@@ -362,6 +377,8 @@ set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
+# ----- next -----
+
 if(DOBBY_GENERATE_SHARED)
   message(STATUS "[Dobby] Generate shared library")
   set(DOBBY_LIBRARY_TYPE SHARED)
@@ -371,7 +388,11 @@ else()
 endif()
 add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${misc_helper.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 
+# ----- next -----
+
 target_include_directories(dobby PUBLIC include)
+
+# ----- next -----
 
 if(EnableObfuscation)
 set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
@@ -382,7 +403,10 @@ set_target_properties(dobby
   LINK_FLAGS "${linker_flags}"
   COMPILE_FLAGS "${compiler_flags}"
   )
-if(SYSTEM.Darwin)
+
+# ----- next -----
+
+if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   # set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
@@ -415,20 +439,9 @@ if(SYSTEM.Linux)
   target_link_libraries(dobby dl)
 endif()
 
-if(SYSTEM.Darwin)
-  target_link_libraries(DobbyX
-    "-framework Foundation")
-endif()
+# ----- next -----
 
-if(SYSTEM.Darwin)
-  install(TARGETS DobbyX
-    FRAMEWORK DESTINATION Framework)
-endif()
-
-install(TARGETS dobby
-  LIBRARY DESTINATION lib)
-
-if(0 AND SYSTEM.Darwin)
+if((SYSTEM.Darwin AND BUILDING_PLUGIN) AND (NOT BUILDING_KERNEL))
   add_subdirectory(builtin-plugin/Dyld2HideLibrary)
   add_subdirectory(builtin-plugin/ObjcRuntimeHook)
   if(PROCESSOR.AARCH64)
@@ -436,5 +449,8 @@ if(0 AND SYSTEM.Darwin)
   endif()
 endif()
 
-add_subdirectory(example)
+# ----- next -----
 
+if(BUILDING_EXAMPLE AND (NOT BUILDING_KERNEL))
+  add_subdirectory(example)
+endif()
