@@ -15,9 +15,9 @@ set(CMAKE_C_STANDARD 11)
 AutoFiles("." "CmakeSource" "\\.(cc|cpp|c|h)$")
 
 # :< You Shall Not Pass!
-if(0)
+if (0)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
-endif()
+endif ()
 
 # ===== Handle Option =====
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
@@ -47,21 +47,21 @@ add_definitions(-DBUILDING_INTERNAL)
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   message(STATUS "[Dobby] Enabling debug logging because CMAKE_BUILD_TYPE is Debug or undefined")
   set(DOBBY_DEBUG ON)
-endif()
-if(DOBBY_DEBUG)
+endif ()
+if (DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
   message(STATUS "[Dobby] Enable debug logging")
-endif()
+endif ()
 
 # Enable full floating point register pack
 # for arm64, allow access q8 - q31
-if(FullFloatingPointRegisterPack)
+if (FullFloatingPointRegisterPack)
   add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
   message(STATUS "[Dobby] Save and pack all floating-point registers")
-endif()
+endif ()
 
-if(SYSTEM.Darwin)
+if (SYSTEM.Darwin)
   # set(compiler_flags "${compiler_flags} -nostdinc++")
   if (NOT DOBBY_DEBUG)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-x -Wl,-S")
@@ -72,35 +72,35 @@ if(SYSTEM.Darwin)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_DobbySymbolResolver")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_intercept_routing_common_bridge_handler")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-exported_symbol,_dobby_enable_near_branch_trampoline -Wl,-exported_symbol,_dobby_disable_near_branch_trampoline")
-  endif()
-elseif(SYSTEM.Android)
+  endif ()
+elseif (SYSTEM.Android)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer")
-  if(NOT DOBBY_DEBUG)
+  if (NOT DOBBY_DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,--exclude-libs,ALL")
-  endif()
-elseif(SYSTEM.Linux)
+  endif ()
+elseif (SYSTEM.Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-elseif(SYSTEM.Windows)
+elseif (SYSTEM.Windows)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
-  if(NOT DOBBY_DEBUG)
+  if (NOT DOBBY_DEBUG)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:log_internal_impl")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:DobbyHook /export:DobbyInstrument /export:DobbySymbolResolver")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /export:dobby_enable_near_branch_trampoline /export:dobby_disable_near_branch_trampoline")
-  endif()
-endif()
+  endif ()
+endif ()
 
-if(COMPILER.Clang)
-  if(NOT DOBBY_DEBUG)
+if (COMPILER.Clang)
+  if (NOT DOBBY_DEBUG)
     # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden")
-  endif()
-  if(PROCESSOR.ARM)
+  endif ()
+  if (PROCESSOR.ARM)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7 -x assembler-with-cpp")
-  elseif(PROCESSOR.AARCH64)
+  elseif (PROCESSOR.AARCH64)
     set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64 -x assembler-with-cpp")
-  endif()
-endif()
+  endif ()
+endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
@@ -111,40 +111,40 @@ message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_SHARED_LINKER_FLAGS: ${CMAKE_SHARED_LINKER_FLAGS}")
 
 # arch prefix
-if(PROCESSOR.ARM)
+if (PROCESSOR.ARM)
   set(ARCH1 ARM)
   set(arch1 arm)
   set(core_arch arm)
-elseif(PROCESSOR.AARCH64)
+elseif (PROCESSOR.AARCH64)
   set(ARCH1 ARM64)
   set(arch1 arm64)
   set(core_arch arm64)
-elseif(PROCESSOR.X86)
+elseif (PROCESSOR.X86)
   set(ARCH1 X86)
   set(arch1 x86)
   set(core_arch ia32)
-elseif(PROCESSOR.X86_64)
+elseif (PROCESSOR.X86_64)
   set(ARCH1 X64)
   set(arch1 x64)
   set(core_arch x64)
-else()
-endif()
+else ()
+endif ()
 
 # system prefix
-if(SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
+if (SYSTEM.Darwin OR SYSTEM.iOS OR SYSTEM.macOS)
   set(platform1 posix)
   set(platform2 Darwin)
-elseif(SYSTEM.Linux OR SYSTEM.Android)
+elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(platform1 posix)
   set(platform2 Linux)
-elseif(SYSTEM.Windows)
+elseif (SYSTEM.Windows)
   set(platform1 windows)
   set(platform2 Windows)
-else()
-endif()
+else ()
+endif ()
 
-if(CMAKE_GENERATOR STREQUAL Xcode)
-endif()
+if (CMAKE_GENERATOR STREQUAL Xcode)
+endif ()
 
 # include(cmake/dobby.xcode.source.cmake)
 
@@ -162,15 +162,15 @@ include_directories(
   ./builtin-plugin
 )
 
-if(NOT BUILDING_KERNEL)
+if (NOT BUILDING_KERNEL)
   include_directories(
     source/Backend/UserMode
   )
-elseif(SYSTEM.Darwin AND BUILDING_KERNEL)
+elseif (SYSTEM.Darwin AND BUILDING_KERNEL)
   include_directories(
     source/Backend/KernelMode
   )
-endif()
+endif ()
 
 set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -211,53 +211,57 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/Interceptor.cpp
   )
 
-if(NOT BUILDING_KERNEL)
+if (NOT BUILDING_KERNEL)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-  # platform util
+    # platform util
     source/Backend/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
-  # user mode - platform interface
+    # user mode - platform interface
     source/Backend/UserMode/UnifiedInterface/platform-${platform1}.cc
 
-  # user mode - executable memory
+    # user mode - executable memory
     source/Backend/UserMode/ExecMemory/code-patch-tool-${platform1}.cc
     source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
-  )
-elseif(SYSTEM.Darwin AND BUILDING_KERNEL)
+    )
+elseif (SYSTEM.Darwin AND BUILDING_KERNEL)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # platform util
     source/Backend/KernelMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
 
-    # user mode - platform interface
+    # kernel mode - platform interface
     source/Backend/KernelMode/UnifiedInterface/platform-darwin.cc
+
+    # kernel mode - executable memory
+    source/Backend/KernelMode/ExecMemory/code-patch-tool-darwin.cc
+    source/Backend/KernelMode/ExecMemory/clear-cache-tool-all.c
     )
-endif()
+endif ()
 
 # ----- next -----
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
   set(NearBranch ON)
-endif()
+endif ()
 
-if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
+if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include_directories(
     source/Backend/UserMode/ExecMemory/substrated/include
   )
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
-  )
-endif()
+    )
+endif ()
 
-if(SYSTEM.iOS AND (NOT BUILDING_KERNEL))
+if (SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   add_definitions(-DCODE_PATCH_WITH_SUBSTRATED)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/Backend/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
-  )
-endif()
+    )
+endif ()
 
 # ----- next -----
 
-if(FunctionWrapper OR DynamicBinaryInstrument)
+if (FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
     source/TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.cc
@@ -270,32 +274,32 @@ if(FunctionWrapper OR DynamicBinaryInstrument)
     # source/UserMode/Thread/PlatformThread.cc
     # source/UserMode/Thread/platform-thread-${platform1}.cc
     )
-endif()
+endif ()
 
-if(FunctionWrapper)
+if (FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
-endif()
+endif ()
 
 # ----- next -----
 
-if(DynamicBinaryInstrument)
+if (DynamicBinaryInstrument)
   message(STATUS "[Dobby] Enable dynamic binary instrument")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/Routing/DynamicBinaryInstrument/dynamic-binary-instrument.cc
     source/InterceptRouting/Routing/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
     source/InterceptRouting/Routing/DynamicBinaryInstrument/intercept_routing_handler.cc
     )
-endif()
+endif ()
 
 # ----- next -----
 
-if(NearBranch)
+if (NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/near-trampoline-arm64.cc
     source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.cc
     source/MemoryAllocator/NearMemoryArena.cc)
-endif()
+endif ()
 
 # ----- next -----
 
@@ -308,7 +312,7 @@ get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 
 # ----- next -----
 
-if(Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
+if (Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
   message(STATUS "[Dobby] Enable global offset table hook")
 
   include_directories(builtin-plugin/GlobalOffsetTableHook)
@@ -317,9 +321,9 @@ if(Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     ${global_offset_table_hook.SOURCE_FILE_LIST}
     )
-endif()
+endif ()
 
-if(Plugin.SymbolResolver)
+if (Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable symbol resolver")
 
   include_directories(builtin-plugin/SymbolResolver)
@@ -328,28 +332,28 @@ if(Plugin.SymbolResolver)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     ${symbol_resolver.SOURCE_FILE_LIST}
     )
-endif()
+endif ()
 
-if(Plugin.Android.BionicLinkerRestriction)
-  if(NOT SYSTEM.Android)
+if (Plugin.Android.BionicLinkerRestriction)
+  if (NOT SYSTEM.Android)
     message(FATAL_ERROR "[!] Plugin.Android.BionicLinkerRestriction only works on Android.")
-  endif()
+  endif ()
   message(STATUS "[Dobby] Enable Plugin.Android.BionicLinkerRestriction")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/BionicLinkerRestriction/bionic_linker_restriction.cc
-  )
-endif()
+    )
+endif ()
 
-if(Plugin.HideSystemCall)
+if (Plugin.HideSystemCall)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     )
-endif()
+endif ()
 
-if(Plugin.LinkerLoadCallback)
+if (Plugin.LinkerLoadCallback)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/LinkerImageLoadCallback/linker_load_callback.cc
     )
-endif()
+endif ()
 
 # ----- next -----
 
@@ -369,23 +373,23 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
     OUTPUT_VARIABLE VERSION_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  if(VERSION_COMMIT_HASH)
+  if (VERSION_COMMIT_HASH)
     set(VERSION_REVISION "${VERSION_REVISION}-${VERSION_COMMIT_HASH}")
-  endif()
-endif()
+  endif ()
+endif ()
 set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
 # ----- next -----
 
-if(DOBBY_GENERATE_SHARED)
+if (DOBBY_GENERATE_SHARED)
   message(STATUS "[Dobby] Generate shared library")
   set(DOBBY_LIBRARY_TYPE SHARED)
-else()
+else ()
   message(STATUS "[Dobby] Generate static library")
   set(DOBBY_LIBRARY_TYPE STATIC)
-endif()
+endif ()
 add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${misc_helper.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 
 # ----- next -----
@@ -394,9 +398,9 @@ target_include_directories(dobby PUBLIC include)
 
 # ----- next -----
 
-if(EnableObfuscation)
-set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
-endif()
+if (EnableObfuscation)
+  set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
+endif ()
 
 set_target_properties(dobby
   PROPERTIES
@@ -406,7 +410,7 @@ set_target_properties(dobby
 
 # ----- next -----
 
-if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
+if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   # set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
@@ -416,7 +420,7 @@ if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
     PROPERTIES
     LINK_FLAGS "${linker_flags}"
     COMPILE_FLAGS "${compiler_flags}"
-  )
+    )
 
   # set framework property
   set_target_properties(DobbyX PROPERTIES
@@ -428,29 +432,29 @@ if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
     SOVERSION 1.0.0 # compatibility version
     PUBLIC_HEADER include/dobby.h
     XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
-  )
-endif()
+    )
+endif ()
 
-if(SYSTEM.Android)
+if (SYSTEM.Android)
   target_link_libraries(dobby log)
-endif()
+endif ()
 
-if(SYSTEM.Linux)
+if (SYSTEM.Linux)
   target_link_libraries(dobby dl)
-endif()
+endif ()
 
 # ----- next -----
 
-if((SYSTEM.Darwin AND BUILDING_PLUGIN) AND (NOT BUILDING_KERNEL))
+if ((SYSTEM.Darwin AND BUILDING_PLUGIN) AND (NOT BUILDING_KERNEL))
   add_subdirectory(builtin-plugin/Dyld2HideLibrary)
   add_subdirectory(builtin-plugin/ObjcRuntimeHook)
-  if(PROCESSOR.AARCH64)
+  if (PROCESSOR.AARCH64)
     add_subdirectory(builtin-plugin/SupervisorCallMonitor)
-  endif()
-endif()
+  endif ()
+endif ()
 
 # ----- next -----
 
-if(BUILDING_EXAMPLE AND (NOT BUILDING_KERNEL))
+if (BUILDING_EXAMPLE AND (NOT BUILDING_KERNEL))
   add_subdirectory(example)
-endif()
+endif ()

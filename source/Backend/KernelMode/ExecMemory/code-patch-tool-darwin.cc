@@ -1,22 +1,14 @@
 #include "dobby_internal.h"
-#include "core/arch/Cpu.h"
+
 #include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
-#include "UnifiedInterface/platform.h"
 
-#include <unistd.h>
+#include <mach/mach_types.h>
+#include <vm/vm_kern.h>
+#include <mach/mach_vm.h>
 
-#ifdef __APPLE__
-#include <mach-o/dyld.h>
-#include <mach/mach.h>
-#include <mach/vm_map.h>
-#include <sys/mman.h>
-#include "UnifiedInterface/platform-darwin/mach_vm.h"
-#endif
-
-#if defined(__APPLE__)
-#include <dlfcn.h>
-#include <mach/vm_statistics.h>
-#endif
+#undef max
+#undef min
+#include <libkern/libkern.h>
 
 PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   if (address == nullptr || buffer == nullptr || buffer_size == 0) {
@@ -32,8 +24,8 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   vm_map_t self_task = kernel_map;
 
-  addr_t remap_dummy_page = 0;
-  kr = vm_allocate(self_task, &remap_dummy_page, page_size, 0);
+  mach_vm_address_t remap_dummy_page = 0;
+  kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, 0);
   if (kr != KERN_SUCCESS)
     return kMemoryOperationError;
 
@@ -44,26 +36,27 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
   memcpy((void *)(remap_dummy_page + offset), buffer, buffer_size);
 
   // change permission
-  kr = vm_protect(kernel_map, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
+  kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
   if (kr != KERN_SUCCESS)
     return kMemoryOperationError;
 
-  vm_address_t remap_dest_page = page_aligned_address;
+  mach_vm_address_t remap_dest_page = page_aligned_address;
   vm_prot_t curr_protection, max_protection;
-  kr = vm_remap(self_task, &remap_dest_page, page_size, 0,
-                VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task, remap_dummy_page, TRUE,
-                &curr_protection, &max_protection, VM_INHERIT_COPY);
+  kr = mach_vm_remap(self_task, &remap_dest_page, page_size, 0,
+                     VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task, remap_dummy_page, TRUE,
+                     &curr_protection, &max_protection, VM_INHERIT_COPY);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
 
-  kr = vm_deallocate(self_task, remap_dummy_page, page_size);
+  kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
   if (kr != KERN_SUCCESS) {
     return kMemoryOperationError;
   }
 
   ClearCache(address, (void *)((addr_t)address + buffer_size));
+  flush_dcache((vm_offset_t)address, (vm_size_t)buffer_size, 0);
+  invalidate_icache((vm_offset_t)address, (vm_size_t)buffer_size, 0);
 
   return kMemoryOperationSuccess;
-
 }

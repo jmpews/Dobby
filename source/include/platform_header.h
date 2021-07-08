@@ -27,6 +27,10 @@
 #endif
 #endif
 
+#if defined(BUILDING_KERNEL)
+#include "kernel_mode_header.h"
+#endif
+
 #ifdef __cplusplus
 #if defined(BUILDING_KERNEL)
 #define abs(a)  ((a) < 0 ? -(a) : (a))

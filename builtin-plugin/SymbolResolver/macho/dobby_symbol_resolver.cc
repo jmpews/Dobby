@@ -315,9 +315,9 @@ PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
 
-  std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
+  const std::vector<RuntimeModule> *ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
 
-  for (auto module : ProcessModuleMap) {
+  for (auto module : *ProcessModuleMap) {
     if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
       continue;
 

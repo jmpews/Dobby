@@ -1,7 +1,7 @@
 #include "UnifiedInterface/platform.h"
 
 #include <sys/mman.h>
-#include <mach/vm_map.h>
+#include <mach/mach_vm.h>
 
 // ================================================================
 // base :: OSMemory
@@ -30,7 +30,6 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access) {
   return OSMemory::Allocate(size, access, nullptr);
 }
 
-extern "C" vm_map_t kernel_map;
 void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_address) {
   int prot = GetProtectionFromMemoryPermission(access);
 
@@ -40,7 +39,7 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
   }
 
   void *addr = fixed_address;
-  auto ret = vm_allocate(kernel_map, (vm_address_t *)&addr, size, flags);
+  auto ret = mach_vm_allocate(kernel_map, (mach_vm_address_t *)&addr, size, flags);
   if (ret != KERN_SUCCESS)
     return nullptr;
 
@@ -56,7 +55,7 @@ bool OSMemory::Free(void *address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
-  auto ret = vm_deallocate(kernel_map, (vm_address_t)address, size);
+  auto ret = mach_vm_deallocate(kernel_map, (mach_vm_address_t)address, size);
   return ret == KERN_SUCCESS;
 }
 
@@ -64,7 +63,7 @@ bool OSMemory::Release(void *address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
-  auto ret = vm_deallocate(kernel_map, (vm_address_t)address, size);
+  auto ret = mach_vm_deallocate(kernel_map, (mach_vm_address_t)address, size);
   return ret == KERN_SUCCESS;
 }
 
@@ -73,6 +72,6 @@ bool OSMemory::SetPermission(void *address, size_t size, MemoryPermission access
   DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
-  auto ret = vm_protect(kernel_map, (vm_address_t)address, size, false, prot);
+  auto ret = mach_vm_protect(kernel_map, (mach_vm_address_t)address, size, false, prot);
   return ret == KERN_SUCCESS;
 }

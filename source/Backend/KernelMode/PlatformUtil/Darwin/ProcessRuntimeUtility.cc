@@ -1,8 +1,11 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
-#include "vm/vm_map.h"
+#include <mach/mach_types.h>
 
-#include "mach/mach_types.h"
+#undef min
+#undef max
+#include <IOKit/IOLib.h>
+#include <mach/mach_vm.h>
 
 // Generate the name for an offset.
 #define KERN_PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
@@ -37,7 +40,9 @@ static inline vm_map_entry_t vm_map_first_entry(vm_map_t map) {
   return ((vm_map_header *)((addr_t)map + KERN_STRUCT_OFFSET(vm_map, hdr)))->links.next;
 }
 
-std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
+// ----- next -----
+
+const std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   std::vector<MemRegion> regions;
   return regions;
 }
@@ -45,36 +50,72 @@ std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
 // ----- next -----
 
 extern "C" {
-extern kmod_info_t *g_kernel_kmod_info;
-extern kmod_info_t *kmod;
+kmod_info_t kmod;
 }
+static void *kernel_get_load_base() {
+  kern_return_t kr;
+
+  mach_vm_address_t kernel_base = 0;
+
+  {
+  vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
+  vm_region_basic_info_data_64_t info;
+  mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
+
+    mach_port_t object_name;
+    mach_vm_size_t size = 0;
+    kr = mach_vm_region(kernel_map, &kernel_base, &size, flavor, (vm_region_info_t)&info, &infoCnt, &object_name);
+    if (kr != KERN_SUCCESS) {
+      return nullptr;
+    }
+  }
+  return (void *)kernel_base;
+}
+
+// ----- next -----
 
 #include <libkern/OSKextLib.h>
 
-std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-  std::vector<RuntimeModule> modules;
+std::vector<RuntimeModule> modules;
+const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
+  modules.clear();
 
-  // kernel
+  // brute force kernel base ? so rude :)
+
+  static void *kernel_base = nullptr;
+  static kmod_info_t *kmod_list = nullptr;
+  if(kernel_base == nullptr) {
+    kernel_base  = kernel_get_load_base();
+
+    extern void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name);
+    kmod_list = (typeof(kmod_list))DobbyMachOSymbolResolver(kernel_base, "_kmod");
+    if(kmod_list == nullptr) {
+      ERROR_LOG("can not resolve kmod symbol");
+      return &modules;
+    }
+  }
+
+  // only kernel
   RuntimeModule module = {0};
   strncpy(module.path, "kernel", sizeof(module.path));
-  module.load_address = (void *)g_kernel_kmod_info->address;
+  module.load_address = (void *)kernel_base;
   modules.push_back(module);
 
   // kext
-  kmod_info_t *cur_kmod = kmod;
+  kmod_info_t *cur_kmod = kmod_list;
   while(cur_kmod) {
     RuntimeModule module = {0};
-    strncpy(module.path, kmod->name, sizeof(module.path));
+    strncpy(module.path, cur_kmod->name, sizeof(module.path));
     module.load_address = (void *)cur_kmod->address;
     modules.push_back(module);
 
     cur_kmod = cur_kmod->next;
   }
 
-  return modules;
+  return &modules;
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  std::vector<RuntimeModule> modules = GetProcessModuleMap();
+  const std::vector<RuntimeModule> *modules = GetProcessModuleMap();
   return RuntimeModule{0};
 }
