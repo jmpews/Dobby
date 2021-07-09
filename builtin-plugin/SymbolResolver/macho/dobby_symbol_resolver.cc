@@ -7,6 +7,12 @@
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
+#if !defined(BUILDING_KERNEL)
+#include <mach-o/dyld.h>
+#include <mach-o/dyld_images.h>
+#include "SymbolResolver/macho/shared_cache_internal.h"
+#endif
+
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
 
@@ -315,9 +321,9 @@ PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
 
-  const std::vector<RuntimeModule> *ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
+  const std::vector<RuntimeModule> *modules = ProcessRuntimeUtility::GetProcessModuleMap();
 
-  for (auto module : *ProcessModuleMap) {
+  for (auto module : *modules) {
     if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
       continue;
 
@@ -338,7 +344,6 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     char *strtab = NULL;
 
 #if !defined(BUILDING_KERNEL)
-    #include "SymbolResolver/macho/shared_cache_internal.h"
 #if defined(__arm__) || defined(__aarch64__)
     static int shared_cache_ctx_init_once = 0;
     static shared_cache_ctx_t shared_cache_ctx;

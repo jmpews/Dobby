@@ -8,6 +8,10 @@ PUBLIC int DobbyInstrument(void *address, DBICallTy handler) {
     ERROR_LOG("the function address is 0x0.\n");
     return RS_FAILED;
   }
+  
+#if defined(__arm64__) && __has_feature(ptrauth_calls)
+  address = ptrauth_strip(address, ptrauth_key_asia);
+#endif
 
   RAW_LOG(1, "\n\n");
   DLOG(0, "----- [DobbyInstrument:%p] -----", address);

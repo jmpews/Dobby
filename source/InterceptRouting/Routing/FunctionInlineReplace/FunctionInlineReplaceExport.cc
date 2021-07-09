@@ -10,6 +10,11 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
     return RS_FAILED;
   }
 
+#if defined(__arm64__) && __has_feature(ptrauth_calls)
+  address = ptrauth_strip(address, ptrauth_key_asia);
+  replace_call = ptrauth_strip(replace_call, ptrauth_key_asia);
+#endif
+
   RAW_LOG(1, "\n\n");
   DLOG(0, "----- [DobbyHook:%p] -----", address);
 
@@ -37,6 +42,11 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
   if (origin_call) {
     *origin_call = entry->relocated_origin_function;
   }
+
+#if __has_feature(ptrauth_calls)
+  *origin_call = ptrauth_strip(*origin_call, ptrauth_key_asia);
+  *origin_call = ptrauth_sign_unauthenticated(*origin_call, ptrauth_key_asia, 0);
+#endif
 
   // code patch & hijack original control flow entry
   route->Commit();

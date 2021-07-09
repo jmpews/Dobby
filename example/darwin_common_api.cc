@@ -42,13 +42,21 @@ const char *func_array[] = {
 };
 // clang-format on
 
+#if __has_feature(ptrauth_calls)
+#define pac_strip(symbol)
+//#define pac_strip(symbol) *(void **)&symbol = (void *)ptrauth_sign_unauthenticated((void *)symbol, ptrauth_key_asia, 0)
+#else
+#define pac_strip(symbol)
+#endif
+
 #define install_hook(name, fn_ret_t, fn_args_t...)                                                                     \
   fn_ret_t (*orig_##name)(fn_args_t);                                                                                  \
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
     DobbyHook(sym_addr, (void *)fake_##name, (void **)&orig_##name);                                                   \
-    printf("install hook %s:%p\n", #name, sym_addr);                                                                   \
+    pac_strip(orig_##name);                                                                                            \
+    printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
 

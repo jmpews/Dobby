@@ -37,8 +37,9 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.mem.begin < b.mem.begin);
 }
 
-std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  std::vector<MemRegion> ProcessMemoryLayout;
+static std::vector<MemRegion> ProcessMemoryLayout;
+const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+  ProcessMemoryLayout.clear();
 
   struct vm_region_submap_short_info_64 submap_info;
   mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
@@ -84,15 +85,15 @@ std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return ProcessMemoryLayout;
 }
 
-std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
-  std::vector<RuntimeModule> ProcessModuleMap;
+static std::vector<RuntimeModule> ProcessModuleMap;
+const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 
   kern_return_t kr;
   task_dyld_info_data_t task_dyld_info;
   mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
   kr = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count);
   if (kr != KERN_SUCCESS) {
-    return ProcessModuleMap;
+    return &ProcessModuleMap;
   }
 
   struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *)task_dyld_info.all_image_info_addr;
@@ -110,12 +111,12 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
     ProcessModuleMap.push_back(module);
   }
 
-  return ProcessModuleMap;
+  return &ProcessModuleMap;
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  std::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
-  for (auto module : ProcessModuleMap) {
+  const std::vector<RuntimeModule> *modules = GetProcessModuleMap();
+  for (auto module : *modules) {
     if (strstr(module.path, name) != 0) {
       return module;
     }

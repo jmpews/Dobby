@@ -16,7 +16,7 @@ typedef struct {
 
 class ProcessRuntimeUtility {
 public:
-  static const std::vector<MemRegion> GetProcessMemoryLayout();
+  static const std::vector<MemRegion> &GetProcessMemoryLayout();
 
   static const std::vector<RuntimeModule> *GetProcessModuleMap();
 

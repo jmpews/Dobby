@@ -38,14 +38,13 @@ option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOff
 
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
-set(BUILDING_KERNEL 1)
+set(BUILDING_KERNEL 0)
 set(CMAKE_SYSTEM_PROCESSOR arm64e)
 
 add_definitions(-DBUILDING_INTERNAL)
 
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-  message(STATUS "[Dobby] Enabling debug logging because CMAKE_BUILD_TYPE is Debug or undefined")
   set(DOBBY_DEBUG ON)
 endif ()
 if (DOBBY_DEBUG)
