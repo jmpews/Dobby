@@ -12,7 +12,7 @@ else (UNIX)
 endif (UNIX)
 
 message(STATUS "")
-message(STATUS "********* build-environment-detected ***********")
+message(STATUS "********* build environment check ***********")
 
 
 # The Compiler ID
@@ -77,8 +77,9 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^macOS")
   set(SYSTEM.Darwin 1)
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Darwin")
   if(PROCESSOR.AARCH64 OR PROCESSOR.ARM)
-    set(CMAKE_SYSTEM_NAME "iOS")
+    set(CMAKE_SYSTEM_NAME "iOS or Silicon")
     set(SYSTEM.iOS 1)
+    set(SYSTEM.Silicon 1)
   elseif(PROCESSOR.X86 OR PROCESSOR.X86_64)
     set(CMAKE_SYSTEM_NAME "macOS")
     set(SYSTEM.macOS 1)

@@ -28,11 +28,11 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   kern_return_t kr;
 
+  vm_map_t self_task = mach_task_self();
+
   int page_size = PAGE_SIZE;
   addr_t page_aligned_address = ALIGN_FLOOR(address, page_size);
   int offset = (int)((addr_t)address - page_aligned_address);
-
-  vm_map_t self_task = mach_task_self();
 
   mach_vm_address_t remap_dummy_page = 0;
   kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);

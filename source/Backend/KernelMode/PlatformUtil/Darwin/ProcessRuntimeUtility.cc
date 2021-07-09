@@ -42,8 +42,8 @@ static inline vm_map_entry_t vm_map_first_entry(vm_map_t map) {
 
 // ----- next -----
 
-const std::vector<MemRegion> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  std::vector<MemRegion> regions;
+static std::vector<MemRegion> regions;
+const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return regions;
 }
 

@@ -13,7 +13,7 @@
 #define KERN_RETURN_ERROR(kr, failure)                                                                                 \
   do {                                                                                                                 \
     if (kr != KERN_SUCCESS) {                                                                                          \
-      ERROR_LOG("mach error: %s", mach_error_string(kr));                                                              \
+      ERROR_LOG("mach error: %d", kr);                                                              \
       return failure;                                                                                                  \
     }                                                                                                                  \
   } while (0);
@@ -26,11 +26,11 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   kern_return_t kr;
 
+  vm_map_t self_task = kernel_map;
+
   int page_size = PAGE_SIZE;
   addr_t page_aligned_address = ALIGN_FLOOR(address, page_size);
   int offset = (int)((addr_t)address - page_aligned_address);
-
-  vm_map_t self_task = kernel_map;
 
   mach_vm_address_t remap_dummy_page = 0;
   kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
@@ -43,7 +43,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
   memcpy((void *)(remap_dummy_page + offset), buffer, buffer_size);
 
   // change permission
-  kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
+  kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   mach_vm_address_t remap_dest_page = page_aligned_address;
@@ -53,7 +53,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
-  KERN_RETURN_ERROR(kr, kMemoryOperationError)
+  KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   ClearCache(address, (void *)((addr_t)address + buffer_size));
   flush_dcache((vm_offset_t)address, (vm_size_t)buffer_size, 0);
