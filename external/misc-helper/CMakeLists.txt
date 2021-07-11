@@ -12,7 +12,7 @@ else()
     )
 endif()
 
-add_library(misc_helper INTERFACE
+add_library(misc_helper
   ${SOURCE_FILE_LIST}
   ${SOURCE_HEADER_LIST}
 )

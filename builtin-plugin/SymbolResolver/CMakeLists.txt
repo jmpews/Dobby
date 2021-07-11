@@ -34,7 +34,7 @@ if(SYSTEM.Windows)
   )
 endif()
 
-add_library(symbol_resolver INTERFACE
+add_library(symbol_resolver
   ${SOURCE_FILE_LIST}
   )
 

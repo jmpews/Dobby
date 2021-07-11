@@ -36,8 +36,6 @@ option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOff
 
 option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
 
-set(CMAKE_SYSTEM_PROCESSOR arm64e)
-
 add_definitions(-DBUILDING_INTERNAL)
 
 # Enable debug will log more information

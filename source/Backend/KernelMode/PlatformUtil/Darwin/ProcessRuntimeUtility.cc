@@ -11,9 +11,7 @@
 #define KERN_PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
 #define KERN_STRUCT_OFFSET KERN_PARAM_OFFSET
 
-struct vm_map_entry {
-
-};
+struct vm_map_entry {};
 typedef struct vm_map_entry *vm_map_entry_t;
 
 struct vm_map_links {
@@ -58,9 +56,9 @@ static void *kernel_get_load_base() {
   mach_vm_address_t kernel_base = 0;
 
   {
-  vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
-  vm_region_basic_info_data_64_t info;
-  mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
+    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
 
     mach_port_t object_name;
     mach_vm_size_t size = 0;
@@ -84,12 +82,12 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 
   static void *kernel_base = nullptr;
   static kmod_info_t *kmod_list = nullptr;
-  if(kernel_base == nullptr) {
-    kernel_base  = kernel_get_load_base();
+  if (kernel_base == nullptr) {
+    kernel_base = kernel_get_load_base();
 
     extern void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name);
     kmod_list = (typeof(kmod_list))DobbyMachOSymbolResolver(kernel_base, "_kmod");
-    if(kmod_list == nullptr) {
+    if (kmod_list == nullptr) {
       ERROR_LOG("can not resolve kmod symbol");
       return &modules;
     }
@@ -103,8 +101,7 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 
   // kext
   kmod_info_t *cur_kmod = kmod_list;
-  while(cur_kmod) {
-    RuntimeModule module = {0};
+  while (cur_kmod) {
     strncpy(module.path, cur_kmod->name, sizeof(module.path));
     module.load_address = (void *)cur_kmod->address;
     modules.push_back(module);

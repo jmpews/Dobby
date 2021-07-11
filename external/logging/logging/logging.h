@@ -5,7 +5,6 @@
 #define abort()
 #else
 #include <assert.h>
-#define abort() assert(0)
 #endif
 
 #define LOG_TAG NULL

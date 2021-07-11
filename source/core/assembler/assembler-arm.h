@@ -72,8 +72,7 @@ private:
   friend class EncodeUtility;
 };
 
-// ================================================================
-// MemOperand
+// ----- next -----
 
 class MemOperand {
   friend class OpEncode;
@@ -125,6 +124,8 @@ private:
 
   AddrMode addrmode_; // bits P, U, and W
 };
+
+// ----- next -----
 
 class OpEncode {
 public:
@@ -304,8 +305,7 @@ public:
 
 }; // namespace arm
 
-// ================================================================
-// TurboAssembler
+// ----- next -----
 
 class TurboAssembler : public Assembler {
 public:
@@ -340,11 +340,6 @@ public:
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
   }
 
-  // ----- next -----
-
-  void RelocBindFixup(RelocLabelEntry *label) {
-    buffer_->RewriteAddr(label->relocated_pos(), label->data());
-  }
 };
 
 } // namespace arm

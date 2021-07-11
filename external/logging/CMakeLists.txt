@@ -11,7 +11,7 @@ else()
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_logging.c
     )
 endif()
-add_library(logging INTERFACE
+add_library(logging
   ${SOURCE_FILE_LIST}
   ${SOURCE_HEADER_LIST}
 )

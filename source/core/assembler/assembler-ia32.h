@@ -299,7 +299,7 @@ private:
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
-    buffer_ = new CodeBuffer(32);
+    buffer_ = new CodeBuffer();
   }
   ~Assembler() {
     if (buffer_)

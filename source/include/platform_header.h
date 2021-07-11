@@ -32,12 +32,7 @@
 #endif
 
 #ifdef __cplusplus
-#if defined(BUILDING_KERNEL)
-#define abs(a)  ((a) < 0 ? -(a) : (a))
+#define abs(a) ((a) < 0 ? -(a) : (a))
 #include "ArxContainer.h"
 #define std arx
-#else
-#include <vector>
-#include <map>
-#endif
 #endif

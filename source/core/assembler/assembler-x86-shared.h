@@ -355,7 +355,7 @@ private:
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address, int mode) : AssemblerBase(address) : mode_(mode) {
-    buffer_ = new CodeBuffer(32);
+    buffer_ = new CodeBuffer();
   }
   ~Assembler() {
     if (buffer_)
