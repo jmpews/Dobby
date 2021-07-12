@@ -7,6 +7,21 @@
 #include <IOKit/IOLib.h>
 #include <mach/mach_vm.h>
 
+#include <mach-o/loader.h>
+#if defined(__LP64__)
+typedef struct mach_header_64 mach_header_t;
+typedef struct segment_command_64 segment_command_t;
+typedef struct section_64 section_t;
+typedef struct nlist_64 nlist_t;
+#define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT_64
+#else
+typedef struct mach_header mach_header_t;
+typedef struct segment_command segment_command_t;
+typedef struct section section_t;
+typedef struct nlist nlist_t;
+#define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT
+#endif
+
 // Generate the name for an offset.
 #define KERN_PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
 #define KERN_STRUCT_OFFSET KERN_PARAM_OFFSET
@@ -53,9 +68,25 @@ kmod_info_t kmod;
 static void *kernel_get_load_base() {
   kern_return_t kr;
 
-  mach_vm_address_t kernel_base = 0;
+  static mach_vm_address_t kernel_base = 0;
 
-  {
+  // brute force kernel base
+  if (kernel_base == 0) {
+    addr_t addr = (addr_t)&kernel_map;
+    addr = ALIGN_FLOOR(addr, PAGE_SIZE);
+    while (true) {
+      mach_header_t *header = (mach_header_t *)addr;
+      if (header->magic == MH_MAGIC_64 && header->filetype == MH_EXECUTE &&
+          (header->cpusubtype & ~CPU_SUBTYPE_MASK) == CPU_SUBTYPE_ARM64E) {
+        kernel_base = (mach_vm_address_t)addr;
+        break;
+      }
+
+      addr -= PAGE_SIZE;
+    }
+  }
+
+  if (0) {
     vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
     vm_region_basic_info_data_64_t info;
     mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
@@ -84,6 +115,11 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   static kmod_info_t *kmod_list = nullptr;
   if (kernel_base == nullptr) {
     kernel_base = kernel_get_load_base();
+    if (kernel_base == nullptr) {
+      ERROR_LOG("kernel base not found");
+      return &modules;
+    }
+    LOG(0, "kernel base at: %p", kernel_base);
 
     extern void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name);
     kmod_list = (typeof(kmod_list))DobbyMachOSymbolResolver(kernel_base, "_kmod");
@@ -91,6 +127,7 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
       ERROR_LOG("can not resolve kmod symbol");
       return &modules;
     }
+    LOG(0, "kmod list at: %p", kmod_list);
   }
 
   // only kernel

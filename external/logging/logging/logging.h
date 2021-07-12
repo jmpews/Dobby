@@ -57,25 +57,25 @@ extern "C" {
 
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
-    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
-    RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
+    RAW_LOG(0xff, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+    RAW_LOG(0xff, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
     abort();                                                                                                           \
   } while (0)
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    RAW_LOG(-1, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
-    RAW_LOG(-1, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
+    RAW_LOG(0xff, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
+    RAW_LOG(0xff, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
   } while (0)
 
 #define ERROR_TRACE_LOG()                                                                                              \
   do {                                                                                                                 \
-    RAW_LOG(-1, "[!] %s:%d:%s\n", __FILE__, __LINE__, __func__);                                                       \
+    RAW_LOG(0xff, "[!] %s:%d:%s\n", __FILE__, __LINE__, __func__);                                                       \
   } while (0)
 
 #define INVOKE_TRACE_LOG()                                                                                             \
   do {                                                                                                                 \
-    RAW_LOG(-1, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                                       \
+    RAW_LOG(0xff, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                                       \
   } while (0)
 
 #if defined(LOGGING_DEBUG)

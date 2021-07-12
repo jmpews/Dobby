@@ -9,7 +9,6 @@ PUBLIC void log_set_level(int level) {
   _log_level = level;
 }
 
-
 PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
   if (level < _log_level)
     return 0;

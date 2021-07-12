@@ -379,9 +379,8 @@ if (BUILDING_EXAMPLE AND (NOT BUILDING_KERNEL))
   add_subdirectory(example)
 endif ()
 
-
 # ----- next -----
 
-if(SYSTEM.darwin AND (NOT BUILDING_KERNEL))
+if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include(cmake/platform/platform-darwin.cmake)
 endif()

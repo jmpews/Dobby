@@ -323,20 +323,22 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
   const std::vector<RuntimeModule> *modules = ProcessRuntimeUtility::GetProcessModuleMap();
 
-  for (auto module : *modules) {
+  for(auto iter = modules->begin(); iter != modules->end(); iter ++) {
+    auto module = *iter;
+//  for (auto module : *modules) {
     if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
       continue;
 
     mach_header_t *header = (mach_header_t *)module.load_address;
+    if(header == nullptr)
+      continue;
+    
     size_t slide = 0;
+    if (header->magic == MH_MAGIC_64)
+      slide = macho_kit_get_slide(header);
 
-    if (header) {
-      if (header->magic == MH_MAGIC_64)
-        slide = macho_kit_get_slide(header);
-    }
-
-#if 0
-    LOG(1, "resolve image: %s", path);
+#if 1
+    LOG(0, "resolve image: %s", module.path);
 #endif
 
     nlist_t *symtab = NULL;

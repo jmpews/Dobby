@@ -31,15 +31,13 @@
 #include "UnifiedInterface/platform-darwin/mach_vm.h"
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
-#include <vector>
-
 static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.mem.begin < b.mem.begin);
 }
 
-static std::vector<MemRegion> ProcessMemoryLayout;
+std::vector<MemRegion> regions;
 const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  ProcessMemoryLayout.clear();
+  regions.clear();
 
   struct vm_region_submap_short_info_64 submap_info;
   mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
@@ -75,43 +73,52 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 #if 0
       DLOG(0, "%p --- %p", addr, addr + size);
 #endif
-      ProcessMemoryLayout.push_back(region);
+      regions.push_back(region);
       addr += size;
     }
   }
 
-  std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
+  // std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
-  return ProcessMemoryLayout;
+  return regions;
 }
 
-static std::vector<RuntimeModule> ProcessModuleMap;
-const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
+static std::vector<RuntimeModule> *modules;
 
+const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
+  if(modules == nullptr) {
+    modules = new std::vector<RuntimeModule>();
+  }
+  modules->clear();
+  
   kern_return_t kr;
   task_dyld_info_data_t task_dyld_info;
   mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
   kr = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count);
   if (kr != KERN_SUCCESS) {
-    return &ProcessModuleMap;
+    return modules;
   }
 
   struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *)task_dyld_info.all_image_info_addr;
   const struct dyld_image_info *infoArray = infos->infoArray;
   uint32_t infoArrayCount = infos->infoArrayCount;
 
+  RuntimeModule module = {0};
+  strncpy(module.path, "dummy-placeholder-module", sizeof(module.path));
+  module.load_address = 0;
+  modules->push_back(module);
+  
   for (int i = 0; i < infoArrayCount; ++i) {
     const struct dyld_image_info *info = &infoArray[i];
 
-    RuntimeModule module = {0};
     {
       strncpy(module.path, info->imageFilePath, sizeof(module.path));
       module.load_address = (void *)info->imageLoadAddress;
+      modules->push_back(module);
     }
-    ProcessModuleMap.push_back(module);
   }
 
-  return &ProcessModuleMap;
+  return modules;
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
