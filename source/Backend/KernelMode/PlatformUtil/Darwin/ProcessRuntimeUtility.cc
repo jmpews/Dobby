@@ -26,9 +26,6 @@ typedef struct nlist nlist_t;
 #define KERN_PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
 #define KERN_STRUCT_OFFSET KERN_PARAM_OFFSET
 
-struct vm_map_entry {};
-typedef struct vm_map_entry *vm_map_entry_t;
-
 struct vm_map_links {
   struct vm_map_entry *prev;
   struct vm_map_entry *next;

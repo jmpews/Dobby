@@ -7,7 +7,15 @@
 extern "C" {
 #endif
 
+typedef void *vm_map_entry_t;
 extern vm_map_t kernel_map;
+
+
+typedef void * pmap_paddr_t;
+struct pmap;
+typedef pmap * pmap_t;
+extern pmap_t kernel_pmap;
+
 extern task_t kernel_task;
 
 #ifdef __cplusplus

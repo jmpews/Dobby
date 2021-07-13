@@ -42,10 +42,25 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
   auto ret = mach_vm_allocate(kernel_map, (mach_vm_address_t *)&addr, size, flags);
   if (ret != KERN_SUCCESS)
     return nullptr;
+  
+  // make fault before at rw prot
+  bzero(addr, size);
+  {
+    memcpy(addr, "AAAAAAAA", 8);
+  }
 
+  if (access == kNoAccess) {
+    access = kReadExecute;
+  }
   if (!OSMemory::SetPermission((void *)addr, size, access)) {
     OSMemory::Free(addr, size);
     return nullptr;
+  }
+  
+  {
+    if(memcmp(addr, "AAAAAAAA", 8) != 0) {
+      return nullptr;
+    }
   }
 
   return addr;
