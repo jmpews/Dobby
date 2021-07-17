@@ -1,8 +1,13 @@
 #include "logging/logging.h"
 
-
 #include <IOKit/IOLib.h>
 #include "utility_macro.h"
+
+#if defined(BUILDING_KERNEL)
+#define abort()
+#else
+#include <assert.h>
+#endif
 
 static int _log_level = 1;
 PUBLIC void log_set_level(int level) {

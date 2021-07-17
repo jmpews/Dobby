@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdarg.h> // va_start
+#include <assert.h>
 
 #include <string.h>
 #include <fcntl.h>

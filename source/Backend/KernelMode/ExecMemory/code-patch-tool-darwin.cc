@@ -11,7 +11,18 @@
 #undef min
 #include <libkern/libkern.h>
 
-#include "helper_macro.h"
+#define DobbySymbolResolverAuth(o_var, name)                                                                           \
+  do {                                                                                                                 \
+    static void *func_ptr = nullptr;                                                                                   \
+    if (func_ptr == nullptr) {                                                                                         \
+      func_ptr = DobbySymbolResolver(nullptr, name);                                                                   \
+      if (func_ptr) {                                                                                                   \
+        func_ptr = ptrauth_strip((void *)func_ptr, ptrauth_key_asia);                                                  \
+        func_ptr = ptrauth_sign_unauthenticated(func_ptr, ptrauth_key_asia, 0);                                        \
+      }                                                                                                                \
+    }                                                                                                                  \
+    o_var = (typeof(o_var))func_ptr;                                                                                                  \
+  } while (0);
 
 #define KERN_RETURN_ERROR(kr, failure)                                                                                 \
   do {                                                                                                                 \
@@ -30,20 +41,16 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
   kern_return_t kr;
 
   {
-    static pmap_paddr_t (*pmap_find_pa)(pmap_t pmap, addr64_t va) = nullptr;
-    DobbySymbolResolverAuth(pmap_find_pa, "_pmap_find_pa");
 
-    addr64_t dst = (addr64_t)pmap_find_pa(kernel_pmap, (addr64_t)address);
-    addr64_t src = (addr64_t)pmap_find_pa(kernel_pmap, (addr64_t)buffer);
+    paddr_t src_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)address);
+    paddr_t dst_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)buffer);
 
     static void (*bcopy_phys)(addr64_t from, addr64_t to, vm_size_t bytes) = nullptr;
     DobbySymbolResolverAuth(bcopy_phys, "_bcopy_phys");
+    bcopy_phys(src_paddr, dst_paddr, buffer_size);
 
-    bcopy_phys(src, dst, buffer_size);
-    
-    // panic
-    // flush_dcache64(dst, (unsigned int)buffer_size, TRUE);
-    // invalidate_icache64(dst, (unsigned int)buffer_size, TRUE);
+    pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, 0);
+
   }
 
   if (0) {

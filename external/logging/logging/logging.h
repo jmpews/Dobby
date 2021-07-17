@@ -1,12 +1,6 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#if defined(BUILDING_KERNEL)
-#define abort()
-#else
-#include <assert.h>
-#endif
-
 #define LOG_TAG NULL
 
 #if 1
@@ -59,7 +53,6 @@ extern "C" {
   do {                                                                                                                 \
     RAW_LOG(0xff, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
     RAW_LOG(0xff, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
-    abort();                                                                                                           \
   } while (0)
 
 #define ERROR_LOG(fmt, ...)                                                                                            \

@@ -20,7 +20,7 @@ option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
-option(DOBBY_BUILD_KERNEL "Build kernel mode(xnu)")
+option(DOBBY_BUILD_KERNEL "Build kernel mode(xnu)" ON)
 
 option(NearBranch "Enable Near Branch Trampoline" OFF)
 
