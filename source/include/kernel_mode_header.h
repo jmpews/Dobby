@@ -13,7 +13,7 @@ extern vm_map_t kernel_map;
 
 typedef void * pmap_paddr_t;
 struct pmap;
-typedef pmap * pmap_t;
+typedef struct pmap * pmap_t;
 extern pmap_t kernel_pmap;
 
 extern task_t kernel_task;

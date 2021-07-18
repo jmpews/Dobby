@@ -1,6 +1,7 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <mach/mach_types.h>
+#include <libkern/OSKextLibPrivate.h>
 
 #undef min
 #undef max
@@ -59,9 +60,6 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
 // ----- next -----
 
-extern "C" {
-kmod_info_t kmod;
-}
 static void *kernel_get_load_base() {
   kern_return_t kr;
 
@@ -107,9 +105,8 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   modules.clear();
 
   // brute force kernel base ? so rude :)
-
   static void *kernel_base = nullptr;
-  static kmod_info_t *kmod_list = nullptr;
+  static OSKextLoadedKextSummaryHeader *_gLoadedKextSummaries = nullptr;
   if (kernel_base == nullptr) {
     kernel_base = kernel_get_load_base();
     if (kernel_base == nullptr) {
@@ -119,12 +116,14 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
     LOG(0, "kernel base at: %p", kernel_base);
 
     extern void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name);
-    kmod_list = (typeof(kmod_list))DobbyMachOSymbolResolver(kernel_base, "_kmod");
-    if (kmod_list == nullptr) {
-      ERROR_LOG("can not resolve kmod symbol");
+    OSKextLoadedKextSummaryHeader **_gLoadedKextSummariesPtr;
+    _gLoadedKextSummariesPtr = (typeof(_gLoadedKextSummariesPtr))DobbyMachOSymbolResolver(kernel_base, "_gLoadedKextSummaries");
+    if (_gLoadedKextSummariesPtr == nullptr) {
+      ERROR_LOG("failed resolve gLoadedKextSummaries symbol");
       return &modules;
     }
-    LOG(0, "kmod list at: %p", kmod_list);
+    _gLoadedKextSummaries = *_gLoadedKextSummariesPtr;
+    LOG(0, "gLoadedKextSummaries at: %p", _gLoadedKextSummaries);
   }
 
   // only kernel
@@ -134,13 +133,10 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   modules.push_back(module);
 
   // kext
-  kmod_info_t *cur_kmod = kmod_list;
-  while (cur_kmod) {
-    strncpy(module.path, cur_kmod->name, sizeof(module.path));
-    module.load_address = (void *)cur_kmod->address;
+  for (int i = 0; i < _gLoadedKextSummaries->numSummaries; ++i) {
+    strncpy(module.path, _gLoadedKextSummaries->summaries[i].name, sizeof(module.path));
+    module.load_address = (void *)_gLoadedKextSummaries->summaries[i].address;
     modules.push_back(module);
-
-    cur_kmod = cur_kmod->next;
   }
 
   return &modules;
