@@ -426,6 +426,10 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     }
   }
 #endif
+  
+  if(result == 0) {
+    LOG(0, "symbol resolver failed: %s", symbol_name_pattern);
+  }
 
   return (void *)result;
 }

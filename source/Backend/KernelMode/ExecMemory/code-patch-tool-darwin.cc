@@ -43,7 +43,6 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
   int debug_loop_count = 1;
   while(debug_loop_count) {
   }
-  
 
   {
 

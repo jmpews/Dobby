@@ -1,7 +1,26 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <mach/mach_types.h>
-#include <libkern/OSKextLibPrivate.h>
+
+typedef struct _loaded_kext_summary {
+  char        name[KMOD_MAX_NAME];
+  uuid_t      uuid;
+  uint64_t    address;
+  uint64_t    size;
+  uint64_t    version;
+  uint32_t    loadTag;
+  uint32_t    flags;
+  uint64_t    reference_list;
+  uint64_t    text_exec_address;
+  size_t      text_exec_size;
+} OSKextLoadedKextSummary;
+typedef struct _loaded_kext_summary_header {
+  uint32_t version;
+  uint32_t entry_size;
+  uint32_t numSummaries;
+  uint32_t reserved; /* explicit alignment for gdb  */
+  OSKextLoadedKextSummary summaries[0];
+} OSKextLoadedKextSummaryHeader;
 
 #undef min
 #undef max
