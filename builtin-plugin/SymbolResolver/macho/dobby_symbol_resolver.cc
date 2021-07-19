@@ -337,7 +337,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     if (header->magic == MH_MAGIC_64)
       slide = macho_kit_get_slide(header);
 
-#if 1
+#if 0
     LOG(0, "resolve image: %s", module.path);
 #endif
 

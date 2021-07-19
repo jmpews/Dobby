@@ -79,45 +79,9 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
 // ----- next -----
 
-static void *kernel_get_load_base() {
-  kern_return_t kr;
-
-  static mach_vm_address_t kernel_base = 0;
-
-  // brute force kernel base
-  if (kernel_base == 0) {
-    addr_t addr = (addr_t)&kernel_map;
-    addr = ALIGN_FLOOR(addr, PAGE_SIZE);
-    while (true) {
-      mach_header_t *header = (mach_header_t *)addr;
-      if (header->magic == MH_MAGIC_64 && header->filetype == MH_EXECUTE &&
-          (header->cpusubtype & ~CPU_SUBTYPE_MASK) == CPU_SUBTYPE_ARM64E) {
-        kernel_base = (mach_vm_address_t)addr;
-        break;
-      }
-
-      addr -= PAGE_SIZE;
-    }
-  }
-
-  if (0) {
-    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
-    vm_region_basic_info_data_64_t info;
-    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
-
-    mach_port_t object_name;
-    mach_vm_size_t size = 0;
-    kr = mach_vm_region(kernel_map, &kernel_base, &size, flavor, (vm_region_info_t)&info, &infoCnt, &object_name);
-    if (kr != KERN_SUCCESS) {
-      return nullptr;
-    }
-  }
-  return (void *)kernel_base;
-}
-
-// ----- next -----
-
 #include <libkern/OSKextLib.h>
+
+extern "C" void *kernel_info_load_base();;
 
 std::vector<RuntimeModule> modules;
 const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
@@ -127,7 +91,7 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   static void *kernel_base = nullptr;
   static OSKextLoadedKextSummaryHeader *_gLoadedKextSummaries = nullptr;
   if (kernel_base == nullptr) {
-    kernel_base = kernel_get_load_base();
+    kernel_base = kernel_info_load_base();
     if (kernel_base == nullptr) {
       ERROR_LOG("kernel base not found");
       return &modules;

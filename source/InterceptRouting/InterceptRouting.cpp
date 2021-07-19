@@ -62,6 +62,11 @@ void InterceptRouting::Active() {
   void *patch_addr = nullptr;
   patch_addr = origin_->begin;
   MemoryOperationError err;
+  
+  int debug_loop_flag = 1;
+  while(debug_loop_flag) {
+  }
+  
   err = CodePatch(patch_addr, (uint8_t *)trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
   if (err == kMemoryOperationSuccess) {
     DLOG(0, "[intercept routing] active");
