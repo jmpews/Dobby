@@ -42,11 +42,12 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
 
   {
 
-    paddr_t src_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)address);
-    paddr_t dst_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)buffer);
+    paddr_t dst_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)address);
+    paddr_t src_paddr = pmap_kit_kvtophys(kernel_pmap, (vaddr_t)buffer);
 
     static void (*bcopy_phys)(addr64_t from, addr64_t to, vm_size_t bytes) = nullptr;
     DobbySymbolResolverAuth(bcopy_phys, "_bcopy_phys");
+    
     bcopy_phys(src_paddr, dst_paddr, buffer_size);
 
     pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, 0);
