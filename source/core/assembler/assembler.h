@@ -12,10 +12,8 @@ namespace zz {
 class ExternalReference {
 public:
   explicit ExternalReference(void *address) : address_(address) {
-#if __APPLE__
-#if __has_feature(ptrauth_calls)
-    address_ = __builtin_ptrauth_strip(address, ptrauth_key_asia);
-#endif
+#if __APPLE__ && __has_feature(ptrauth_calls)
+    address_ = ptrauth_strip(address, ptrauth_key_asia);
 #endif
   }
 

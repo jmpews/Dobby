@@ -43,11 +43,6 @@ PUBLIC int DobbyHook(void *address, void *replace_call, void **origin_call) {
     *origin_call = entry->relocated_origin_function;
   }
 
-#if __has_feature(ptrauth_calls)
-  *origin_call = ptrauth_strip(*origin_call, ptrauth_key_asia);
-  *origin_call = ptrauth_sign_unauthenticated(*origin_call, ptrauth_key_asia, 0);
-#endif
-
   // code patch & hijack original control flow entry
   route->Commit();
 

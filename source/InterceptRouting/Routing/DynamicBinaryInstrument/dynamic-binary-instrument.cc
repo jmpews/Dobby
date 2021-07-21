@@ -19,10 +19,9 @@ void DynamicBinaryInstrumentRouting::BuildDynamicBinaryInstrumentRouting() {
   ClosureTrampolineEntry *closure_trampoline;
 
   void *handler = (void *)instrument_routing_dispatch;
-#if __APPLE__
-#if __has_feature(ptrauth_calls)
-  handler = __builtin_ptrauth_strip(handler, ptrauth_key_asia);
-#endif
+  
+#if __APPLE__ && __has_feature(ptrauth_calls)
+  handler = ptrauth_strip(handler, ptrauth_key_asia);
 #endif
 
   closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);

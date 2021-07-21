@@ -41,3 +41,8 @@ typedef int dword;
 #define __vmaddr_t_defined
 typedef uintptr_t vmaddr_t;
 #endif
+
+#ifndef __off_t_defined
+#define __off_t_defined
+typedef int64_t off_t;
+#endif

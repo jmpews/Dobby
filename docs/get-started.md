@@ -64,8 +64,8 @@ DobbyInstrument((void *)malloc, malloc_handler)
 ## replace pac function
 
 ```
-void *posix_spawn_ptr = __builtin_ptrauth_strip((void *)posix_spawn, ptrauth_key_asia);
-void *fake_posix_spawn_ptr = __builtin_ptrauth_strip((void *)fake_posix_spawn, ptrauth_key_asia);
+void *posix_spawn_ptr = ptrauth_strip((void *)posix_spawn, ptrauth_key_asia);
+void *fake_posix_spawn_ptr = ptrauth_strip((void *)fake_posix_spawn, ptrauth_key_asia);
 
 DobbyHook((void *)posix_spawn_ptr, (void *)fake_posix_spawn_ptr, (void **)&orig_posix_spawn);
 

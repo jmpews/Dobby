@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <pthread.h>  // pthread_once
 #include <sys/mman.h> // mmap
