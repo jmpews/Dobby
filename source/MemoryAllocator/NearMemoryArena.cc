@@ -34,6 +34,9 @@ static const void *memmem(const void *haystack, size_t haystacklen, const void *
 }
 #endif
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+
 static addr_t search_near_unused_region(size_t alloc_size, addr_t pos, size_t alloc_range) {
   addr_t min_valid_addr, max_valid_addr;
   min_valid_addr = pos - alloc_range;

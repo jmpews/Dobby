@@ -12,6 +12,8 @@
 #include "inst_constants.h"
 #include "inst_decode_encode_kit.h"
 
+#include <map>
+
 using namespace zz::arm64;
 
 #if defined(DOBBY_DEBUG)

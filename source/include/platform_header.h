@@ -31,8 +31,20 @@
 #include "kernel_mode_header.h"
 #endif
 
+#if defined(BUILDING_KERNEL)
+#define abs(a) ((a) < 0 ? -(a) : (a))
+#define llabs(a) (((long long)a) < 0 ? -((long long)a) : ((long long)a))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 #ifdef __cplusplus
 #define abs(a) ((a) < 0 ? -(a) : (a))
 #include "ArxContainer.h"
 #define std arx
+#endif
+#else
+#ifdef __cplusplus
+#include <type_traits>
+#include <vector>
+#include <map>
+#endif
 #endif
