@@ -209,7 +209,8 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
 void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   ctx->header = header;
   segment_command_t *curr_seg_cmd;
-  segment_command_t *text_segment = nullptr, *data_segment = nullptr, *data_const_segment = nullptr, *linkedit_segment = nullptr;
+  segment_command_t *text_segment = nullptr, *data_segment = nullptr, *data_const_segment = nullptr,
+                    *linkedit_segment = nullptr;
   struct symtab_command *symtab_cmd = nullptr;
   struct dysymtab_command *dysymtab_cmd = nullptr;
   struct dyld_info_command *dyld_info_cmd = nullptr;
@@ -298,19 +299,20 @@ static uintptr_t macho_kit_get_slide(mach_header_t *header) {
   return 0;
 }
 
-PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
-  mach_header_t  *header = (mach_header_t *)header_;
+PUBLIC void *DobbyMachOSymbolResolverOptions(void *header_, const char *symbol_name, bool add_slide) {
+  mach_header_t *header = (mach_header_t *)header_;
   uintptr_t result = 0;
 
   size_t slide = 0;
-  slide = macho_kit_get_slide(header);
+
+  if (add_slide)
+    slide = macho_kit_get_slide(header);
 
   // binary symbol table
   macho_ctx_t macho_ctx;
   memset(&macho_ctx, 0, sizeof(macho_ctx_t));
   macho_ctx_init(&macho_ctx, header);
-  result = iterate_symbol_table((char *)symbol_name, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms,
-                                macho_ctx.strtab);
+  result = iterate_symbol_table((char *)symbol_name, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms, macho_ctx.strtab);
   if (result) {
     result = result + slide;
     return (void *)result;
@@ -318,21 +320,25 @@ PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
   return nullptr;
 }
 
+PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
+  return DobbyMachOSymbolResolverOptions(header_, symbol_name, true);
+}
+
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
 
   const std::vector<RuntimeModule> *modules = ProcessRuntimeUtility::GetProcessModuleMap();
 
-  for(auto iter = modules->begin(); iter != modules->end(); iter ++) {
+  for (auto iter = modules->begin(); iter != modules->end(); iter++) {
     auto module = *iter;
-//  for (auto module : *modules) {
+    //  for (auto module : *modules) {
     if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
       continue;
 
     mach_header_t *header = (mach_header_t *)module.load_address;
-    if(header == nullptr)
+    if (header == nullptr)
       continue;
-    
+
     size_t slide = 0;
     if (header->magic == MH_MAGIC_64)
       slide = macho_kit_get_slide(header);
@@ -426,8 +432,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     }
   }
 #endif
-  
-  if(result == 0) {
+
+  if (result == 0) {
     LOG(0, "symbol resolver failed: %s", symbol_name_pattern);
   }
 
