@@ -21,7 +21,7 @@ PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
 
-  IOLogv(fmt, ap);
+  vprintf(fmt, ap);
 
   va_end(ap);
   return 0;
