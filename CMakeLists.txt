@@ -175,6 +175,7 @@ if (SYSTEM.Darwin AND BUILDING_KERNEL)
 
     # kernel mode - platform interface
     source/Backend/KernelMode/UnifiedInterface/platform-darwin.cc
+    source/Backend/KernelMode/UnifiedInterface/exec_mem_placeholder.asm
 
     # kernel mode - executable memory
     source/Backend/KernelMode/ExecMemory/code-patch-tool-darwin.cc

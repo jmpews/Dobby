@@ -2,6 +2,9 @@
 
 #include <sys/mman.h>
 #include <mach/mach_vm.h>
+#include <mach/host_priv.h>
+#include <kern/host.h>
+#include <vm/vm_map.h>
 
 // ================================================================
 // base :: OSMemory
@@ -30,36 +33,45 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access) {
   return OSMemory::Allocate(size, access, nullptr);
 }
 
+extern "C" void *kernel_executable_memory_placeholder;
 void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_address) {
   int prot = GetProtectionFromMemoryPermission(access);
+
+  void *addr = nullptr;
 
   int flags = VM_FLAGS_ANYWHERE;
   if (fixed_address != nullptr) {
     flags = VM_FLAGS_FIXED;
+    addr = fixed_address;
   }
 
-  void *addr = fixed_address;
-  auto ret = mach_vm_allocate(kernel_map, (mach_vm_address_t *)&addr, size, flags);
-  if (ret != KERN_SUCCESS)
-    return nullptr;
-  
-  // make fault before at rw prot
-  bzero(addr, size);
-  {
-    memcpy(addr, "AAAAAAAA", 8);
-  }
-
-  if (access == kNoAccess) {
-    access = kReadExecute;
-  }
-  if (!OSMemory::SetPermission((void *)addr, size, access)) {
-    OSMemory::Free(addr, size);
-    return nullptr;
-  }
-  
-  {
-    if(memcmp(addr, "AAAAAAAA", 8) != 0) {
+  if (prot & VM_PROT_EXECUTE || prot == PROT_NONE) {
+    addr = &kernel_executable_memory_placeholder;
+  } else {
+    kern_return_t ret = mach_vm_allocate(kernel_map, (mach_vm_address_t *)&addr, size, flags);
+    if (ret != KERN_SUCCESS)
       return nullptr;
+    ret = vm_map_wire(kernel_map, (mach_vm_address_t)addr, (mach_vm_address_t)addr + (mach_vm_address_t)addr + size,
+                      VM_PROT_NONE, false);
+    if (ret != KERN_SUCCESS)
+      return nullptr;
+
+    // make fault before at rw prot
+    bzero(addr, size);
+    { memcpy(addr, "AAAAAAAA", 8); }
+
+    if (access == kNoAccess) {
+      access = kReadExecute;
+    }
+    if (!OSMemory::SetPermission((void *)addr, size, access)) {
+      OSMemory::Free(addr, size);
+      return nullptr;
+    }
+
+    {
+      if (memcmp(addr, "AAAAAAAA", 8) != 0) {
+        return nullptr;
+      }
     }
   }
 
