@@ -16,12 +16,12 @@
     static void *func_ptr = nullptr;                                                                                   \
     if (func_ptr == nullptr) {                                                                                         \
       func_ptr = DobbySymbolResolver(nullptr, name);                                                                   \
-      if (func_ptr) {                                                                                                   \
+      if (func_ptr) {                                                                                                  \
         func_ptr = ptrauth_strip((void *)func_ptr, ptrauth_key_asia);                                                  \
         func_ptr = ptrauth_sign_unauthenticated(func_ptr, ptrauth_key_asia, 0);                                        \
       }                                                                                                                \
     }                                                                                                                  \
-    o_var = (typeof(o_var))func_ptr;                                                                                                  \
+    o_var = (typeof(o_var))func_ptr;                                                                                   \
   } while (0);
 
 #define KERN_RETURN_ERROR(kr, failure)                                                                                 \
@@ -47,13 +47,12 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
     pmap_kit_bcopy_phys((addr_t)buffer, dst_paddr, buffer_size, cppvPsnk);
     LOG(0, "bcopy_phys: src: %p, dst: %p", src_paddr, dst_paddr);
 
-    pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, VM_PROT_READ|VM_PROT_EXECUTE);
+    pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, VM_PROT_READ | VM_PROT_EXECUTE);
 
     pmap_kit_kva_to_pte(kernel_pmap, (vaddr_t)address);
 
-    if(memcmp(address, buffer, buffer_size))
+    if (memcmp(address, buffer, buffer_size))
       return kMemoryOperationError;
-
   }
 
   if (0) {

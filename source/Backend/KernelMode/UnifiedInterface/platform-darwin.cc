@@ -2,9 +2,8 @@
 
 #include <sys/mman.h>
 #include <mach/mach_vm.h>
-#include <mach/host_priv.h>
-#include <kern/host.h>
 #include <vm/vm_map.h>
+#include <kern/debug.h>
 
 // ================================================================
 // base :: OSMemory
@@ -38,23 +37,26 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
   int prot = GetProtectionFromMemoryPermission(access);
 
   void *addr = nullptr;
-
   int flags = VM_FLAGS_ANYWHERE;
   if (fixed_address != nullptr) {
     flags = VM_FLAGS_FIXED;
     addr = fixed_address;
   }
 
-  if (prot & VM_PROT_EXECUTE || prot == PROT_NONE) {
+  // fixme: wire at pmap
+  if (prot & PROT_EXEC || prot == PROT_NONE) {
     addr = &kernel_executable_memory_placeholder;
   } else {
     kern_return_t ret = mach_vm_allocate(kernel_map, (mach_vm_address_t *)&addr, size, flags);
-    if (ret != KERN_SUCCESS)
+    if (ret != KERN_SUCCESS) {
+      panic("mach_vm_allocate");
       return nullptr;
-    ret = vm_map_wire(kernel_map, (mach_vm_address_t)addr, (mach_vm_address_t)addr + (mach_vm_address_t)addr + size,
-                      VM_PROT_NONE, false);
-    if (ret != KERN_SUCCESS)
+    }
+    ret = vm_map_wire(kernel_map, (mach_vm_address_t)addr, (mach_vm_address_t)addr + size, PROT_NONE, false);
+    if (ret != KERN_SUCCESS) {
+      panic("vm_map_wire");
       return nullptr;
+    }
 
     // make fault before at rw prot
     bzero(addr, size);
