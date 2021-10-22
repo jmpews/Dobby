@@ -24,10 +24,11 @@ PUBLIC int DobbyDestroy(void *address) {
   if (entry) {
     uint8_t *buffer = entry->origin_chunk_.chunk_buffer;
     uint32_t buffer_size = entry->origin_chunk_.chunk.length;
+    void *address_for_code_patch = address;
 #if defined(TARGET_ARCH_ARM)
-    address = (void *)((addr_t)address - 1);
+    address_for_code_patch = (void *)((addr_t)address_for_code_patch - 1);
 #endif
-    CodePatch(address, buffer, buffer_size);
+    CodePatch(address_for_code_patch, buffer, buffer_size);
     Interceptor::SharedInstance()->RemoveHookEntry(address);
     return RT_SUCCESS;
   }
