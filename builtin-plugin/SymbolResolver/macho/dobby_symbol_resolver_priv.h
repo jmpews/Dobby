@@ -27,6 +27,7 @@ typedef struct macho_ctx {
 
   segment_command_t *text_seg;
   segment_command_t *data_seg;
+  segment_command_t *text_exec_seg;
   segment_command_t *data_const_seg;
   segment_command_t *linkedit_seg;
 

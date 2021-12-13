@@ -209,7 +209,7 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
 void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   ctx->header = header;
   segment_command_t *curr_seg_cmd;
-  segment_command_t *text_segment = nullptr, *data_segment = nullptr, *data_const_segment = nullptr,
+  segment_command_t *text_segment = nullptr, *text_exec_segment = nullptr, *data_segment = nullptr, *data_const_segment = nullptr,
                     *linkedit_segment = nullptr;
   struct symtab_command *symtab_cmd = nullptr;
   struct dysymtab_command *dysymtab_cmd = nullptr;
@@ -230,6 +230,9 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
       } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
         text_segment = curr_seg_cmd;
       }
+      else if (strcmp(curr_seg_cmd->segname, "__TEXT_EXEC") == 0) {
+        text_exec_segment = curr_seg_cmd;
+      }
     } else if (curr_seg_cmd->cmd == LC_SYMTAB) {
       symtab_cmd = (struct symtab_command *)curr_seg_cmd;
     } else if (curr_seg_cmd->cmd == LC_DYSYMTAB) {
@@ -244,6 +247,7 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
   ctx->text_seg = text_segment;
+  ctx->text_exec_seg = text_exec_segment;
   ctx->data_seg = data_segment;
   ctx->data_const_seg = data_const_segment;
   ctx->linkedit_seg = linkedit_segment;

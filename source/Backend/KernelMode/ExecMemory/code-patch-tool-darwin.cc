@@ -47,9 +47,8 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
     pmap_kit_bcopy_phys((addr_t)buffer, dst_paddr, buffer_size, cppvPsnk);
     LOG(0, "bcopy_phys: src: %p, dst: %p", src_paddr, dst_paddr);
 
-    pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, VM_PROT_READ | VM_PROT_EXECUTE);
-
     pmap_kit_kva_to_pte(kernel_pmap, (vaddr_t)address);
+    pmap_kit_set_perm(kernel_pmap, (vaddr_t)address, (vaddr_t)address + PAGE_SIZE, VM_PROT_READ | VM_PROT_EXECUTE);
 
     if (memcmp(address, buffer, buffer_size))
       return kMemoryOperationError;
