@@ -149,6 +149,8 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
 
+    unused_mem_start = ALIGN_FLOOR(unused_mem_start, 4);
+
     if (unused_mem_end - unused_mem_start < size)
       return 0;
 
@@ -167,8 +169,11 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
   if (!unused_mem)
     return nullptr;
 
-  auto unused_arena_size = ALIGN_CEIL(size, OSMemory::PageSize());
-  auto unused_arena_addr = (addr_t)ALIGN_FLOOR(unused_mem, unused_arena_size);
+  auto unused_arena_first_page_addr = (addr_t)ALIGN_FLOOR(unused_mem, OSMemory::PageSize());
+  auto unused_arena_end_page_addr = ALIGN_FLOOR(unused_mem + size, OSMemory::PageSize());
+  auto unused_arena_size = unused_arena_end_page_addr - unused_arena_first_page_addr + OSMemory::PageSize();
+  auto unused_arena_addr = unused_arena_first_page_addr;
+
   if (OSMemory::Allocate(unused_arena_size, kNoAccess, (void *)unused_arena_addr) == nullptr) {
     ERROR_LOG("[near memory allocator] allocate fixed page failed %p", unused_arena_addr);
     return nullptr;
@@ -210,7 +215,7 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint32_t size, addr_t pos, 
   if (!block)
     return nullptr;
 
-  DLOG(0, "[near memory allocator] allocate exec memory at: , size: ", block->addr, block->size);
+  DLOG(0, "[near memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
   return (uint8_t *)block->addr;
 }
 
@@ -226,7 +231,7 @@ uint8_t *NearMemoryAllocator::allocateNearDataMemory(uint32_t size, addr_t pos, 
   if (!block)
     return nullptr;
 
-  DLOG(0, "[near memory allocator] allocate data memory at: , size: ", block->addr, block->size);
+  DLOG(0, "[near memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
   return (uint8_t *)block->addr;
 }
 

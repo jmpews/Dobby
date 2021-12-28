@@ -37,7 +37,7 @@ bool InterceptRouting::GenerateRelocatedCode() {
 }
 
 bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
-  CodeBufferBase *trampoline_insn_buffer = nullptr;
+  CodeBufferBase *tramp_buffer = nullptr;
 
   // if near branch trampoline plugin enabled
   if (RoutingPluginManager::near_branch_trampoline) {
@@ -49,8 +49,8 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
   }
 
   if (GetTrampolineBuffer() == nullptr) {
-    trampoline_insn_buffer = GenerateNormalTrampolineBuffer(src, dst);
-    SetTrampolineBuffer(trampoline_insn_buffer);
+    tramp_buffer = GenerateNormalTrampolineBuffer(src, dst);
+    SetTrampolineBuffer(tramp_buffer);
   }
   return true;
 }

@@ -13,8 +13,8 @@
 
 std::map<void *, const char *> *func_map;
 
-void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
-  auto iter = func_map->find(info->function_address);
+void common_handler(void *address, RegisterContext *ctx) {
+  auto iter = func_map->find(address);
   if (iter != func_map->end()) {
     LOG(1, "func %s:%p invoke", iter->second, iter->first);
   }
@@ -54,7 +54,7 @@ const char *func_array[] = {
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
-    DobbyHook(sym_addr, (void *)fake_##name, (void **)&orig_##name);                                                   \
+    DobbyHook(sym_addr, (func_t)fake_##name, (func_t *)&orig_##name);                                                   \
     pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
@@ -160,7 +160,7 @@ uint64_t socket_demo_client(void *ctx) {
   char *hello = "Hello from client";
   char buffer[1024] = {0};
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    printf("\n Socket creation error \n");
+    printf("\nSocket creation error \n");
     return -1;
   }
 

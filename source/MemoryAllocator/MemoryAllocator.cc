@@ -27,13 +27,12 @@ MemoryAllocator *MemoryAllocator::SharedAllocator() {
 
 
 CodeMemoryArena *MemoryAllocator::allocateCodeMemoryArena(uint32_t size) {
-  CodeMemoryArena *result = nullptr;
+  CHECK_EQ(size % OSMemory::PageSize(), 0);
+  uint32_t arena_size = size;
+  auto arena_addr = OSMemory::Allocate(arena_size, kNoAccess);
+  OSMemory::SetPermission(arena_addr, arena_size, kReadExecute);
 
-  uint32_t buffer_size = ALIGN_CEIL(size, OSMemory::PageSize());
-  void *buffer = OSMemory::Allocate(buffer_size, kNoAccess);
-  OSMemory::SetPermission(buffer, buffer_size, kReadExecute);
-
-  result = new CodeMemoryArena((addr_t)buffer, (size_t)buffer_size);
+  auto result = new CodeMemoryArena((addr_t)arena_addr, (size_t)arena_size);
   code_arenas.push_back(result);
   return result;
 }
@@ -48,12 +47,13 @@ CodeMemBlock *MemoryAllocator::allocateExecBlock(uint32_t size) {
   }
   if (!block) {
     // allocate new arena
-    auto arena = allocateCodeMemoryArena(size);
+    auto arena_size = ALIGN_CEIL(size, OSMemory::PageSize());
+    auto arena = allocateCodeMemoryArena(arena_size);
     block = arena->allocMemBlock(size);
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate exec memory at: , size: ", block->addr, block->size);
+  DLOG(0, "[memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
   return block;
 }
 
@@ -95,7 +95,7 @@ DataMemBlock *MemoryAllocator::allocateDataBlock(uint32_t size) {
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate data memory at: , size: ", block->addr, block->size);
+  DLOG(0, "[memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
   return block;
 }
 
