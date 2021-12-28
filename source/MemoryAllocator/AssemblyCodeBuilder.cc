@@ -4,11 +4,10 @@
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 
 AssemblyCode *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {
-  CodeBufferBase *buffer = nullptr;
-  buffer = (CodeBufferBase *)assembler->GetCodeBuffer();
+  auto buffer = (CodeBufferBase *)assembler->GetCodeBuffer();
 
-  void *realized_addr = assembler->GetRealizedAddress();
-  if (realized_addr == nullptr) {
+  auto realized_addr = (addr_t)assembler->GetRealizedAddress();
+  if (!realized_addr) {
     int buffer_size = 0;
     {
       buffer_size = buffer->GetBufferSize();
@@ -18,18 +17,17 @@ AssemblyCode *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *ass
 #endif
     }
 
-    auto *block = CodeMemoryArena::SharedInstance()->allocCodeBlock(buffer_size);
+    auto *block = MemoryAllocator::SharedAllocator()->allocateExecBlock(buffer_size);
     if (block == nullptr)
       return nullptr;
 
-    realized_addr = (void *)block->addr;
-    assembler->SetRealizedAddress(realized_addr);
+    realized_addr = block->addr;
+    assembler->SetRealizedAddress((void *)realized_addr);
   }
 
-  // Realize the buffer code to the executable memory address, remove the ExternalLabel, etc, the pc-relative
-  // instructions
-  CodePatch(realized_addr, buffer->GetBuffer(), buffer->GetBufferSize());
+  // Realize the buffer code to the executable memory address, remove the external label, etc
+  CodePatch((void *)realized_addr, buffer->GetBuffer(), buffer->GetBufferSize());
 
-  AssemblyCode *code = new AssemblyCode{.begin = realized_addr, .size = buffer->GetBufferSize()};
-  return code;
+  auto block = new AssemblyCode(realized_addr, buffer->GetBufferSize());
+  return block;
 }

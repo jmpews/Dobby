@@ -2,98 +2,101 @@
 
 #include "common_header.h"
 
-// ----- range + zone -----
-
 struct MemRange {
-  void *begin;
+  addr_t start;
+  addr_t end;
   size_t size;
+
+  MemRange(addr_t start, size_t size) : start(start), end(0), size(size) {
+    end = start + size;
+  }
+
+  void reset(addr_t start, size_t size) {
+    this->start = start;
+    this->size = size;
+    end = start + size;
+  }
 };
 
-struct MemZone {
-  void addRange(MemRange);
-
-private:
-  std::vector<MemRange> ranges_;
-};
-
-inline void MemZone::addRange(MemRange range) {
-  ranges_.push_back(range);
-}
-
-// ----- block + chunk -----
-
-struct MemBlock {
+struct MemBlock : MemRange {
   addr_t addr;
-  size_t size;
+
+  MemBlock() : MemRange(0, 0), addr(0) {
+  }
+
+  MemBlock(addr_t addr, size_t size) : MemRange(addr, size), addr(addr) {
+  }
+
+  void reset(addr_t addr, size_t size) {
+    MemRange::reset(addr, size);
+    this->addr = addr;
+  }
 };
 
-struct MemChunk {
+struct MemoryArena : MemRange {
   addr_t addr;
   addr_t cursor_addr;
-  size_t size;
 
-  MemBlock *allocBlock(size_t alloc_size) {
-    if ((addr + size) - cursor_addr < alloc_size)
-      return nullptr;
+  std::vector<MemBlock *> memory_blocks;
 
-    auto *block = new MemBlock{.addr = cursor_addr, .size = alloc_size};
-    blocks_.push_back(block);
-
-    cursor_addr += alloc_size;
-
-    return block;
+  MemoryArena(addr_t addr, size_t size) : MemRange(addr, size), addr(addr) {
   }
 
-  std::vector<MemBlock *> blocks_;
+  virtual MemBlock *allocMemBlock(size_t size);
 };
 
-// ----- arena -----
+using CodeMemBlock = MemBlock;
+using CodeMemoryArena = MemoryArena;
 
-class MemoryArena {
-public:
-  MemBlock *allocBlock(size_t alloc_size);
+#if 0
+struct CodeMemoryArena : MemoryArena {
+  CodeMemoryArena(addr_t addr, size_t size) : MemoryArena(addr, size) {
+  }
 
-protected:
-  virtual MemChunk *allocChunk(size_t alloc_size);
-
-protected:
-  std::vector<MemChunk *> chunks_;
+  CodeMemBlock *allocateCodeMemBlock(size_t size) {
+    return allocMemBlock(size);
+  }
 };
+#endif
 
-using CodeBlock = MemBlock;
-class CodeMemoryArena : public MemoryArena {
+using DataMemBlock = MemBlock;
+using DataMemoryArena = MemoryArena;
+
+#if 0
+struct DataMemoryArena : MemoryArena {
 public:
-  CodeBlock *allocCodeBlock(size_t alloc_size) {
-    return allocBlock(alloc_size);
+  DataMemoryArena(addr_t addr, size_t size) : MemoryArena(addr, size) {
   }
 
-  static CodeMemoryArena *SharedInstance() {
-    static CodeMemoryArena *arena_priv_ = nullptr;
-    if (arena_priv_ == nullptr) {
-      arena_priv_ = new CodeMemoryArena();
-    }
-    return arena_priv_;
+  DataMemBlock *allocateDataMemBlock(size_t size) {
+    return allocMemBlock(size);
   }
+};
+#endif
+
+class NearMemoryAllocator;
+class MemoryAllocator {
+  friend class NearMemoryAllocator;
 
 private:
-  MemChunk *allocChunk(size_t alloc_size) override;
-};
-
-using DataBlock = MemBlock;
-class DataMemoryArena : public MemoryArena {
-public:
-  DataBlock *allocDataBlock(size_t alloc_size) {
-    return allocBlock(alloc_size);
-  }
-
-  static DataMemoryArena *SharedInstance() {
-    static DataMemoryArena *arena_priv_ = nullptr;
-    if (arena_priv_ == nullptr) {
-      arena_priv_ = new DataMemoryArena();
-    }
-    return arena_priv_;
-  }
+  std::vector<CodeMemoryArena *> code_arenas;
+  std::vector<DataMemoryArena *> data_arenas;
 
 private:
-  MemChunk *allocChunk(size_t alloc_size) override;
+  static MemoryAllocator *shared_allocator;
+
+public:
+  static MemoryAllocator *SharedAllocator();
+
+
+public:
+  CodeMemoryArena *allocateCodeMemoryArena(uint32_t size);
+  CodeMemBlock *allocateExecBlock(uint32_t size);
+  uint8_t *allocateExecMemory(uint32_t size);
+  uint8_t *allocateExecMemory(uint8_t *buffer, uint32_t buffer_size);
+
+  DataMemoryArena *allocateDataMemoryArena(uint32_t size);
+  DataMemBlock *allocateDataBlock(uint32_t size);
+  uint8_t *allocateDataMemory(uint32_t size);
+  uint8_t *allocateDataMemory(uint8_t *buffer, uint32_t buffer_size);
 };

@@ -1,5 +1,4 @@
-#ifndef INSTRUCTION_RELOCATION_ARM64_H
-#define INSTRUCTION_RELOCATION_ARM64_H
+#pragma once
 
 #include "dobby_internal.h"
 
@@ -8,9 +7,7 @@
 #if 0
 namespace zz {
 namespace arm64 {
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
+void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated);
 } // namespace arm64
 } // namespace zz
-#endif
-
 #endif

@@ -33,7 +33,7 @@ typedef struct _relo_ctx {
   vmaddr_t src_vmaddr;
   vmaddr_t dst_vmaddr;
 
-  AssemblyCode *relocated_chunk;
+  CodeMemBlock *relocated;
 
   std::map<off_t, off_t> relocated_offset_map;
 
@@ -58,56 +58,58 @@ addr_t relo_dst_offset_to_vmaddr(relo_ctx_t *ctx, off_t offset) {
 
 // ----- next -----
 
-// bool has_relo_label_at(relo_ctx_t *ctx, vmaddr_t addr) {
-//   if (ctx->label_map.count(addr)) {
-//     return true;
-//   }
-//   return false;
-// }
+#if 0
+bool has_relo_label_at(relo_ctx_t *ctx, vmaddr_t addr) {
+  if (ctx->label_map.count(addr)) {
+    return true;
+  }
+  return false;
+}
 
-// AssemblerPseudoLabel *relo_label_create_or_get(relo_ctx_t *ctx, vmaddr_t addr) {
-//   if (!ctx->label_map.count(addr)) {
-//     auto *label = new AssemblerPseudoLabel(addr);
-//     ctx->label_map[addr] = label;
-//   }
-//   return ctx->label_map[addr];
-// }
+AssemblerPseudoLabel *relo_label_create_or_get(relo_ctx_t *ctx, vmaddr_t addr) {
+  if (!ctx->label_map.count(addr)) {
+    auto *label = new AssemblerPseudoLabel(addr);
+    ctx->label_map[addr] = label;
+  }
+  return ctx->label_map[addr];
+}
 
-// int64_t relo_label_link_offset(relo_ctx_t *ctx, pcrel_type_t pcrel_type, int64_t offset) {
-//   auto is_offset_undefined = [ctx](int64_t offset) -> bool {
-//     if (ctx->buffer_cursor + offset < ctx->buffer || ctx->buffer_cursor + offset > ctx->buffer + ctx->buffer_size) {
-//       return true;
-//     }
-//     return false;
-//   };
+int64_t relo_label_link_offset(relo_ctx_t *ctx, pcrel_type_t pcrel_type, int64_t offset) {
+  auto is_offset_undefined = [ctx](int64_t offset) -> bool {
+    if (ctx->buffer_cursor + offset < ctx->buffer || ctx->buffer_cursor + offset > ctx->buffer + ctx->buffer_size) {
+      return true;
+    }
+    return false;
+  };
 
-//   auto is_offset_uninitialized = [ctx](int64_t offset) -> bool {
-//     if (ctx->buffer_cursor + offset > ctx->buffer && ctx->buffer_cursor + offset < ctx->buffer + ctx->buffer_size) {
-//       if (!ctx->relocated_offset_map.count(ctx->buffer_cursor + offset - ctx->buffer_cursor))
-//         return true;
-//     }
-//     return false;
-//   };
+  auto is_offset_uninitialized = [ctx](int64_t offset) -> bool {
+    if (ctx->buffer_cursor + offset > ctx->buffer && ctx->buffer_cursor + offset < ctx->buffer + ctx->buffer_size) {
+      if (!ctx->relocated_offset_map.count(ctx->buffer_cursor + offset - ctx->buffer_cursor))
+        return true;
+    }
+    return false;
+  };
 
-//   addr_t label_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
-//   if (pcrel_type == RELO_ARM64_RELOC_PAGE21) {
-//     label_vmaddr = arm64_trunc_page(label_vmaddr);
-//   }
+  addr_t label_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
+  if (pcrel_type == RELO_ARM64_RELOC_PAGE21) {
+    label_vmaddr = arm64_trunc_page(label_vmaddr);
+  }
 
-//   auto *label = relo_label_create_or_get(ctx, label_vmaddr);
-//   if (is_offset_undefined(offset)) { // pc relative target is beyond our scope
-//     label->link_to(AssemblerPseudoLabel::kLabelImm19, relo_cur_src_vmaddr(ctx), (addr_t)ctx->buffer_cursor - ctx->mapped_addr);
-//     return 0;
-//   } else if (is_offset_uninitialized(offset)) { // pc relative target is in our control, but not handle yet
-//     label->link_to(AssemblerPseudoLabel::kLabelImm19, relo_cur_src_vmaddr(ctx), (addr_t)ctx->buffer_cursor - ctx->mapped_addr);
-//     return 0;
-//   } else { // pc relative target is already handled
-//     off_t off = ctx->buffer_cursor + offset - ctx->buffer;
-//     off_t relocated_off = label->relocated_pos();
-//     int64_t new_offset = relo_dst_offset_to_vmaddr(ctx, relocated_off) - relo_src_offset_to_vmaddr(ctx, off);
-//     return new_offset;
-//   }
-// }
+  auto *label = relo_label_create_or_get(ctx, label_vmaddr);
+  if (is_offset_undefined(offset)) { // pc relative target is beyond our scope
+    label->link_to(AssemblerPseudoLabel::kLabelImm19, relo_cur_src_vmaddr(ctx), (addr_t)ctx->buffer_cursor - ctx->mapped_addr);
+    return 0;
+  } else if (is_offset_uninitialized(offset)) { // pc relative target is in our control, but not handle yet
+    label->link_to(AssemblerPseudoLabel::kLabelImm19, relo_cur_src_vmaddr(ctx), (addr_t)ctx->buffer_cursor - ctx->mapped_addr);
+    return 0;
+  } else { // pc relative target is already handled
+    off_t off = ctx->buffer_cursor + offset - ctx->buffer;
+    off_t relocated_off = label->relocated_pos();
+    int64_t new_offset = relo_dst_offset_to_vmaddr(ctx, relocated_off) - relo_src_offset_to_vmaddr(ctx, off);
+    return new_offset;
+  }
+}
+#endif
 
 // ----- next -----
 
@@ -142,14 +144,16 @@ static inline bool inst_is_test_b(uint32_t instr) {
 // ----- next -----
 
 int relo_relocate(relo_ctx_t *ctx) {
-  int relo_count = 0;
+  int relocated_insn_count = 0;
 
   TurboAssembler turbo_assembler_(0);
 #define _ turbo_assembler_.
 
+  auto relocated_buffer = turbo_assembler_.GetCodeBuffer();
+
   while (ctx->buffer_cursor < ctx->buffer + ctx->buffer_size) {
     uint32_t orig_off = ctx->buffer_cursor - ctx->buffer;
-    uint32_t relocated_off = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
+    uint32_t relocated_off = relocated_buffer->GetBufferSize();
     ctx->relocated_offset_map[orig_off] = relocated_off;
 
     // vmaddr_t inst_vmaddr = 0;
@@ -161,7 +165,7 @@ int relo_relocate(relo_ctx_t *ctx) {
 
     arm64_inst_t inst = *(arm64_inst_t *)ctx->buffer_cursor;
     if (inst_is_b_bl(inst)) {
-      LOG(1, "%d:relo <b_bl> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <b_bl> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm26_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -179,7 +183,7 @@ int relo_relocate(relo_ctx_t *ctx) {
       }
 
     } else if (inst_is_ldr_literal(inst)) {
-      LOG(1, "%d:relo <ldr_literal> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <ldr_literal> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm26_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -198,7 +202,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_adr(inst)) {
-      LOG(1, "%d:relo <adr> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <adr> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_immhi_immlo_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -210,7 +214,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         ;
       }
     } else if (inst_is_adrp(inst)) {
-      LOG(1, "%d:relo <adrp> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <adrp> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_immhi_immlo_zero12_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -223,7 +227,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         ;
       }
     } else if (inst_is_b_cond(inst)) {
-      LOG(1, "%d:relo <b_cond> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <b_cond> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -250,7 +254,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_compare_b(inst)) {
-      LOG(1, "%d:relo <compare_b> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <compare_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -277,7 +281,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_test_b(inst)) {
-      LOG(1, "%d:relo <test_b> at %p", relo_count++, relo_cur_src_vmaddr(ctx));
+      LOG(1, "%d:relo <test_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -321,24 +325,23 @@ int relo_relocate(relo_ctx_t *ctx) {
   {
     AssemblyCode *code = NULL;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-    ctx->relocated_chunk = code;
+    ctx->relocated = code;
   }
   return 0;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *o_relocated) {
+void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {
   relo_ctx_t ctx;
 
   ctx.buffer = ctx.buffer_cursor = (uint8_t *)buffer;
   ctx.buffer_size = origin->size;
 
-  ctx.src_vmaddr = (vmaddr_t)origin->begin;
+  ctx.src_vmaddr = (vmaddr_t)origin->addr;
   ctx.dst_vmaddr = 0;
 
   relo_relocate(&ctx);
 
-  o_relocated->begin = ctx.relocated_chunk->begin;
-  o_relocated->size = ctx.relocated_chunk->size;
+  relocated->reset(ctx.relocated->addr, ctx.relocated->size);
 }
 
 #endif

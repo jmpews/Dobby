@@ -6,82 +6,17 @@
 #include "core/arch/x86/registers-x86.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeBuffer/code-buffer-x86.h"
-
-#include "xnucxx/LiteMutableArray.h"
-#include "xnucxx/LiteIterator.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_x86.h"
 
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
+
+enum ref_label_type_t { kDisp32_off_7 };
+
 
 namespace zz {
 namespace x86 {
 
 constexpr Register VOLATILE_REGISTER = eax;
-
-// ================================================================
-// AssemblerPseudoLabel
-
-class AssemblerPseudoLabel : public Label {
-public:
-  enum PseudoLabelType { kDisp32_off_7 };
-
-  typedef struct _PseudoLabelInstruction {
-    int position_;
-    PseudoLabelType type_;
-  } PseudoLabelInstruction;
-
-public:
-  AssemblerPseudoLabel(void) : instructions_(8) {
-  }
-  ~AssemblerPseudoLabel(void) {
-    for (size_t i = 0; i < instructions_.getCount(); i++) {
-      PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
-      delete item;
-    }
-
-    instructions_.release();
-  }
-
-  bool has_confused_instructions() {
-    return instructions_.getCount() > 0;
-  }
-
-  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
-    if (!buffer)
-      UNREACHABLE();
-    CodeBuffer *_buffer = buffer;
-
-    for (size_t i = 0; i < instructions_.getCount(); i++) {
-      PseudoLabelInstruction *instruction = (PseudoLabelInstruction *)instructions_.getObject(i);
-
-      int32_t offset = pos() - instruction->position_;
-
-      switch (instruction->type_) {
-      case kDisp32_off_7: {
-        // why 7 ?
-        // use `call` and `pop` get the runtime ip register
-        // but the ip register not the real call next insn
-        // it need add two insn length == 7
-        int disp32_fix_pos = instruction->position_ - sizeof(int32_t);
-        _buffer->FixBindLabel(disp32_fix_pos, offset + 7);
-      } break;
-      default:
-        UNREACHABLE();
-        break;
-      }
-    }
-  };
-
-  void link_to(int pos, PseudoLabelType type) {
-    PseudoLabelInstruction *instruction = new PseudoLabelInstruction;
-    instruction->position_ = pos;
-    instruction->type_ = type;
-    instructions_.pushObject((LiteObject *)instruction);
-  }
-
-private:
-  LiteMutableArray instructions_;
-};
 
 #define ModRM_Mod(byte) ((byte & 0b11000000) >> 6)
 #define ModRM_RegOpcode(byte) ((byte & 0b00111000) >> 3)
@@ -96,8 +31,8 @@ typedef union _ModRM {
   };
 } ModRM;
 
-// ================================================================
-// Immediate
+// ----- next -----
+
 
 class Immediate {
 public:
@@ -128,8 +63,7 @@ private:
   int value_size_;
 };
 
-// ================================================================
-// Operand
+// ----- next -----
 
 class Operand {
 public:
@@ -222,8 +156,8 @@ public:
   uint8_t encoding_[6];
 };
 
-// ================================================================
-// Address
+// ----- next -----
+
 
 class Address : public Operand {
 public:
@@ -293,8 +227,8 @@ private:
   }
 };
 
-// ================================================================
-// Assembler
+// ----- next -----
+
 
 class Assembler : public AssemblerBase {
 public:
@@ -316,8 +250,8 @@ public:
     buffer_->Emit32(value);
   }
 
-  // ================================================================
-  // Immediate
+  // ----- next -----
+
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
@@ -329,8 +263,8 @@ public:
     }
   }
 
-  // ================================================================
-  // Operand Encoding
+  // ----- next -----
+
 
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
@@ -370,8 +304,8 @@ public:
     EmitImmediate(imm, imm.size());
   }
 
-  // ================================================================
-  // ModRM
+  // ----- next -----
+
 
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
     uint8_t ModRM = 0;
@@ -399,8 +333,8 @@ public:
     EmitModRM(ModRM_Mod(modRM), extra_opcode, ModRM_RM(modRM));
   }
 
-  // ================================================================
-  // Opcode
+  // ----- next -----
+
   void EmitOpcode(uint8_t opcode) {
     Emit1(opcode);
   }
@@ -409,8 +343,8 @@ public:
     EmitOpcode(opcode | reg.code());
   }
 
-  // ================================================================
-  // Instruction
+  // ----- next -----
+
 
   void pushfq() {
     Emit1(0x9C);
@@ -499,24 +433,15 @@ public:
   }
 };
 
-// ================================================================
-// TurboAssembler
+// ----- next -----
+
 
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
-    data_labels_ = NULL;
   }
 
   ~TurboAssembler() {
-    if (data_labels_) {
-      for (size_t i = 0; i < data_labels_->getCount(); i++) {
-        RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
-        delete label;
-      }
-
-      delete data_labels_;
-    }
   }
 
   addr32_t CurrentIP();
@@ -526,9 +451,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint32_t)function.address());
-      addrLabel->link_to(ip_offset(), AssemblerPseudoLabel::kDisp32_off_7);
-      this->AppendRelocLabelEntry(addrLabel);
+      RelocLabelEntry *addr_label = new RelocLabelEntry((uint32_t)function.address());
+      addr_label->link_to(kDisp32_off_7, 0, ip_offset());
+      this->AppendRelocLabelEntry(addr_label);
     }
     nop();
   }
@@ -537,38 +462,6 @@ public:
     call(Immediate(0, 32));
     pop(dst);
   }
-
-  // ================================================================
-  // RelocLabelEntry
-
-  void PseudoBind(AssemblerPseudoLabel *label) {
-    const addr_t bound_pc = buffer_->GetBufferSize();
-    label->bind_to(bound_pc);
-    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
-    }
-  }
-
-  void RelocBind() {
-    if (data_labels_ == NULL)
-      return;
-    for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
-      PseudoBind(label);
-      Emit(label->data());
-    }
-  }
-
-  void AppendRelocLabelEntry(RelocLabelEntry *label) {
-    if (data_labels_ == NULL) {
-      data_labels_ = new LiteMutableArray(8);
-    }
-    data_labels_->pushObject((LiteObject *)label);
-  }
-
-private:
-  LiteMutableArray *data_labels_;
 };
 
 } // namespace x86

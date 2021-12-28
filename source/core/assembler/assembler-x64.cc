@@ -27,7 +27,7 @@ void Assembler::jmp(Immediate imm) {
   buffer_->Emit32((int)imm.value());
 }
 
-uint64_t TurboAssembler::CurrentIP() {
+addr64_t TurboAssembler::CurrentIP() {
   return pc_offset() + (addr_t)realized_addr_;
 }
 

@@ -32,7 +32,7 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 static bool memory_region_comparator(MemRegion a, MemRegion b) {
-  return (a.mem.begin < b.mem.begin);
+  return (a.start < b.start);
 }
 
 std::vector<MemRegion> regions;
@@ -69,7 +69,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
       } else {
         continue;
       }
-      MemRegion region = {(void *)addr, static_cast<size_t>(size), permission};
+      MemRegion region = MemRegion(addr,size, permission);
 #if 0
       DLOG(0, "%p --- %p", addr, addr + size);
 #endif
@@ -84,7 +84,6 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 }
 
 static std::vector<RuntimeModule> *modules;
-
 const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   if(modules == nullptr) {
     modules = new std::vector<RuntimeModule>();
@@ -122,7 +121,7 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  const std::vector<RuntimeModule> *modules = GetProcessModuleMap();
+  auto modules = GetProcessModuleMap();
   for (auto module : *modules) {
     if (strstr(module.path, name) != 0) {
       return module;

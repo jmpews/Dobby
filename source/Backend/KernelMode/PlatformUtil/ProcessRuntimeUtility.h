@@ -9,10 +9,12 @@ typedef struct _RuntimeModule {
   void *load_address;
 } RuntimeModule;
 
-typedef struct {
-  MemRange mem;
+struct MemRegion : MemRange {
   MemoryPermission permission;
-} MemRegion;
+  MemRegion(addr_t addr, size_t size, MemoryPermission perm): MemRange(addr, size), permission(perm) {
+
+  }
+};
 
 class ProcessRuntimeUtility {
 public:

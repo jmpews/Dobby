@@ -38,7 +38,7 @@ __attribute__((naked)) void closure_bridge_template() {
   // @rsi: RegisterContext stack address
   xASM("mov rdi, rsp");
   xASM("mov rsi, [rsp-16*8]");
-  xASM("call " xcdecl("intercept_routing_common_bridge_handler"));
+  xASM("call " xcdecl("common_closure_bridge_handler"));
 
   // ======= RegisterContext Restore =======
 

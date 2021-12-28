@@ -1,5 +1,4 @@
-#ifndef INSTRUCTION_RELOCATION_X64_H
-#define INSTRUCTION_RELOCATION_X64_H
+#pragma once
 
 #include "common_header.h"
 
@@ -7,4 +6,4 @@
 
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
 
-#endif
+#include "InstructionRelocation/x86/InstructionRelocationX86Shared.h"

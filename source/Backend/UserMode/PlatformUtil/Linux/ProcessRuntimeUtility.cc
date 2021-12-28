@@ -16,15 +16,16 @@
 // GetProcessMemoryLayout
 
 static bool memory_region_comparator(MemRange a, MemRange b) {
-  return ((addr_t)a.address < (addr_t)b.address);
+  return (a.start < b.start);
 }
 
-std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  std::vector<MemRange> ProcessMemoryLayout;
+std::vector<MemRegion> regions;
+const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+  regions.clear();
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
-    return ProcessMemoryLayout;
+    return regions;
 
   while (!feof(fp)) {
     char line_buffer[LINE_MAX + 1];
@@ -65,7 +66,7 @@ std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
                &path_index) < 7) {
       FATAL("/proc/self/maps parse failed!");
       fclose(fp);
-      return ProcessMemoryLayout;
+      return regions;
     }
 
     MemoryPermission permission;
@@ -83,23 +84,27 @@ std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
       DLOG(0, "%p --- %p", region_start, region_end);
 #endif
 
-    ProcessMemoryLayout.push_back(MemRange{(void *)region_start, region_end - region_start, permission});
+    MemRegion region = MemRegion(region_start,region_end - region_start, permission);
+    regions.push_back(region);
   }
-  std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
+  std::sort(regions.begin(), regions.end(), memory_region_comparator);
 
   fclose(fp);
-  return ProcessMemoryLayout;
+  return regions;
 }
 
 // ================================================================
 // GetProcessModuleMap
 
-static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
-  std::vector<RuntimeModule> ProcessModuleMap;
+static std::vector<RuntimeModule> *modules;
+static std::vector<RuntimeModule> *get_process_map_with_proc_maps() {
+  if(modules == nullptr) {
+    modules = new std::vector<RuntimeModule>();
+  }
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
-    return ProcessModuleMap;
+    return modules;
 
   while (!feof(fp)) {
     char line_buffer[LINE_MAX + 1];
@@ -140,7 +145,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
                &path_index) < 7) {
       FATAL("/proc/self/maps parse failed!");
       fclose(fp);
-      return ProcessModuleMap;
+      return modules;
     }
 
     // check header section permission
@@ -164,7 +169,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
     }
     strncpy(module.path, path_buffer, sizeof(module.path));
     module.load_address = (void *)region_start;
-    ProcessModuleMap.push_back(module);
+    modules->push_back(module);
 
 #if 0
     DLOG(0, "module: %s", module.path);
@@ -172,7 +177,7 @@ static std::vector<RuntimeModule> get_process_map_with_proc_maps() {
   }
 
   fclose(fp);
-  return ProcessModuleMap;
+  return modules;
 }
 
 #if defined(__LP64__)
@@ -211,7 +216,7 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 }
 #endif
 
-std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
+const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 #if defined(__LP64__) && 0
   // TODO: won't resolve main binary
   return get_process_map_with_linker_iterator();
@@ -221,8 +226,8 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  std::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
-  for (auto module : ProcessModuleMap) {
+  auto modules = GetProcessModuleMap();
+  for (auto module : *modules) {
     if (strstr(module.path, name) != 0) {
       return module;
     }

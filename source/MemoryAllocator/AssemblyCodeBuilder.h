@@ -1,14 +1,14 @@
 #pragma once
 
-#include "MemoryAllocator/MemoryArena.h"
+#include "PlatformUnifiedInterface/MemoryAllocator.h"
 
 #include "core/assembler/assembler.h"
 
 using namespace zz;
 
-using AssemblyCode = MemRange;
+using AssemblyCode = CodeMemBlock;
 
-class AssemblyCodeBuilder : MemZone {
+class AssemblyCodeBuilder {
 public:
   static AssemblyCode *FinalizeFromTurboAssembler(AssemblerBase *assembler);
 };

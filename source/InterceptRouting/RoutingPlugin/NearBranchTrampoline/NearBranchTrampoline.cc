@@ -2,7 +2,7 @@
 
 #include "dobby_internal.h"
 
-#include "MemoryAllocator/NearMemoryArena.h"
+#include "MemoryAllocator/NearMemoryAllocator.h"
 
 #include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
@@ -31,9 +31,9 @@ int NearBranchTrampolinePlugin::PredefinedTrampolineSize() {
 #endif
 
 extern CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t from, addr_t to);
-bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst) {
+bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
   CodeBufferBase *trampoline_buffer;
-  trampoline_buffer = GenerateNearTrampolineBuffer(routing, (addr_t)src, (addr_t)dst);
+  trampoline_buffer = GenerateNearTrampolineBuffer(routing, src, dst);
   if (trampoline_buffer == NULL)
     return false;
   routing->SetTrampolineBuffer(trampoline_buffer);
@@ -44,7 +44,7 @@ bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *rout
 bool NearBranchTrampolinePlugin::Active(InterceptRouting *routing) {
   addr_t src, dst;
   HookEntry *entry = routing->GetHookEntry();
-  src = (addr_t)entry->target_address;
+  src = (addr_t)entry->patched_insn_addr;
   dst = (addr_t)routing->GetTrampolineTarget();
   return true;
 }

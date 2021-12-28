@@ -5,9 +5,7 @@
 #include "core/arch/x64/registers-x64.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeBuffer/code-buffer-x64.h"
-
-#include "AssemblerPseudoLabel.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_x64.h"
 
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
@@ -581,9 +579,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
-      addrLabel->link_to(kDisp32_off_9, 0, ip_offset());
-      this->AppendRelocLabelEntry(addrLabel);
+      RelocLabelEntry *addr_label = new RelocLabelEntry((uint64_t)function.address());
+      addr_label->link_to(kDisp32_off_9, 0, ip_offset());
+      this->AppendRelocLabelEntry(addr_label);
     }
     nop();
   }

@@ -9,4 +9,3 @@ void hexdump(const uint8_t *bytes, size_t len) {
   }
   RAW_LOG(0, "\n");
 }
-

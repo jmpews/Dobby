@@ -12,15 +12,13 @@ void AssemblerPseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
     arm_inst_t inst = _buffer->LoadARMInst(ref_label_inst.offset_);
     arm_inst_t new_inst = 0;
 
-    switch (ref_label_inst.type_) {
-    case kLdrLiteral: {
+    if (ref_label_inst.type_ == kLdrLiteral) {
       new_inst = inst & 0xfffff000;
       uint32_t imm12 = new_offset - ARM_PC_OFFSET;
       new_inst = new_inst | imm12;
-    } break;
-
-      _buffer->RewriteARMInst(ref_label_inst.offset_, new_inst);
     }
+    _buffer->RewriteARMInst(ref_label_inst.offset_, new_inst);
+
   }
 }
 

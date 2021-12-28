@@ -11,7 +11,7 @@ void CodeGen::JmpNear(uint32_t address) {
 #define _ turbo_assembler_->
 #define __ turbo_assembler_->GetCodeBuffer()->
   uint32_t currIP = turbo_assembler_->CurrentIP() + 5;
-  dword offset = (dword)(address - currIP);
+  int32_t offset = (int32_t)(address - currIP);
 
   __ Emit8(0xe9);
   __ Emit32(offset);

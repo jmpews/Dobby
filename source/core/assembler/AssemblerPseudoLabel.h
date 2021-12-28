@@ -85,6 +85,10 @@ public:
     return *(T *)data_;
   }
 
+  template <typename T> void fixup_data(T value) {
+    *(T *)data_ = value;
+  }
+
   uint8_t data_[8];
   int data_size_;
 };

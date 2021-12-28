@@ -112,7 +112,8 @@
     "memory_resource": "cpp",
     "cinttypes": "cpp",
     "shared_cache_internal.h": "c",
-    "coroutine": "cpp"
+    "coroutine": "cpp",
+    "__bits": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
   "lldb.showDisassembly": "auto",

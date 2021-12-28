@@ -15,15 +15,15 @@ PUBLIC const char *DobbyBuildVersion() {
 
 PUBLIC int DobbyDestroy(void *address) {
   // check if we already hook
-  HookEntry *entry = Interceptor::SharedInstance()->FindHookEntry(address);
+  HookEntry *entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
   if (entry) {
-    uint8_t *buffer = entry->origin_code_.origin_code_buffer;
-    uint32_t buffer_size = entry->origin_code_.origin_code->size;
+    uint8_t *buffer = entry->origin_insns;
+    uint32_t buffer_size = entry->origin_insn_size;
 #if defined(TARGET_ARCH_ARM)
     address = (void *)((addr_t)address - 1);
 #endif
     CodePatch(address, buffer, buffer_size);
-    Interceptor::SharedInstance()->RemoveHookEntry(address);
+    Interceptor::SharedInstance()->removeHookEntry((addr_t)address);
     return RT_SUCCESS;
   }
 

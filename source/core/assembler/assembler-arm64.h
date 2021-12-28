@@ -7,7 +7,7 @@
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeBuffer/code-buffer-arm64.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_arm64.h"
 
 #include "InstructionRelocation/arm64/inst_decode_encode_kit.h"
 

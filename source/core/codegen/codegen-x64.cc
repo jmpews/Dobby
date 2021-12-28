@@ -11,7 +11,7 @@ void CodeGen::JmpNearIndirect(uint64_t address) {
 #define _ turbo_assembler_->
 #define __ turbo_assembler_->GetCodeBuffer()->
   uint64_t currIP = turbo_assembler_->CurrentIP() + 6;
-  dword offset = (dword)(address - currIP);
+  int32_t offset = (int32_t)(address - currIP);
 
   // RIP-relative addressing
   __ Emit8(0xFF);

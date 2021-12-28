@@ -1,6 +1,4 @@
-#ifndef INSTRUCTION_RELOCATION_ARM_H
-#define INSTRUCTION_RELOCATION_ARM_H
-
+#pragma once
 #include "dobby_internal.h"
 
 #include "core/arch/arm/constants-arm.h"
@@ -9,14 +7,14 @@
 namespace zz {
 namespace arm {
 
+// thumb1/thumb2 pseudo label type, only support Thumb1-Ldr | Thumb2-Ldr
+enum ref_label_type_t { kThumb1Ldr, kThumb2LiteralLdr };
+
 // custom thumb pseudo label for thumb/thumb2
 class ThumbPseudoLabel : public AssemblerPseudoLabel {
 public:
-  // thumb1/thumb2 pseudo label type, only support Thumb1-Ldr | Thumb2-Ldr
-  enum CustomThumbPseudoLabelType { kThumb1Ldr, kThumb2LiteralLdr };
-
   // fix the instruction which not link to the label yet.
-  void link_confused_instructions(CodeBuffer *buffer = nullptr) {
+  void link_confused_instructions(CodeBuffer *buffer) {
     CodeBuffer *_buffer;
     if (buffer)
       _buffer = buffer;
@@ -24,9 +22,9 @@ public:
     for (auto &ref_label_inst : ref_label_insts_) {
 
       // instruction offset to label
-      const thumb2_inst_t instr = _buffer->LoadThumb2Inst(ref_label_inst.offset_);
-      const thumb1_inst_t inst1 = _buffer->LoadThumb1Inst(ref_label_inst.offset_);
-      const thumb1_inst_t inst2 = _buffer->LoadThumb1Inst(ref_label_inst.offset_ + sizeof(thumb1_inst_t));
+      const thumb2_inst_t insn = _buffer->LoadThumb2Inst(ref_label_inst.offset_);
+      const thumb1_inst_t insn1 = _buffer->LoadThumb1Inst(ref_label_inst.offset_);
+      const thumb1_inst_t insn2 = _buffer->LoadThumb1Inst(ref_label_inst.offset_ + sizeof(thumb1_inst_t));
 
       switch (ref_label_inst.type_) {
       case kThumb1Ldr: {
@@ -36,9 +34,9 @@ public:
         int32_t offset = relocated_pos() - ALIGN(ref_label_inst.offset_, 4) - Thumb_PC_OFFSET;
         uint32_t imm12 = offset;
         CHECK(imm12 < (1 << 12));
-        uint16_t encoding = inst2 & 0xf000;
+        uint16_t encoding = insn2 & 0xf000;
         encoding = encoding | imm12;
-        _buffer->RewriteThumb1Inst(ref_label_inst.offset_, inst1 | B7); // add = (U == '1');
+        _buffer->RewriteThumb1Inst(ref_label_inst.offset_, insn1 | B7); // add = (U == '1');
         _buffer->RewriteThumb1Inst(ref_label_inst.offset_ + Thumb1_INST_LEN, encoding);
 
         DLOG(0, "[thumb label link] insn offset %d link offset %d", ref_label_inst.offset_, offset);
@@ -48,65 +46,25 @@ public:
         break;
       }
     }
-
-#if 0
-    for (auto instruction : instructions_) {
-      // instruction offset to label
-      int32_t offset      = pos() - instruction.position_ - Thumb_PC_OFFSET;
-      const int32_t instr  = _buffer->Load<int32_t>(instruction.position_);
-      const int16_t inst1 = _buffer->Load<int16_t>(instruction.position_);
-      const int16_t inst2 = _buffer->Load<int16_t>(instruction.position_ + sizeof(int16_t));
-
-      switch (instruction.type_) {
-      case kThumb1Ldr: {
-        UNREACHABLE();
-      } break;
-      case kThumb2LiteralLdr: {
-        uint32_t imm12 = offset;
-        CHECK(imm12 < (1 << 12));
-        uint16_t encoding = inst2 & 0xf000;
-        encoding          = encoding | imm12;
-        _buffer->Store<int16_t>(instruction.position_, inst1 | B7); // add = (U == '1');
-        _buffer->Store<int16_t>(instruction.position_ + Thumb1_INST_LEN, encoding);
-      } break;
-      default:
-        UNREACHABLE();
-        break;
-      }
-    }
-#endif
   }
 };
 
-class ThumbRelocLabelEntry : public ThumbPseudoLabel {
+class ThumbRelocLabelEntry : public ThumbPseudoLabel, public RelocLabelEntry {
 public:
-  explicit ThumbRelocLabelEntry(uint32_t data, bool used_for_branch)
-      : data_size_(0), used_for_branch_(used_for_branch) {
-    data_ = data;
+  template <typename T>
+  ThumbRelocLabelEntry(T value, bool is_pc_register)
+      : RelocLabelEntry(value), ThumbPseudoLabel(), is_pc_register_(is_pc_register) {
   }
 
-  uint32_t data() {
-    return data_;
-  }
-
-  void fixup_data(uint32_t data) {
-    data_ = data;
-  }
-
-  bool used_for_branch() {
-    return used_for_branch_;
+  bool is_pc_register() {
+    return is_pc_register_;
   }
 
 private:
-  uint32_t data_;
-
-  int data_size_;
-
-  bool used_for_branch_;
+  bool is_pc_register_;
 };
 
-// ================================================================
-// ThumbAssembler
+// ----- next -----
 
 class ThumbAssembler : public Assembler {
 public:
@@ -217,7 +175,6 @@ private:
     }
   }
 
-  // =====
   void EmitThumb2Branch(Condition cond, int32_t imm, bool link) {
     uint32_t operand = imm >> 1;
     ASSERT(CheckSignLength(operand, 25));
@@ -281,7 +238,7 @@ public:
       t2_ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(ThumbPseudoLabel::kThumb2LiteralLdr, 0, buffer_->GetBufferSize());
+      label->link_to(kThumb2LiteralLdr, 0, buffer_->GetBufferSize());
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
@@ -294,27 +251,9 @@ public:
     }
   }
 
-  // ================================================================
-  // ThumbRelocLabelEntry
-
-  void ThumbPseudoBind(ThumbPseudoLabel *label) {
-    if (label->relocated_pos()) {
-      const addr32_t bound_pc = buffer_->GetBufferSize();
-      label->bind_to(bound_pc);
-    }
-    // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
-    if (label->has_confused_instructions()) {
-      label->link_confused_instructions(this->GetCodeBuffer());
-    }
-  }
-
-  void RelocBindFixup(ThumbRelocLabelEntry *label) {
-    buffer_->RewriteAddr(label->relocated_pos(), label->data());
-  }
-
   // ----- next -----
 
-  void PseudoBind(AssemblerPseudoLabel *label) {
+  void PseudoBind(ThumbPseudoLabel *label) {
     const addr_t bound_pc = buffer_->GetBufferSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
@@ -326,23 +265,31 @@ public:
   void RelocBind() {
     for (auto *data_label : data_labels_) {
       PseudoBind(data_label);
-      buffer_->Emit(data_label->data());
+      reinterpret_cast<CodeBufferBase *>(buffer_)->EmitBuffer(data_label->data_, data_label->data_size_);
     }
   }
 
-  void AppendRelocLabelEntry(RelocLabelEntry *label) {
+  void AppendRelocLabelEntry(ThumbRelocLabelEntry *label) {
     data_labels_.push_back(label);
   }
 
+  void RelocLabelFixup(tinystl::unordered_map<off_t, off_t> *relocated_offset_map) {
+    for (auto *data_label : data_labels_) {
+      auto val = data_label->data<int32_t>();
+      auto iter = relocated_offset_map->find(val);
+      if (iter != relocated_offset_map->end()) {
+        data_label->fixup_data<int32_t>(iter->second);
+      }
+    }
+  }
+
 private:
-  std::vector<RelocLabelEntry *> data_labels_;
+  std::vector<ThumbRelocLabelEntry *> data_labels_;
 };
 
 #if 0
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated);
+void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated);
 #endif
 
 } // namespace arm
 } // namespace zz
-
-#endif

@@ -61,7 +61,7 @@ __attribute__((naked)) void closure_bridge_template() {
   // @x1: RegisterContext stack address
   xASM("mov x0, sp");
   xASM("mov x1, x14");
-  xASM("bl " xcdecl("intercept_routing_common_bridge_handler"));
+  xASM("bl " xcdecl("common_closure_bridge_handler"));
 
   // ======= RegisterContext Restore =======
   // restore x0

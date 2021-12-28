@@ -32,7 +32,7 @@ CodeBuffer *AssemblerBase::GetCodeBuffer() {
 void AssemblerBase::PseudoBind(AssemblerPseudoLabel *label) {
   off_t bound_offset = reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
   label->bind_to(bound_offset);
-  // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
+  // If some instructions had been written, before the label bound, we need link these `confused` instructions
   if (label->has_confused_instructions()) {
     label->link_confused_instructions(reinterpret_cast<CodeBufferBase *>(buffer_));
   }

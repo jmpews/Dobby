@@ -16,8 +16,8 @@ using namespace zz::arm64;
 
 // use assembler and codegen modules instead of template_code
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
-  ClosureTrampolineEntry *entry = nullptr;
-  entry = new ClosureTrampolineEntry;
+  ClosureTrampolineEntry *tramp_entry = nullptr;
+  tramp_entry = new ClosureTrampolineEntry;
 
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
@@ -44,20 +44,20 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ br(TMP_REG_0);
 
   _ PseudoBind(&entry_label);
-  _ EmitInt64((uint64_t)entry);
+  _ EmitInt64((uint64_t)tramp_entry);
   _ PseudoBind(&forward_bridge_label);
   _ EmitInt64((uint64_t)get_closure_bridge());
 
-  AssemblyCode *code = nullptr;
-  code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(reinterpret_cast<AssemblerBase *>(&turbo_assembler_));
+  auto closure_tramp = AssemblyCodeBuilder::FinalizeFromTurboAssembler(static_cast<AssemblerBase *>(&turbo_assembler_));
 
-  entry->address = code->begin;
-  entry->size = code->size;
-  entry->carry_data = carry_data;
-  entry->carry_handler = carry_handler;
+  tramp_entry->address = (void *)closure_tramp->addr;
+  tramp_entry->size = closure_tramp->size;
+  tramp_entry->carry_data = carry_data;
+  tramp_entry->carry_handler = carry_handler;
 
-  delete code;
-  return entry;
+  delete closure_tramp;
+
+  return tramp_entry;
 }
 
 #endif

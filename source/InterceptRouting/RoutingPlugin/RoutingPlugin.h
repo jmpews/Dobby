@@ -1,5 +1,4 @@
-#ifndef EXTRA_INTERNAL_PLUGIN_H
-#define EXTRA_INTERNAL_PLUGIN_H
+#pragma  once
 
 #include "dobby_internal.h"
 
@@ -14,7 +13,7 @@ public:
   virtual bool Active(InterceptRouting *routing) = 0;
 
   // @Return: if false will continue to iter next plugin
-  virtual bool GenerateTrampolineBuffer(InterceptRouting *routing, void *src, void *dst) = 0;
+  virtual bool GenerateTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) = 0;
 
 private:
   char name_[256];
@@ -29,5 +28,3 @@ public:
 
   static RoutingPluginInterface *near_branch_trampoline;
 };
-
-#endif

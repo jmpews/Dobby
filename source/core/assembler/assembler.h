@@ -1,5 +1,4 @@
-#ifndef CORE_ASSEMBLER_H
-#define CORE_ASSEMBLER_H
+#pragma once
 
 #include "MemoryAllocator/CodeBuffer/CodeBufferBase.h"
 
@@ -43,7 +42,7 @@ public:
 
   void AppendRelocLabelEntry(RelocLabelEntry *label);
 
-private:
+protected:
   std::vector<RelocLabelEntry *> data_labels_;
 
   // ----- next -----
@@ -78,6 +77,4 @@ protected:
 #else
 #error "unsupported architecture"
 #endif
-#endif
-
 #endif

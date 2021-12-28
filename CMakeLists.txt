@@ -20,14 +20,16 @@ option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
-option(DOBBY_BUILD_KERNEL "Build kernel mode(xnu)" ON)
+# private
+option(KERNEL_MODE "Build kernel mode(xnu)" OFF)
 
-option(NearBranch "Enable Near Branch Trampoline" OFF)
+option(NearBranch "Enable Near Branch Trampoline" ON)
 
 option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
+# private
 option(EnableObfuscation "Enable llvm obfuscation" OFF)
 
 option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " OFF)
@@ -51,11 +53,12 @@ endif ()
 # Enable full floating point register pack
 # for arm64, allow access q8 - q31
 if (FullFloatingPointRegisterPack)
-  add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
   message(STATUS "[Dobby] Save and pack all floating-point registers")
+  add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
 endif ()
 
-if(DOBBY_BUILD_KERNEL)
+if(KERNEL_MODE)
+  message(STATUS "[Dobby] Build kernel mode")
   set(BUILDING_KERNEL ON)
   add_definitions(-DBUILDING_KERNEL)
 endif()
@@ -115,12 +118,13 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # memory kit
   source/MemoryAllocator/CodeBuffer/CodeBufferBase.cc
   source/MemoryAllocator/AssemblyCodeBuilder.cc
-  source/MemoryAllocator/MemoryArena.cc
+  source/MemoryAllocator/MemoryAllocator.cc
 
   # instruction relocation
   source/InstructionRelocation/arm/InstructionRelocationARM.cc
   source/InstructionRelocation/arm64/InstructionRelocationARM64.cc
   source/InstructionRelocation/x86/InstructionRelocationX86.cc
+  source/InstructionRelocation/x86/InstructionRelocationX86Shared.cc
   source/InstructionRelocation/x64/InstructionRelocationX64.cc
   source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c
 
@@ -128,37 +132,35 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/InterceptRouting/InterceptRouting.cpp
 
   # intercept routing trampoline
-  source/TrampolineBridge/Trampoline/arm/trampoline-arm.cc
-  source/TrampolineBridge/Trampoline/arm64/trampoline-arm64.cc
-  source/TrampolineBridge/Trampoline/x86/trampoline-x86.cc
-  source/TrampolineBridge/Trampoline/x64/trampoline-x64.cc
+  source/TrampolineBridge/Trampoline/arm/trampoline_arm.cc
+  source/TrampolineBridge/Trampoline/arm64/trampoline_arm64.cc
+  source/TrampolineBridge/Trampoline/x86/trampoline_x86.cc
+  source/TrampolineBridge/Trampoline/x64/trampoline_x64.cc
 
   # closure trampoline bridge - arm
-  source/TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/arm/helper-arm.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/arm/closure-bridge-arm.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/arm/helper_arm.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/arm/closure_bridge_arm.cc
   source/TrampolineBridge/ClosureTrampolineBridge/arm/ClosureTrampolineARM.cc
   # closure trampoline bridge - arm64
-  source/TrampolineBridge/ClosureTrampolineBridge/arm64/helper-arm64.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure-bridge-arm64.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/arm64/helper_arm64.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/arm64/ClosureTrampolineARM64.cc
   # closure trampoline bridge - x86
-  source/TrampolineBridge/ClosureTrampolineBridge/x86/helper-x86.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/x86/closure-bridge-x86.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/x86/helper_x86.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/x86/closure_bridge_x86.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x86/ClosureTrampolineX86.cc
   # closure trampoline bridge - x64
-  source/TrampolineBridge/ClosureTrampolineBridge/x64/helper-x64.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure-bridge-x64.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/x64/helper_x64.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_bridge_x64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x64/ClosureTrampolineX64.cc
 
-  # instrument
-  source/InterceptRouting/Routing/DynamicBinaryInstrument/dynamic-binary-instrument.cc
-  source/InterceptRouting/Routing/DynamicBinaryInstrument/DynamicBinaryInstrumentExport.cc
-  source/InterceptRouting/Routing/DynamicBinaryInstrument/intercept_routing_handler.cc
+  source/InterceptRouting/Routing/InstructionInstrument/InstructionInstrument.cc
+  source/InterceptRouting/Routing/InstructionInstrument/RoutingImpl.cc
+  source/InterceptRouting/Routing/InstructionInstrument/instrument_routing_handler.cc
 
-  # intercept routing plugin (built-in)
-  source/InterceptRouting/Routing/FunctionInlineReplace/function-inline-replace.cc
-  source/InterceptRouting/Routing/FunctionInlineReplace/FunctionInlineReplaceExport.cc
+  source/InterceptRouting/Routing/FunctionInlineHook/FunctionInlineHook.cc
+  source/InterceptRouting/Routing/FunctionInlineHook/RoutingImpl.cc
 
   # plugin register
   source/InterceptRouting/RoutingPlugin/RoutingPlugin.cc
@@ -203,7 +205,7 @@ elseif(SYSTEM.Linux OR SYSTEM.Android)
   source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
   # user mode - executable memory
-  source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
+  source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
   source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
   )
 elseif(SYSTEM.Windows)
@@ -253,9 +255,9 @@ endif ()
 if (NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline")
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/near-trampoline-arm64.cc
+    source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/near_trampoline_arm64.cc
     source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.cc
-    source/MemoryAllocator/NearMemoryArena.cc)
+    source/MemoryAllocator/NearMemoryAllocator.cc)
 endif ()
 
 # ----- next -----
@@ -270,8 +272,7 @@ get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 # ----- next -----
 
 if (Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
-  message(STATUS "[Dobby] Enable global offset table hook")
-
+  message(STATUS "[Dobby] Enable got hook")
   include_directories(builtin-plugin/GlobalOffsetTableHook)
   add_subdirectory(builtin-plugin/GlobalOffsetTableHook)
   get_target_property(global_offset_table_hook.SOURCE_FILE_LIST global_offset_table_hook SOURCES)
@@ -282,7 +283,6 @@ endif ()
 
 if (Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable symbol resolver")
-
   include_directories(builtin-plugin/SymbolResolver)
   add_subdirectory(builtin-plugin/SymbolResolver)
   get_target_property(symbol_resolver.SOURCE_FILE_LIST symbol_resolver SOURCES)
@@ -298,11 +298,6 @@ if (Plugin.Android.BionicLinkerRestriction)
   message(STATUS "[Dobby] Enable Plugin.Android.BionicLinkerRestriction")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/BionicLinkerRestriction/bionic_linker_restriction.cc
-    )
-endif ()
-
-if (Plugin.HideSystemCall)
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     )
 endif ()
 
@@ -369,6 +364,12 @@ set_target_properties(dobby
 
 if (SYSTEM.Android)
   target_link_libraries(dobby log)
+  if (PROCESSOR.ARM)
+    set_target_properties(dobby
+      PROPERTIES
+      ANDROID_ARM_MODE arm
+      )
+  endif()
 endif ()
 
 if (SYSTEM.Linux)

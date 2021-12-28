@@ -71,7 +71,7 @@ set(dobby.SOURCE_FILE_LIST
 if(FunctionWrapper OR DynamicBinaryInstrument)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
     # closure trampoline bridge
-    source/TrampolineBridge/ClosureTrampolineBridge/common-bridge-handler.cc
+    source/TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.cc
 
     source/TrampolineBridge/ClosureTrampolineBridge/arm/helper-arm.cc
     source/TrampolineBridge/ClosureTrampolineBridge/arm/closure-bridge-arm.cc

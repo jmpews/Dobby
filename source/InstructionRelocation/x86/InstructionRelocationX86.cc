@@ -1,12 +1,9 @@
 #include "platform_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
-#include "InstructionRelocation/x86//X86InstructionRelocation.h"
-
-#include <string.h>
-
 #include "dobby_internal.h"
 
+#include "InstructionRelocation/x86/InstructionRelocationX86.h"
 #include "InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h"
 
 #include "core/arch/x86/registers-x86.h"
@@ -15,24 +12,24 @@
 
 using namespace zz::x86;
 
-static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
+int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {
   TurboAssembler turbo_assembler_(0);
   // Set fixed executable code chunk address
-  turbo_assembler_.SetRealizedAddress((void *)relocated->raw_instruction_start());
+  turbo_assembler_.SetRealizedAddress((void *)relocated->addr);
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
 
-  addr64_t curr_orig_ip = origin->raw_instruction_start();
-  addr64_t curr_relo_ip = relocated->raw_instruction_start();
+  auto curr_orig_ip = (addr32_t)origin->addr;
+  auto curr_relo_ip = (addr32_t)relocated->addr;
 
-  addr_t buffer_cursor = (addr_t)buffer;
+  uint8_t *buffer_cursor = (uint8_t *)buffer;
 
   x86_options_t conf = {0};
   conf.mode = 32;
 
-  int predefined_relocate_size = origin->raw_instruction_size();
+  int predefined_relocate_size = origin->size;
 
-  while ((buffer_cursor < ((addr_t)buffer + predefined_relocate_size))) {
+  while ((buffer_cursor < ((uint8_t *)buffer + predefined_relocate_size))) {
     int last_relo_offset = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
 
     x86_insn_decode_t insn = {0};
@@ -61,10 +58,10 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
     } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
       DLOG(0, "[x86 relo] jmp or call rel32, %p", buffer_cursor);
 
-      dword orig_offset = insn.immediate;
-      dword offset = (dword)(curr_orig_ip + orig_offset - curr_relo_ip);
+      int32_t orig_offset = insn.immediate;
+      int32_t offset = (int32_t)(curr_orig_ip + orig_offset - curr_relo_ip);
 
-      __ EmitBuffer((void *)buffer_cursor, insn.immediate_offset);
+      __ EmitBuffer(buffer_cursor, insn.immediate_offset);
       __ Emit32(offset);
     } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) { // LOOPNZ/LOOPZ/LOOP/JECXZ
       // LOOP/LOOPcc
@@ -74,7 +71,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
       UNIMPLEMENTED();
     } else {
       // Emit the origin instrution
-      __ EmitBuffer((void *)buffer_cursor, insn.length);
+      __ EmitBuffer(buffer_cursor, insn.length);
     }
 
     // go next
@@ -89,7 +86,7 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
       curr_relo_ip += relo_len;
     }
 #endif
-    curr_relo_ip = relocated->raw_instruction_start() + turbo_assembler_.ip_offset();
+    curr_relo_ip = (addr32_t)relocated->addr + turbo_assembler_.ip_offset();
   }
 
   // jmp to the origin rest instructions
@@ -98,11 +95,11 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
   codegen.JmpNear(curr_orig_ip);
 
   // update origin
-  int new_origin_len = curr_orig_ip - origin->raw_instruction_start();
-  origin->re_init_region_range(origin->raw_instruction_start(), new_origin_len);
+  int new_origin_len = curr_orig_ip - (addr_t)origin->addr;
+  origin->reset(origin->addr, new_origin_len);
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
-  if (relo_len > relocated->raw_instruction_size()) {
+  if (relo_len > relocated->size) {
     DLOG(0, "pre-alloc code chunk not enough");
     return RT_FAILED;
   }
@@ -117,32 +114,8 @@ static int GenRelocateCodeFixed(void *buffer, AssemblyCode *origin, AssemblyCode
   return RT_SUCCESS;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, AssemblyCode *origin, AssemblyCode *relocated) {
-  // pre-alloc code chunk
-  AssemblyCode *chunk = NULL;
-
-  int relo_code_chunk_size = 32;
-  const int chunk_size_step = 16;
-
-x86_try_again:
-  if (relocated->raw_instruction_start() == 0) {
-    chunk = MemoryArena::AllocateCodeChunk(relo_code_chunk_size);
-    if (chunk == nullptr) {
-      return;
-    }
-    relocated->re_init_region_range((addr_t)chunk->address, (int)chunk->length);
-  }
-
-  int ret = GenRelocateCodeFixed(buffer, origin, relocated);
-  if (ret != RT_SUCCESS) {
-    // free the chunk
-    MemoryArena::Destroy(chunk);
-
-    relo_code_chunk_size += chunk_size_step;
-    relocated->re_init_region_range(0, 0);
-
-    goto x86_try_again;
-  }
+void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {
+  GenRelocateCodeAndBranchX86Shared(buffer, origin, relocated);
 }
 
 #endif

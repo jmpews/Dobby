@@ -11,33 +11,34 @@ using namespace zz;
 using namespace zz::x86;
 
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
-  ClosureTrampolineEntry *entry = nullptr;
-  entry = new ClosureTrampolineEntry;
+  ClosureTrampolineEntry *tramp_entry = nullptr;
+  tramp_entry = new ClosureTrampolineEntry;
 
-  AssemblyCode *code = Code(32);
-  if (chunk == nullptr) {
-    return NULL;
+  auto tramp_size = 32;
+  auto tramp_mem = MemoryAllocator::SharedAllocator()->allocateExecMemory(tramp_size);
+  if (tramp_mem == nullptr) {
+    return nullptr;
   }
 
 #define _ turbo_assembler_.
 #define __ turbo_assembler_.GetCodeBuffer()->
-  TurboAssembler turbo_assembler_(chunk->address);
+  TurboAssembler turbo_assembler_(tramp_mem);
 
-  int32_t offset = (int32_t)get_closure_bridge() - ((int32_t)chunk->address + 18);
+  int32_t offset = (int32_t)get_closure_bridge() - ((int32_t)tramp_mem + 18);
 
   _ sub(esp, Immediate(4, 32));
-  _ mov(Address(esp, 4 * 0), Immediate((int32_t)entry, 32));
+  _ mov(Address(esp, 4 * 0), Immediate((int32_t)tramp_entry, 32));
   _ jmp(Immediate(offset, 32));
 
-  entry->address = (void *)chunk->raw_instruction_start();
-  entry->size = chunk->raw_instruction_size();
-  entry->carry_data = carry_data;
-  entry->carry_handler = carry_handler;
+  tramp_entry->address = tramp_mem;
+  tramp_entry->size = tramp_size;
+  tramp_entry->carry_data = carry_data;
+  tramp_entry->carry_handler = carry_handler;
 
-  CodeBufferBase *buffer = reinterpret_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
-  CodePatch(chunk->address, (uint8_t *)buffer->GetBuffer(), buffer->GetBufferSize());
+  auto closure_tramp_buffer = static_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
+  CodePatch(tramp_mem, (uint8_t *)closure_tramp_buffer->GetBuffer(), closure_tramp_buffer->GetBufferSize());
 
-  return entry;
+  return tramp_entry;
 }
 
 #endif

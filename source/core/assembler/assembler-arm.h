@@ -7,7 +7,7 @@
 #include "core/arch/arm/registers-arm.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeBuffer/code-buffer-arm.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_arm.h"
 
 enum ref_label_type_t { kLdrLiteral };
 
@@ -340,6 +340,15 @@ public:
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {
   }
 
+  void RelocLabelFixup(tinystl::unordered_map<off_t, off_t> *relocated_offset_map) {
+    for (auto *data_label : data_labels_) {
+      auto val = data_label->data<int32_t>();
+      auto iter = relocated_offset_map->find(val);
+      if (iter != relocated_offset_map->end()) {
+        data_label->fixup_data<int32_t>(iter->second);
+      }
+    }
+  }
 };
 
 } // namespace arm

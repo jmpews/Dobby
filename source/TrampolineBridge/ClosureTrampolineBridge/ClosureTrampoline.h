@@ -1,5 +1,4 @@
-#ifndef ASSEMBLY_CLOSURE_TRAMPOLINE_H
-#define ASSEMBLY_CLOSURE_TRAMPOLINE_H
+#pragma once
 
 #include "dobby_internal.h"
 
@@ -18,14 +17,14 @@ void closure_bridge_template();
 extern "C" {
 #endif //__cplusplus
 
-typedef struct _ClosureTrampolineEntry {
+typedef struct {
   void *address;
   int size;
   void *carry_handler;
   void *carry_data;
 } ClosureTrampolineEntry;
 
-void *get_closure_bridge();
+asm_func_t get_closure_bridge();
 
 #ifdef __cplusplus
 }
@@ -38,5 +37,3 @@ private:
 public:
   static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_handler);
 };
-
-#endif

@@ -23,7 +23,7 @@ public:
   }
 
   template <typename T> void Store(int offset, T value) {
-    *(T *)(buffer_.data() + offset);
+    *(T *)(buffer_.data() + offset) = value;
   }
 
   template <typename T> void Emit(T value) {
