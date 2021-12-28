@@ -39,7 +39,7 @@ struct MemoryArena : MemRange {
 
   std::vector<MemBlock *> memory_blocks;
 
-  MemoryArena(addr_t addr, size_t size) : MemRange(addr, size), addr(addr) {
+  MemoryArena(addr_t addr, size_t size) : MemRange(addr, size), addr(addr), cursor_addr(addr) {
   }
 
   virtual MemBlock *allocMemBlock(size_t size);

@@ -13,28 +13,29 @@
 
 using namespace zz::x64;
 
-static void **allocate_indirect_stub(addr_t jmp_insn_addr) {
+static addr_t *allocate_indirect_stub(addr_t jmp_insn_addr) {
   uint32_t jmp_near_range = (uint32_t)2 * 1024 * 1024 * 1024;
-  auto stub_addr = NearMemoryAllocator::SharedAllocator()->allocateNearDataMemory(sizeof(void *), jmp_insn_addr,  jmp_near_range);
+  auto stub_addr =
+      NearMemoryAllocator::SharedAllocator()->allocateNearDataMemory(sizeof(void *), jmp_insn_addr, jmp_near_range);
   if (stub_addr == nullptr) {
     ERROR_LOG("Not found near forward stub");
     return nullptr;
   }
 
-  return (void **)stub_addr;
+  return (addr_t *)stub_addr;
 }
 
 CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
-  // branch
-   auto dst_stub = allocate_indirect_stub(from);
-   CHECK_NOT_NULL(dst_stub);
-  *dst_stub = (void *)to;
+  // allocate forward stub
+  addr_t *forward_stub = allocate_indirect_stub(from);
+  CHECK_NOT_NULL(forward_stub);
+  *forward_stub = to;
 
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpNearIndirect((uint64_t)dst_stub);
+  codegen.JmpNearIndirect((uint64_t)forward_stub);
 
   CodeBufferBase *result = NULL;
   result = turbo_assembler_.GetCodeBuffer()->Copy();
