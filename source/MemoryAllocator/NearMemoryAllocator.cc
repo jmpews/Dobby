@@ -215,7 +215,7 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint32_t size, addr_t pos, 
   if (!block)
     return nullptr;
 
-  DLOG(0, "[near memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
+  DLOG(0, "[near memory allocator] allocate exec memory at: %p, size: %" PRId32, block->addr, block->size);
   return (uint8_t *)block->addr;
 }
 

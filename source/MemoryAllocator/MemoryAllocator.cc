@@ -53,7 +53,7 @@ CodeMemBlock *MemoryAllocator::allocateExecBlock(uint32_t size) {
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
+  DLOG(0, "[memory allocator] allocate exec memory at: %p, size: %" PRId32, block->addr, block->size);
   return block;
 }
 
@@ -95,7 +95,7 @@ DataMemBlock *MemoryAllocator::allocateDataBlock(uint32_t size) {
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
+  DLOG(0, "[memory allocator] allocate data memory at: %p, size: %" PRId32, block->addr, block->size);
   return block;
 }
 

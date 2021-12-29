@@ -63,8 +63,9 @@ void InterceptRouting::Active() {
                   trampoline_buffer_->GetBufferSize());
   if (err == kMemoryOperationSuccess) {
     DLOG(0, "[intercept routing] active");
+  } else {
+    ERROR_LOG("[intercept routing] active failed");
   }
-  ERROR_LOG("[intercept routing] active failed");
 }
 
 void InterceptRouting::Commit() {
