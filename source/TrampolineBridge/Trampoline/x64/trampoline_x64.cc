@@ -30,12 +30,13 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 #define _ turbo_assembler_.
 
   // allocate forward stub
-  addr_t *forward_stub = allocate_indirect_stub(from);
+  auto jump_near_next_insn_addr = from + 6;
+  addr_t *forward_stub = allocate_indirect_stub(jump_near_next_insn_addr);
   CHECK_NOT_NULL(forward_stub);
   *forward_stub = to;
 
   CodeGen codegen(&turbo_assembler_);
-  codegen.JmpNearIndirect((uint64_t)forward_stub);
+  codegen.JmpNearIndirect((addr_t)forward_stub);
 
   CodeBufferBase *result = NULL;
   result = turbo_assembler_.GetCodeBuffer()->Copy();

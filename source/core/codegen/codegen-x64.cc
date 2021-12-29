@@ -6,12 +6,12 @@
 namespace zz {
 namespace x64 {
 
-void CodeGen::JmpNearIndirect(uint64_t address) {
+void CodeGen::JmpNearIndirect(addr_t forward_stub_addr) {
   TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
 #define _ turbo_assembler_->
 #define __ turbo_assembler_->GetCodeBuffer()->
   uint64_t currIP = turbo_assembler_->CurrentIP() + 6;
-  int32_t offset = (int32_t)(address - currIP);
+  int32_t offset = (int32_t)(forward_stub_addr - currIP);
 
   // RIP-relative addressing
   __ Emit8(0xFF);

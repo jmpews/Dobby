@@ -123,11 +123,13 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
     if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
       return 0;
 
+    // align
+    unused_mem_start = ALIGN_FLOOR(unused_mem_start, 4);
+
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
 
-    // check if invalid after align
-    unused_mem_start = ALIGN_FLOOR(unused_mem_start, 4);
+    // check if invalid
     if (unused_mem_start >= unused_mem_end)
       return 0;
 
