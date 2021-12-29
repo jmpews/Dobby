@@ -7,7 +7,8 @@ MemBlock *MemoryArena::allocMemBlock(size_t size) {
   MemBlock *result;
 
   // insufficient memory
-  if (this->size - cursor_addr < size) {
+  size_t used = this->cursor_addr - this->addr;
+  if (this->size - used < size) {
     return nullptr;
   }
 
