@@ -88,7 +88,6 @@ private:
 public:
   static MemoryAllocator *SharedAllocator();
 
-
 public:
   CodeMemoryArena *allocateCodeMemoryArena(uint32_t size);
   CodeMemBlock *allocateExecBlock(uint32_t size);

@@ -32,7 +32,7 @@ option(FullFloatingPointRegisterPack "Save and pack all floating-point registers
 # private
 option(EnableObfuscation "Enable llvm obfuscation" OFF)
 
-option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " OFF)
+option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
 option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " OFF)
 

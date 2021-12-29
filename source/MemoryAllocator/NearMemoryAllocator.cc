@@ -37,8 +37,7 @@ static const void *memmem(const void *haystack, size_t haystacklen, const void *
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-
-NearMemoryAllocator  *NearMemoryAllocator::shared_allocator = nullptr;
+NearMemoryAllocator *NearMemoryAllocator::shared_allocator = nullptr;
 NearMemoryAllocator *NearMemoryAllocator::SharedAllocator() {
   if (NearMemoryAllocator::shared_allocator == nullptr) {
     NearMemoryAllocator::shared_allocator = new NearMemoryAllocator();
@@ -46,90 +45,67 @@ NearMemoryAllocator *NearMemoryAllocator::SharedAllocator() {
   return NearMemoryAllocator::shared_allocator;
 }
 
-
 MemBlock *NearMemoryAllocator::allocateNearBlockFromDefaultAllocator(uint32_t size, addr_t pos, size_t search_range,
                                                                      bool executable) {
   addr_t min_valid_addr, max_valid_addr;
   min_valid_addr = pos - search_range;
-  min_valid_addr = pos + search_range;
+  max_valid_addr = pos + search_range;
 
-  auto allocateFromDefaultArena = [&](MemoryArena *arena) -> addr_t {
+  auto allocateFromDefaultArena = [&](MemoryArena *arena, uint32_t size) -> addr_t {
     addr_t unused_mem_start = arena->cursor_addr;
-    addr_t unused_mem_end = unused_mem_start + arena->size;
+    addr_t unused_mem_end = arena->addr + arena->size;
 
+    // check if unused region total out of search range
     if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
       return 0;
 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
+    
+    // check if invalid
+    if(unused_mem_start >= unused_mem_end)
+      return 0;
+    
 
+    // check if has sufficient memory
     if (unused_mem_end - unused_mem_start < size)
       return 0;
-
+    
+    LOG(0, "[near memory allocator] unused memory from default allocator %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
     return unused_mem_start;
   };
 
-  MemBlock *block = nullptr;
+  MemoryArena *arena = nullptr;
+  addr_t unused_mem = 0;
   if (executable) {
     for (auto iter = default_allocator->code_arenas.begin(); iter != default_allocator->code_arenas.end(); iter++) {
-      auto arena = *iter;
-      addr_t unused_mem = 0;
-      unused_mem = allocateFromDefaultArena(arena);
-      if (unused_mem)
+      arena = *iter;
+      unused_mem = allocateFromDefaultArena(arena, size);
+      if (!unused_mem)
         continue;
 
-      size_t block_size = unused_mem - arena->cursor_addr;
-      // TODO: optimize mem block
-      block = arena->allocMemBlock(block_size);
-      return block;
+      break;
     }
   } else {
     for (auto iter = default_allocator->data_arenas.begin(); iter != default_allocator->data_arenas.end(); iter++) {
-      auto arena = *iter;
-      addr_t unused_mem = 0;
-      unused_mem = allocateFromDefaultArena(arena);
+      arena = *iter;
+      unused_mem = allocateFromDefaultArena(arena, size);
       if (unused_mem)
         continue;
-
-      size_t block_size = unused_mem - arena->cursor_addr;
-      // TODO: optimize mem block
-      block = arena->allocMemBlock(block_size);
-      return block;
     }
   }
+  
+  if (!unused_mem)
+    return nullptr;
+  
+  // skip placeholder block
+  // FIXME: allocate the placeholder but mark it as freed
+  auto placeholder_block_size = unused_mem - arena->cursor_addr;
+  arena->allocMemBlock(placeholder_block_size);
+  
+
+  auto block = arena->allocMemBlock(size);
   return block;
-}
-
-static addr_t allocFromUnusedRegion(size_t size, addr_t pos, size_t search_range) {
-  addr_t min_valid_addr, max_valid_addr;
-  min_valid_addr = pos - search_range;
-  max_valid_addr = pos + search_range;
-
-  auto check_region_has_free_space = [&](MemRegion region, MemRegion next_region) -> addr_t {
-    addr_t unused_mem_start = region.start + region.size;
-    addr_t unused_mem_end = next_region.start;
-
-    if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
-      return 0;
-
-    unused_mem_start = max(unused_mem_start, min_valid_addr);
-    unused_mem_end = min(unused_mem_end, max_valid_addr);
-
-    if (unused_mem_end - unused_mem_start < size)
-      return 0;
-
-    return unused_mem_start;
-  };
-
-  auto regions = ProcessRuntimeUtility::GetProcessMemoryLayout();
-  for (size_t i = 0; i + 1 < regions.size(); i++) {
-    addr_t unused_mem = 0;
-    unused_mem = check_region_has_free_space(regions[i], regions[i + 1]);
-    if (unused_mem == 0)
-      continue;
-    return unused_mem;
-  }
-  return 0;
 }
 
 MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, addr_t pos, size_t search_range,
@@ -139,28 +115,34 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
   min_valid_addr = pos - search_range;
   max_valid_addr = pos + search_range;
 
-  auto check_region_has_free_space = [&](MemRegion region, MemRegion next_region) -> addr_t {
+  auto check_has_sufficient_memory_between_region = [&](MemRegion region, MemRegion next_region, uint32_t size) -> addr_t {
     addr_t unused_mem_start = region.start + region.size;
     addr_t unused_mem_end = next_region.start;
 
+    // check if unused region total out of search range
     if (unused_mem_end < min_valid_addr || unused_mem_start > max_valid_addr)
       return 0;
 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
 
+    // check if invalid after align
     unused_mem_start = ALIGN_FLOOR(unused_mem_start, 4);
-
-    if (unused_mem_end - unused_mem_start < size)
+    if (unused_mem_start >= unused_mem_end)
       return 0;
 
+    // check if has sufficient memory
+    if (unused_mem_end - unused_mem_start < size)
+      return 0;
+    
+    DLOG(0, "[near memory allocator] unused memory from unused region %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
     return unused_mem_start;
   };
 
   addr_t unused_mem = 0;
   auto regions = ProcessRuntimeUtility::GetProcessMemoryLayout();
   for (size_t i = 0; i + 1 < regions.size(); i++) {
-    unused_mem = check_region_has_free_space(regions[i], regions[i + 1]);
+    unused_mem = check_has_sufficient_memory_between_region(regions[i], regions[i + 1], size);
     if (unused_mem == 0)
       continue;
     break;
@@ -179,21 +161,27 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
     return nullptr;
   }
 
-  MemBlock *block = nullptr;
-  MemoryArena *arena = nullptr;
-  if (executable) {
-    arena = new CodeMemoryArena(unused_arena_addr, unused_arena_size);
-    default_allocator->code_arenas.push_back(arena);
-  } else {
-    arena = new DataMemoryArena(unused_arena_addr, unused_arena_size);
-    default_allocator->data_arenas.push_back(arena);
-  }
+  auto register_near_arena = [&](addr_t arena_addr, size_t arena_size) -> MemoryArena * {
+    MemoryArena *arena = nullptr;
+    if (executable) {
+      arena = new CodeMemoryArena(arena_addr, arena_size);
+      default_allocator->code_arenas.push_back(arena);
+    } else {
+      arena = new DataMemoryArena(arena_addr, arena_size);
+      default_allocator->data_arenas.push_back(arena);
+    }
+    OSMemory::SetPermission((void *)arena->addr, arena->size, executable ? kReadExecute : kReadWrite);
+    return arena;
+  };
+
+  auto unused_arena = register_near_arena(unused_arena_addr, unused_arena_size);
 
   // skip placeholder block
-  auto placeholder_block_size = pos - arena->addr;
-  arena->allocMemBlock(placeholder_block_size);
+  // FIXME: allocate the placeholder but mark it as freed
+  auto placeholder_block_size = unused_mem - unused_arena->cursor_addr;
+  unused_arena->allocMemBlock(placeholder_block_size);
 
-  block = arena->allocMemBlock(size);
+  auto block = unused_arena->allocMemBlock(size);
   return block;
 }
 
@@ -219,7 +207,8 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint32_t size, addr_t pos, 
   return (uint8_t *)block->addr;
 }
 
-uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint8_t *buffer, uint32_t buffer_size, addr_t pos, size_t search_range) {
+uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint8_t *buffer, uint32_t buffer_size, addr_t pos,
+                                                     size_t search_range) {
   auto mem = allocateNearExecMemory(buffer_size, pos, search_range);
   auto ret = CodePatch(mem, buffer, buffer_size);
   CHECK_EQ(ret, kMemoryOperationSuccess);
@@ -235,7 +224,8 @@ uint8_t *NearMemoryAllocator::allocateNearDataMemory(uint32_t size, addr_t pos, 
   return (uint8_t *)block->addr;
 }
 
-uint8_t *NearMemoryAllocator::allocateNearDataMemory(uint8_t *buffer, uint32_t buffer_size, addr_t pos, size_t search_range) {
+uint8_t *NearMemoryAllocator::allocateNearDataMemory(uint8_t *buffer, uint32_t buffer_size, addr_t pos,
+                                                     size_t search_range) {
   auto mem = allocateNearExecMemory(buffer_size, pos, search_range);
   memcpy(mem, buffer, buffer_size);
   return mem;

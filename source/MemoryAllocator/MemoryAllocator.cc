@@ -4,27 +4,23 @@
 #include "PlatformUnifiedInterface/MemoryAllocator.h"
 
 MemBlock *MemoryArena::allocMemBlock(size_t size) {
-  MemBlock *result;
-
   // insufficient memory
   if (this->size - cursor_addr < size) {
     return nullptr;
   }
 
-  result = new MemBlock(cursor_addr, size);
+  auto result = new MemBlock(cursor_addr, size);
   cursor_addr += size;
   return result;
 }
 
-
-MemoryAllocator  *MemoryAllocator::shared_allocator = nullptr;
+MemoryAllocator *MemoryAllocator::shared_allocator = nullptr;
 MemoryAllocator *MemoryAllocator::SharedAllocator() {
   if (MemoryAllocator::shared_allocator == nullptr) {
     MemoryAllocator::shared_allocator = new MemoryAllocator();
   }
   return MemoryAllocator::shared_allocator;
 }
-
 
 CodeMemoryArena *MemoryAllocator::allocateCodeMemoryArena(uint32_t size) {
   CHECK_EQ(size % OSMemory::PageSize(), 0);
@@ -106,6 +102,6 @@ uint8_t *MemoryAllocator::allocateDataMemory(uint32_t size) {
 
 uint8_t *MemoryAllocator::allocateDataMemory(uint8_t *buffer, uint32_t buffer_size) {
   auto mem = allocateDataMemory(buffer_size);
-  memcpy(mem,buffer, buffer_size);
+  memcpy(mem, buffer, buffer_size);
   return mem;
 }

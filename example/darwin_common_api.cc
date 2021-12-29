@@ -22,14 +22,14 @@ void common_handler(void *address, RegisterContext *ctx) {
 
 // clang-format off
 const char *func_array[] = {
-   "__loader_dlopen",
-  "dlsym",
-  "dlclose",
-
-  "open",
-  "write",
-  "read",
-  "close",
+//   "__loader_dlopen",
+//  "dlsym",
+//  "dlclose",
+//
+//  "open",
+//  "write",
+//  "read",
+//  "close",
 
   "socket",
   "connect",

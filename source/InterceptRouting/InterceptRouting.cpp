@@ -58,12 +58,11 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
 // Active routing, patch origin insturctions as trampoline
 void InterceptRouting::Active() {
   MemoryOperationError err;
-
-  err = CodePatch((void *)entry_->patched_insn_addr, (uint8_t *)trampoline_buffer_->GetBuffer(),
-                  trampoline_buffer_->GetBufferSize());
+  err = CodePatch((void *)entry_->patched_insn_addr, trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
   if (err == kMemoryOperationSuccess) {
     DLOG(0, "[intercept routing] active");
-  }
+  } else
+    
   ERROR_LOG("[intercept routing] active failed");
 }
 
