@@ -238,8 +238,8 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   }
 
   if (!result) {
-    std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
-    for (auto module : ProcessModuleMap) {
+    auto ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
+    for (auto module : *ProcessModuleMap) {
       uint8_t *file_mem = NULL;
       size_t file_mem_size = 0;
 

@@ -36,9 +36,10 @@ option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
 
 option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " OFF)
 
-option(Plugin.Android.BionicLinkerRestriction "Enable android bionic linker restriction" OFF)
+option(Plugin.Android.BionicLinker "Enable android bionic linker restriction" OFF)
 
-add_definitions(-DBUILDING_INTERNAL)
+# private
+option(Plugin.ReadCallback "Read callback" ON)
 
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
@@ -291,19 +292,25 @@ if (Plugin.SymbolResolver)
     )
 endif ()
 
-if (Plugin.Android.BionicLinkerRestriction)
+if (Plugin.Android.BionicLinker)
   if (NOT SYSTEM.Android)
-    message(FATAL_ERROR "[!] Plugin.Android.BionicLinkerRestriction only works on Android.")
+    message(FATAL_ERROR "[!] Plugin.Android.BionicLinker only works on Android.")
   endif ()
-  message(STATUS "[Dobby] Enable Plugin.Android.BionicLinkerRestriction")
+  message(STATUS "[Dobby] Enable Plugin.Android.BionicLinker")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/BionicLinkerRestriction/bionic_linker_restriction.cc
+    builtin-plugin/BionicLinker/bionic_linker.cc
     )
 endif ()
 
 if (Plugin.LinkerLoadCallback)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/LinkerImageLoadCallback/linker_load_callback.cc
+    builtin-plugin/LinkerLoadCallback/linker_load_callback.cc
+    )
+endif ()
+
+if (Plugin.ReadCallback)
+  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
+    builtin-plugin/ReadCallback/read_callback.cc
     )
 endif ()
 

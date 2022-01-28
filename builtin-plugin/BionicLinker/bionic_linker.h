@@ -1,5 +1,4 @@
-#ifndef LINKER_RESTRICTION_H
-#define LINKER_RESTRICTION_H
+#pragma once
 
 #include <stdint.h>
 
@@ -21,6 +20,4 @@ void linker_disable_namespace_restriction();
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

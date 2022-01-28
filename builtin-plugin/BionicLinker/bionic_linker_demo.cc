@@ -1,12 +1,12 @@
 #include "dobby.h"
 
-#include "bionic_linker_restriction.h"
+#include "bionic_linker.h"
 
 #include "logging/logging.h"
 
 #include <dlfcn.h>
 
-#define LOG_TAG "AndroidLinkerRestriction"
+#define LOG_TAG "BionicLinker"
 
 __attribute__((constructor)) static void ctor() {
   const char *lib = NULL;

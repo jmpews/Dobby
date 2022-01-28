@@ -1,4 +1,4 @@
-#include "bionic_linker_restriction.h"
+#include "bionic_linker.h"
 
 #include <elf.h>
 #include <jni.h>
@@ -20,7 +20,7 @@
 #include "common_header.h"
 
 #undef LOG_TAG
-#define LOG_TAG "AndroidLinkerRestriction"
+#define LOG_TAG "BionicLinker"
 
 #undef Q
 #define Q 29
