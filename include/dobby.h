@@ -1,13 +1,6 @@
 #ifndef dobby_h
 #define dobby_h
 
-// obfuscated interface
-#if 0
-#define DobbyBuildVersion c343f74888dffad84d9ad08d9c433456
-#define DobbyHook c8dc3ffa44f22dbd10ccae213dd8b1f8
-#define DobbyInstrument b71e27bca2c362de90c1034f19d839f9
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,20 +20,18 @@ typedef enum {
   kNone
 } MemoryOperationError;
 
-#define PLATFORM_INTERFACE_CODE_PATCH_TOOL_H
-MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
-
 typedef uintptr_t addr_t;
 typedef uint32_t addr32_t;
 typedef uint64_t addr64_t;
 typedef void (*func_t)();
 typedef void (*asm_func_t)();
 
+MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
+
 #if defined(__arm64__) || defined(__aarch64__)
 
 #define ARM64_TMP_REG_NDX_0 17
 
-// float register
 typedef union _FPReg {
   __int128_t q;
   struct {
@@ -168,10 +159,6 @@ int DobbyGotHook(char *image_name, char *symbol_name, func_t fake_func, func_t *
 void dobby_enable_near_branch_trampoline();
 void dobby_disable_near_branch_trampoline();
 #endif
-
-// register linker load image callback
-typedef void (*linker_load_callback_t)(const char *image_name, void *handle);
-void dobby_register_image_load_callback(linker_load_callback_t func);
 
 #ifdef __cplusplus
 }

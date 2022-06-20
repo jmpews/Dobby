@@ -5,7 +5,7 @@ void FunctionInlineHookRouting::BuildRouting() {
   SetTrampolineTarget((addr_t)replace_func);
 
   // generate trampoline buffer, run before GenerateRelocatedCode
-  GenerateTrampolineBuffer(entry_->patched_insn_addr, GetTrampolineTarget());
+  GenerateTrampolineBuffer(entry_->patched_addr, GetTrampolineTarget());
 }
 
 void FunctionInlineHookRouting::DispatchRouting() {

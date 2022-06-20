@@ -1,4 +1,5 @@
-#include "SymbolResolver/dobby_symbol_resolver.h"
+#include "dobby_symbol_resolver.h"
+#include "macho/dobby_symbol_resolver_priv.h"
 
 #include "common_header.h"
 
@@ -7,17 +8,20 @@
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
-#if !defined(BUILDING_KERNEL)
+#if defined(BUILDING_KERNEL)
+#else
+
 #include <mach-o/dyld.h>
 #include <mach-o/dyld_images.h>
 #include "SymbolResolver/macho/shared_cache_internal.h"
+
 #endif
 
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
 
 uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
-  uint8_t *p = (uint8_t *)*pp;
+  uint8_t *p = (uint8_t *) *pp;
   uint64_t result = 0;
   int bit = 0;
   do {
@@ -36,11 +40,11 @@ uintptr_t read_uleb128(const uint8_t **pp, const uint8_t *end) {
 
   *pp = p;
 
-  return (uintptr_t)result;
+  return (uintptr_t) result;
 }
 
 intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
-  uint8_t *p = (uint8_t *)*pp;
+  uint8_t *p = (uint8_t *) *pp;
 
   int64_t result = 0;
   int bit = 0;
@@ -49,7 +53,7 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
     if (p == end)
       ASSERT(p == end);
     byte = *p++;
-    result |= (((int64_t)(byte & 0x7f)) << bit);
+    result |= (((int64_t) (byte & 0x7f)) << bit);
     bit += 7;
   } while (byte & 0x80);
   // sign extend negative numbers
@@ -58,7 +62,7 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
 
   *pp = p;
 
-  return (intptr_t)result;
+  return (intptr_t) result;
 }
 
 // dyld
@@ -73,7 +77,7 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
     }
     if ((*symbol == '\0') && (terminalSize != 0)) {
       //dyld::log("trieWalk(%p) returning %p\n", start, p);
-      return (uint8_t *)p;
+      return (uint8_t *) p;
     }
     const uint8_t *children = p + terminalSize;
     if (children > end) {
@@ -140,27 +144,30 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
   struct linkedit_data_command *exports_trie_cmd = nullptr;
   segment_command_t *text_segment = nullptr, *data_segment = nullptr, *linkedit_segment = nullptr;
 
-  curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
+  curr_seg_cmd = (segment_command_t *) ((uintptr_t) header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
     switch (curr_seg_cmd->cmd) {
-    case LC_SEGMENT_ARCH_DEPENDENT: {
-      if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
-        linkedit_segment = curr_seg_cmd;
-      } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
-        text_segment = curr_seg_cmd;
+      case LC_SEGMENT_ARCH_DEPENDENT: {
+        if (strcmp(curr_seg_cmd->segname, "__LINKEDIT") == 0) {
+          linkedit_segment = curr_seg_cmd;
+        } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
+          text_segment = curr_seg_cmd;
+        }
       }
-    } break;
-    case LC_DYLD_EXPORTS_TRIE: {
-      exports_trie_cmd = (struct linkedit_data_command *)curr_seg_cmd;
-    } break;
-    case LC_DYLD_INFO:
-    case LC_DYLD_INFO_ONLY: {
-      dyld_info_cmd = (struct dyld_info_command *)curr_seg_cmd;
-    } break;
-    default:
-      break;
+        break;
+      case LC_DYLD_EXPORTS_TRIE: {
+        exports_trie_cmd = (struct linkedit_data_command *) curr_seg_cmd;
+      }
+        break;
+      case LC_DYLD_INFO:
+      case LC_DYLD_INFO_ONLY: {
+        dyld_info_cmd = (struct dyld_info_command *) curr_seg_cmd;
+      }
+        break;
+      default:
+        break;
     };
-    curr_seg_cmd = (segment_command_t *)((uintptr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
+    curr_seg_cmd = (segment_command_t *) ((uintptr_t) curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
   if (text_segment == NULL || linkedit_segment == NULL) {
@@ -173,16 +180,16 @@ uintptr_t iterate_exported_symbol(mach_header_t *header, const char *symbol_name
   uint32_t trieFileOffset = dyld_info_cmd ? dyld_info_cmd->export_off : exports_trie_cmd->dataoff;
   uint32_t trieFileSize = dyld_info_cmd ? dyld_info_cmd->export_size : exports_trie_cmd->datasize;
 
-  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
-  uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
+  uintptr_t slide = (uintptr_t) header - (uintptr_t) text_segment->vmaddr;
+  uintptr_t linkedit_base = (uintptr_t) slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
-  void *exports = (void *)(linkedit_base + trieFileOffset);
+  void *exports = (void *) (linkedit_base + trieFileOffset);
   if (exports == NULL)
     return 0;
 
-  uint8_t *exports_start = (uint8_t *)exports;
+  uint8_t *exports_start = (uint8_t *) exports;
   uint8_t *exports_end = exports_start + trieFileSize;
-  uint8_t *node = (uint8_t *)walk_exported_trie(exports_start, exports_end, symbol_name);
+  uint8_t *node = (uint8_t *) walk_exported_trie(exports_start, exports_end, symbol_name);
   if (node == NULL)
     return 0;
   const uint8_t *p = node;
@@ -210,12 +217,12 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   ctx->header = header;
   segment_command_t *curr_seg_cmd;
   segment_command_t *text_segment = nullptr, *text_exec_segment = nullptr, *data_segment = nullptr, *data_const_segment = nullptr,
-                    *linkedit_segment = nullptr;
+    *linkedit_segment = nullptr;
   struct symtab_command *symtab_cmd = nullptr;
   struct dysymtab_command *dysymtab_cmd = nullptr;
   struct dyld_info_command *dyld_info_cmd = nullptr;
 
-  curr_seg_cmd = (segment_command_t *)((uintptr_t)header + sizeof(mach_header_t));
+  curr_seg_cmd = (segment_command_t *) ((uintptr_t) header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
     if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
       //  BIND_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB and REBASE_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB
@@ -229,22 +236,21 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
         data_const_segment = curr_seg_cmd;
       } else if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
         text_segment = curr_seg_cmd;
-      }
-      else if (strcmp(curr_seg_cmd->segname, "__TEXT_EXEC") == 0) {
+      } else if (strcmp(curr_seg_cmd->segname, "__TEXT_EXEC") == 0) {
         text_exec_segment = curr_seg_cmd;
       }
     } else if (curr_seg_cmd->cmd == LC_SYMTAB) {
-      symtab_cmd = (struct symtab_command *)curr_seg_cmd;
+      symtab_cmd = (struct symtab_command *) curr_seg_cmd;
     } else if (curr_seg_cmd->cmd == LC_DYSYMTAB) {
-      dysymtab_cmd = (struct dysymtab_command *)curr_seg_cmd;
+      dysymtab_cmd = (struct dysymtab_command *) curr_seg_cmd;
     } else if (curr_seg_cmd->cmd == LC_DYLD_INFO || curr_seg_cmd->cmd == LC_DYLD_INFO_ONLY) {
-      dyld_info_cmd = (struct dyld_info_command *)curr_seg_cmd;
+      dyld_info_cmd = (struct dyld_info_command *) curr_seg_cmd;
     }
-    curr_seg_cmd = (segment_command_t *)((uintptr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
+    curr_seg_cmd = (segment_command_t *) ((uintptr_t) curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
 
-  uintptr_t slide = (uintptr_t)header - (uintptr_t)text_segment->vmaddr;
-  uintptr_t linkedit_base = (uintptr_t)slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
+  uintptr_t slide = (uintptr_t) header - (uintptr_t) text_segment->vmaddr;
+  uintptr_t linkedit_base = (uintptr_t) slide + linkedit_segment->vmaddr - linkedit_segment->fileoff;
 
   ctx->text_seg = text_segment;
   ctx->text_exec_seg = text_exec_segment;
@@ -259,9 +265,9 @@ void macho_ctx_init(macho_ctx_t *ctx, mach_header_t *header) {
   ctx->slide = slide;
   ctx->linkedit_base = linkedit_base;
 
-  ctx->symtab = (nlist_t *)(ctx->linkedit_base + ctx->symtab_cmd->symoff);
-  ctx->strtab = (char *)(ctx->linkedit_base + ctx->symtab_cmd->stroff);
-  ctx->indirect_symtab = (uint32_t *)(ctx->linkedit_base + ctx->dysymtab_cmd->indirectsymoff);
+  ctx->symtab = (nlist_t *) (ctx->linkedit_base + ctx->symtab_cmd->symoff);
+  ctx->strtab = (char *) (ctx->linkedit_base + ctx->symtab_cmd->stroff);
+  ctx->indirect_symtab = (uint32_t *) (ctx->linkedit_base + ctx->dysymtab_cmd->indirectsymoff);
 }
 
 uintptr_t iterate_symbol_table(char *name_pattern, nlist_t *symtab, uint32_t symtab_count, char *strtab) {
@@ -290,21 +296,21 @@ static uintptr_t macho_kit_get_slide(mach_header_t *header) {
 
   segment_command_t *curr_seg_cmd;
 
-  curr_seg_cmd = (segment_command_t *)((addr_t)header + sizeof(mach_header_t));
+  curr_seg_cmd = (segment_command_t *) ((addr_t) header + sizeof(mach_header_t));
   for (int i = 0; i < header->ncmds; i++) {
     if (curr_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
       if (strcmp(curr_seg_cmd->segname, "__TEXT") == 0) {
-        slide = (uintptr_t)header - curr_seg_cmd->vmaddr;
+        slide = (uintptr_t) header - curr_seg_cmd->vmaddr;
         return slide;
       }
     }
-    curr_seg_cmd = (segment_command_t *)((addr_t)curr_seg_cmd + curr_seg_cmd->cmdsize);
+    curr_seg_cmd = (segment_command_t *) ((addr_t) curr_seg_cmd + curr_seg_cmd->cmdsize);
   }
   return 0;
 }
 
 PUBLIC void *DobbyMachOSymbolResolverOptions(void *header_, const char *symbol_name, bool add_slide) {
-  mach_header_t *header = (mach_header_t *)header_;
+  mach_header_t *header = (mach_header_t *) header_;
   uintptr_t result = 0;
 
   size_t slide = 0;
@@ -316,10 +322,10 @@ PUBLIC void *DobbyMachOSymbolResolverOptions(void *header_, const char *symbol_n
   macho_ctx_t macho_ctx;
   memset(&macho_ctx, 0, sizeof(macho_ctx_t));
   macho_ctx_init(&macho_ctx, header);
-  result = iterate_symbol_table((char *)symbol_name, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms, macho_ctx.strtab);
+  result = iterate_symbol_table((char *) symbol_name, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms, macho_ctx.strtab);
   if (result) {
     result = result + slide;
-    return (void *)result;
+    return (void *) result;
   }
   return nullptr;
 }
@@ -331,15 +337,15 @@ PUBLIC void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name) {
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
 
-  const std::vector<RuntimeModule> *modules = ProcessRuntimeUtility::GetProcessModuleMap();
+  const std::vector<RuntimeModule> modules = ProcessRuntimeUtility::GetProcessModuleMap();
 
-  for (auto iter = modules->begin(); iter != modules->end(); iter++) {
+  for (auto iter = modules.begin(); iter != modules.end(); iter++) {
     auto module = *iter;
     //  for (auto module : *modules) {
     if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
       continue;
 
-    mach_header_t *header = (mach_header_t *)module.load_address;
+    mach_header_t *header = (mach_header_t *) module.load_address;
     if (header == nullptr)
       continue;
 
@@ -366,12 +372,12 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     }
     if (shared_cache_ctx.runtime_shared_cache) {
       // shared cache library
-      if (shared_cache_is_contain(&shared_cache_ctx, (addr_t)header, 0)) {
+      if (shared_cache_is_contain(&shared_cache_ctx, (addr_t) header, 0)) {
         shared_cache_get_symbol_table(&shared_cache_ctx, header, &symtab, &symtab_count, &strtab);
       }
     }
     if (symtab && strtab) {
-      result = iterate_symbol_table((char *)symbol_name_pattern, symtab, symtab_count, strtab);
+      result = iterate_symbol_table((char *) symbol_name_pattern, symtab, symtab_count, strtab);
     }
     if (result) {
       result = result + slide;
@@ -384,7 +390,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     macho_ctx_t macho_ctx;
     memset(&macho_ctx, 0, sizeof(macho_ctx_t));
     macho_ctx_init(&macho_ctx, header);
-    result = iterate_symbol_table((char *)symbol_name_pattern, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms,
+    result = iterate_symbol_table((char *) symbol_name_pattern, macho_ctx.symtab, macho_ctx.symtab_cmd->nsyms,
                                   macho_ctx.strtab);
     if (result) {
       result = result + slide;
@@ -393,21 +399,24 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 
     // binary exported table(uleb128)
     uint64_t flags;
-    result = iterate_exported_symbol((mach_header_t *)header, symbol_name_pattern, &flags);
+    result = iterate_exported_symbol((mach_header_t *) header, symbol_name_pattern, &flags);
     if (result) {
       switch (flags & EXPORT_SYMBOL_FLAGS_KIND_MASK) {
-      case EXPORT_SYMBOL_FLAGS_KIND_REGULAR: {
-        result += (uintptr_t)header;
-      } break;
-      case EXPORT_SYMBOL_FLAGS_KIND_THREAD_LOCAL: {
-        result += (uintptr_t)header;
-      } break;
-      case EXPORT_SYMBOL_FLAGS_KIND_ABSOLUTE: {
-      } break;
-      default:
-        break;
+        case EXPORT_SYMBOL_FLAGS_KIND_REGULAR: {
+          result += (uintptr_t) header;
+        }
+          break;
+        case EXPORT_SYMBOL_FLAGS_KIND_THREAD_LOCAL: {
+          result += (uintptr_t) header;
+        }
+          break;
+        case EXPORT_SYMBOL_FLAGS_KIND_ABSOLUTE: {
+        }
+          break;
+        default:
+          break;
       }
-      return (void *)result;
+      return (void *) result;
     }
   }
 
@@ -417,22 +426,22 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     // task info
     task_dyld_info_data_t task_dyld_info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-    if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count)) {
+    if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t) &task_dyld_info, &count)) {
       return NULL;
     }
 
     // get dyld load address
     const struct dyld_all_image_infos *infos =
-        (struct dyld_all_image_infos *)(uintptr_t)task_dyld_info.all_image_info_addr;
-    dyld_header = (mach_header_t *)infos->dyldImageLoadAddress;
+      (struct dyld_all_image_infos *) (uintptr_t) task_dyld_info.all_image_info_addr;
+    dyld_header = (mach_header_t *) infos->dyldImageLoadAddress;
 
     macho_ctx_t dyld_ctx;
     memset(&dyld_ctx, 0, sizeof(macho_ctx_t));
     macho_ctx_init(&dyld_ctx, dyld_header);
     result =
-        iterate_symbol_table((char *)symbol_name_pattern, dyld_ctx.symtab, dyld_ctx.symtab_cmd->nsyms, dyld_ctx.strtab);
+      iterate_symbol_table((char *) symbol_name_pattern, dyld_ctx.symtab, dyld_ctx.symtab_cmd->nsyms, dyld_ctx.strtab);
     if (result) {
-      result = result + (addr_t)dyld_header;
+      result = result + (addr_t) dyld_header;
     }
   }
 #endif
@@ -441,5 +450,5 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     LOG(0, "symbol resolver failed: %s", symbol_name_pattern);
   }
 
-  return (void *)result;
+  return (void *) result;
 }

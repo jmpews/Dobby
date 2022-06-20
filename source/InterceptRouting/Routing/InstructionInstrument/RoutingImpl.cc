@@ -22,7 +22,7 @@ void InstructionInstrumentRouting::BuildRouting() {
   DLOG(0, "[closure trampoline] closure trampoline %p", closure_trampoline->address);
 
   // generate trampoline buffer, run before `GenerateRelocatedCode`
-  GenerateTrampolineBuffer(entry_->patched_insn_addr, GetTrampolineTarget());
+  GenerateTrampolineBuffer(entry_->patched_addr, GetTrampolineTarget());
 }
 
 void InstructionInstrumentRouting::DispatchRouting() {

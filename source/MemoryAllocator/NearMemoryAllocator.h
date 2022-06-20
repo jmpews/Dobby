@@ -5,7 +5,6 @@
 #include "common_header.h"
 
 class NearMemoryAllocator {
-
 public:
   MemoryAllocator *default_allocator;
   NearMemoryAllocator() {

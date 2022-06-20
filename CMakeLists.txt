@@ -39,7 +39,7 @@ option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOff
 option(Plugin.Android.BionicLinker "Enable android bionic linker restriction" OFF)
 
 # private
-option(Plugin.ReadCallback "Read callback" ON)
+option(Plugin.ReadCallback "Read callback" OFF)
 
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
@@ -305,12 +305,6 @@ endif ()
 if (Plugin.LinkerLoadCallback)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/LinkerLoadCallback/linker_load_callback.cc
-    )
-endif ()
-
-if (Plugin.ReadCallback)
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/ReadCallback/read_callback.cc
     )
 endif ()
 

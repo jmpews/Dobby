@@ -25,9 +25,9 @@ PUBLIC int DobbyHook(void *address, func_t replace_func, func_t *origin_func) {
   }
 
   entry = new HookEntry();
-  entry->id = Interceptor::SharedInstance()->getHookEntryCount();
+  entry->id = Interceptor::SharedInstance()->count();
   entry->type = kFunctionInlineHook;
-  entry->patched_insn_addr = (addr_t)address;
+  entry->patched_addr = (addr_t)address;
 
   auto *routing = new FunctionInlineHookRouting(entry, replace_func);
   routing->Prepare();
@@ -35,7 +35,7 @@ PUBLIC int DobbyHook(void *address, func_t replace_func, func_t *origin_func) {
 
   // set origin func entry with as relocated instructions
   if (origin_func) {
-    *origin_func = (func_t)entry->relocated_insn_addr;
+    *origin_func = (func_t)entry->relocated_addr;
   }
 
   routing->Commit();

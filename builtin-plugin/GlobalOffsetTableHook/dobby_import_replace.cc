@@ -1,4 +1,4 @@
-#include "global_offset_table_hook.h"
+#include "dobby_import_replace.h"
 
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>

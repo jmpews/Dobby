@@ -44,7 +44,7 @@ bool NearBranchTrampolinePlugin::GenerateTrampolineBuffer(InterceptRouting *rout
 bool NearBranchTrampolinePlugin::Active(InterceptRouting *routing) {
   addr_t src, dst;
   HookEntry *entry = routing->GetHookEntry();
-  src = (addr_t)entry->patched_insn_addr;
+  src = (addr_t)entry->patched_addr;
   dst = (addr_t)routing->GetTrampolineTarget();
   return true;
 }

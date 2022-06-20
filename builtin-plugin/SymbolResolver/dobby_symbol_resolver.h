@@ -1,5 +1,4 @@
-#ifndef DOBBY_SYMBOL_RESOLVER_H
-#define DOBBY_SYMBOL_RESOLVER_H
+#pragma once
 
 #if defined(BUILDING_INTERNAL)
 #include "macho/dobby_symbol_resolver_priv.h"
@@ -13,6 +12,4 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

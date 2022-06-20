@@ -8,8 +8,13 @@
 #include <fcntl.h>
 
 #if defined(_POSIX_VERSION) || defined(__APPLE__)
+
 #include <unistd.h>
 #include <syslog.h>
+#include <stdbool.h>
+#include <os/log.h>
+#include "dobby_symbol_resolver.h"
+
 #endif
 
 #if defined(_WIN32)
@@ -31,14 +36,14 @@ PUBLIC void log_switch_to_syslog(void) {
   _syslog_enabled = 1;
 }
 
-static int         _file_log_enabled = 0;
-static const char *log_file_path     = NULL;
-static int         log_file_fd       = -1;
-static FILE *      log_file_stream   = NULL;
+static int _file_log_enabled = 0;
+static const char *log_file_path = NULL;
+static int log_file_fd = -1;
+static FILE *log_file_stream = NULL;
 
 PUBLIC void log_switch_to_file(const char *path) {
   _file_log_enabled = 1;
-  log_file_path     = strdup(path);
+  log_file_path = strdup(path);
 
 #if 0
   log_file_fd = open(log_file_path, O_WRONLY | O_CREAT | O_APPEND, 0666);
@@ -69,7 +74,11 @@ PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
 #pragma clang diagnostic ignored "-Wformat"
 #if defined(_POSIX_VERSION) || defined(__APPLE__)
   if (_syslog_enabled) {
-    vsyslog(LOG_ERR, fmt, ap);
+    static void (*os_log_with_args)(os_log_t oslog, os_log_type_t type, const char *format, va_list args, void *ret_addr) = NULL;
+    if (os_log_with_args == NULL) {
+      os_log_with_args = DobbySymbolResolver(0, "_os_log_with_args");
+    }
+    os_log_with_args(OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, fmt, ap, __builtin_return_address(0));
   }
 #endif
   if (_file_log_enabled) {

@@ -25,9 +25,9 @@ PUBLIC int DobbyInstrument(void *address, instrument_callback_t handler) {
   }
 
   entry = new HookEntry();
-  entry->id = Interceptor::SharedInstance()->getHookEntryCount();
+  entry->id = Interceptor::SharedInstance()->count();
   entry->type = kInstructionInstrument;
-  entry->patched_insn_addr = (addr_t)address;
+  entry->patched_addr = (addr_t)address;
 
   auto routing = new InstructionInstrumentRouting(entry, handler);
   routing->Prepare();

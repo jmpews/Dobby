@@ -13,18 +13,18 @@ bool InterceptRouting::GenerateRelocatedCode() {
   uint32_t trampoline_size = GetTrampolineBuffer()->GetBufferSize();
 
   // generate original code
-  origin_ = new CodeMemBlock(entry_->patched_insn_addr, trampoline_size);
+  origin_ = new CodeMemBlock(entry_->patched_addr, trampoline_size);
 
   // generate the relocated code
   relocated_ = new CodeMemBlock();
 
-  auto buffer = (void *)entry_->patched_insn_addr;
+  auto buffer = (void *)entry_->patched_addr;
   GenRelocateCodeAndBranch(buffer, origin_, relocated_);
   if (relocated_->size == 0)
     return false;
 
   // set the relocated instruction address
-  entry_->relocated_insn_addr = relocated_->addr;
+  entry_->relocated_addr = relocated_->addr;
   DLOG(0, "[insn relocate] origin %p - %d", origin_->addr, origin_->size);
   hexdump((uint8_t *)origin_->addr, origin_->size);
 
@@ -58,7 +58,7 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
 // Active routing, patch origin insturctions as trampoline
 void InterceptRouting::Active() {
   MemoryOperationError err;
-  err = CodePatch((void *)entry_->patched_insn_addr, trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
+  err = CodePatch((void *)entry_->patched_addr, trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
   if (err == kMemoryOperationSuccess) {
     DLOG(0, "[intercept routing] active");
   } else

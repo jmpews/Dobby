@@ -1,18 +1,18 @@
 #include "Interceptor.h"
 
-Interceptor *Interceptor::shared_interceptor = nullptr;
+Interceptor *Interceptor::instance = nullptr;
 
 Interceptor *Interceptor::SharedInstance() {
-  if (Interceptor::shared_interceptor == nullptr) {
-    Interceptor::shared_interceptor = new Interceptor();
+  if (Interceptor::instance == nullptr) {
+    Interceptor::instance = new Interceptor();
   }
-  return Interceptor::shared_interceptor;
+  return Interceptor::instance;
 }
 
 HookEntry *Interceptor::findHookEntry(addr_t addr) {
-  for (int i = 0; i < entries.size(); i++) {
-    if (entries[i]->patched_insn_addr == addr) {
-      return entries[i];
+  for (auto *entry: entries) {
+    if (entry->patched_addr == addr) {
+      return entry;
     }
   }
   return nullptr;
@@ -28,6 +28,6 @@ void Interceptor::removeHookEntry(addr_t addr) {
   }
 }
 
-int Interceptor::getHookEntryCount() {
+int Interceptor::count() {
   return entries.size();
 }

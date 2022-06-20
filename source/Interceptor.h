@@ -1,18 +1,12 @@
 #pragma once
 
-
 #include "dobby_internal.h"
 #include "HookEntry.h"
 
 class Interceptor {
-public:
-
-  Interceptor(){
-
-  }
-
 private:
-  static Interceptor *shared_interceptor;
+  static Interceptor *instance;
+  tinystl::vector<HookEntry *> entries;
 
 public:
   static Interceptor *SharedInstance();
@@ -24,12 +18,5 @@ public:
 
   void addHookEntry(HookEntry *entry);
 
-  int getHookEntryCount();
-
-
-
-private:
-  std::vector<HookEntry *> entries;
-
-
+  int count();
 };

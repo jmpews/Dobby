@@ -36,6 +36,7 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
 }
 
 std::vector<MemRegion> regions;
+
 const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
@@ -47,7 +48,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   while (true) {
     count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
     kern_return_t kr =
-        mach_vm_region_recurse(mach_task_self(), &addr, &size, &depth, (vm_region_recurse_info_t)&submap_info, &count);
+      mach_vm_region_recurse(mach_task_self(), &addr, &size, &depth, (vm_region_recurse_info_t) &submap_info, &count);
     if (kr != KERN_SUCCESS) {
       if (kr == KERN_INVALID_ADDRESS) {
         break;
@@ -69,7 +70,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
       } else {
         continue;
       }
-      MemRegion region = MemRegion(addr,size, permission);
+      MemRegion region = MemRegion(addr, size, permission);
 #if 0
       DLOG(0, "%p --- %p", addr, addr + size);
 #endif
@@ -84,21 +85,22 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 }
 
 static std::vector<RuntimeModule> *modules;
-const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
-  if(modules == nullptr) {
+
+const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
+  if (modules == nullptr) {
     modules = new std::vector<RuntimeModule>();
   }
   modules->clear();
-  
+
   kern_return_t kr;
   task_dyld_info_data_t task_dyld_info;
   mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-  kr = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info, &count);
+  kr = task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t) &task_dyld_info, &count);
   if (kr != KERN_SUCCESS) {
-    return modules;
+    return *modules;
   }
 
-  struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *)task_dyld_info.all_image_info_addr;
+  struct dyld_all_image_infos *infos = (struct dyld_all_image_infos *) task_dyld_info.all_image_info_addr;
   const struct dyld_image_info *infoArray = infos->infoArray;
   uint32_t infoArrayCount = infos->infoArrayCount;
 
@@ -106,23 +108,23 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   strncpy(module.path, "dummy-placeholder-module", sizeof(module.path));
   module.load_address = 0;
   modules->push_back(module);
-  
+
   for (int i = 0; i < infoArrayCount; ++i) {
     const struct dyld_image_info *info = &infoArray[i];
 
     {
       strncpy(module.path, info->imageFilePath, sizeof(module.path));
-      module.load_address = (void *)info->imageLoadAddress;
+      module.load_address = (void *) info->imageLoadAddress;
       modules->push_back(module);
     }
   }
 
-  return modules;
+  return *modules;
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
   auto modules = GetProcessModuleMap();
-  for (auto module : *modules) {
+  for (auto module: modules) {
     if (strstr(module.path, name) != 0) {
       return module;
     }
