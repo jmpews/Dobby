@@ -143,7 +143,7 @@ static void *get_global_offset_table_stub(mach_header_t *header, char *symbol_na
   return NULL;
 }
 
-PUBLIC int DobbyGlobalOffsetTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func_ptr) {
+PUBLIC int DobbyImportTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func_ptr) {
   std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
 
   for (auto module : ProcessModuleMap) {

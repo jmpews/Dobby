@@ -23,23 +23,23 @@ option(DOBBY_DEBUG "Enable debug logging" OFF)
 # private
 option(KERNEL_MODE "Build kernel mode(xnu)" OFF)
 
-option(NearBranch "Enable Near Branch Trampoline" ON)
+option(NearBranch "Enable near branch trampoline" ON)
 
-option(DynamicBinaryInstrument "Enable Dynamic Binary Instrument" ON)
+option(DynamicBinaryInstrument "Enable dynamic binary instrument" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
 # private
 option(EnableObfuscation "Enable llvm obfuscation" OFF)
 
-option(Plugin.SymbolResolver "Resolve symbol by [DobbySymbolResolver] " ON)
+option(Plugin.SymbolResolver "Enable symbol resolver" ON)
 
-option(Plugin.GlobalOffsetTableHook "Global Offset Table Hook by [DobbyGlobalOffsetTableReplace] " OFF)
+option(Plugin.ImportTableReplace "Eanble import table replace " OFF)
 
-option(Plugin.Android.BionicLinker "Enable android bionic linker restriction" OFF)
+option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
 
-# private
-option(Plugin.ReadCallback "Read callback" OFF)
+option(Plugin.WatchpointHook "Enable watchpoint hook" ON)
+
 
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
@@ -58,11 +58,11 @@ if (FullFloatingPointRegisterPack)
   add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
 endif ()
 
-if(KERNEL_MODE)
+if (KERNEL_MODE)
   message(STATUS "[Dobby] Build kernel mode")
   set(BUILDING_KERNEL ON)
   add_definitions(-DBUILDING_KERNEL)
-endif()
+endif ()
 
 if (CMAKE_GENERATOR STREQUAL Xcode)
 endif ()
@@ -89,7 +89,7 @@ if (SYSTEM.Darwin AND BUILDING_KERNEL)
   include_directories(
     source/Backend/KernelMode
   )
-else()
+else ()
   include_directories(
     source/Backend/UserMode
   )
@@ -184,43 +184,43 @@ if (SYSTEM.Darwin AND BUILDING_KERNEL)
     source/Backend/KernelMode/ExecMemory/code-patch-tool-darwin.cc
     source/Backend/KernelMode/ExecMemory/clear-cache-tool-all.c
     )
-elseif(SYSTEM.Darwin)
+elseif (SYSTEM.Darwin)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-  # platform util
-  source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
+    # platform util
+    source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
 
-  # user mode - platform interface
-  source/Backend/UserMode/UnifiedInterface/platform-posix.cc
+    # user mode - platform interface
+    source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
-  # user mode - executable memory
-  source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
-  source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
-  )
+    # user mode - executable memory
+    source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
+    source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
+    )
 
-elseif(SYSTEM.Linux OR SYSTEM.Android)
+elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-  # platform util
-  source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
+    # platform util
+    source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
 
-  # user mode - platform interface
-  source/Backend/UserMode/UnifiedInterface/platform-posix.cc
+    # user mode - platform interface
+    source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
-  # user mode - executable memory
-  source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
-  source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
-  )
-elseif(SYSTEM.Windows)
+    # user mode - executable memory
+    source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
+    source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
+    )
+elseif (SYSTEM.Windows)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-  # platform util
-  source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
+    # platform util
+    source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
 
-  # user mode - platform interface
-  source/Backend/UserMode/UnifiedInterface/platform-windows.cc
+    # user mode - platform interface
+    source/Backend/UserMode/UnifiedInterface/platform-windows.cc
 
-  # user mode - executable memory
-  source/Backend/UserMode/ExecMemory/code-patch-tool-windows.cc
-  source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
-  )
+    # user mode - executable memory
+    source/Backend/UserMode/ExecMemory/code-patch-tool-windows.cc
+    source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
+    )
 endif ()
 
 if (PROCESSOR.X86_64 OR PROCESSOR.X86)
@@ -248,7 +248,7 @@ if (FunctionWrapper)
     # source/UserMode/Thread/PlatformThread.cc
     # source/UserMode/Thread/platform-thread-${platform1}.cc
     )
-    message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
+  message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
 endif ()
 
 # ----- next -----
@@ -272,14 +272,10 @@ get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 
 # ----- next -----
 
-if (Plugin.GlobalOffsetTableHook AND SYSTEM.Darwin)
+if (Plugin.ImportTableReplace AND SYSTEM.Darwin)
   message(STATUS "[Dobby] Enable got hook")
-  include_directories(builtin-plugin/GlobalOffsetTableHook)
-  add_subdirectory(builtin-plugin/GlobalOffsetTableHook)
-  get_target_property(global_offset_table_hook.SOURCE_FILE_LIST global_offset_table_hook SOURCES)
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    ${global_offset_table_hook.SOURCE_FILE_LIST}
-    )
+  include_directories(builtin-plugin/ImportTableReplace)
+  add_subdirectory(builtin-plugin/ImportTableReplace)
 endif ()
 
 if (Plugin.SymbolResolver)
@@ -298,14 +294,12 @@ if (Plugin.Android.BionicLinker)
   endif ()
   message(STATUS "[Dobby] Enable Plugin.Android.BionicLinker")
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/BionicLinker/bionic_linker.cc
+    builtin-plugin/BionicLinkerUtil/bionic_linker_util.cc
     )
 endif ()
 
-if (Plugin.LinkerLoadCallback)
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/LinkerLoadCallback/linker_load_callback.cc
-    )
+if (Plugin.WatchpointHook)
+  add_subdirectory(builtin-plugin/BreakpointHook)
 endif ()
 
 # ----- next -----
@@ -370,7 +364,7 @@ if (SYSTEM.Android)
       PROPERTIES
       ANDROID_ARM_MODE arm
       )
-  endif()
+  endif ()
 endif ()
 
 if (SYSTEM.Linux)
@@ -385,6 +379,6 @@ endif ()
 
 # ----- next -----
 
-if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
+if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include(cmake/platform/platform-darwin.cmake)
-endif()
+endif ()

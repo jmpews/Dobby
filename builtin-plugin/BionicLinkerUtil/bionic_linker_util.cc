@@ -1,4 +1,4 @@
-#include "bionic_linker.h"
+#include "bionic_linker_util.h"
 
 #include <elf.h>
 #include <jni.h>

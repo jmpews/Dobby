@@ -1,6 +1,6 @@
 #include "dobby.h"
 
-#include "bionic_linker.h"
+#include "bionic_linker_util.h"
 
 #include "logging/logging.h"
 

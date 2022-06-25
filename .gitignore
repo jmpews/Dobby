@@ -3,6 +3,8 @@
 *-build*/
 build-output/
 
+builtin-plugin/BreakpointHook
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
