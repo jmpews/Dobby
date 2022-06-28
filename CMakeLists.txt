@@ -38,9 +38,6 @@ option(Plugin.ImportTableReplace "Eanble import table replace " OFF)
 
 option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
 
-option(Plugin.WatchpointHook "Enable watchpoint hook" ON)
-
-
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   set(DOBBY_DEBUG ON)
@@ -296,10 +293,6 @@ if (Plugin.Android.BionicLinker)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     builtin-plugin/BionicLinkerUtil/bionic_linker_util.cc
     )
-endif ()
-
-if (Plugin.WatchpointHook)
-  add_subdirectory(builtin-plugin/BreakpointHook)
 endif ()
 
 # ----- next -----
