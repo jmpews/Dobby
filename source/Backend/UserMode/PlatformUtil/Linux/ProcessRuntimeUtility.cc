@@ -97,14 +97,14 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 // GetProcessModuleMap
 
 static std::vector<RuntimeModule> *modules;
-static std::vector<RuntimeModule> *get_process_map_with_proc_maps() {
+static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
   if(modules == nullptr) {
     modules = new std::vector<RuntimeModule>();
   }
 
   FILE *fp = fopen("/proc/self/maps", "r");
   if (fp == nullptr)
-    return modules;
+    return *modules;
 
   while (!feof(fp)) {
     char line_buffer[LINE_MAX + 1];
@@ -145,7 +145,7 @@ static std::vector<RuntimeModule> *get_process_map_with_proc_maps() {
                &path_index) < 7) {
       FATAL("/proc/self/maps parse failed!");
       fclose(fp);
-      return modules;
+      return *modules;
     }
 
     // check header section permission
@@ -177,7 +177,7 @@ static std::vector<RuntimeModule> *get_process_map_with_proc_maps() {
   }
 
   fclose(fp);
-  return modules;
+  return *modules;
 }
 
 #if defined(__LP64__)
@@ -216,7 +216,7 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 }
 #endif
 
-const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
+const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
 #if defined(__LP64__) && 0
   // TODO: won't resolve main binary
   return get_process_map_with_linker_iterator();
@@ -227,7 +227,7 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
   auto modules = GetProcessModuleMap();
-  for (auto module : *modules) {
+  for (auto module : modules) {
     if (strstr(module.path, name) != 0) {
       return module;
     }

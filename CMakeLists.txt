@@ -14,34 +14,35 @@ set(CMAKE_C_STANDARD 11)
 
 auto_source_group("." "auto-source-group" "\\.(cc|cpp|c|h)$")
 
-# ===== Handle Option =====
+# ===== handle option =====
 
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
-# private
-option(KERNEL_MODE "Build kernel mode(xnu)" OFF)
-
 option(NearBranch "Enable near branch trampoline" ON)
-
-option(DynamicBinaryInstrument "Enable dynamic binary instrument" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
-# private
-option(EnableObfuscation "Enable llvm obfuscation" OFF)
-
 option(Plugin.SymbolResolver "Enable symbol resolver" ON)
 
-option(Plugin.ImportTableReplace "Eanble import table replace " OFF)
+option(Plugin.ImportTableReplace "Enable import table replace " OFF)
 
 option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
+
+option(BUILD_EXAMPLE "Build example" OFF)
+
+# private
+option(Obfuscation "Enable llvm obfuscation" OFF)
+
+# private
+option(BUILD_KERNEL_MODE "Build xnu kernel mode" OFF)
 
 # Enable debug will log more information
 if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   set(DOBBY_DEBUG ON)
 endif ()
+
 if (DOBBY_DEBUG)
   add_definitions(-DDOBBY_DEBUG)
   add_definitions(-DLOGGING_DEBUG)
@@ -51,14 +52,14 @@ endif ()
 # Enable full floating point register pack
 # for arm64, allow access q8 - q31
 if (FullFloatingPointRegisterPack)
-  message(STATUS "[Dobby] Save and pack all floating-point registers")
   add_definitions(-DFULL_FLOATING_POINT_REGISTER_PACK)
+  message(STATUS "[Dobby] Save and pack all floating-point registers")
 endif ()
 
-if (KERNEL_MODE)
-  message(STATUS "[Dobby] Build kernel mode")
+if (BUILD_KERNEL_MODE)
   set(BUILDING_KERNEL ON)
   add_definitions(-DBUILDING_KERNEL)
+  message(STATUS "[Dobby] Build xnu kernel mode")
 endif ()
 
 if (CMAKE_GENERATOR STREQUAL Xcode)
@@ -338,7 +339,7 @@ target_include_directories(dobby PUBLIC include)
 
 # ----- next -----
 
-if (EnableObfuscation)
+if (Obfuscation)
   set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
 endif ()
 
@@ -366,8 +367,8 @@ endif ()
 
 # ----- next -----
 
-if (BUILDING_EXAMPLE AND (NOT BUILDING_KERNEL))
-  add_subdirectory(example)
+if (BUILD_EXAMPLE AND (NOT BUILDING_KERNEL))
+  add_subdirectory(examples)
 endif ()
 
 # ----- next -----

@@ -1,6 +1,6 @@
-## Dobby 
+## Dobby
 
-[![Contact me Telegram](https://img.shields.io/badge/Contact%20me-Telegram-blue.svg)](https://t.me/IOFramebuffer) [![Join group Telegram](https://img.shields.io/badge/Join%20group-Telegram-brightgreen.svg)](https://t.me/dobby_group)  
+[![Contact me Telegram](https://img.shields.io/badge/Contact%20me-Telegram-blue.svg)](https://t.me/IOFramebuffer) [![Join group Telegram](https://img.shields.io/badge/Join%20group-Telegram-brightgreen.svg)](https://t.me/dobby_group)
 
 Dobby a lightweight, multi-platform, multi-architecture exploit hook framework.
 
@@ -9,7 +9,6 @@ Dobby a lightweight, multi-platform, multi-architecture exploit hook framework.
 - Multiple architecture support(X86, X86-64, ARM, ARM64)
 - Clean code without STL(port to kernel easily)
 - Plugin support(SymbolResolver, SupervisorCallMonitor)
-- iOS kernel exploit support(Gollum ?)
 
 ## Getting started
 
@@ -19,21 +18,15 @@ cd Dobby/example/
 mkdir build; cd build; cmake ..
 ```
 
-Or download [latest release](https://github.com/jmpews/Dobby/releases/tag/latest)
+or download [latest release](https://github.com/jmpews/Dobby/releases/tag/latest)
 
-#### [Build Installation](docs/build-documentation.md)
+## Compile
 
-#### [Getting Started with iOS](docs/get-started-ios.md)
-
-#### [Getting Started with Android](docs/get-started-android.md)
-
-## Documentation
-
-[full Installation documentation site](https://jmpews.github.io/Dobby/#/)
+[docs/compile.md](docs/compile.md)
 
 ## Download
 
-[download static library](https://github.com/jmpews/Dobby/releases/tag/latest)
+[download library](https://github.com/jmpews/Dobby/releases/tag/latest)
 
 ## Credits
 
