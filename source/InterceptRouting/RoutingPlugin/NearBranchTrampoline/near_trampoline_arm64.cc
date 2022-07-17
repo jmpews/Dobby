@@ -35,12 +35,12 @@ static AssemblyCode *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
     // use adrp + add + br branch == (3 * 4) trampoline size
     _ AdrpAdd(TMP_REG_0, (uint64_t)tramp_mem, dst);
     _ br(TMP_REG_0);
-    DLOG(0, "forward trampoline use [adrp, add, br] combine");
+    DLOG(0, "forward trampoline use [adrp, add, br]");
   } else {
     // use mov + br == (4 * 5) trampoline size
     _ Mov(TMP_REG_0, dst);
     _ br(TMP_REG_0);
-    DLOG(0, "forward trampoline use  [mov, br] combine");
+    DLOG(0, "forward trampoline use  [mov, br]");
 
     auto tramp_size = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
     tramp_mem =

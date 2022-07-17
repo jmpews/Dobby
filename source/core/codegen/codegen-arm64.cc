@@ -8,14 +8,18 @@ namespace zz {
 namespace arm64 {
 
 void CodeGen::LiteralLdrBranch(uint64_t address) {
-  TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
+  auto turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
 #define _ turbo_assembler_->
 
-  RelocLabelEntry *dst_label = new RelocLabelEntry(address);
-  _ AppendRelocLabelEntry(dst_label);
+   auto dst_label = new RelocLabel(address);
+  turbo_assembler_->AppendRelocLabel(dst_label);
 
   _ Ldr(TMP_REG_0, dst_label);
   _ br(TMP_REG_0);
+
+#undef _
+
+  turbo_assembler_->RelocBind();
 }
 
 } // namespace arm64

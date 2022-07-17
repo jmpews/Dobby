@@ -34,25 +34,19 @@ public:
 
   CodeBuffer *GetCodeBuffer();
 
-  // ----- next -----
-
   void PseudoBind(AssemblerPseudoLabel *label);
 
   void RelocBind();
 
-  void AppendRelocLabelEntry(RelocLabelEntry *label);
+  void AppendRelocLabel(RelocLabel *label);
 
 protected:
-  std::vector<RelocLabelEntry *> data_labels_;
-
-  // ----- next -----
+  std::vector<RelocLabel *> data_labels_;
 
 public:
   virtual void *GetRealizedAddress();
 
   virtual void SetRealizedAddress(void *address);
-
-  // ----- next -----
 
   static void FlushICache(addr_t start, int size);
 

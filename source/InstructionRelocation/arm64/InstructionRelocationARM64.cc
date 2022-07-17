@@ -23,7 +23,7 @@ using namespace zz::arm64;
 #define arm64_trunc_page(x) ((x) & (~(0x1000 - 1)))
 #define arm64_round_page(x) trunc_page((x) + (0x1000 - 1))
 
-typedef struct _relo_ctx {
+typedef struct {
   addr_t mapped_addr;
 
   uint8_t *buffer;
@@ -165,13 +165,13 @@ int relo_relocate(relo_ctx_t *ctx) {
 
     arm64_inst_t inst = *(arm64_inst_t *)ctx->buffer_cursor;
     if (inst_is_b_bl(inst)) {
-      LOG(1, "%d:relo <b_bl> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <b_bl> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm26_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
-      RelocLabelEntry *dst_label = new RelocLabelEntry(dst_vmaddr);
-      _ AppendRelocLabelEntry(dst_label);
+      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      _ AppendRelocLabel(dst_label);
 
       {
         _ Ldr(TMP_REG_0, dst_label);
@@ -183,7 +183,7 @@ int relo_relocate(relo_ctx_t *ctx) {
       }
 
     } else if (inst_is_ldr_literal(inst)) {
-      LOG(1, "%d:relo <ldr_literal> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <ldr_literal> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm26_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -202,7 +202,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_adr(inst)) {
-      LOG(1, "%d:relo <adr> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <adr> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_immhi_immlo_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -214,7 +214,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         ;
       }
     } else if (inst_is_adrp(inst)) {
-      LOG(1, "%d:relo <adrp> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <adrp> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_immhi_immlo_zero12_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -227,7 +227,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         ;
       }
     } else if (inst_is_b_cond(inst)) {
-      LOG(1, "%d:relo <b_cond> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <b_cond> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -243,8 +243,8 @@ int relo_relocate(relo_ctx_t *ctx) {
         set_bits(branch_instr, 5, 23, imm19);
       }
 
-      RelocLabelEntry *dst_label = new RelocLabelEntry(dst_vmaddr);
-      _ AppendRelocLabelEntry(dst_label);
+      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      _ AppendRelocLabel(dst_label);
 
       {
         _ Emit(branch_instr);
@@ -254,7 +254,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_compare_b(inst)) {
-      LOG(1, "%d:relo <compare_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <compare_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -270,8 +270,8 @@ int relo_relocate(relo_ctx_t *ctx) {
         set_bits(branch_instr, 5, 23, imm19);
       }
 
-      RelocLabelEntry *dst_label = new RelocLabelEntry(dst_vmaddr);
-      _ AppendRelocLabelEntry(dst_label);
+      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      _ AppendRelocLabel(dst_label);
 
       {
         _ Emit(branch_instr);
@@ -281,7 +281,7 @@ int relo_relocate(relo_ctx_t *ctx) {
         }
       }
     } else if (inst_is_test_b(inst)) {
-      LOG(1, "%d:relo <test_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
+      DLOG(0, "%d:relo <test_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
       int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
@@ -297,8 +297,8 @@ int relo_relocate(relo_ctx_t *ctx) {
         set_bits(branch_instr, 5, 18, imm14);
       }
 
-      RelocLabelEntry *dst_label = new RelocLabelEntry(dst_vmaddr);
-      _ AppendRelocLabelEntry(dst_label);
+      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      _ AppendRelocLabel(dst_label);
 
       {
         _ Emit(branch_instr);
@@ -313,6 +313,7 @@ int relo_relocate(relo_ctx_t *ctx) {
 
     ctx->buffer_cursor += sizeof(arm64_inst_t);
   }
+#undef  _
 
   // TODO: if last instr is unlink branch, skip branch to next instruction
   CodeGen codegen(&turbo_assembler_);
@@ -323,8 +324,7 @@ int relo_relocate(relo_ctx_t *ctx) {
 
   // Generate executable code
   {
-    AssemblyCode *code = NULL;
-    code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+    auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
     ctx->relocated = code;
   }
   return 0;

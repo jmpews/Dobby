@@ -23,7 +23,7 @@ typedef enum {
 typedef uintptr_t addr_t;
 typedef uint32_t addr32_t;
 typedef uint64_t addr64_t;
-typedef void (*func_t)();
+typedef void (*dummy_func_t)();
 typedef void (*asm_func_t)();
 
 MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
@@ -138,7 +138,7 @@ int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 const char *DobbyBuildVersion();
 
 // function inline hook
-int DobbyHook(void *address, func_t replace_func, func_t *origin_func);
+int DobbyHook(void *address, dummy_func_t replace_func, dummy_func_t *origin_func);
 
 // dynamic binary instruction instrument
 // [!!! READ ME !!!]
@@ -150,7 +150,7 @@ int DobbyDestroy(void *address);
 
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
-int DobbyGotHook(char *image_name, char *symbol_name, func_t fake_func, func_t *orig_func);
+int DobbyGotHook(char *image_name, char *symbol_name, dummy_func_t fake_func, dummy_func_t *orig_func);
 
 // [!!! READ ME !!!]
 // for arm, Arm64, dobby will try use b xxx instead of ldr absolute indirect branch

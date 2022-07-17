@@ -1,4 +1,3 @@
-
 #include "dobby.h"
 
 #include "logging/logging.h"
@@ -26,18 +25,18 @@ const char *func_array[] = {
   "dlsym",
   "dlclose",
 
-  "open",
-  "write",
-  "read",
-  "close",
-
-  "socket",
-  "connect",
-  "bind",
-  "listen",
-  "accept",
-  "send",
-  "recv",
+//  "open",
+//  "write",
+//  "read",
+//  "close",
+//
+//  "socket",
+//  "connect",
+//  "bind",
+//  "listen",
+//  "accept",
+//  "send",
+//  "recv",
 };
 // clang-format on
 
@@ -53,17 +52,20 @@ const char *func_array[] = {
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
-    DobbyHook(sym_addr, (func_t)fake_##name, (func_t *)&orig_##name);                                                  \
+    DobbyHook(sym_addr, (dummy_func_t)fake_##name, (dummy_func_t *)&orig_##name);                                      \
     pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
 
-install_hook(_pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs, void *(*start_routine)(void *),
+install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs, void *(*start_routine)(void *),
              void *arg, unsigned int create_flags) {
   LOG(1, "pthread_create: %p", start_routine);
-  return orig__pthread_create(thread, attrs, start_routine, arg, create_flags);
+  return orig_pthread_create(thread, attrs, start_routine, arg, create_flags);
 }
+
+uint64_t socket_demo_server(void *ctx);
+uint64_t socket_demo_client(void *ctx);
 
 #if 1
 __attribute__((constructor)) static void ctor() {
@@ -81,27 +83,23 @@ __attribute__((constructor)) static void ctor() {
     func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
   }
 
-  for (auto i = func_map->begin(), e = func_map->end(); i != e; i++) {
-    DobbyInstrument(i->first, common_handler);
+  for (auto iter = func_map->begin(), e = func_map->end(); iter != e; iter++) {
+    DobbyInstrument(iter->first, common_handler);
   }
 
   //   DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 
-  install_hook__pthread_create();
+  install_hook_pthread_create();
 
   pthread_t socket_server;
-  uint64_t socket_demo_server(void *ctx);
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);
 
   usleep(1000);
   pthread_t socket_client;
-  uint64_t socket_demo_client(void *ctx);
   pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
 
-  pthread_join(socket_client, 0);
-  pthread_join(socket_server, 0);
-
-  sleep(1000);
+  //  pthread_join(socket_client, 0);
+  // pthread_join(socket_server, 0);
 }
 
 #include <sys/socket.h>
@@ -119,14 +117,14 @@ uint64_t socket_demo_server(void *ctx) {
 
   // Creating socket file descriptor
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    perror("socket failed");
-    exit(EXIT_FAILURE);
+    ERROR_LOG("socket failed");
+    return -1;
   }
 
   // Forcefully attaching socket to the port 8080
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-    perror("setsockopt");
-    exit(EXIT_FAILURE);
+    ERROR_LOG("setsockopt");
+    return -1;
   }
 
   address.sin_family = AF_INET;
@@ -135,31 +133,33 @@ uint64_t socket_demo_server(void *ctx) {
 
   // Forcefully attaching socket to the port 8080
   if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-    perror("bind failed");
-    exit(EXIT_FAILURE);
+    ERROR_LOG("bind failed");
+    return -1;
   }
   if (listen(server_fd, 3) < 0) {
-    perror("listen");
-    exit(EXIT_FAILURE);
+    ERROR_LOG("listen failed");
+    return -1;
   }
   if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
-    perror("accept");
-    exit(EXIT_FAILURE);
+    ERROR_LOG("accept failed");
+    return -1;
   }
-  valread = recv(new_socket, buffer, 1024, 0);
-  printf("%s\n", buffer);
+
+  int ret = recv(new_socket, buffer, 1024, 0);
+  LOG(1, "[server] %s", buffer);
+
   send(new_socket, hello, strlen(hello), 0);
-  printf("Hello message sent\n");
+  LOG(1, "[server] Hello message sent");
   return 0;
 }
 
 uint64_t socket_demo_client(void *ctx) {
-  int sock = 0, valread;
+  int sock = 0;
   struct sockaddr_in serv_addr;
   char *hello = "Hello from client";
   char buffer[1024] = {0};
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    printf("\nSocket creation error \n");
+    ERROR_LOG("socket failed");
     return -1;
   }
 
@@ -168,18 +168,20 @@ uint64_t socket_demo_client(void *ctx) {
 
   // Convert IPv4 and IPv6 addresses from text to binary form
   if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
-    printf("\nInvalid address/ Address not supported \n");
+    ERROR_LOG("inet_pton failed");
     return -1;
   }
 
   if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-    printf("\nConnection Failed \n");
+    ERROR_LOG("connect failed");
     return -1;
   }
+
   send(sock, hello, strlen(hello), 0);
-  printf("Hello message sent\n");
-  valread = recv(sock, buffer, 1024, 0);
-  printf("%s\n", buffer);
+  LOG(1, "[client] Hello message sent");
+
+  int ret = recv(sock, buffer, 1024, 0);
+  LOG(1, "[client] %s", buffer);
   return 0;
 }
 #endif

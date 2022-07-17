@@ -28,7 +28,6 @@ CodeBuffer *AssemblerBase::GetCodeBuffer() {
   return buffer_;
 }
 
-// ----- next -----
 void AssemblerBase::PseudoBind(AssemblerPseudoLabel *label) {
   off_t bound_offset = reinterpret_cast<CodeBufferBase *>(buffer_)->GetBufferSize();
   label->bind_to(bound_offset);
@@ -45,11 +44,9 @@ void AssemblerBase::RelocBind() {
   }
 }
 
-void AssemblerBase::AppendRelocLabelEntry(RelocLabelEntry *label) {
+void AssemblerBase::AppendRelocLabel(RelocLabel *label) {
   data_labels_.push_back(label);
 }
-
-// ----- next -----
 
 void AssemblerBase::SetRealizedAddress(void *address) {
   realized_addr_ = address;

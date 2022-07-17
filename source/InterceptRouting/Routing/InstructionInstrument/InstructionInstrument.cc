@@ -10,21 +10,19 @@ PUBLIC int DobbyInstrument(void *address, instrument_callback_t handler) {
     return RS_FAILED;
   }
 
+  DLOG(0, "\n\n----- [DobbyInstrument:%p] -----", address);
+
+  // check if already instrument
 #if defined(__arm64__) && __has_feature(ptrauth_calls)
   address = ptrauth_strip(address, ptrauth_key_asia);
 #endif
-
-  RAW_LOG(1, "\n\n");
-  DLOG(0, "----- [DobbyInstrument:%p] -----", address);
-
-  // check if we already instruemnt
   auto entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
   if (entry) {
     ERROR_LOG("%s already been instrumented.", address);
     return RS_FAILED;
   }
 
-  entry = new HookEntry();
+  entry = new HookEntry;
   entry->id = Interceptor::SharedInstance()->count();
   entry->type = kInstructionInstrument;
   entry->patched_addr = (addr_t)address;

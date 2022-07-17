@@ -22,16 +22,16 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
     // adrp, add, br
     _ AdrpAdd(TMP_REG_0, from, to);
     _ br(TMP_REG_0);
-    DLOG(0, "[trampoline] use [adrp, add, br] combine");
+    DLOG(0, "[trampoline] use [adrp, add, br]");
   } else {
     // ldr, br, branch-address
     CodeGen codegen(&turbo_assembler_);
     codegen.LiteralLdrBranch((uint64_t)to);
-    DLOG(0, "[trampoline] use [ldr, br, #label] combine");
+    DLOG(0, "[trampoline] use [ldr, br, #label]");
   }
+#undef _
 
-  CodeBufferBase *result = NULL;
-  result = turbo_assembler_.GetCodeBuffer()->Copy();
+  auto result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
 

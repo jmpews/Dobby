@@ -668,7 +668,7 @@ public:
   }
 
   // ================================================================
-  // RelocLabelEntry
+  // RelocLabel
 
   void PseudoBind(AssemblerPseudoLabel *label) {
     const addr_t bound_pc = buffer_->GetBufferSize();

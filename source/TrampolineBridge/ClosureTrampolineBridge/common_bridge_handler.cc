@@ -4,7 +4,7 @@
 #include "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
 
 PUBLIC void common_closure_bridge_handler(RegisterContext *ctx, ClosureTrampolineEntry *entry) {
-  DLOG(0, "Catch common bridge handler, carry data: %p, carry handler: %p", (HookEntry *)entry->carry_data,
+  DLOG(0, "common bridge handler: carry data: %p, carry handler: %p", (HookEntry *)entry->carry_data,
        entry->carry_handler);
 
   typedef void (*routing_handler_t)(HookEntry *, RegisterContext *);

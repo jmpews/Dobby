@@ -3,7 +3,7 @@
 #include "Interceptor.h"
 #include "InterceptRouting/Routing/FunctionInlineHook/FunctionInlineHookRouting.h"
 
-PUBLIC int DobbyHook(void *address, func_t replace_func, func_t *origin_func) {
+PUBLIC int DobbyHook(void *address, dummy_func_t replace_func, dummy_func_t *origin_func) {
   if (!address) {
     ERROR_LOG("function address is 0x0");
     return RS_FAILED;
@@ -35,7 +35,7 @@ PUBLIC int DobbyHook(void *address, func_t replace_func, func_t *origin_func) {
 
   // set origin func entry with as relocated instructions
   if (origin_func) {
-    *origin_func = (func_t)entry->relocated_addr;
+    *origin_func = (dummy_func_t)entry->relocated_addr;
   }
 
   routing->Commit();

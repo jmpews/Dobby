@@ -5,6 +5,7 @@
 typedef enum { kFunctionWrapper, kFunctionInlineHook, kInstructionInstrument } HookEntryType;
 
 class InterceptRouting;
+
 typedef struct {
   uint32_t id;
   HookEntryType type;

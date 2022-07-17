@@ -12,7 +12,7 @@
 using namespace zz;
 using namespace zz::arm;
 
-typedef struct _relo_ctx {
+typedef struct {
   addr_t mapped_addr;
 
   uint8_t *buffer;
@@ -115,7 +115,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
         dst_vmaddr = relo_cur_src_vmaddr(ctx) - imm12;
       Register regRt = Register::R(Rt);
 
-      auto label = new RelocLabelEntry(dst_vmaddr);
+      auto label = new RelocLabel(dst_vmaddr);
       _ AppendRelocLabelEntry(label);
 
       // ===
@@ -163,7 +163,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
             break;
 
           Register regRd = Register::R(Rd);
-          RelocLabelEntry *pseudoDataLabel = new RelocLabelEntry(dst_vmaddr);
+          RelocLabel *pseudoDataLabel = new RelocLabel(dst_vmaddr);
           _ AppendRelocLabelEntry(pseudoDataLabel);
           // ===
           _ Ldr(regRd, pseudoDataLabel);

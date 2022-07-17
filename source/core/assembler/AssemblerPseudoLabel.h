@@ -71,12 +71,12 @@ protected:
 
 // ----- next -----
 
-struct RelocLabelEntry : public AssemblerPseudoLabel {
+struct RelocLabel : public AssemblerPseudoLabel {
 public:
-  RelocLabelEntry() : AssemblerPseudoLabel(0) {
+  RelocLabel() : AssemblerPseudoLabel(0) {
   }
 
-  template <typename T> RelocLabelEntry(T value) : AssemblerPseudoLabel(0) {
+  template <typename T> RelocLabel(T value) : AssemblerPseudoLabel(0) {
     *(T *)data_ = value;
     data_size_ = sizeof(value);
   }
