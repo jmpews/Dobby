@@ -87,9 +87,9 @@ asm_func_t get_closure_bridge() {
   _ str(TMP_REG_0, MEM(SP, 8));
 
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-#define REGISTER_CONTEXT_SIZE (sizeof(RegisterContext))
+#define REGISTER_CONTEXT_SIZE (sizeof(DobbyRegisterContext))
 #else
-#define REGISTER_CONTEXT_SIZE (sizeof(RegisterContext) - 24 * 16)
+#define REGISTER_CONTEXT_SIZE (sizeof(DobbyRegisterContext) - 24 * 16)
 #endif
   // create function arm64 call convention
   _ mov(x0, SP); // arg1: register context

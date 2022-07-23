@@ -10,7 +10,7 @@ Interceptor *Interceptor::SharedInstance() {
 }
 
 HookEntry *Interceptor::findHookEntry(addr_t addr) {
-  for (auto *entry: entries) {
+  for (auto *entry : entries) {
     if (entry->patched_addr == addr) {
       return entry;
     }
@@ -24,8 +24,15 @@ void Interceptor::addHookEntry(HookEntry *entry) {
 
 void Interceptor::removeHookEntry(addr_t addr) {
   for (auto iter = entries.begin(); iter != entries.end(); iter++) {
-    entries.erase(iter);
+    if ((*iter)->patched_addr == addr) {
+      entries.erase(iter);
+      break;
+    }
   }
+}
+
+const HookEntry *Interceptor::getEntry(int i) {
+  return entries[i];
 }
 
 int Interceptor::count() {

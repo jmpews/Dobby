@@ -6,6 +6,7 @@
 class Interceptor {
 private:
   static Interceptor *instance;
+
   tinystl::vector<HookEntry *> entries;
 
 public:
@@ -17,6 +18,8 @@ public:
   void removeHookEntry(addr_t addr);
 
   void addHookEntry(HookEntry *entry);
+
+  const HookEntry *getEntry(int i);
 
   int count();
 };

@@ -58,12 +58,12 @@ __attribute__((naked)) void closure_bridge_template() {
 
   // prepare args
   // @x0: data_address
-  // @x1: RegisterContext stack address
+  // @x1: DobbyRegisterContext stack address
   xASM("mov x0, sp");
   xASM("mov x1, x14");
   xASM("bl " xcdecl("common_closure_bridge_handler"));
 
-  // ======= RegisterContext Restore =======
+  // ======= DobbyRegisterContext Restore =======
   // restore x0
   xASM("ldr x0, [sp, #8]");
   xASM("add sp, sp, #(2*8)");

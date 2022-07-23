@@ -104,7 +104,7 @@ char *mach_msg_to_str(mach_msg_header_t *msg) {
   return NULL;
 }
 
-static addr_t getCallFirstArg(RegisterContext *ctx) {
+static addr_t getCallFirstArg(DobbyRegisterContext *ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
@@ -122,12 +122,12 @@ static addr_t getCallFirstArg(RegisterContext *ctx) {
   return result;
 }
 
-static addr_t getRealLr(RegisterContext *ctx) {
+static addr_t getRealLr(DobbyRegisterContext *ctx) {
   addr_t closure_trampoline_reserved_stack = ctx->sp - sizeof(addr_t);
   return *(addr_t *)closure_trampoline_reserved_stack;
 }
 
-static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
+static addr_t fast_get_caller_from_main_binary(DobbyRegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
   if (text_section_start == 0 || text_section_end == 0) {
@@ -164,7 +164,7 @@ static addr_t fast_get_caller_from_main_binary(RegisterContext *ctx) {
   return 0;
 }
 
-static void mach_syscall_log_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+static void mach_syscall_log_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
   addr_t caller = fast_get_caller_from_main_binary(ctx);
   if (caller == 0)
     return;

@@ -40,7 +40,7 @@ void mach_system_call_monitor() {
 }
 #endif
 
-static addr_t getCallFirstArg(RegisterContext *ctx) {
+static addr_t getCallFirstArg(DobbyRegisterContext *ctx) {
   addr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
@@ -58,7 +58,7 @@ static addr_t getCallFirstArg(RegisterContext *ctx) {
   return result;
 }
 
-static void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+static void common_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
   addr_t caller = get_caller_from_main_binary(ctx);
   if (caller == 0)
     return;

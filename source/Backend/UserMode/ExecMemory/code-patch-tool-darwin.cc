@@ -26,14 +26,31 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
     return kMemoryOperationError;
   }
 
-  kern_return_t kr;
-
-  vm_map_t self_task = mach_task_self();
-
   int page_size = PAGE_SIZE;
   addr_t page_aligned_address = ALIGN_FLOOR(address, page_size);
+
+  if ((addr_t)address + buffer_size > page_aligned_address + page_size) {
+    MemoryOperationError err = kMemoryOperationSuccess;
+    void *address_a = address;
+    uint8_t *buffer_a = buffer;
+    uint32_t buffer_size_a = (page_aligned_address + page_size - (addr_t)address);
+    err = CodePatch(address_a, buffer_a, buffer_size_a);
+    if (err != kMemoryOperationSuccess) {
+      return err;
+    }
+
+    void *address_b = (void *)((addr_t)address + buffer_size_a);
+    uint8_t *buffer_b = buffer + buffer_size_a;
+    uint32_t buffer_size_b = buffer_size - buffer_size_a;
+    err = CodePatch(address_b, buffer_b, buffer_size_b);
+    return err;
+  }
+
   int offset = (int)((addr_t)address - page_aligned_address);
 
+  kern_return_t kr;
+  vm_map_t self_task = mach_task_self();
+  
   mach_vm_address_t remap_dummy_page = 0;
   kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
   KERN_RETURN_ERROR(kr, kMemoryOperationError);

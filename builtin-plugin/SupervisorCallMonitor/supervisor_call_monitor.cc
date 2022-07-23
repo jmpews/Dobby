@@ -24,7 +24,7 @@ static const char *fast_get_main_app_bundle_udid() {
   return main_app_bundle_udid;
 }
 
-static void common_supervisor_call_monitor_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+static void common_supervisor_call_monitor_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
   if (g_supervisor_call_handlers == NULL) {
     return;
   }

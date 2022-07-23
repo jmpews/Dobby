@@ -8,14 +8,14 @@
 
 class InstructionInstrumentRouting : public InterceptRouting {
 public:
-  InstructionInstrumentRouting(HookEntry *entry, instrument_callback_t handler) : InterceptRouting(entry) {
+  InstructionInstrumentRouting(HookEntry *entry, dobby_instrument_callback_t handler) : InterceptRouting(entry) {
     this->handler = handler;
   }
 
   void DispatchRouting();
 
 public:
-  instrument_callback_t handler;
+  dobby_instrument_callback_t handler;
 
 private:
   virtual void BuildRouting();

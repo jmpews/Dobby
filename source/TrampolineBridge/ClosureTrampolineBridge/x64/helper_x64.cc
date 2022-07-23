@@ -3,7 +3,7 @@
 
 #include "dobby_internal.h"
 
-void set_routing_bridge_next_hop(RegisterContext *ctx, void *address) {
+void set_routing_bridge_next_hop(DobbyRegisterContext *ctx, void *address) {
   addr_t rsp = ctx->rsp;
 
   // ClosureTrampolineEntry reserved stack
@@ -11,7 +11,7 @@ void set_routing_bridge_next_hop(RegisterContext *ctx, void *address) {
   *(addr_t *)entry_placeholder_stack_addr = (addr_t)address;
 }
 
-void get_routing_bridge_next_hop(RegisterContext *ctx, void *address) {
+void get_routing_bridge_next_hop(DobbyRegisterContext *ctx, void *address) {
 }
 
 #endif

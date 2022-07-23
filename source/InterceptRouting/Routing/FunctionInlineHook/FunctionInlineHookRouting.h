@@ -8,7 +8,7 @@
 
 class FunctionInlineHookRouting : public InterceptRouting {
 public:
-  FunctionInlineHookRouting(HookEntry *entry, dummy_func_t replace_func) : InterceptRouting(entry) {
+  FunctionInlineHookRouting(HookEntry *entry, dobby_dummy_func_t replace_func) : InterceptRouting(entry) {
     this->replace_func = replace_func;
   }
 
@@ -18,5 +18,5 @@ private:
   virtual void BuildRouting();
 
 private:
-  dummy_func_t replace_func;
+  dobby_dummy_func_t replace_func;
 };

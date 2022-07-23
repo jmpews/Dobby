@@ -4,7 +4,7 @@
 #include "InterceptRouting/InterceptRouting.h"
 #include "InterceptRouting/Routing/InstructionInstrument/InstructionInstrumentRouting.h"
 
-PUBLIC int DobbyInstrument(void *address, instrument_callback_t handler) {
+PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t handler) {
   if (!address) {
     ERROR_LOG("address is 0x0.\n");
     return RS_FAILED;

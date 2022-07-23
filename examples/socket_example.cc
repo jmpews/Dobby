@@ -12,7 +12,7 @@
 
 std::map<void *, const char *> *func_map;
 
-void common_handler(void *address, RegisterContext *ctx) {
+void common_handler(void *address, DobbyRegisterContext *ctx) {
   auto iter = func_map->find(address);
   if (iter != func_map->end()) {
     LOG(1, "func %s:%p invoke", iter->second, iter->first);
@@ -52,7 +52,7 @@ const char *func_array[] = {
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
-    DobbyHook(sym_addr, (dummy_func_t)fake_##name, (dummy_func_t *)&orig_##name);                                      \
+    DobbyHook(sym_addr, (dobby_dummy_func_t)fake_##name, (dobby_dummy_func_t *)&orig_##name);                                      \
     pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \

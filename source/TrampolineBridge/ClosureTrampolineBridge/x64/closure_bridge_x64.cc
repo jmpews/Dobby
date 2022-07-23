@@ -68,7 +68,7 @@ asm_func_t get_closure_bridge() {
 
   // prepare args
   // @rdi: data_address
-  // @rsi: RegisterContext stack address
+  // @rsi: DobbyRegisterContext stack address
   _ mov(rdi, rsp);
   _ mov(rsi, Address(rsp, 8 + 8 + 16 * 8 + 2 * 8));
 
@@ -97,7 +97,7 @@ asm_func_t get_closure_bridge() {
   // pop rax
   __ EmitBuffer((uint8_t *)"\x58", 1);
 
-  // ======= RegisterContext Restore =======
+  // ======= DobbyRegisterContext Restore =======
 
   // restore sp placeholder stack
   _ add(rsp, Immediate(2 * 8, 32));

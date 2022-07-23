@@ -35,12 +35,12 @@ __attribute__((naked)) void closure_bridge_template() {
 
   // prepare args
   // @rdi: data_address
-  // @rsi: RegisterContext stack address
+  // @rsi: DobbyRegisterContext stack address
   xASM("mov rdi, rsp");
   xASM("mov rsi, [rsp-16*8]");
   xASM("call " xcdecl("common_closure_bridge_handler"));
 
-  // ======= RegisterContext Restore =======
+  // ======= DobbyRegisterContext Restore =======
 
   // general register
   xASM("pop r15");

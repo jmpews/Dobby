@@ -5,7 +5,7 @@
 
 #define LOG_TAG "MGCopyAnswer"
 
-static uintptr_t getCallFirstArg(RegisterContext *ctx) {
+static uintptr_t getCallFirstArg(DobbyRegisterContext *ctx) {
   uintptr_t result;
 #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_WIN32)
@@ -23,7 +23,7 @@ static uintptr_t getCallFirstArg(RegisterContext *ctx) {
   return result;
 }
 
-void common_handler(RegisterContext *ctx, const HookEntryInfo *info) {
+void common_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
   CFStringRef key_ = 0;
   key_ = (CFStringRef)getCallFirstArg(ctx);
 

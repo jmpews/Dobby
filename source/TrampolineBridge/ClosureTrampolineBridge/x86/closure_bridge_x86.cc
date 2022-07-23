@@ -74,7 +74,7 @@ asm_func_t get_closure_bridge() {
   // LABEL: call_bridge
   _ CallFunction(ExternalReference((void *)common_closure_bridge_handler));
 
-  // ======= RegisterContext Restore =======
+  // ======= DobbyRegisterContext Restore =======
 
   // restore argument reserved stack
   _ add(esp, Immediate(2 * 4, 32));
