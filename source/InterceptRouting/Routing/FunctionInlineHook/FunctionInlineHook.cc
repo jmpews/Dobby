@@ -11,7 +11,7 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
 
 #if defined(__arm64__) && __has_feature(ptrauth_calls)
   address = ptrauth_strip(address, ptrauth_key_asia);
-  replace_call = ptrauth_strip(replace_call, ptrauth_key_asia);
+  replace_func  = ptrauth_strip(replace_func, ptrauth_key_asia);
 #endif
 
   RAW_LOG(1, "\n\n");
