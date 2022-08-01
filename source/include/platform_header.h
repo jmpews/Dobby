@@ -1,9 +1,7 @@
 #pragma once
 
-#if __APPLE__
-#if __has_feature(ptrauth_calls)
+#if __APPLE__ && (__has_feature(ptrauth_calls) || __arm64e__)
 #include <ptrauth.h>
-#endif
 #endif
 
 #if defined(BUILDING_KERNEL)
