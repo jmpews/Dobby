@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dobby_internal.h"
+#include <stdint.h>
 
-typedef enum { kFunctionWrapper, kFunctionInlineHook, kInstructionInstrument } HookEntryType;
+typedef enum { kFunctionInlineHook, kInstructionInstrument } HookEntryType;
 
 class InterceptRouting;
 

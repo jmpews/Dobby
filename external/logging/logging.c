@@ -8,15 +8,19 @@
 #include <fcntl.h>
 
 #if defined(_POSIX_VERSION) || defined(__APPLE__)
-
 #include <unistd.h>
 #include <syslog.h>
+#endif
+
+#if defined(__APPLE__)
+#include <os/log.h>
+#include "dobby_symbol_resolver.h"
 #endif
 
 #if defined(_WIN32)
 #define PUBLIC
 #else
-#define PUBLIC   __attribute__((visibility("default")))
+#define PUBLIC __attribute__((visibility("default")))
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
@@ -68,10 +72,14 @@ PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
 #pragma clang diagnostic ignored "-Wformat"
-#if defined(_POSIX_VERSION) || defined(__APPLE__)
-  vsyslog(LOG_ERR, fmt, ap);
-#endif
-  if (_file_log_enabled) {
+#if defined(__APPLE__)
+  static void (*os_log_with_args)(os_log_t oslog, os_log_type_t type, const char *format, va_list args,
+                                  void *ret_addr) = 0;
+  if (!os_log_with_args)
+    os_log_with_args = (__typeof(os_log_with_args))DobbySymbolResolver(0, "os_log_with_args");
+  os_log_with_args(OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, fmt, ap, os_log_with_args);
+#elif defined(_POSIX_VERSION)
+  vsysl if (_file_log_enabled) {
     if (check_log_file_available()) {
 #define MAX_PRINT_BUFFER_SIZE 1024
       char buffer[MAX_PRINT_BUFFER_SIZE] = {0};

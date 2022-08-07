@@ -147,16 +147,10 @@ int DobbyDestroy(void *address);
 
 const char *DobbyGetVersion();
 
-typedef struct {
-  void **entries;
-  int entry_count;
-} DobbyInterceptorInfo;
-DobbyInterceptorInfo * DobbyGetInterceptorInfo();
-void DobbyFreeInterceptorInfo(DobbyInterceptorInfo *info);
-
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
-int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_func_t fake_func, dobby_dummy_func_t *orig_func);
+int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_func_t fake_func,
+                            dobby_dummy_func_t *orig_func);
 
 // [!!! READ ME !!!]
 // for arm, Arm64, dobby will try use b xxx instead of ldr absolute indirect branch

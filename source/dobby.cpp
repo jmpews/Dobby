@@ -13,22 +13,6 @@ PUBLIC const char *DobbyGetVersion() {
   return __DOBBY_BUILD_VERSION__;
 }
 
-PUBLIC DobbyInterceptorInfo *DobbyGetInterceptorInfo() {
-  auto info = new DobbyInterceptorInfo;
-  auto interceptor = Interceptor::SharedInstance();
-  info->entry_count = interceptor->count();
-  info->entries = new void *[interceptor->count()];
-  for (int i = 0; i < interceptor->count(); i++) {
-    info->entries[i] = (void *)interceptor->getEntry(i)->patched_addr;
-  }
-  return info;
-}
-
-PUBLIC void DobbyFreeInterceptorInfo(DobbyInterceptorInfo *info) {
-  delete[] info->entries;
-  delete info;
-}
-
 PUBLIC int DobbyDestroy(void *address) {
   auto entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
   if (entry) {
