@@ -78,7 +78,6 @@ include_directories(
   ./external
   ./external/logging
   ./external/misc-helper
-  ./external/ArxContainer
 
   ./builtin-plugin
 )

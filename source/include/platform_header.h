@@ -36,8 +36,6 @@
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #ifdef __cplusplus
 #define abs(a) ((a) < 0 ? -(a) : (a))
-#include "ArxContainer.h"
-#define std arx
 #endif
 #else
 #ifdef __cplusplus
