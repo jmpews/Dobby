@@ -10,10 +10,11 @@
 #if defined(_POSIX_VERSION) || defined(__APPLE__)
 #include <unistd.h>
 #include <syslog.h>
+#include <errno.h>
+#include <time.h>
 #endif
 
 #if defined(__APPLE__)
-#include <os/log.h>
 #include <dlfcn.h>
 #endif
 
@@ -24,83 +25,89 @@
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
 
-static int _log_level = 1;
-
-PUBLIC void log_set_level(int level) {
-  _log_level = level;
-}
-
-static int _syslog_enabled = 0;
-
-PUBLIC void log_switch_to_syslog(void) {
-  _syslog_enabled = 1;
-}
-
-static int _file_log_enabled = 0;
+static int g_log_level = 1;
+static char *g_log_tag[64] = {0};
+static bool time_tag_enabled = false;
+static bool syslog_enabled = false;
+static bool file_log_enabled = false;
 static const char *log_file_path = NULL;
 static int log_file_fd = -1;
 static FILE *log_file_stream = NULL;
 
-PUBLIC void log_switch_to_file(const char *path) {
-  _file_log_enabled = 1;
-  log_file_path = strdup(path);
-
-#if 0
-  log_file_fd = open(log_file_path, O_WRONLY | O_CREAT | O_APPEND, 0666);
-#endif
-  log_file_stream = fopen(log_file_path, "a+");
+PUBLIC void log_set_level(int level) {
+  g_log_level = level;
 }
 
-static int check_log_file_available() {
-  if (log_file_stream)
-    return 1;
+PUBLIC void log_set_tag(const char *tag) {
+  sprintf(g_log_tag, "[%s] ", tag);
+}
 
-  if (log_file_path) {
-    log_file_stream = fopen(log_file_path, "a+");
+PUBLIC void log_enable_time_tag() {
+  time_tag_enabled = true;
+}
+
+PUBLIC void log_switch_to_syslog(void) {
+  syslog_enabled = 1;
+}
+
+PUBLIC void log_switch_to_file(const char *path) {
+  file_log_enabled = 1;
+  log_file_path = strdup(path);
+  log_file_stream = fopen(log_file_path, "w+");
+  if (log_file_stream == NULL) {
+    file_log_enabled = false;
+    ERROR_LOG("open log file %s failed, %s", path, strerror(errno));
   }
-
-  if (log_file_stream)
-    return 1;
-
-  return 0;
 }
 
 PUBLIC int log_internal_impl(int level, const char *fmt, ...) {
-  if (level < _log_level)
+  if (level < g_log_level)
     return 0;
+
+  char buffer[4096] = {0};
+
+  if (g_log_tag[0] != 0) {
+    snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "%s ", g_log_tag);
+  }
+
+  if (time_tag_enabled) {
+    time_t now = time(NULL);
+    struct tm *tm = localtime(&now);
+    snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "%04d-%02d-%02d %02d:%02d:%02d ",
+             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+  }
+
+  snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "%s\n", fmt);
+
+  fmt = buffer;
 
   va_list ap;
   va_start(ap, fmt);
+
 #pragma clang diagnostic ignored "-Wformat"
+
+  if (syslog_enabled) {
 #if defined(__APPLE__)
-  static void (*os_log_with_args)(os_log_t oslog, os_log_type_t type, const char *format, va_list args,
-                                  void *ret_addr) = 0;
-  if (!os_log_with_args)
-    os_log_with_args = (__typeof(os_log_with_args))dlsym(-2, "os_log_with_args");
-  os_log_with_args(OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, fmt, ap, os_log_with_args);
+    extern void *_os_log_default;
+    static void (*os_log_with_args)(void *oslog, char type, const char *format, va_list args, void *ret_addr) = 0;
+    if (!os_log_with_args)
+      os_log_with_args = (__typeof(os_log_with_args))dlsym((void *)-2, "os_log_with_args");
+    os_log_with_args(&_os_log_default, 0x10, fmt, ap, os_log_with_args);
 #elif defined(_POSIX_VERSION)
-  vsyslog(LOG_ERR, fmt, ap);
+    vsyslog(LOG_ERR, fmt, ap);
 #endif
-  if (_file_log_enabled) {
-    if (check_log_file_available()) {
-#define MAX_PRINT_BUFFER_SIZE 1024
-      char buffer[MAX_PRINT_BUFFER_SIZE] = {0};
-      vsnprintf(buffer, MAX_PRINT_BUFFER_SIZE - 1, fmt, ap);
-      if (fwrite(buffer, sizeof(char), strlen(buffer) + 1, log_file_stream) == -1) {
-        // log_file_fd invalid
-        log_file_stream = NULL;
-        if (check_log_file_available()) {
-          // try again
-          fwrite(buffer, sizeof(char), strlen(buffer) + 1, log_file_stream);
-        }
-      }
-      fflush(log_file_stream);
-    } else {
-      vprintf(fmt, ap);
-    }
   }
 
-  if (!_syslog_enabled && !_file_log_enabled) {
+  if (file_log_enabled) {
+    char buffer[4096] = {0};
+    vsnprintf(buffer, 4096 - 1, fmt, ap);
+    if (fwrite(buffer, sizeof(char), strlen(buffer) + 1, log_file_stream) == -1) {
+      file_log_enabled = false;
+    }
+    fflush(log_file_stream);
+  }
+
+  if (!syslog_enabled && !file_log_enabled) {
 #if defined(__ANDROID__)
 #define ANDROID_LOG_TAG "Dobby"
 #include <android/log.h>

@@ -4,7 +4,7 @@
 #include "InterceptRouting/InterceptRouting.h"
 #include "InterceptRouting/Routing/InstructionInstrument/InstructionInstrumentRouting.h"
 
-PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t handler) {
+PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler) {
   if (!address) {
     ERROR_LOG("address is 0x0.\n");
     return RS_FAILED;
@@ -27,7 +27,7 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t handler) {
   entry->type = kInstructionInstrument;
   entry->patched_addr = (addr_t)address;
 
-  auto routing = new InstructionInstrumentRouting(entry, handler);
+  auto routing = new InstructionInstrumentRouting(entry, pre_handler, nullptr);
   routing->Prepare();
   routing->DispatchRouting();
   routing->Commit();

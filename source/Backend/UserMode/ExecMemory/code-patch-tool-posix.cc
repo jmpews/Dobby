@@ -7,7 +7,7 @@
 #include <string.h>
 
 #if !defined(__APPLE__)
-PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
+PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
 
   int page_size = (int)sysconf(_SC_PAGESIZE);
   uintptr_t page_align_address = ALIGN_FLOOR(address, page_size);

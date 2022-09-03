@@ -7,11 +7,14 @@
 
 class InterceptRouting {
 public:
-  InterceptRouting(HookEntry *entry) : entry_(entry) {
+  explicit InterceptRouting(HookEntry *entry) : entry_(entry) {
     entry->routing = this;
 
-    trampoline_ = NULL;
-    trampoline_buffer_ = NULL;
+    origin_ = nullptr;
+    relocated_ = nullptr;
+
+    trampoline_ = nullptr;
+    trampoline_buffer_ = nullptr;
     trampoline_target_ = 0;
   }
 
@@ -37,7 +40,7 @@ public:
     trampoline_target_ = address;
   }
 
-   addr_t GetTrampolineTarget() {
+  addr_t GetTrampolineTarget() {
     return trampoline_target_;
   }
 
@@ -50,13 +53,10 @@ protected:
   HookEntry *entry_;
 
   CodeMemBlock *origin_;
-
   CodeMemBlock *relocated_;
 
   CodeMemBlock *trampoline_;
-
   // trampoline buffer before active
   CodeBufferBase *trampoline_buffer_;
-
   addr_t trampoline_target_;
 };

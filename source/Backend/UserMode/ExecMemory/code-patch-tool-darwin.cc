@@ -20,7 +20,7 @@
     }                                                                                                                  \
   } while (0);
 
-PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
+PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   if (address == nullptr || buffer == nullptr || buffer_size == 0) {
     FATAL("invalid argument");
     return kMemoryOperationError;
@@ -34,7 +34,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
     void *address_a = address;
     uint8_t *buffer_a = buffer;
     uint32_t buffer_size_a = (page_aligned_address + page_size - (addr_t)address);
-    err = CodePatch(address_a, buffer_a, buffer_size_a);
+    err = DobbyCodePatch(address_a, buffer_a, buffer_size_a);
     if (err != kMemoryOperationSuccess) {
       return err;
     }
@@ -42,7 +42,7 @@ PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t b
     void *address_b = (void *)((addr_t)address + buffer_size_a);
     uint8_t *buffer_b = buffer + buffer_size_a;
     uint32_t buffer_size_b = buffer_size - buffer_size_a;
-    err = CodePatch(address_b, buffer_b, buffer_size_b);
+    err = DobbyCodePatch(address_b, buffer_b, buffer_size_b);
     return err;
   }
 

@@ -15,7 +15,7 @@ public:
   void DispatchRouting() override;
 
 private:
-  virtual void BuildRouting();
+  void BuildRouting();
 
 private:
   dobby_dummy_func_t replace_func;

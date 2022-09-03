@@ -1,7 +1,15 @@
-#ifndef LOGGING_H
-#define LOGGING_H
+#pragma once
 
 #define LOG_TAG NULL
+
+typedef enum {
+  LOG_LEVEL_VERBOSE = 0,
+  LOG_LEVEL_DEBUG = 1,
+  LOG_LEVEL_INFO = 2,
+  LOG_LEVEL_WARN = 3,
+  LOG_LEVEL_ERROR = 4,
+  LOG_LEVEL_FATAL = 5
+} LogLevel;
 
 #if 1
 #ifdef __cplusplus
@@ -9,9 +17,9 @@ extern "C" {
 #endif
 
 void log_set_level(int level);
-
+void log_set_tag(const char *tag);
+void log_enable_time_tag();
 void log_switch_to_syslog();
-
 void log_switch_to_file(const char *path);
 
 #if !defined(LOG_FUNCTION_IMPL)
@@ -36,39 +44,37 @@ extern "C" {
 #endif
 #endif
 
-#define LOG(level, fmt, ...)                                                                                           \
-  do {                                                                                                                 \
-    if (LOG_TAG)                                                                                                       \
-      LOG_FUNCTION_IMPL(level, "[*] [%s] " fmt "\n", LOG_TAG, ##__VA_ARGS__);                                          \
-    else                                                                                                               \
-      LOG_FUNCTION_IMPL(level, "[*] " fmt "\n", ##__VA_ARGS__);                                                        \
-  } while (0)
-
 #define RAW_LOG(level, fmt, ...)                                                                                       \
   do {                                                                                                                 \
     LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                      \
   } while (0)
 
-#define FATAL(fmt, ...)                                                                                                \
+#define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
-    RAW_LOG(0xff, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
-    RAW_LOG(0xff, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
+    if (LOG_TAG)                                                                                                       \
+      LOG_FUNCTION_IMPL(level, "[%s] " fmt, LOG_TAG, ##__VA_ARGS__);                                                   \
+    else                                                                                                               \
+      LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                    \
+  } while (0)
+
+#define INFO_LOG(fmt, ...)                                                                                             \
+  do {                                                                                                                 \
+    LOG(LOG_LEVEL_INFO, "[*] " fmt, ##__VA_ARGS__);                                                                    \
   } while (0)
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    RAW_LOG(0xff, "[!] [%s:%d:%s]: \n", __FILE__, __LINE__, __func__);                                                   \
-    RAW_LOG(0xff, "[!] " fmt "\n", ##__VA_ARGS__);                                                                       \
+    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
-#define ERROR_TRACE_LOG()                                                                                              \
+#define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
-    RAW_LOG(0xff, "[!] %s:%d:%s\n", __FILE__, __LINE__, __func__);                                                       \
+    LOG_FUNCTION_IMPL(LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__);                                                            \
   } while (0)
 
-#define INVOKE_TRACE_LOG()                                                                                             \
+#define TRACE_LOG()                                                                                                    \
   do {                                                                                                                 \
-    RAW_LOG(0xff, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                                       \
+    LOG_FUNCTION_IMPL(-1, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                             \
   } while (0)
 
 #if defined(LOGGING_DEBUG)
@@ -79,5 +85,3 @@ extern "C" {
 
 #define UNIMPLEMENTED() FATAL("%s\n", "unimplemented code!!!")
 #define UNREACHABLE() FATAL("%s\n", "unreachable code!!!")
-
-#endif

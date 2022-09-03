@@ -9,6 +9,8 @@ extern "C" {
 #include <stdint.h>
 
 void log_set_level(int level);
+void log_set_tag(const char *tag);
+void log_enable_time_tag();
 void log_switch_to_syslog();
 void log_switch_to_file(const char *path);
 
@@ -26,7 +28,7 @@ typedef uint64_t addr64_t;
 typedef void (*dobby_dummy_func_t)();
 typedef void (*asm_func_t)();
 
-MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
+MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 #if defined(__arm64__) || defined(__aarch64__)
 
@@ -141,7 +143,7 @@ int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy_func_t
 // [!!! READ ME !!!]
 // for Arm64, can't access q8 - q31, unless enable full floating-point register pack
 typedef void (*dobby_instrument_callback_t)(void *address, DobbyRegisterContext *ctx);
-int DobbyInstrument(void *address, dobby_instrument_callback_t handler);
+int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler);
 
 int DobbyDestroy(void *address);
 

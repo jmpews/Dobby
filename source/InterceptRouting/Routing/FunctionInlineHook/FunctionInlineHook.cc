@@ -14,7 +14,6 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
   replace_func  = ptrauth_strip(replace_func, ptrauth_key_asia);
 #endif
 
-  RAW_LOG(1, "\n\n");
   DLOG(0, "----- [DobbyHook:%p] -----", address);
 
   // check if already register

@@ -10,10 +10,10 @@ PUBLIC void common_closure_bridge_handler(DobbyRegisterContext *ctx, ClosureTram
   auto routing_handler = (routing_handler_t)entry->carry_handler;
 
 #if __arm64e__ && __has_feature(ptrauth_calls)
-  uint64_t discriminator = __builtin_ptrauth_type_discriminator(__typeof(routing_handler));
-  discriminator = 0;
+  uint64_t discriminator = 0;
+  // discriminator = __builtin_ptrauth_type_discriminator(__typeof(routing_handler));
   routing_handler = (__typeof(routing_handler))__builtin_ptrauth_sign_unauthenticated(
-      (void *)routing_handler, ptrauth_key_asia, 0);
+      (void *)routing_handler, ptrauth_key_asia, discriminator);
 #endif
 
   routing_handler((HookEntry *)entry->carry_data, ctx);

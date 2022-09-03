@@ -21,7 +21,7 @@ PUBLIC int DobbyDestroy(void *address) {
 #if defined(TARGET_ARCH_ARM)
     address = (void *)((addr_t)address - 1);
 #endif
-    CodePatch(address, buffer, buffer_size);
+    DobbyCodePatch(address, buffer, buffer_size);
     Interceptor::SharedInstance()->removeHookEntry((addr_t)address);
     return RT_SUCCESS;
   }

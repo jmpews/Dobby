@@ -58,7 +58,7 @@ uint8_t *MemoryAllocator::allocateExecMemory(uint32_t size) {
 }
 uint8_t *MemoryAllocator::allocateExecMemory(uint8_t *buffer, uint32_t buffer_size) {
   auto mem = allocateExecMemory(buffer_size);
-  auto ret = CodePatch(mem, buffer, buffer_size);
+  auto ret = DobbyCodePatch(mem, buffer, buffer_size);
   CHECK_EQ(ret, kMemoryOperationSuccess);
   return mem;
 }

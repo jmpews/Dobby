@@ -7,8 +7,8 @@
 
 void instrument_forward_handler(HookEntry *entry, DobbyRegisterContext *ctx) {
   auto routing = static_cast<InstructionInstrumentRouting *>(entry->routing);
-  if (routing->handler) {
-    auto handler = (dobby_instrument_callback_t)routing->handler;
+  if (routing->pre_handler) {
+    auto handler = (dobby_instrument_callback_t)routing->pre_handler;
     (*handler)((void *)entry->patched_addr, ctx);
   }
 

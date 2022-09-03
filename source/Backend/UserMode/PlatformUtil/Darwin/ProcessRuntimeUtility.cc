@@ -40,15 +40,14 @@ std::vector<MemRegion> regions;
 const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
-  struct vm_region_submap_short_info_64 submap_info;
-  mach_msg_type_number_t count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
+  vm_region_submap_info_64 region_submap_info;
+  mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
   mach_vm_address_t addr = 0;
   mach_vm_size_t size = 0;
   natural_t depth = 0;
   while (true) {
-    count = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64;
-    kern_return_t kr =
-        mach_vm_region_recurse(mach_task_self(), &addr, &size, &depth, (vm_region_recurse_info_t)&submap_info, &count);
+    count = VM_REGION_SUBMAP_INFO_COUNT_64;
+    kern_return_t kr = mach_vm_region_recurse(mach_task_self(), (mach_vm_address_t *)&addr, (mach_vm_size_t *)&size, &depth, (vm_region_recurse_info_t)&region_submap_info, &count);
     if (kr != KERN_SUCCESS) {
       if (kr == KERN_INVALID_ADDRESS) {
         break;
@@ -57,23 +56,23 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
       }
     }
 
-    if (submap_info.is_submap) {
+    if (region_submap_info.is_submap) {
       depth++;
     } else {
       MemoryPermission permission;
-      if ((submap_info.protection & PROT_READ) && (submap_info.protection & PROT_WRITE)) {
+      if ((region_submap_info.protection & PROT_READ) && (region_submap_info.protection & PROT_WRITE)) {
         permission = MemoryPermission::kReadWrite;
-      } else if ((submap_info.protection & PROT_READ) == submap_info.protection) {
+      } else if ((region_submap_info.protection & PROT_READ) == region_submap_info.protection) {
         permission = MemoryPermission::kRead;
-      } else if ((submap_info.protection & PROT_READ) && (submap_info.protection & PROT_EXEC)) {
+      } else if ((region_submap_info.protection & PROT_READ) && (region_submap_info.protection & PROT_EXEC)) {
         permission = MemoryPermission::kReadExecute;
       } else {
-        continue;
+        permission = MemoryPermission::kNoAccess;
       }
-      MemRegion region = MemRegion(addr, size, permission);
 #if 0
       DLOG(0, "%p --- %p", addr, addr + size);
 #endif
+      MemRegion region = MemRegion(addr, size, permission);
       regions.push_back(region);
       addr += size;
     }

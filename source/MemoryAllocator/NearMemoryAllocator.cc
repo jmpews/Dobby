@@ -212,7 +212,7 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint32_t size, addr_t pos, 
 uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint8_t *buffer, uint32_t buffer_size, addr_t pos,
                                                      size_t search_range) {
   auto mem = allocateNearExecMemory(buffer_size, pos, search_range);
-  auto ret = CodePatch(mem, buffer, buffer_size);
+  auto ret = DobbyCodePatch(mem, buffer, buffer_size);
   CHECK_EQ(ret, kMemoryOperationSuccess);
   return mem;
 }

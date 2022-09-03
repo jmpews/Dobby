@@ -32,7 +32,7 @@
     }                                                                                                                  \
   } while (0);
 
-PUBLIC MemoryOperationError CodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
+PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   if (address == nullptr || buffer == nullptr || buffer_size == 0) {
     FATAL("invalid argument");
     return kMemoryOperationError;
