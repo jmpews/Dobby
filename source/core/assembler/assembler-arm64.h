@@ -40,7 +40,7 @@ constexpr Register TMP_REG_0 = X(ARM64_TMP_REG_NDX_0);
 #define Rn(rn) (rn.code() << kRnShift)
 #define Rm(rm) (rm.code() << kRmShift)
 
-// ----- next -----
+// ---
 
 class Operand {
 public:
@@ -93,7 +93,7 @@ private:
   int32_t shift_extent_imm_;
 };
 
-// ----- next -----
+// ---
 
 class MemOperand {
 public:
@@ -179,7 +179,7 @@ private:
   AddrMode addrmode_;
 };
 
-// ----- next -----
+// ---
 
 class OpEncode {
 public:
@@ -261,7 +261,7 @@ public:
   }
 };
 
-// ----- next -----
+// ---
 
 class Assembler : public AssemblerBase {
 public:
@@ -509,7 +509,7 @@ private:
   }
 };
 
-// ----- next -----
+// ---
 
 class TurboAssembler : public Assembler {
 public:

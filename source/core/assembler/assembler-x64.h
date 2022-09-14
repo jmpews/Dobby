@@ -29,7 +29,7 @@ typedef union _ModRM {
   };
 } ModRM;
 
-// ----- next -----
+// ---
 
 class Immediate {
 public:
@@ -62,7 +62,7 @@ private:
   int value_size_;
 };
 
-// ----- next -----
+// ---
 
 class Operand {
 public:
@@ -193,7 +193,7 @@ public:
   uint8_t encoding_[6];
 };
 
-// ----- next -----
+// ---
 
 class Address : public Operand {
 public:
@@ -266,7 +266,7 @@ private:
   }
 };
 
-// ----- next -----
+// ---
 
 class Assembler : public AssemblerBase {
 public:
@@ -292,7 +292,7 @@ public:
     buffer_->Emit64(value);
   }
 
-  // ----- next -----
+  // ---
 
   // refer android_art
   uint8_t EmitOptionalRex(bool force, bool w, bool r, bool x, bool b) {
@@ -358,7 +358,7 @@ public:
     }
   }
 
-  // ----- next -----
+  // ---
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
@@ -372,7 +372,7 @@ public:
     }
   }
 
-  // ----- next -----
+  // ---
 
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
@@ -412,7 +412,7 @@ public:
     EmitImmediate(imm, imm.size());
   }
 
-  // ----- next -----
+  // ---
 
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
     uint8_t ModRM = 0;
@@ -440,7 +440,7 @@ public:
     EmitModRM(ModRM_Mod(modRM), extra_opcode, ModRM_RM(modRM));
   }
 
-  // ----- next -----
+  // ---
 
   void EmitOpcode(uint8_t opcode) {
     Emit1(opcode);
@@ -450,7 +450,7 @@ public:
     EmitOpcode(opcode | reg.low_bits());
   }
 
-  // ----- next -----
+  // ---
 
   void pushfq() {
     Emit1(0x9C);
@@ -557,7 +557,7 @@ public:
   }
 };
 
-// ----- next -----
+// ---
 
 class TurboAssembler : public Assembler {
 public:
@@ -579,9 +579,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addr_label = new RelocLabelEntry((uint64_t)function.address());
+      RelocLabel *addr_label = new RelocLabel((uint64_t)function.address());
       addr_label->link_to(kDisp32_off_9, 0, ip_offset());
-      this->AppendRelocLabelEntry(addr_label);
+      this->AppendRelocLabel(addr_label);
     }
     nop();
   }

@@ -41,7 +41,7 @@ typedef struct {
 
 } relo_ctx_t;
 
-// ----- next -----
+// ---
 
 addr_t relo_cur_src_vmaddr(relo_ctx_t *ctx) {
   return ctx->src_vmaddr + (ctx->buffer_cursor - ctx->buffer);
@@ -56,7 +56,7 @@ addr_t relo_dst_offset_to_vmaddr(relo_ctx_t *ctx, off_t offset) {
   return ctx->dst_vmaddr + offset;
 }
 
-// ----- next -----
+// ---
 
 #if 0
 bool has_relo_label_at(relo_ctx_t *ctx, vmaddr_t addr) {
@@ -111,7 +111,7 @@ int64_t relo_label_link_offset(relo_ctx_t *ctx, pcrel_type_t pcrel_type, int64_t
 }
 #endif
 
-// ----- next -----
+// ---
 
 static inline bool inst_is_b_bl(uint32_t instr) {
   return (instr & UnconditionalBranchFixedMask) == UnconditionalBranchFixed;
@@ -141,7 +141,7 @@ static inline bool inst_is_test_b(uint32_t instr) {
   return (instr & TestBranchFixedMask) == TestBranchFixed;
 }
 
-// ----- next -----
+// ---
 
 int relo_relocate(relo_ctx_t *ctx) {
   int relocated_insn_count = 0;

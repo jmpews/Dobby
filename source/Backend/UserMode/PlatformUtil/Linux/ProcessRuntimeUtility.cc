@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <vector>
+#include <algorithm>
 
 #define LINE_MAX 2048
 

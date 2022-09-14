@@ -67,7 +67,7 @@ endif ()
 
 include(cmake/compiler_and_linker.cmake)
 
-# ----- include directories -----
+# ---
 
 include_directories(
   .
@@ -92,7 +92,7 @@ else ()
   )
 endif ()
 
-# ----- source file list -----
+# ---
 
 set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
@@ -224,7 +224,7 @@ if (PROCESSOR.X86_64 OR PROCESSOR.X86)
   set(NearBranch ON)
 endif ()
 
-# ----- ios -----
+# ---
 
 if (SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   include_directories(
@@ -248,7 +248,7 @@ if (FunctionWrapper)
   message(FATAL_ERROR "[!] FunctionWrapper plugin is not supported")
 endif ()
 
-# ----- next -----
+# ---
 
 if (NearBranch)
   message(STATUS "[Dobby] Enable near branch trampoline")
@@ -258,7 +258,7 @@ if (NearBranch)
     source/MemoryAllocator/NearMemoryAllocator.cc)
 endif ()
 
-# ----- next -----
+# ---
 
 add_subdirectory(external/misc-helper)
 get_target_property(misc_helper.SOURCE_FILE_LIST misc_helper SOURCES)
@@ -267,13 +267,7 @@ get_target_property(misc_helper.SOURCE_FILE_LIST misc_helper SOURCES)
 add_subdirectory(external/logging)
 get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 
-# ----- next -----
-
-if (Plugin.ImportTableReplace AND SYSTEM.Darwin)
-  message(STATUS "[Dobby] Enable got hook")
-  include_directories(builtin-plugin/ImportTableReplace)
-  add_subdirectory(builtin-plugin/ImportTableReplace)
-endif ()
+# ---
 
 if (Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable symbol resolver")
@@ -285,23 +279,13 @@ if (Plugin.SymbolResolver)
     )
 endif ()
 
-if (Plugin.Android.BionicLinker)
-  if (NOT SYSTEM.Android)
-    message(FATAL_ERROR "[!] Plugin.Android.BionicLinker only works on Android.")
-  endif ()
-  message(STATUS "[Dobby] Enable Plugin.Android.BionicLinker")
-  set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
-    builtin-plugin/BionicLinkerUtil/bionic_linker_util.cc
-    )
-endif ()
-
-# ----- next -----
+# ---
 
 set(dobby.HEADER_FILE_LIST
   include/dobby.h
   )
 
-# ----- next -----
+# ---
 
 # add build version
 string(TIMESTAMP TODAY "%Y%m%d")
@@ -321,7 +305,7 @@ set(DOBBY_BUILD_VERSION "Dobby${VERSION_REVISION}")
 add_definitions(-D__DOBBY_BUILD_VERSION__="${DOBBY_BUILD_VERSION}")
 message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
-# ----- next -----
+# ---
 
 if (DOBBY_GENERATE_SHARED)
   message(STATUS "[Dobby] Generate shared library")
@@ -332,11 +316,11 @@ else ()
 endif ()
 add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${misc_helper.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
 
-# ----- next -----
+# ---
 
 target_include_directories(dobby PUBLIC include)
 
-# ----- next -----
+# ---
 
 if (Obfuscation)
   set(linker_flags "${linker_flags} -Wl,-mllvm -Wl,-obfuscator-conf=all")
@@ -348,7 +332,7 @@ set_target_properties(dobby
   COMPILE_FLAGS "${compiler_flags}"
   )
 
-# ----- next -----
+# ---
 
 if (SYSTEM.Android)
   target_link_libraries(dobby log)
@@ -364,13 +348,13 @@ if (SYSTEM.Linux)
   target_link_libraries(dobby dl)
 endif ()
 
-# ----- next -----
+# ---
 
 if (BUILD_EXAMPLE AND (NOT BUILDING_KERNEL))
   add_subdirectory(examples)
 endif ()
 
-# ----- next -----
+# ---
 
 if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   include(cmake/platform/platform-darwin.cmake)

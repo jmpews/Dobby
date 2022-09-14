@@ -38,7 +38,7 @@ typedef struct {
   tinystl::unordered_map<vmaddr_t, AssemblerPseudoLabel *> label_map;
 } relo_ctx_t;
 
-// ----- next -----
+// ---
 
 addr_t relo_cur_src_vmaddr(relo_ctx_t *ctx) {
   int relocated_len = ctx->buffer_cursor - ctx->buffer;
@@ -116,7 +116,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
       Register regRt = Register::R(Rt);
 
       auto label = new RelocLabel(dst_vmaddr);
-      _ AppendRelocLabelEntry(label);
+      _ AppendRelocLabel(label);
 
       // ===
       if (regRt.code() == pc.code()) {
@@ -164,7 +164,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
 
           Register regRd = Register::R(Rd);
           RelocLabel *pseudoDataLabel = new RelocLabel(dst_vmaddr);
-          _ AppendRelocLabelEntry(pseudoDataLabel);
+          _ AppendRelocLabel(pseudoDataLabel);
           // ===
           _ Ldr(regRd, pseudoDataLabel);
           // ===
@@ -257,7 +257,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
         rewrite_inst = (insn & 0xff87) | LeftShift((VOLATILE_REGISTER.code()), 4, 3);
 
         auto label = new ThumbRelocLabelEntry(curr_pc, false);
-        _ AppendRelocLabelEntry(label);
+        _ AppendRelocLabel(label);
 
         _ T2_Ldr(VOLATILE_REGISTER, label);
         _ EmitInt16(rewrite_inst);
@@ -275,7 +275,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
         if (rm == pc.code()) {
           vmaddr_t dst_vmaddr = relo_cur_src_vmaddr(ctx);
           auto label = new ThumbRelocLabelEntry(dst_vmaddr, true);
-          _ AppendRelocLabelEntry(label);
+          _ AppendRelocLabel(label);
 
           _ T2_Ldr(pc, label);
 
@@ -289,7 +289,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
         if (rm == pc.code()) {
           vmaddr_t dst_vmaddr = relo_cur_src_vmaddr(ctx);
           auto label = new ThumbRelocLabelEntry(dst_vmaddr, true);
-          _ AppendRelocLabelEntry(label);
+          _ AppendRelocLabel(label);
 
           int label_branch_off = 4, label_continue_off = 4;
           _ t2_bl(label_branch_off);
@@ -315,7 +315,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
     rt = bits(insn, 8, 10);
 
     auto label = new ThumbRelocLabelEntry(dst_vmaddr, false);
-    _ AppendRelocLabelEntry(label);
+    _ AppendRelocLabel(label);
 
     _ T2_Ldr(Register::R(rt), label);
     _ t2_ldr(Register::R(rt), MemOperand(Register::R(rt), 0));
@@ -330,7 +330,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
     vmaddr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
     auto label = new ThumbRelocLabelEntry(dst_vmaddr, false);
-    _ AppendRelocLabelEntry(label);
+    _ AppendRelocLabel(label);
 
     _ T2_Ldr(Register::R(rd), label);
 
@@ -351,7 +351,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
     vmaddr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
     auto label = new ThumbRelocLabelEntry(dst_vmaddr + 1, true);
-    _ AppendRelocLabelEntry(label);
+    _ AppendRelocLabel(label);
 
     // modify imm8 field
     imm8 = 0x4 >> 1;
@@ -373,7 +373,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
     rn = bits(insn, 0, 2);
 
     auto label = new ThumbRelocLabelEntry(dst_vmaddr + 1, true);
-    _ AppendRelocLabelEntry(label);
+    _ AppendRelocLabel(label);
 
     imm5 = bits(0x4 >> 1, 1, 5);
     i = bit(0x4 >> 1, 6);
@@ -393,7 +393,7 @@ static void Thumb1RelocateSingleInsn(relo_ctx_t *ctx, int16_t insn) {
     vmaddr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
     auto label = new ThumbRelocLabelEntry(dst_vmaddr + 1, true);
-    _ AppendRelocLabelEntry(label);
+    _ AppendRelocLabel(label);
 
     _ T2_Ldr(pc, label);
 

@@ -70,14 +70,14 @@ static inline vm_map_entry_t vm_map_first_entry(vm_map_t map) {
   return ((vm_map_header *)((addr_t)map + KERN_STRUCT_OFFSET(vm_map, hdr)))->links.next;
 }
 
-// ----- next -----
+// ---
 
 static std::vector<MemRegion> regions;
 const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return regions;
 }
 
-// ----- next -----
+// ---
 
 #include <libkern/OSKextLib.h>
 

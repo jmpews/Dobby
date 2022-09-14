@@ -82,9 +82,9 @@ private:
   LiteMutableArray instructions_;
 };
 
-class RelocLabelEntry : public AssemblerPseudoLabel {
+class RelocLabel : public AssemblerPseudoLabel {
 public:
-  explicit RelocLabelEntry(uint64_t data) : data_size_(0) {
+  explicit RelocLabel(uint64_t data) : data_size_(0) {
     data_ = data;
   }
 
@@ -655,9 +655,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addrLabel = new RelocLabelEntry((uint64_t)function.address());
+      RelocLabel *addrLabel = new RelocLabel((uint64_t)function.address());
       addrLabel->link_to(ip_offset(), AssemblerPseudoLabel::kDisp32_off_9);
-      this->AppendRelocLabelEntry(addrLabel);
+      this->AppendRelocLabel(addrLabel);
     }
     nop();
   }
@@ -683,13 +683,13 @@ public:
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      RelocLabelEntry *label = (RelocLabelEntry *)data_labels_->getObject(i);
+      RelocLabel *label = (RelocLabel *)data_labels_->getObject(i);
       PseudoBind(label);
       EmitAddr(label->data());
     }
   }
 
-  void AppendRelocLabelEntry(RelocLabelEntry *label) {
+  void AppendRelocLabel(RelocLabel *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }

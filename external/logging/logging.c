@@ -1,17 +1,18 @@
 #include "logging/logging.h"
 
 #include <stdio.h>
-#include <stdarg.h> // va_start
+#include <stdarg.h>
 #include <assert.h>
-
 #include <string.h>
-#include <fcntl.h>
+#include <stdbool.h>
+#include <time.h>
 
-#if defined(_POSIX_VERSION) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #include <syslog.h>
 #include <errno.h>
-#include <time.h>
+#include <fcntl.h>
+#include <sys/types.h>
 #endif
 
 #if defined(__APPLE__)
@@ -26,7 +27,7 @@
 #endif
 
 static int g_log_level = 1;
-static char *g_log_tag[64] = {0};
+static char g_log_tag[64] = {0};
 static bool time_tag_enabled = false;
 static bool syslog_enabled = false;
 static bool file_log_enabled = false;

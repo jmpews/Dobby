@@ -13,6 +13,7 @@
 #include <math.h>
 #include <machine/limits.h>
 #else
+#include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>

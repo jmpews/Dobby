@@ -35,7 +35,7 @@ constexpr Register VOLATILE_REGISTER = r12;
 #define Rn(rn) (rn.code() << kRnShift)
 #define Rm(rm) (rm.code() << kRmShift)
 
-// ----- next -----
+// ---
 
 class Operand {
   friend class OpEncode;
@@ -72,7 +72,7 @@ private:
   friend class EncodeUtility;
 };
 
-// ----- next -----
+// ---
 
 class MemOperand {
   friend class OpEncode;
@@ -125,7 +125,7 @@ private:
   AddrMode addrmode_; // bits P, U, and W
 };
 
-// ----- next -----
+// ---
 
 class OpEncode {
 public:
@@ -305,7 +305,7 @@ public:
 
 }; // namespace arm
 
-// ----- next -----
+// ---
 
 class TurboAssembler : public Assembler {
 public:

@@ -31,7 +31,7 @@ typedef union _ModRM {
   };
 } ModRM;
 
-// ----- next -----
+// ---
 
 
 class Immediate {
@@ -63,7 +63,7 @@ private:
   int value_size_;
 };
 
-// ----- next -----
+// ---
 
 class Operand {
 public:
@@ -156,7 +156,7 @@ public:
   uint8_t encoding_[6];
 };
 
-// ----- next -----
+// ---
 
 
 class Address : public Operand {
@@ -227,7 +227,7 @@ private:
   }
 };
 
-// ----- next -----
+// ---
 
 
 class Assembler : public AssemblerBase {
@@ -250,7 +250,7 @@ public:
     buffer_->Emit32(value);
   }
 
-  // ----- next -----
+  // ---
 
 
   void EmitImmediate(Immediate imm, int imm_size) {
@@ -263,7 +263,7 @@ public:
     }
   }
 
-  // ----- next -----
+  // ---
 
 
   // ATTENTION:
@@ -304,7 +304,7 @@ public:
     EmitImmediate(imm, imm.size());
   }
 
-  // ----- next -----
+  // ---
 
 
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
@@ -333,7 +333,7 @@ public:
     EmitModRM(ModRM_Mod(modRM), extra_opcode, ModRM_RM(modRM));
   }
 
-  // ----- next -----
+  // ---
 
   void EmitOpcode(uint8_t opcode) {
     Emit1(opcode);
@@ -343,7 +343,7 @@ public:
     EmitOpcode(opcode | reg.code());
   }
 
-  // ----- next -----
+  // ---
 
 
   void pushfq() {
@@ -433,7 +433,7 @@ public:
   }
 };
 
-// ----- next -----
+// ---
 
 
 class TurboAssembler : public Assembler {
@@ -451,9 +451,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabelEntry *addr_label = new RelocLabelEntry((uint32_t)function.address());
+      RelocLabel *addr_label = new RelocLabel((uint32_t)function.address());
       addr_label->link_to(kDisp32_off_7, 0, ip_offset());
-      this->AppendRelocLabelEntry(addr_label);
+      this->AppendRelocLabel(addr_label);
     }
     nop();
   }

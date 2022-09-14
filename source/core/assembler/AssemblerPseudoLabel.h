@@ -69,7 +69,7 @@ protected:
   std::vector<ref_label_inst_t> ref_label_insts_;
 };
 
-// ----- next -----
+// ---
 
 struct RelocLabel : public AssemblerPseudoLabel {
 public:

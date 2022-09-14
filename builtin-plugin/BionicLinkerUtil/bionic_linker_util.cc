@@ -20,7 +20,7 @@
 #include "common_header.h"
 
 #undef LOG_TAG
-#define LOG_TAG "BionicLinker"
+#define LOG_TAG "BionicLinkerUtil"
 
 #undef Q
 #define Q 29

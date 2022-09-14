@@ -49,11 +49,11 @@ public:
   }
 };
 
-class ThumbRelocLabelEntry : public ThumbPseudoLabel, public RelocLabelEntry {
+class ThumbRelocLabelEntry : public ThumbPseudoLabel, public RelocLabel {
 public:
   template <typename T>
   ThumbRelocLabelEntry(T value, bool is_pc_register)
-      : RelocLabelEntry(value), ThumbPseudoLabel(), is_pc_register_(is_pc_register) {
+      : RelocLabel(value), ThumbPseudoLabel(), is_pc_register_(is_pc_register) {
   }
 
   bool is_pc_register() {
@@ -64,7 +64,7 @@ private:
   bool is_pc_register_;
 };
 
-// ----- next -----
+// ---
 
 class ThumbAssembler : public Assembler {
 public:
@@ -202,7 +202,7 @@ private:
   }
 };
 
-// ----- next -----
+// ---
 
 class ThumbTurboAssembler : public ThumbAssembler {
 public:
@@ -251,7 +251,7 @@ public:
     }
   }
 
-  // ----- next -----
+  // ---
 
   void PseudoBind(ThumbPseudoLabel *label) {
     const addr_t bound_pc = buffer_->GetBufferSize();
@@ -269,7 +269,7 @@ public:
     }
   }
 
-  void AppendRelocLabelEntry(ThumbRelocLabelEntry *label) {
+  void AppendRelocLabel(ThumbRelocLabelEntry *label) {
     data_labels_.push_back(label);
   }
 

@@ -6,7 +6,7 @@
 
 #include <dlfcn.h>
 
-#define LOG_TAG "BionicLinker"
+#define LOG_TAG "BionicLinkerUtil"
 
 __attribute__((constructor)) static void ctor() {
   const char *lib = NULL;
