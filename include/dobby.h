@@ -30,8 +30,38 @@ typedef void (*asm_func_t)();
 
 MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
-#if defined(__arm64__) || defined(__aarch64__)
+#if !defined(DISABLE_ARCH_DETECT)
+#if defined(__arm__)
+#define TARGET_ARCH_ARM 1
+#elif defined(__arm64__) || defined(__aarch64__)
+#define TARGET_ARCH_ARM64 1
+#elif defined(_M_IX86) || defined(__i386__)
+#define TARGET_ARCH_IA32 1
+#elif defined(_M_X64) || defined(__x86_64__)
+#define TARGET_ARCH_X64 1
+#else
+#error Target architecture was not detected as supported by Dobby
+#endif
+#endif
 
+#if defined(TARGET_ARCH_ARM)
+typedef struct {
+  uint32_t dummy_0;
+  uint32_t dummy_1;
+
+  uint32_t dummy_2;
+  uint32_t sp;
+
+  union {
+    uint32_t r[13];
+    struct {
+      uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
+    } regs;
+  } general;
+
+  uint32_t lr;
+} DobbyRegisterContext;
+#elif defined(TARGET_ARCH_ARM64)
 #define ARM64_TMP_REG_NDX_0 17
 
 typedef union _FPReg {
@@ -76,24 +106,7 @@ typedef struct {
     } regs;
   } floating;
 } DobbyRegisterContext;
-#elif defined(__arm__)
-typedef struct {
-  uint32_t dummy_0;
-  uint32_t dummy_1;
-
-  uint32_t dummy_2;
-  uint32_t sp;
-
-  union {
-    uint32_t r[13];
-    struct {
-      uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
-    } regs;
-  } general;
-
-  uint32_t lr;
-} DobbyRegisterContext;
-#elif defined(_M_IX86) || defined(__i386__)
+#elif defined(TARGET_ARCH_IA32)
 typedef struct _RegisterContext {
   uint32_t dummy_0;
   uint32_t esp;
@@ -108,7 +121,7 @@ typedef struct _RegisterContext {
   } general;
 
 } DobbyRegisterContext;
-#elif defined(_M_X64) || defined(__x86_64__)
+#elif defined(TARGET_ARCH_X64)
 typedef struct {
   uint64_t dummy_0;
   uint64_t rsp;

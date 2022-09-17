@@ -104,7 +104,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
     return RT_FAILED;
   }
 
-  // Generate executable code
+  // generate executable code
   {
     AssemblyCode *code = NULL;
     code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);

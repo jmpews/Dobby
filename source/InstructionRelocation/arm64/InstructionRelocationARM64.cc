@@ -1,4 +1,5 @@
 #include "platform_macro.h"
+
 #if defined(TARGET_ARCH_ARM64)
 
 #include "InstructionRelocation/arm64/InstructionRelocationARM64.h"
@@ -35,9 +36,9 @@ typedef struct {
 
   CodeMemBlock *relocated;
 
-  std::map<off_t, off_t> relocated_offset_map;
+  tinystl::unordered_map<off_t, off_t> relocated_offset_map;
 
-  std::map<vmaddr_t, AssemblerPseudoLabel *> label_map;
+  tinystl::unordered_map<vmaddr_t, AssemblerPseudoLabel *> label_map;
 
 } relo_ctx_t;
 
@@ -46,12 +47,15 @@ typedef struct {
 addr_t relo_cur_src_vmaddr(relo_ctx_t *ctx) {
   return ctx->src_vmaddr + (ctx->buffer_cursor - ctx->buffer);
 }
+
 addr_t relo_cur_dst_vmaddr(relo_ctx_t *ctx, TurboAssembler *assembler) {
   return ctx->dst_vmaddr + assembler->GetCodeBuffer()->GetBufferSize();
 }
+
 addr_t relo_src_offset_to_vmaddr(relo_ctx_t *ctx, off_t offset) {
   return ctx->src_vmaddr + offset;
 }
+
 addr_t relo_dst_offset_to_vmaddr(relo_ctx_t *ctx, off_t offset) {
   return ctx->dst_vmaddr + offset;
 }
@@ -143,7 +147,7 @@ static inline bool inst_is_test_b(uint32_t instr) {
 
 // ---
 
-int relo_relocate(relo_ctx_t *ctx) {
+int relo_relocate(relo_ctx_t *ctx, bool branch) {
   int relocated_insn_count = 0;
 
   TurboAssembler turbo_assembler_(0);
@@ -156,14 +160,16 @@ int relo_relocate(relo_ctx_t *ctx) {
     uint32_t relocated_off = relocated_buffer->GetBufferSize();
     ctx->relocated_offset_map[orig_off] = relocated_off;
 
-    // vmaddr_t inst_vmaddr = 0;
-    // inst_vmaddr = relo_cur_src_vmaddr(ctx);
-    // if (has_relo_label_at(ctx, inst_vmaddr)) {
-    //   auto *label = relo_label_create_or_get(ctx, inst_vmaddr);
-    //   label->bind_to(inst_vmaddr);
-    // }
+#if 0
+    vmaddr_t inst_vmaddr = 0;
+    inst_vmaddr = relo_cur_src_vmaddr(ctx);
+    if (has_relo_label_at(ctx, inst_vmaddr)) {
+      auto *label = relo_label_create_or_get(ctx, inst_vmaddr);
+      label->bind_to(inst_vmaddr);
+    }
+#endif
 
-    arm64_inst_t inst = *(arm64_inst_t *)ctx->buffer_cursor;
+    arm64_inst_t inst = *(arm64_inst_t *) ctx->buffer_cursor;
     if (inst_is_b_bl(inst)) {
       DLOG(0, "%d:relo <b_bl> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
@@ -185,7 +191,7 @@ int relo_relocate(relo_ctx_t *ctx) {
     } else if (inst_is_ldr_literal(inst)) {
       DLOG(0, "%d:relo <ldr_literal> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
-      int64_t offset = decode_imm26_offset(inst);
+      int64_t offset = decode_imm19_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
       int rt = decode_rt(inst);
@@ -210,8 +216,7 @@ int relo_relocate(relo_ctx_t *ctx) {
       int rd = decode_rd(inst);
 
       {
-        _ Mov(X(rd), dst_vmaddr);
-        ;
+        _ Mov(X(rd), dst_vmaddr);;
       }
     } else if (inst_is_adrp(inst)) {
       DLOG(0, "%d:relo <adrp> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
@@ -223,8 +228,7 @@ int relo_relocate(relo_ctx_t *ctx) {
       int rd = decode_rd(inst);
 
       {
-        _ Mov(X(rd), dst_vmaddr);
-        ;
+        _ Mov(X(rd), dst_vmaddr);;
       }
     } else if (inst_is_b_cond(inst)) {
       DLOG(0, "%d:relo <b_cond> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
@@ -283,7 +287,7 @@ int relo_relocate(relo_ctx_t *ctx) {
     } else if (inst_is_test_b(inst)) {
       DLOG(0, "%d:relo <test_b> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
-      int64_t offset = decode_imm19_offset(inst);
+      int64_t offset = decode_imm14_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
       arm64_inst_t branch_instr = inst;
@@ -313,11 +317,13 @@ int relo_relocate(relo_ctx_t *ctx) {
 
     ctx->buffer_cursor += sizeof(arm64_inst_t);
   }
-#undef  _
+#undef _
 
-  // TODO: if last instr is unlink branch, skip branch to next instruction
-  CodeGen codegen(&turbo_assembler_);
-  codegen.LiteralLdrBranch(relo_cur_src_vmaddr(ctx));
+  // TODO: if last instr is unlink branch, ignore it
+  if (branch) {
+    CodeGen codegen(&turbo_assembler_);
+    codegen.LiteralLdrBranch(relo_cur_src_vmaddr(ctx));
+  }
 
   // Bind all labels
   turbo_assembler_.RelocBind();
@@ -330,18 +336,22 @@ int relo_relocate(relo_ctx_t *ctx) {
   return 0;
 }
 
-void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {
-  relo_ctx_t ctx;
+void GenRelocateCode(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated, bool branch) {
+  relo_ctx_t ctx = {0};
 
-  ctx.buffer = ctx.buffer_cursor = (uint8_t *)buffer;
+  ctx.buffer = ctx.buffer_cursor = (uint8_t *) buffer;
   ctx.buffer_size = origin->size;
 
-  ctx.src_vmaddr = (vmaddr_t)origin->addr;
-  ctx.dst_vmaddr = 0;
+  ctx.src_vmaddr = (vmaddr_t) origin->addr;
+  ctx.dst_vmaddr = (vmaddr_t) relocated->addr;
 
-  relo_relocate(&ctx);
+  relo_relocate(&ctx, branch);
 
   relocated->reset(ctx.relocated->addr, ctx.relocated->size);
+}
+
+void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {
+  GenRelocateCode(buffer, origin, relocated, true);
 }
 
 #endif

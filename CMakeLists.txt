@@ -354,6 +354,8 @@ if (BUILD_EXAMPLE AND (NOT BUILDING_KERNEL))
   add_subdirectory(examples)
 endif ()
 
+add_subdirectory(tests)
+
 # ---
 
 if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
