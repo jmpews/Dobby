@@ -169,7 +169,7 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
     }
 #endif
 
-    arm64_inst_t inst = *(arm64_inst_t *) ctx->buffer_cursor;
+    arm64_inst_t inst = *(arm64_inst_t *)ctx->buffer_cursor;
     if (inst_is_b_bl(inst)) {
       DLOG(0, "%d:relo <b_bl> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
 
@@ -216,7 +216,8 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
       int rd = decode_rd(inst);
 
       {
-        _ Mov(X(rd), dst_vmaddr);;
+        _ Mov(X(rd), dst_vmaddr);
+        ;
       }
     } else if (inst_is_adrp(inst)) {
       DLOG(0, "%d:relo <adrp> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
@@ -228,7 +229,8 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
       int rd = decode_rd(inst);
 
       {
-        _ Mov(X(rd), dst_vmaddr);;
+        _ Mov(X(rd), dst_vmaddr);
+        ;
       }
     } else if (inst_is_b_cond(inst)) {
       DLOG(0, "%d:relo <b_cond> at %p", relocated_insn_count++, relo_cur_src_vmaddr(ctx));
@@ -339,11 +341,11 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
 void GenRelocateCode(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated, bool branch) {
   relo_ctx_t ctx = {0};
 
-  ctx.buffer = ctx.buffer_cursor = (uint8_t *) buffer;
+  ctx.buffer = ctx.buffer_cursor = (uint8_t *)buffer;
   ctx.buffer_size = origin->size;
 
-  ctx.src_vmaddr = (vmaddr_t) origin->addr;
-  ctx.dst_vmaddr = (vmaddr_t) relocated->addr;
+  ctx.src_vmaddr = (vmaddr_t)origin->addr;
+  ctx.dst_vmaddr = (vmaddr_t)relocated->addr;
 
   relo_relocate(&ctx, branch);
 

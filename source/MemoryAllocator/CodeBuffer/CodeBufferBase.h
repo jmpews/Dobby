@@ -36,5 +36,5 @@ public:
   size_t GetBufferSize();
 
 private:
-  std::vector<uint8_t> buffer_;
+  tinystl::vector<uint8_t> buffer_;
 };

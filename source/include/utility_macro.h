@@ -14,8 +14,8 @@
 #ifndef ALIGN
 #define ALIGN ALIGN_FLOOR
 #endif
-#define ALIGN_FLOOR(address, range) ((addr_t)address & ~((addr_t)range - 1))
-#define ALIGN_CEIL(address, range) (((addr_t)address + (addr_t)range - 1) & ~((addr_t)range - 1))
+#define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
+#define ALIGN_CEIL(address, range) (((uintptr_t)address + (uintptr_t)range - 1) & ~((uintptr_t)range - 1))
 
 // borrow from gdb, refer: binutils-gdb/gdb/arch/arm.h
 #define submask(x) ((1L << ((x) + 1)) - 1)

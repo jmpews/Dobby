@@ -24,10 +24,10 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define __ turbo_assembler_.GetCodeBuffer()->
   TurboAssembler turbo_assembler_(tramp_mem);
 
-  int32_t offset = (int32_t)get_closure_bridge() - ((int32_t)tramp_mem + 18);
+  int32_t offset = (int32_t)((uintptr_t)get_closure_bridge() - ((uintptr_t)tramp_mem + 18));
 
   _ sub(esp, Immediate(4, 32));
-  _ mov(Address(esp, 4 * 0), Immediate((int32_t)tramp_entry, 32));
+  _ mov(Address(esp, 4 * 0), Immediate((int32_t)(uintptr_t)tramp_entry, 32));
   _ jmp(Immediate(offset, 32));
 
   tramp_entry->address = tramp_mem;
