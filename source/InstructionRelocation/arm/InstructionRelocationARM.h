@@ -20,26 +20,31 @@ public:
       _buffer = buffer;
 
     for (auto &ref_label_inst : ref_label_insts_) {
-
       // instruction offset to label
-      const thumb2_inst_t insn = _buffer->LoadThumb2Inst(ref_label_inst.offset_);
-      const thumb1_inst_t insn1 = _buffer->LoadThumb1Inst(ref_label_inst.offset_);
-      const thumb1_inst_t insn2 = _buffer->LoadThumb1Inst(ref_label_inst.offset_ + sizeof(thumb1_inst_t));
+      thumb2_inst_t insn = _buffer->LoadThumb2Inst(ref_label_inst.offset_);
+      thumb1_inst_t insn1 = _buffer->LoadThumb1Inst(ref_label_inst.offset_);
+      thumb1_inst_t insn2 = _buffer->LoadThumb1Inst(ref_label_inst.offset_ + sizeof(thumb1_inst_t));
 
       switch (ref_label_inst.type_) {
       case kThumb1Ldr: {
         UNREACHABLE();
       } break;
       case kThumb2LiteralLdr: {
-        int32_t offset = relocated_pos() - ALIGN(ref_label_inst.offset_, 4) - Thumb_PC_OFFSET;
-        uint32_t imm12 = offset;
-        CHECK(imm12 < (1 << 12));
-        uint16_t encoding = insn2 & 0xf000;
-        encoding = encoding | imm12;
-        _buffer->RewriteThumb1Inst(ref_label_inst.offset_, insn1 | B7); // add = (U == '1');
-        _buffer->RewriteThumb1Inst(ref_label_inst.offset_ + Thumb1_INST_LEN, encoding);
+        int64_t pc = ref_label_inst.offset_ + Thumb_PC_OFFSET;
+        assert(pc % 4 == 0);
+        int32_t imm12 = relocated_pos() - pc;
 
-        DLOG(0, "[thumb label link] insn offset %d link offset %d", ref_label_inst.offset_, offset);
+        if (imm12 > 0) {
+          set_bit(insn1, 7, 1);
+        } else {
+          set_bit(insn1, 7, 0);
+          imm12 = -imm12;
+        }
+        set_bits(insn2, 0, 11, imm12);
+        _buffer->RewriteThumb1Inst(ref_label_inst.offset_, insn1);
+        _buffer->RewriteThumb1Inst(ref_label_inst.offset_ + Thumb1_INST_LEN, insn2);
+
+        DLOG(0, "[thumb label link] insn offset %d link offset %d", ref_label_inst.offset_, imm12);
       } break;
       default:
         UNREACHABLE();
@@ -244,7 +249,7 @@ public:
   }
 
   void AlignThumbNop() {
-    addr32_t pc = this->GetCodeBuffer()->GetBufferSize() + (addr32_t)GetRealizedAddress();
+    addr32_t pc = this->GetCodeBuffer()->GetBufferSize() + (uintptr_t)GetRealizedAddress();
     if (pc % Thumb2_INST_LEN) {
       t1_nop();
     } else {

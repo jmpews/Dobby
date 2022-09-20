@@ -54,12 +54,15 @@ target_link_libraries(test_insn_relo_arm64 PUBLIC
 
 add_executable(test_insn_relo_arm
   test_insn_relo_arm.cpp
+  UniconEmulator.cpp
   ${DOBBY_SOURCES}
   )
 
 target_compile_definitions(test_insn_relo_arm PUBLIC
+  LOGGING_DEBUG=1
   DISABLE_ARCH_DETECT=1
   TARGET_ARCH_ARM=1
+  TEST_WITH_UNICORN=1
   )
 
 target_include_directories(test_insn_relo_arm PUBLIC

@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
+#include <assert.h>
 #if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #include <syslog.h>

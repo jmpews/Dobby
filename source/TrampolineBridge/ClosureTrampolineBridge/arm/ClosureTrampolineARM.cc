@@ -30,9 +30,9 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ Ldr(r12, &entry_label);
   _ Ldr(pc, &forward_bridge_label);
   _ PseudoBind(&entry_label);
-  _ EmitAddress((uint32_t)tramp_entry);
+  _ EmitAddress((uint32_t)(uintptr_t)tramp_entry);
   _ PseudoBind(&forward_bridge_label);
-  _ EmitAddress((uint32_t)get_closure_bridge());
+  _ EmitAddress((uint32_t)(uintptr_t)get_closure_bridge());
 
   auto closure_tramp = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   tramp_entry->address = (void *)closure_tramp->addr;

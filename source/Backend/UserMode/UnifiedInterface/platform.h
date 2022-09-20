@@ -2,6 +2,7 @@
 #define PLATFORM_INTERFACE_COMMON_PLATFORM_H
 
 #include <stdarg.h>
+#include <stdint.h>
 
 namespace base {
 // ================================================================
