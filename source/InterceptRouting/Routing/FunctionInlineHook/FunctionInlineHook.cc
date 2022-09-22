@@ -9,13 +9,16 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
     return RS_FAILED;
   }
 
-#if defined(__arm64__) && __has_feature(ptrauth_calls)
+#if defined(__APPLE__) && defined(__arm64__) && __has_feature(ptrauth_calls)
   address = ptrauth_strip(address, ptrauth_key_asia);
   replace_func = ptrauth_strip(replace_func, ptrauth_key_asia);
 #endif
 
 #if defined(ANDROID)
-  OSMemory::SetPermission((void *)address, OSMemory::PageSize(), kReadExecute);
+  void *page_align_address = (void *)ALIGN_FLOOR(address, OSMemory::PageSize());
+  if (!OSMemory::SetPermission(page_align_address, OSMemory::PageSize(), kReadExecute)) {
+    return RS_FAILED;
+  }
 #endif
 
   DLOG(0, "----- [DobbyHook:%p] -----", address);

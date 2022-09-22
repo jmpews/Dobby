@@ -32,6 +32,8 @@ option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
 
 option(BUILD_EXAMPLE "Build example" OFF)
 
+option(BUILD_TEST "Build test" OFF)
+
 # private
 option(Obfuscation "Enable llvm obfuscation" OFF)
 
@@ -354,7 +356,9 @@ if (BUILD_EXAMPLE AND (NOT BUILDING_KERNEL))
   add_subdirectory(examples)
 endif ()
 
-add_subdirectory(tests)
+if (BUILD_TEST AND (NOT BUILDING_KERNEL))
+  add_subdirectory(tests)
+endif ()
 
 # ---
 

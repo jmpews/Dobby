@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
+#include <assert.h>
 
 #if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h> // for pthread_set_name_np
@@ -33,7 +34,9 @@
 
 #if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
 #define ANDROID_LOG_TAG "Dobby"
+
 #include <android/log.h>
+
 #endif
 
 #include <string.h>
@@ -102,8 +105,7 @@ bool Thread::Start() {
   return true;
 }
 
-// ================================================================
-// base :: OSMemory
+// --- OSMemory
 
 static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   switch (access) {
@@ -157,27 +159,20 @@ bool OSMemory::Release(void *address, size_t size) {
   return munmap(address, size) == 0;
 }
 
-// static
 bool OSMemory::SetPermission(void *address, size_t size, MemoryPermission access) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % PageSize());
   DCHECK_EQ(0, size % PageSize());
 
   int prot = GetProtectionFromMemoryPermission(access);
   int ret = mprotect(address, size, prot);
-  if (ret == 0 && access == MemoryPermission::kNoAccess) {
-    // This is advisory; ignore errors and continue execution.
-    // ReclaimInaccessibleMemory(address, size);
-  }
-
   if (ret) {
-    FATAL("%s\n", ((const char *)strerror(errno)));
+    ERROR_LOG("OSMemory::SetPermission: %s\n", ((const char *)strerror(errno)));
   }
 
   return ret == 0;
 }
 
-// ================================================================
-// base :: OSPrint
+// --- OSPrint
 
 void OSPrint::Print(const char *format, ...) {
   va_list args;

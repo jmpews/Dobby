@@ -17,14 +17,19 @@ extern "C" {
 #endif
 
 void log_set_level(int level);
+
 void log_set_tag(const char *tag);
+
 void log_enable_time_tag();
+
 void log_switch_to_syslog();
+
 void log_switch_to_file(const char *path);
 
 #if !defined(LOG_FUNCTION_IMPL)
 #define LOG_FUNCTION_IMPL log_internal_impl
 #endif
+
 int log_internal_impl(int level, const char *, ...);
 
 #if defined(LOGGING_DISABLE)
@@ -69,12 +74,8 @@ extern "C" {
 
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
-    LOG_FUNCTION_IMPL(LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__);                                                            \
-  } while (0)
-
-#define TRACE_LOG()                                                                                                    \
-  do {                                                                                                                 \
-    LOG_FUNCTION_IMPL(-1, "[%s] %s:%d:%s\n", __TIME__, __FILE_NAME__, __LINE__, __func__);                             \
+    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
+    assert(0);                                                                                                         \
   } while (0)
 
 #if defined(LOGGING_DEBUG)

@@ -8,16 +8,11 @@
 #include <string.h>
 #include <pthread.h>
 
+#include <iostream>
 #include <map>
+#include <vector>
 
 std::map<void *, const char *> *func_map;
-
-void common_handler(void *address, DobbyRegisterContext *ctx) {
-  auto iter = func_map->find(address);
-  if (iter != func_map->end()) {
-    LOG(1, "func %s:%p invoke", iter->second, iter->first);
-  }
-}
 
 // clang-format off
 const char *func_array[] = {
@@ -25,18 +20,22 @@ const char *func_array[] = {
   "dlsym",
   "dlclose",
 
-//  "open",
-//  "write",
-//  "read",
-//  "close",
-//
-//  "socket",
-//  "connect",
-//  "bind",
-//  "listen",
-//  "accept",
-//  "send",
-//  "recv",
+  "open",
+  "write",
+  "read",
+  "close",
+
+  "socket",
+  "connect",
+  "bind",
+  "listen",
+  "accept",
+  "send",
+  "recv",
+};
+
+const char *func_short_array[] = {
+  "accept",
 };
 // clang-format on
 
@@ -52,26 +51,35 @@ const char *func_array[] = {
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
-    DobbyHook(sym_addr, (dobby_dummy_func_t)fake_##name, (dobby_dummy_func_t *)&orig_##name);                                      \
+    DobbyHook(sym_addr, (dobby_dummy_func_t)fake_##name, (dobby_dummy_func_t *)&orig_##name);                          \
     pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
 
-install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs, void *(*start_routine)(void *),
+install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs,
+             void *(*start_routine)(void *),
              void *arg, unsigned int create_flags) {
   LOG(1, "pthread_create: %p", start_routine);
   return orig_pthread_create(thread, attrs, start_routine, arg, create_flags);
 }
 
+void common_handler(void *address, DobbyRegisterContext *ctx) {
+  auto iter = func_map->find(address);
+  if (iter != func_map->end()) {
+    LOG(1, "func %s:%p invoke", iter->second, iter->first);
+  }
+}
+
 uint64_t socket_demo_server(void *ctx);
+
 uint64_t socket_demo_client(void *ctx);
 
 #if 1
+
 __attribute__((constructor)) static void ctor() {
   void *func = NULL;
   log_set_level(0);
-  dobby_enable_near_branch_trampoline();
 
   func_map = new std::map<void *, const char *>();
   for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
@@ -84,27 +92,42 @@ __attribute__((constructor)) static void ctor() {
   }
 
   for (auto iter = func_map->begin(), e = func_map->end(); iter != e; iter++) {
-    DobbyInstrument(iter->first, common_handler);
+    bool is_short = false;
+    for (int i = 0; i < sizeof(func_short_array) / sizeof(char *); ++i) {
+      if (strcmp(func_short_array[i], iter->second) == 0) {
+        is_short = true;
+        break;
+      }
+    }
+    if (is_short) {
+      dobby_enable_near_branch_trampoline();
+      DobbyInstrument(iter->first, common_handler);
+      dobby_disable_near_branch_trampoline();
+    } else
+      DobbyInstrument(iter->first, common_handler);
   }
 
-  //   DobbyGlobalOffsetTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
+#if defined(__apple__)
+  DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
+#endif
 
   install_hook_pthread_create();
 
   pthread_t socket_server;
-  pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);
+  pthread_create(&socket_server, NULL, (void *(*)(void *)) socket_demo_server, NULL);
 
   usleep(1000);
   pthread_t socket_client;
-  pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
+  pthread_create(&socket_client, NULL, (void *(*)(void *)) socket_demo_client, NULL);
 
-  //  pthread_join(socket_client, 0);
+  // pthread_join(socket_client, 0);
   // pthread_join(socket_server, 0);
 }
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 #define PORT 8989
 
 uint64_t socket_demo_server(void *ctx) {
@@ -132,7 +155,7 @@ uint64_t socket_demo_server(void *ctx) {
   address.sin_addr.s_addr = INADDR_ANY;
 
   // Forcefully attaching socket to the port 8080
-  if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+  if (bind(server_fd, (struct sockaddr *) &address, sizeof(address)) < 0) {
     ERROR_LOG("bind failed");
     return -1;
   }
@@ -140,7 +163,7 @@ uint64_t socket_demo_server(void *ctx) {
     ERROR_LOG("listen failed");
     return -1;
   }
-  if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
+  if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen)) < 0) {
     ERROR_LOG("accept failed");
     return -1;
   }
@@ -172,7 +195,7 @@ uint64_t socket_demo_client(void *ctx) {
     return -1;
   }
 
-  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+  if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
     ERROR_LOG("connect failed");
     return -1;
   }
@@ -184,4 +207,5 @@ uint64_t socket_demo_client(void *ctx) {
   LOG(1, "[client] %s", buffer);
   return 0;
 }
+
 #endif
