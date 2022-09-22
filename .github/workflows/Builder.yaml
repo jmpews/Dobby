@@ -41,6 +41,7 @@ jobs:
     - name: compile linux
       run: |
         python3 scripts/platform_builder.py --platform=linux --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION --llvm_dir=$HOME/opt/llvm-$LLVM_VERSION
+        cp include/dobby.h build/linux
         tar -zcvf build/dobby-linux-all.tar.gz build/linux
         cp build/dobby-linux-all.tar.gz artifact/
         
@@ -49,6 +50,7 @@ jobs:
     - name: compile android
       run: |
         python3 scripts/platform_builder.py --platform=android --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION --llvm_dir=$HOME/opt/llvm-$LLVM_VERSION --android_ndk_dir=$HOME/opt/ndk-$NDK_VERSION
+        cp include/dobby.h build/android
         tar -zcvf build/dobby-android-all.tar.gz build/android
         cp build/dobby-android-all.tar.gz artifact/
       shell: bash
@@ -83,6 +85,7 @@ jobs:
     - name: compile macos
       run: |
         python3 scripts/platform_builder.py --platform=macos --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION/CMake.app/Contents
+        cp include/dobby.h build/macos
         tar -zcvf build/dobby-macos-all.tar.gz build/macos
         cp build/dobby-macos-all.tar.gz artifact/
         
@@ -91,6 +94,7 @@ jobs:
     - name: compile iphoneos
       run: |
         python3 scripts/platform_builder.py --platform=iphoneos --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION/CMake.app/Contents
+        cp include/dobby.h build/iphoneos
         tar -zcvf build/dobby-iphoneos-all.tar.gz build/iphoneos
         cp build/dobby-iphoneos-all.tar.gz artifact/
       shell: bash

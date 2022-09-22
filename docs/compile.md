@@ -1,90 +1,69 @@
 # Build
 
-## Cmake build options
+## CMake build options
 
 ```
 option(DOBBY_GENERATE_SHARED "Build shared library" ON)
 
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
-option(DynamicBinaryInstrument "Enable dynamic binary instrument" ON)
-
-option(Plugin.SymbolResolver "Enable symbol resolver" ON)
-
 option(NearBranch "Enable near branch trampoline" ON)
 
 option(FullFloatingPointRegisterPack "Save and pack all floating-point registers" OFF)
 
+option(Plugin.SymbolResolver "Enable symbol resolver" ON)
+
 option(Plugin.ImportTableReplace "Enable import table replace " OFF)
 
 option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
+
+option(BUILD_EXAMPLE "Build example" OFF)
+
+option(BUILD_TEST "Build test" OFF)
 ```
 
-## Build for host
+## Build with `scripts/platform_builder.py`
+
+#### Build for iphoneos
+
+```shell
+python3 scripts/platform_builder.py --platform=iphoneos --arch=all
+```
+
+#### Build for macos
 
 ```
-cd Dobby && mkdir build_for_host && cd build_for_host
+python3 scripts/platform_builder.py --platform=macos --arch=all
+```
 
+#### Build for linux
+
+```
+# prepare and download cmake/llvm
+sh scripts/setup_linux_cross_compile.sh
+python3 scripts/platform_builder.py --platform=linux --arch=all --cmake_dir=$HOME/opt/cmake-3.20.2 --llvm_dir=$HOME/opt/llvm-14.0.0
+```
+
+#### Build for android
+
+```
+# prepare and download cmake/llvm/ndk
+sh scripts/setup_linux_cross_compile.sh
+sh scripts/setup_linux_cross_compile.sh
+python3 scripts/platform_builder.py --platform=linux --arch=all --cmake_dir=$HOME/opt/cmake-3.20.2 --llvm_dir=$HOME/opt/llvm-14.0.0 --android_ndk_dir=$HOME/opt/ndk-r25b
+```
+
+## Build with CMake
+
+#### Build for host
+
+```shell
+cd Dobby && mkdir cmake-build-host && cd cmake-build-host
 cmake ..
-
 make -j4
 ```
 
-## Build for iOS / macOS
-
-#### Manual build for macOS X64 host
-
-```
-cd Dobby && mkdir build_for_macos_x64 && cd build_for_macos_x64
-
-cmake .. \
--DCMAKE_BUILD_TYPE=Release \
-
-make -j4
-```
-
-#### Manual build for iOS [ARM/ARM64]
-
-```
-cd Dobby && mkdir build_for_ios_arm64 && cd build_for_ios_arm64
-
-cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.3
-
-make -j4
-```
-
-if you want generate Xcode Project, just replace with `cmake -G Xcode`.
-
-## Build for Android
-
-#### Manual build for Android ARM64
-
-```
-export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-
-cd Dobby && mkdir build_for_android_arm64 && cd build_for_android_arm64
-
-cmake .. \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="arm64-v8a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang
-
-make -j4
-```
-
-#### Manual build for Android ARM
-
-```
-export ANDROID_NDK=/Users/jmpews/Library/Android/sdk/ndk-bundle
-
-cd Dobby && mkdir build_for_android_arm && cd build_for_android_arm
-
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI="armeabi-v7a" -DCMAKE_ANDROID_NDK=$ANDROID_NDK -DCMAKE_SYSTEM_VERSION=16 -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang 
-
-make -j4
-```
-
-#### Android Studio CMake
+## Build with Android  Studio CMake
 
 ```
 if(NOT TARGET dobby)
@@ -106,7 +85,6 @@ include_directories(
 endif()
 
 add_library(native-lib SHARED
-  ${DOBBY_DIR}/example/android_common_api.cc
-
+  ${DOBBY_DIR}/examples/socket_example.cc
   native-lib.cpp)
 ```

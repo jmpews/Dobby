@@ -7,18 +7,6 @@ Dobby a lightweight, multi-platform, multi-architecture exploit hook framework.
 - Minimal and modular library
 - Multi-platform support(Windows/macOS/iOS/Android/Linux)
 - Multiple architecture support(X86, X86-64, ARM, ARM64)
-- Clean code without STL(port to kernel easily)
-- Plugin support(SymbolResolver, SupervisorCallMonitor)
-
-## Getting started
-
-```
-git clone https://github.com/jmpews/Dobby.git --depth=1
-cd Dobby/example/
-mkdir build; cd build; cmake ..
-```
-
-or download [latest release](https://github.com/jmpews/Dobby/releases/tag/latest)
 
 ## Compile
 
@@ -26,7 +14,7 @@ or download [latest release](https://github.com/jmpews/Dobby/releases/tag/latest
 
 ## Download
 
-[download library](https://github.com/jmpews/Dobby/releases/tag/latest)
+[download latest library](https://github.com/jmpews/Dobby/releases/tag/latest)
 
 ## Credits
 
