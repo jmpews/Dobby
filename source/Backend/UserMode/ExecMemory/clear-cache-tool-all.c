@@ -17,32 +17,8 @@
 #if defined(_WIN32)
 // Forward declare Win32 APIs since the GCC mode driver does not handle the
 // newer SDKs as well as needed.
-uint32_t  FlushInstructionCache(uintptr_t hProcess, void *lpBaseAddress, uintptr_t dwSize);
+uint32_t FlushInstructionCache(uintptr_t hProcess, void *lpBaseAddress, uintptr_t dwSize);
 uintptr_t GetCurrentProcess(void);
-#endif
-
-#if defined(__FreeBSD__) && defined(__arm__)
-// clang-format off
-#include <sys/types.h>
-#include <machine/sysarch.h>
-// clang-format on
-#endif
-
-#if defined(__NetBSD__) && defined(__arm__)
-#include <machine/sysarch.h>
-#endif
-
-#if defined(__OpenBSD__) && (defined(__arm__) || defined(__mips__))
-// clang-format off
-#include <sys/types.h>
-#include <machine/sysarch.h>
-// clang-format on
-#endif
-
-#if defined(__linux__) && defined(__mips__)
-#include <sys/cachectl.h>
-#include <sys/syscall.h>
-#include <unistd.h>
 #endif
 
 // The compiler generates calls to __clear_cache() when creating
@@ -61,7 +37,7 @@ void __clear_cache(void *start, void *end) {
   struct arm_sync_icache_args arg;
 
   arg.addr = (uintptr_t)start;
-  arg.len  = (uintptr_t)end - (uintptr_t)start;
+  arg.len = (uintptr_t)end - (uintptr_t)start;
 
   sysarch(ARM_SYNC_ICACHE, &arg);
 #elif defined(__linux__)
@@ -72,9 +48,9 @@ void __clear_cache(void *start, void *end) {
 // This value is stable at least since Linux 3.13 and should remain so for
 // compatibility reasons, warranting it's re-definition here.
 #define __ARM_NR_cacheflush 0x0f0002
-  register int       start_reg __asm("r0")  = (int)(intptr_t)start;
-  const register int end_reg __asm("r1")    = (int)(intptr_t)end;
-  const register int flags __asm("r2")      = 0;
+  register int start_reg __asm("r0") = (int)(intptr_t)start;
+  const register int end_reg __asm("r1") = (int)(intptr_t)end;
+  const register int flags __asm("r2") = 0;
   const register int syscall_nr __asm("r7") = __ARM_NR_cacheflush;
   __asm __volatile("svc 0x0" : "=r"(start_reg) : "r"(syscall_nr), "r"(start_reg), "r"(end_reg), "r"(flags));
   assert(start_reg == 0 && "Cache flush syscall failed.");
@@ -83,13 +59,13 @@ void __clear_cache(void *start, void *end) {
 #endif
 #elif defined(__linux__) && defined(__mips__)
   const uintptr_t start_int = (uintptr_t)start;
-  const uintptr_t end_int   = (uintptr_t)end;
+  const uintptr_t end_int = (uintptr_t)end;
   syscall(__NR_cacheflush, start, (end_int - start_int), BCACHE);
 #elif defined(__mips__) && defined(__OpenBSD__)
   cacheflush(start, (uintptr_t)end - (uintptr_t)start, BCACHE);
 #elif defined(__aarch64__) && !defined(__APPLE__)
   uint64_t xstart = (uint64_t)(uintptr_t)start;
-  uint64_t xend   = (uint64_t)(uintptr_t)end;
+  uint64_t xend = (uint64_t)(uintptr_t)end;
 
   // Get Cache Type Info.
   static uint64_t ctr_el0 = 0;
@@ -115,15 +91,16 @@ void __clear_cache(void *start, void *end) {
     const size_t icache_line_size = 4 << ((ctr_el0 >> 0) & 15);
     for (addr = xstart & ~(icache_line_size - 1); addr < xend; addr += icache_line_size)
       __asm __volatile("ic ivau, %0" ::"r"(addr));
+    __asm __volatile("dsb ish");
   }
   __asm __volatile("isb sy");
 #elif defined(__powerpc64__)
   const size_t line_size = 32;
-  const size_t len       = (uintptr_t)end - (uintptr_t)start;
+  const size_t len = (uintptr_t)end - (uintptr_t)start;
 
-  const uintptr_t mask       = ~(line_size - 1);
+  const uintptr_t mask = ~(line_size - 1);
   const uintptr_t start_line = ((uintptr_t)start) & mask;
-  const uintptr_t end_line   = ((uintptr_t)start + len + line_size - 1) & mask;
+  const uintptr_t end_line = ((uintptr_t)start + len + line_size - 1) & mask;
 
   for (uintptr_t line = start_line; line < end_line; line += line_size)
     __asm__ volatile("dcbf 0, %0" : : "r"(line));
@@ -134,26 +111,29 @@ void __clear_cache(void *start, void *end) {
   __asm__ volatile("isync");
 #elif defined(__sparc__)
   const size_t dword_size = 8;
-  const size_t len        = (uintptr_t)end - (uintptr_t)start;
+  const size_t len = (uintptr_t)end - (uintptr_t)start;
 
-  const uintptr_t mask        = ~(dword_size - 1);
+  const uintptr_t mask = ~(dword_size - 1);
   const uintptr_t start_dword = ((uintptr_t)start) & mask;
-  const uintptr_t end_dword   = ((uintptr_t)start + len + dword_size - 1) & mask;
+  const uintptr_t end_dword = ((uintptr_t)start + len + dword_size - 1) & mask;
 
   for (uintptr_t dword = start_dword; dword < end_dword; dword += dword_size)
     __asm__ volatile("flush %0" : : "r"(dword));
 #elif defined(__riscv) && defined(__linux__)
-#define __NR_riscv_flush_icache (244 + 15)
-  register void *      start_reg __asm("a0")  = start;
-  const register void *end_reg __asm("a1")    = end;
-  const register long  flags __asm("a2")      = 0;
-  const register long  syscall_nr __asm("a7") = __NR_riscv_flush_icache;
+  // See: arch/riscv/include/asm/cacheflush.h, arch/riscv/kernel/sys_riscv.c
+  register void *start_reg __asm("a0") = start;
+  const register void *end_reg __asm("a1") = end;
+  // "0" means that we clear cache for all threads (SYS_RISCV_FLUSH_ICACHE_ALL)
+  const register long flags __asm("a2") = 0;
+  const register long syscall_nr __asm("a7") = __NR_riscv_flush_icache;
   __asm __volatile("ecall" : "=r"(start_reg) : "r"(start_reg), "r"(end_reg), "r"(flags), "r"(syscall_nr));
   assert(start_reg == 0 && "Cache flush syscall failed.");
 #else
 #if __APPLE__
   // On Darwin, sys_icache_invalidate() provides this functionality
   sys_icache_invalidate(start, end - start);
+#elif defined(__ve__)
+  __asm__ volatile("fencec 2");
 #else
   compilerrt_abort();
 #endif

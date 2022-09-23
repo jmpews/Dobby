@@ -9,9 +9,11 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
     return RS_FAILED;
   }
 
-#if defined(__APPLE__) && defined(__arm64__) && __has_feature(ptrauth_calls)
+#if defined(__APPLE__) && defined(__arm64__)
+#if __has_feature(ptrauth_calls)
   address = ptrauth_strip(address, ptrauth_key_asia);
   replace_func = ptrauth_strip(replace_func, ptrauth_key_asia);
+#endif
 #endif
 
 #if defined(ANDROID)
@@ -24,16 +26,13 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
   DLOG(0, "----- [DobbyHook:%p] -----", address);
 
   // check if already register
-  auto entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
+  auto entry = Interceptor::SharedInstance()->find((addr_t)address);
   if (entry) {
     ERROR_LOG("%p already been hooked.", address);
     return RS_FAILED;
   }
 
-  entry = new HookEntry();
-  entry->id = Interceptor::SharedInstance()->count();
-  entry->type = kFunctionInlineHook;
-  entry->patched_addr = (addr_t)address;
+  entry = new InterceptEntry(kFunctionInlineHook, (addr_t)address);
 
   auto *routing = new FunctionInlineHookRouting(entry, replace_func);
   routing->Prepare();
@@ -46,7 +45,7 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
 
   routing->Commit();
 
-  Interceptor::SharedInstance()->addHookEntry(entry);
+  Interceptor::SharedInstance()->add(entry);
 
   return RS_SUCCESS;
 }

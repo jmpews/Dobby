@@ -19,7 +19,7 @@
 
 class FunctionWrapperRouting : public InterceptRouting {
 public:
-  FunctionWrapperRouting(HookEntry *entry) : InterceptRouting(entry) {
+  FunctionWrapperRouting(InterceptEntry *entry) : InterceptRouting(entry) {
   }
 
   void DispatchRouting();

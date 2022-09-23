@@ -48,7 +48,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
     return generate_arm_trampoline(from, to);
   } else {
     // Check if needed pc align, (relative pc instructions needed 4 align)
-    from = ALIGN(from, 2);
+    from = from - THUMB_ADDRESS_FLAG;
     return generate_thumb_trampoline(from, to);
   }
   return NULL;

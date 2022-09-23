@@ -66,6 +66,7 @@ set(dobby.SOURCE_FILE_LIST
   # main
   source/dobby.cpp
   source/Interceptor.cpp
+  source/InterceptEntry.cpp
   )
 
 if(FunctionWrapper OR DynamicBinaryInstrument)

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "HookEntry.h"
+#include "InterceptEntry.h"
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
 #include "InstructionRelocation/InstructionRelocation.h"
 #include "TrampolineBridge/Trampoline/Trampoline.h"
 
 class InterceptRouting {
 public:
-  explicit InterceptRouting(HookEntry *entry) : entry_(entry) {
+  explicit InterceptRouting(InterceptEntry *entry) : entry_(entry) {
     entry->routing = this;
 
     origin_ = nullptr;
@@ -26,7 +26,7 @@ public:
 
   void Commit();
 
-  HookEntry *GetHookEntry();
+  InterceptEntry *GetInterceptEntry();
 
   void SetTrampolineBuffer(CodeBufferBase *buffer) {
     trampoline_buffer_ = buffer;
@@ -50,7 +50,7 @@ protected:
   bool GenerateTrampolineBuffer(addr_t src, addr_t dst);
 
 protected:
-  HookEntry *entry_;
+  InterceptEntry *entry_;
 
   CodeMemBlock *origin_;
   CodeMemBlock *relocated_;

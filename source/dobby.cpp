@@ -14,7 +14,7 @@ PUBLIC const char *DobbyGetVersion() {
 }
 
 PUBLIC int DobbyDestroy(void *address) {
-  auto entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
+  auto entry = Interceptor::SharedInstance()->find((addr_t)address);
   if (entry) {
     uint8_t *buffer = entry->origin_insns;
     uint32_t buffer_size = entry->origin_insn_size;
@@ -22,7 +22,7 @@ PUBLIC int DobbyDestroy(void *address) {
     address = (void *)((addr_t)address - 1);
 #endif
     DobbyCodePatch(address, buffer, buffer_size);
-    Interceptor::SharedInstance()->removeHookEntry((addr_t)address);
+    Interceptor::SharedInstance()->remove((addr_t)address);
     return RT_SUCCESS;
   }
 

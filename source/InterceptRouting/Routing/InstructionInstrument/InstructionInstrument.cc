@@ -10,8 +10,10 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handle
     return RS_FAILED;
   }
 
-#if defined(__APPLE__) && defined(__arm64__) && __has_feature(ptrauth_calls)
+#if defined(__APPLE__) && defined(__arm64__)
+#if __has_feature(ptrauth_calls)
   address = ptrauth_strip(address, ptrauth_key_asia);
+#endif
 #endif
 
 #if defined(ANDROID)
@@ -23,27 +25,20 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handle
 
   DLOG(0, "\n\n----- [DobbyInstrument:%p] -----", address);
 
-  // check if already instrument
-#if defined(__arm64__) && __has_feature(ptrauth_calls)
-  address = ptrauth_strip(address, ptrauth_key_asia);
-#endif
-  auto entry = Interceptor::SharedInstance()->findHookEntry((addr_t)address);
+  auto entry = Interceptor::SharedInstance()->find((addr_t)address);
   if (entry) {
     ERROR_LOG("%s already been instrumented.", address);
     return RS_FAILED;
   }
 
-  entry = new HookEntry;
-  entry->id = Interceptor::SharedInstance()->count();
-  entry->type = kInstructionInstrument;
-  entry->patched_addr = (addr_t)address;
+  entry = new InterceptEntry(kInstructionInstrument, (addr_t)address);
 
   auto routing = new InstructionInstrumentRouting(entry, pre_handler, nullptr);
   routing->Prepare();
   routing->DispatchRouting();
   routing->Commit();
 
-  Interceptor::SharedInstance()->addHookEntry(entry);
+  Interceptor::SharedInstance()->add(entry);
 
   return RS_SUCCESS;
 }

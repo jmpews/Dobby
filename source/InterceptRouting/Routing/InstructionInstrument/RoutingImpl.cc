@@ -9,15 +9,23 @@
 // create closure trampoline jump to prologue_routing_dispatch with the `entry_` data
 void InstructionInstrumentRouting::BuildRouting() {
   void *handler = (void *)instrument_routing_dispatch;
-#if __APPLE__ && __has_feature(ptrauth_calls)
+#if defined(__APPLE__) && defined(__arm64__)
+#if __has_feature(ptrauth_calls)
   handler = ptrauth_strip(handler, ptrauth_key_asia);
+#endif
 #endif
   auto closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   this->SetTrampolineTarget((addr_t)closure_trampoline->address);
   DLOG(0, "[closure trampoline] closure trampoline: %p, data: %p", closure_trampoline->address, entry_);
 
   // generate trampoline buffer, before `GenerateRelocatedCode`
-  GenerateTrampolineBuffer(entry_->patched_addr, GetTrampolineTarget());
+  addr_t from = entry_->patched_addr;
+#if defined(TARGET_ARCH_ARM)
+  if (entry_->thumb_mode)
+    from += 1;
+#endif
+  addr_t to = GetTrampolineTarget();
+  GenerateTrampolineBuffer(from, to);
 }
 
 void InstructionInstrumentRouting::DispatchRouting() {

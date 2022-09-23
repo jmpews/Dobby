@@ -23,7 +23,7 @@ static uintptr_t getCallFirstArg(DobbyRegisterContext *ctx) {
   return result;
 }
 
-void common_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
+void common_handler(DobbyRegisterContext *ctx, const InterceptEntry *info) {
   CFStringRef key_ = 0;
   key_ = (CFStringRef)getCallFirstArg(ctx);
 

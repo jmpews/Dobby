@@ -17,6 +17,7 @@ std::map<void *, const char *> *func_map;
 // clang-format off
 const char *func_array[] = {
 //   "__loader_dlopen",
+
   "dlsym",
   "dlclose",
 
@@ -32,6 +33,8 @@ const char *func_array[] = {
   "accept",
   "send",
   "recv",
+
+  // "pthread_create"
 };
 
 const char *func_short_array[] = {
@@ -39,11 +42,12 @@ const char *func_short_array[] = {
 };
 // clang-format on
 
+#define pac_strip(symbol)
+#if defined(__APPLE__) && __arm64e__
 #if __has_feature(ptrauth_calls)
 #define pac_strip(symbol)
 //#define pac_strip(symbol) *(void **)&symbol = (void *)ptrauth_sign_unauthenticated((void *)symbol, ptrauth_key_asia, 0)
-#else
-#define pac_strip(symbol)
+#endif
 #endif
 
 #define install_hook(name, fn_ret_t, fn_args_t...)                                                                     \
@@ -57,8 +61,7 @@ const char *func_short_array[] = {
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
 
-install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs,
-             void *(*start_routine)(void *),
+install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs, void *(*start_routine)(void *),
              void *arg, unsigned int create_flags) {
   LOG(1, "pthread_create: %p", start_routine);
   return orig_pthread_create(thread, attrs, start_routine, arg, create_flags);
@@ -103,22 +106,23 @@ __attribute__((constructor)) static void ctor() {
       dobby_enable_near_branch_trampoline();
       DobbyInstrument(iter->first, common_handler);
       dobby_disable_near_branch_trampoline();
-    } else
+    } else {
       DobbyInstrument(iter->first, common_handler);
+    }
   }
 
-#if defined(__apple__)
+#if defined(__APPLE__)
   DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 #endif
 
-  install_hook_pthread_create();
+  // install_hook_pthread_create();
 
   pthread_t socket_server;
-  pthread_create(&socket_server, NULL, (void *(*)(void *)) socket_demo_server, NULL);
+  pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);
 
-  usleep(1000);
+  usleep(10000);
   pthread_t socket_client;
-  pthread_create(&socket_client, NULL, (void *(*)(void *)) socket_demo_client, NULL);
+  pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
 
   // pthread_join(socket_client, 0);
   // pthread_join(socket_server, 0);
@@ -128,25 +132,23 @@ __attribute__((constructor)) static void ctor() {
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define PORT 8989
+#define PORT 49494
 
 uint64_t socket_demo_server(void *ctx) {
-  int server_fd, new_socket, valread;
+  int server_fd, new_socket;
   struct sockaddr_in address;
   int opt = 1;
   int addrlen = sizeof(address);
   char buffer[1024] = {0};
   char *hello = "Hello from server";
 
-  // Creating socket file descriptor
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    ERROR_LOG("socket failed");
+    ERROR_LOG("socket failed: %s", strerror(errno));
     return -1;
   }
 
-  // Forcefully attaching socket to the port 8080
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-    ERROR_LOG("setsockopt");
+    ERROR_LOG("setsockopt: %s", strerror(errno));
     return -1;
   }
 
@@ -154,17 +156,16 @@ uint64_t socket_demo_server(void *ctx) {
   address.sin_port = htons(PORT);
   address.sin_addr.s_addr = INADDR_ANY;
 
-  // Forcefully attaching socket to the port 8080
-  if (bind(server_fd, (struct sockaddr *) &address, sizeof(address)) < 0) {
-    ERROR_LOG("bind failed");
+  if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    ERROR_LOG("bind failed: %s", strerror(errno));
     return -1;
   }
   if (listen(server_fd, 3) < 0) {
-    ERROR_LOG("listen failed");
+    ERROR_LOG("listen failed: %s", strerror(errno));
     return -1;
   }
-  if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen)) < 0) {
-    ERROR_LOG("accept failed");
+  if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
+    ERROR_LOG("accept failed: %s", strerror(errno));
     return -1;
   }
 
@@ -195,7 +196,7 @@ uint64_t socket_demo_client(void *ctx) {
     return -1;
   }
 
-  if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
     ERROR_LOG("connect failed");
     return -1;
   }

@@ -33,7 +33,7 @@ void format_integer_manually(char *buf, uint64_t integer) {
 // [ATTENTION]:
 // printf will call 'malloc' internally, and will crash in a loop.
 // so, use 'puts' is a better choice.
-void malloc_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
+void malloc_handler(DobbyRegisterContext *ctx, const InterceptEntry *info) {
   size_t size_ = 0;
   size_ = getCallFirstArg(ctx);
   char *buffer_ = (char *)"[-] function malloc first arg: 0x00000000.\n";
@@ -41,7 +41,7 @@ void malloc_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
   puts(buffer_);
 }
 
-void free_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
+void free_handler(DobbyRegisterContext *ctx, const InterceptEntry *info) {
   uintptr_t mem_ptr;
 
   mem_ptr = getCallFirstArg(ctx);

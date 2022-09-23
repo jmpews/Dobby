@@ -34,6 +34,7 @@ typedef struct {
   vmaddr_t src_vmaddr;
   vmaddr_t dst_vmaddr;
 
+  CodeMemBlock *origin;
   CodeMemBlock *relocated;
 
   tinystl::unordered_map<off_t, off_t> relocated_offset_map;
@@ -321,10 +322,14 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
   }
 #undef _
 
+  // update origin
+  int new_origin_len = (addr_t)ctx->buffer_cursor - (addr_t)ctx->buffer;
+  ctx->origin->reset(ctx->origin->addr, new_origin_len);
+
   // TODO: if last instr is unlink branch, ignore it
   if (branch) {
     CodeGen codegen(&turbo_assembler_);
-    codegen.LiteralLdrBranch(relo_cur_src_vmaddr(ctx));
+    codegen.LiteralLdrBranch(ctx->origin->addr + ctx->origin->size);
   }
 
   // Bind all labels
@@ -346,6 +351,8 @@ void GenRelocateCode(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated
 
   ctx.src_vmaddr = (vmaddr_t)origin->addr;
   ctx.dst_vmaddr = (vmaddr_t)relocated->addr;
+
+  ctx.origin = origin;
 
   relo_relocate(&ctx, branch);
 

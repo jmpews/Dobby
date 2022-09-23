@@ -144,8 +144,8 @@ typedef enum { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 // DobbyWrap <==> DobbyInstrument, so use DobbyInstrument instead of DobbyWrap
 #if 0
 // wrap function with pre_call and post_call
-typedef void (*PreCallTy)(DobbyRegisterContext *ctx, const HookEntryInfo *info);
-typedef void (*PostCallTy)(DobbyRegisterContext *ctx, const HookEntryInfo *info);
+typedef void (*PreCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info);
+typedef void (*PostCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info);
 int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 #endif
 

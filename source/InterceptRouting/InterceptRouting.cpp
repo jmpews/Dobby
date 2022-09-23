@@ -15,6 +15,11 @@ bool InterceptRouting::GenerateRelocatedCode() {
   relocated_ = new CodeMemBlock();
 
   auto buffer = (void *)entry_->patched_addr;
+#if defined(TARGET_ARCH_ARM)
+  if (entry_->thumb_mode) {
+    buffer = (void *)((addr_t)buffer + 1);
+  }
+#endif
   GenRelocateCodeAndBranch(buffer, origin_, relocated_);
   if (relocated_->size == 0) {
     ERROR_LOG("[insn relocate]] failed");
@@ -69,7 +74,8 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
 // active routing, patch origin instructions as trampoline
 void InterceptRouting::Active() {
   MemoryOperationError err;
-  err = DobbyCodePatch((void *)entry_->patched_addr, trampoline_buffer_->GetBuffer(), trampoline_buffer_->GetBufferSize());
+  err = DobbyCodePatch((void *)entry_->patched_addr, trampoline_buffer_->GetBuffer(),
+                       trampoline_buffer_->GetBufferSize());
   if (err != kMemoryOperationSuccess) {
     ERROR_LOG("[intercept routing] active failed");
     return;
@@ -91,6 +97,6 @@ int InterceptRouting::PredefinedTrampolineSize() {
 }
 #endif
 
-HookEntry *InterceptRouting::GetHookEntry() {
+InterceptEntry *InterceptRouting::GetInterceptEntry() {
   return entry_;
 };

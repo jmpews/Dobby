@@ -8,7 +8,9 @@
 
 class InstructionInstrumentRouting : public InterceptRouting {
 public:
-  InstructionInstrumentRouting(HookEntry *entry, dobby_instrument_callback_t pre_handler, dobby_instrument_callback_t post_handler) : InterceptRouting(entry) {
+  InstructionInstrumentRouting(InterceptEntry *entry, dobby_instrument_callback_t pre_handler,
+                               dobby_instrument_callback_t post_handler)
+      : InterceptRouting(entry) {
     this->prologue_dispatch_bridge = nullptr;
     this->pre_handler = pre_handler;
     this->post_handler = post_handler;

@@ -16,9 +16,9 @@ void prologue_routing_dispatch(DobbyRegisterContext *ctx, ClosureTrampolineEntry
 // ,or LR register)
 void epilogue_routing_dispatch(DobbyRegisterContext *ctx, ClosureTrampolineEntry *entry);
 
-void pre_call_forward_handler(DobbyRegisterContext *ctx, HookEntry *entry);
+void pre_call_forward_handler(DobbyRegisterContext *ctx, InterceptEntry *entry);
 
-void post_call_forward_handler(DobbyRegisterContext *ctx, HookEntry *entry);
+void post_call_forward_handler(DobbyRegisterContext *ctx, InterceptEntry *entry);
 
 #ifdef __cplusplus
 }
