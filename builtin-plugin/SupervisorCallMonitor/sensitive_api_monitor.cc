@@ -9,7 +9,7 @@
 
 #define PT_DENY_ATTACH 31
 
-static void sensitive_api_handler(DobbyRegisterContext *ctx, const HookEntryInfo *info) {
+static void sensitive_api_handler(DobbyRegisterContext *ctx, const InterceptEntry *info) {
   char buffer[256] = {0};
   int syscall_rum = ctx->general.regs.x16;
   if (syscall_rum == 0) {
