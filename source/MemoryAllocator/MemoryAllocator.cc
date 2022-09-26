@@ -4,7 +4,7 @@
 
 MemBlock *MemoryArena::allocMemBlock(size_t size) {
   // insufficient memory
-  if (this->size - cursor_addr < size) {
+  if (this->end - this->cursor_addr < size) {
     return nullptr;
   }
 

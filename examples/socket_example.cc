@@ -112,10 +112,10 @@ __attribute__((constructor)) static void ctor() {
   }
 
 #if defined(__APPLE__)
-  DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
+  // DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 #endif
 
-  // install_hook_pthread_create();
+  install_hook_pthread_create();
 
   pthread_t socket_server;
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);

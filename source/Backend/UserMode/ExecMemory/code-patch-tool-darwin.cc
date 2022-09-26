@@ -27,13 +27,15 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
   }
 
   int page_size = PAGE_SIZE;
-  addr_t page_aligned_address = ALIGN_FLOOR(address, page_size);
+  addr_t patch_page = ALIGN_FLOOR(address, page_size);
 
-  if ((addr_t)address + buffer_size > page_aligned_address + page_size) {
+  // cross over page
+  if ((addr_t)address + buffer_size > patch_page + page_size) {
     MemoryOperationError err = kMemoryOperationSuccess;
+
     void *address_a = address;
     uint8_t *buffer_a = buffer;
-    uint32_t buffer_size_a = (page_aligned_address + page_size - (addr_t)address);
+    uint32_t buffer_size_a = (patch_page + page_size - (addr_t)address);
     err = DobbyCodePatch(address_a, buffer_a, buffer_size_a);
     if (err != kMemoryOperationSuccess) {
       return err;
@@ -46,8 +48,6 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
     return err;
   }
 
-  int offset = (int)((addr_t)address - page_aligned_address);
-
   kern_return_t kr;
   vm_map_t self_task = mach_task_self();
   
@@ -56,16 +56,17 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   // copy original page
-  memcpy((void *)remap_dummy_page, (void *)page_aligned_address, page_size);
+  memcpy((void *)remap_dummy_page, (void *)patch_page, page_size);
 
   // patch buffer
+  int offset = (int)((addr_t)address - patch_page);
   memcpy((void *)(remap_dummy_page + offset), buffer, buffer_size);
 
   // change permission
   kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
-  mach_vm_address_t remap_dest_page = page_aligned_address;
+  mach_vm_address_t remap_dest_page = patch_page;
   vm_prot_t curr_protection, max_protection;
   kr = mach_vm_remap(self_task, &remap_dest_page, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task,
                      remap_dummy_page, TRUE, &curr_protection, &max_protection, VM_INHERIT_COPY);
