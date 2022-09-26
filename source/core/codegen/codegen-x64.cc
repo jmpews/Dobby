@@ -13,9 +13,9 @@ void CodeGen::JmpNearIndirect(addr_t forward_stub_addr) {
   uint64_t currIP = turbo_assembler_->CurrentIP() + 6;
   int32_t offset = (int32_t)(forward_stub_addr - currIP);
 
-  // RIP-relative addressing
+  // jmp *(rip + disp32)
   __ Emit8(0xFF);
-  __ Emit8(0x25);
+  __ Emit8(0x25); // ModR/M: 00 100 101
   __ Emit32(offset);
 }
 
