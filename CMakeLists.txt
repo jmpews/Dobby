@@ -229,13 +229,13 @@ endif ()
 
 # ---
 
-if (SYSTEM.iOS AND (NOT BUILDING_KERNEL))
+if (0 AND SYSTEM.iOS AND (NOT BUILDING_KERNEL))
   include_directories(
-    source/Backend/UserMode/ExecMemory/substrated/include
+    source/Backend/UserMode/ExecMemory/substrated
   )
   add_definitions(-DCODE_PATCH_WITH_SUBSTRATED)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/ExecMemory/substrated/mach_interface_support/substrated_client.c
+    source/Backend/UserMode/ExecMemory/substrated/mach_interface_support
     )
 endif ()
 
