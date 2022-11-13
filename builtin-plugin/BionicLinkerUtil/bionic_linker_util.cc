@@ -30,7 +30,7 @@ extern void *resolve_elf_internal_symbol(const char *library_name, const char *s
 #include <sys/system_properties.h>
 static int get_android_system_version() {
   char os_version_str[PROP_VALUE_MAX + 1];
-  __system_property_get("ro.build.version.release", os_version_str);
+  __system_property_get("ro.build.version.sdk", os_version_str);
   int os_version_int = atoi(os_version_str);
   return os_version_int;
 }

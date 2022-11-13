@@ -26,7 +26,7 @@ uintptr_t GetCurrentProcess(void);
 // It is expected to invalidate the instruction cache for the
 // specified range.
 
-void __clear_cache(void *start, void *end) {
+void _clear_cache(void *start, void *end) {
 #if __i386__ || __x86_64__ || defined(_M_IX86) || defined(_M_X64)
 // Intel processors have a unified instruction and data cache
 // so there is nothing to do
@@ -141,5 +141,5 @@ void __clear_cache(void *start, void *end) {
 }
 
 void ClearCache(void *start, void *end) {
-  return __clear_cache(start, end);
+  return _clear_cache(start, end);
 }
