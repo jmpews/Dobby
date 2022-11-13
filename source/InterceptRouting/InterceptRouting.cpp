@@ -5,6 +5,14 @@
 
 using namespace zz;
 
+void log_hex_format(uint8_t *buffer, uint32_t buffer_size) {
+  char output[1024] = {0};
+  for (int i = 0; i < buffer_size && i < sizeof(output); i++) {
+    snprintf(output + strlen(output), 3, "%02x ", *((uint8_t *)buffer + i));
+  }
+  DLOG(0, "%s", output);
+};
+
 void InterceptRouting::Prepare() {
 }
 
@@ -31,26 +39,14 @@ bool InterceptRouting::GenerateRelocatedCode() {
 
   // save original prologue
   memcpy((void *)entry_->origin_insns, (void *)origin_->addr, origin_->size);
+  entry_->origin_insn_size = origin_->size;
 
-  {
-    DLOG(0, "[insn relocate] origin %p - %d", origin_->addr, origin_->size);
-    {
-      char buffer[1024] = {0};
-      for (int i = 0; i < origin_->size && i < sizeof(buffer); i++) {
-        sprintf(buffer + strlen(buffer), "%02x ", *((uint8_t *)origin_->addr + i));
-      }
-      DLOG(0, "%s", buffer);
-    }
+  // log
+  DLOG(0, "[insn relocate] origin %p - %d", origin_->addr, origin_->size);
+  log_hex_format((uint8_t *)origin_->addr, origin_->size);
 
-    DLOG(0, "[insn relocate] relocated %p - %d", relocated_->addr, relocated_->size);
-    {
-      char buffer[1024] = {0};
-      for (int i = 0; i < relocated_->size && i < sizeof(buffer); i++) {
-        sprintf(buffer + strlen(buffer), "%02x ", *((uint8_t *)relocated_->addr + i));
-      }
-      DLOG(0, "%s", buffer);
-    }
-  }
+  DLOG(0, "[insn relocate] relocated %p - %d", relocated_->addr, relocated_->size);
+  log_hex_format((uint8_t *)relocated_->addr, relocated_->size);
 
   return true;
 }

@@ -4,10 +4,6 @@
 #include <stdio.h>
 #include <objc/runtime.h>
 
-extern "C" {
-#include "misc-helper/variable_cache.h"
-}
-
 /* clang -rewrite-objc main.m */
 
 IMP DobbyObjcReplace(Class class_, SEL sel_, IMP fake_impl) {

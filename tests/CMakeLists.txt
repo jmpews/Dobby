@@ -110,3 +110,11 @@ target_link_libraries(test_insn_relo_x64 PUBLIC
   ${CAPSTONE_LIBRARIES}
   ${UNICORN_LIBRARIES}
   )
+
+# ---
+
+add_executable(test_native
+  test_native.cpp)
+
+target_link_libraries(test_native
+  dobby)

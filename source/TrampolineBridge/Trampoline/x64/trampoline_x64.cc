@@ -23,7 +23,7 @@ static addr_t allocate_indirect_stub(addr_t jmp_insn_addr) {
     return 0;
   }
 
-  LOG(0, "forward stub: %p", stub_addr);
+  DLOG(0, "forward stub: %p", stub_addr);
   return stub_addr;
 }
 

@@ -71,7 +71,7 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromDefaultAllocator(uint32_t si
     if (unused_mem_end - unused_mem_start < size)
       return 0;
     
-    LOG(0, "[near memory allocator] unused memory from default allocator %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
+    DLOG(0, "[near memory allocator] unused memory from default allocator %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
     return unused_mem_start;
   };
 

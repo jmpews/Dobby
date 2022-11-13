@@ -7,8 +7,6 @@
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 
-#include "misc-helper/format_printer.h"
-
 #include "UnifiedInterface/platform.h"
 
 #include "PlatformUnifiedInterface/MemoryAllocator.h"

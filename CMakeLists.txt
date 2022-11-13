@@ -79,7 +79,6 @@ include_directories(
 
   ./external
   ./external/logging
-  ./external/misc-helper
 
   ./builtin-plugin
 )
@@ -262,9 +261,6 @@ if (NearBranch)
 endif ()
 
 # ---
-
-add_subdirectory(external/misc-helper)
-get_target_property(misc_helper.SOURCE_FILE_LIST misc_helper SOURCES)
 
 # add logging library
 add_subdirectory(external/logging)
