@@ -10,8 +10,8 @@ extern "C" {
 
 void log_set_level(int level);
 void log_set_tag(const char *tag);
-void log_enable_time_tag();
-void log_switch_to_syslog();
+void log_enable_time_tag(void);
+void log_switch_to_syslog(void);
 void log_switch_to_file(const char *path);
 
 typedef enum {
@@ -25,8 +25,8 @@ typedef enum {
 typedef uintptr_t addr_t;
 typedef uint32_t addr32_t;
 typedef uint64_t addr64_t;
-typedef void (*dobby_dummy_func_t)();
-typedef void (*asm_func_t)();
+typedef void (*dobby_dummy_func_t)(void);
+typedef void (*asm_func_t)(void);
 
 MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
@@ -160,7 +160,7 @@ int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler);
 
 int DobbyDestroy(void *address);
 
-const char *DobbyGetVersion();
+const char *DobbyGetVersion(void);
 
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
@@ -171,8 +171,8 @@ int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_fun
 // for arm, Arm64, dobby will try use b xxx instead of ldr absolute indirect branch
 // for x64, dobby always use absolute indirect jump
 #if defined(__arm__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
-void dobby_enable_near_branch_trampoline();
-void dobby_disable_near_branch_trampoline();
+void dobby_enable_near_branch_trampoline(void);
+void dobby_disable_near_branch_trampoline(void);
 #endif
 
 #ifdef __cplusplus
