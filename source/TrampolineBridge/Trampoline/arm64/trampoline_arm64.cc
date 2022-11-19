@@ -31,6 +31,9 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   }
 #undef _
 
+  // Bind all labels
+  turbo_assembler_.RelocBind();
+
   auto result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;
 }
