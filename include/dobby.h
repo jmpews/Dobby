@@ -28,8 +28,6 @@ typedef uint64_t addr64_t;
 typedef void (*dobby_dummy_func_t)();
 typedef void (*asm_func_t)();
 
-MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
-
 #if !defined(DISABLE_ARCH_DETECT)
 #if defined(__arm__)
 #define TARGET_ARCH_ARM 1
@@ -141,6 +139,15 @@ typedef struct {
 #define RT_SUCCESS 0
 typedef enum { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
 
+#define install_hook_name(name, fn_ret_t, fn_args_t...)                                                                \
+  static fn_ret_t fake_##name(fn_args_t);                                                                              \
+  static fn_ret_t (*orig_##name)(fn_args_t);                                                                           \
+  /* __attribute__((constructor)) */ static void install_hook_##name(void *sym_addr) {                                 \
+    DobbyHook(sym_addr, (dobby_dummy_func_t)fake_##name, (dobby_dummy_func_t *)&orig_##name);                          \
+    return;                                                                                                            \
+  }                                                                                                                    \
+  fn_ret_t fake_##name(fn_args_t)
+
 // DobbyWrap <==> DobbyInstrument, so use DobbyInstrument instead of DobbyWrap
 #if 0
 // wrap function with pre_call and post_call
@@ -148,6 +155,9 @@ typedef void (*PreCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info)
 typedef void (*PostCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info);
 int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
 #endif
+
+// memory code patch
+MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 // function inline hook
 int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy_func_t *origin_func);
