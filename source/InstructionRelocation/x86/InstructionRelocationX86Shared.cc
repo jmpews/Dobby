@@ -146,11 +146,15 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
 
     // jmp *(rip)
     __ Emit8(0xFF);
-    if (insn.primary_opcode == 0xE8)
+    if (insn.primary_opcode == 0xE8) {
       __ Emit8(0x15); // ModR/M: 00 010 101
-    else
+      __ Emit32(2);
+      __ Emit8(0xEB);
+      __ Emit8(0x08);
+    } else {
       __ Emit8(0x25); // ModR/M: 00 100 101
-    __ Emit32(0);
+      __ Emit32(0);
+    }
     __ Emit64(orig_insn_ref_addr);
 #endif
   } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) { // LOOPNZ/LOOPZ/LOOP/JECXZ
