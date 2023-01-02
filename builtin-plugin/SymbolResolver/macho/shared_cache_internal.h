@@ -55,7 +55,7 @@ typedef struct shared_cache_ctx {
   uintptr_t runtime_slide;
 
   struct dyld_cache_local_symbols_info *local_symbols_info;
-  struct dyld_cache_local_symbols_entry *local_symbols_entries;
+  struct dyld_cache_local_symbols_entry_64 *local_symbols_entries;
 
   nlist_t *symtab;
   char *strtab;
