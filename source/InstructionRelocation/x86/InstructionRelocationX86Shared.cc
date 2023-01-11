@@ -55,7 +55,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
     uint64_t orig_insn_ref_addr = curr_orig_ip + offset;
 
     // jcc
-    __ Emit8(opcode);
+    __ Emit8(insn.primary_opcode);
     __ Emit8(2);
 
     // jmp
