@@ -70,6 +70,13 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
   vm_prot_t curr_protection, max_protection;
   kr = mach_vm_remap(self_task, &remap_dest_page, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task,
                      remap_dummy_page, TRUE, &curr_protection, &max_protection, VM_INHERIT_COPY);
+  
+  // fix mach_vm_remap failed (iOS 14.3+ , A12+)
+  if (kr == KERN_NO_SPACE) {
+      mach_vm_protect(self_task, remap_dest_page, page_size, FALSE, PROT_READ | PROT_WRITE | VM_PROT_COPY);
+      kr = mach_vm_remap(self_task, &remap_dest_page, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task,remap_dummy_page, TRUE, &curr_protection, &max_protection, VM_INHERIT_COPY);
+      mach_vm_protect(self_task, remap_dest_page, page_size, FALSE, PROT_READ | PROT_EXEC);
+  }
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
