@@ -77,6 +77,7 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
       kr = mach_vm_remap(self_task, &remap_dest_page, page_size, 0, VM_FLAGS_OVERWRITE | VM_FLAGS_FIXED, self_task,remap_dummy_page, TRUE, &curr_protection, &max_protection, VM_INHERIT_COPY);
       mach_vm_protect(self_task, remap_dest_page, page_size, FALSE, PROT_READ | PROT_EXEC);
   }
+  KERN_RETURN_ERROR(kr, kMemoryOperationError);
 
   kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
   KERN_RETURN_ERROR(kr, kMemoryOperationError);
