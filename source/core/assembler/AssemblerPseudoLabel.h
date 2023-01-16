@@ -14,78 +14,69 @@ protected:
 class AssemblerPseudoLabel : public Label {
 public:
   typedef struct {
-    int type_;
+    int link_type;
+    size_t pc_offset;
     vmaddr_t vmaddr_;
-    off_t offset_;
-  } ref_label_inst_t;
+  } ref_label_insn_t;
 
 public:
-  AssemblerPseudoLabel() : AssemblerPseudoLabel(0) {
+  AssemblerPseudoLabel(addr_t addr) : Label(addr) {
+    ref_label_insns_.reserve(4);
+
+    bind_to(addr);
   }
-
-  AssemblerPseudoLabel(vmaddr_t addr) : Label(addr) {
-    ref_label_insts_.reserve(4);
-
-    pos_ = addr;
-    relocated_pos_ = 0;
-  }
-
-  ~AssemblerPseudoLabel(void) {
-  }
-
-  void link_confused_instructions(CodeBufferBase *buffer);
 
   bool has_confused_instructions() {
-    return ref_label_insts_.size();
+    return ref_label_insns_.size();
   }
 
   void link_confused_instructions();
 
-  void link_to(int type, vmaddr_t inst_vmaddr, off_t offset) {
-    ref_label_inst_t inst;
-    inst.type_ = type;
-    inst.vmaddr_ = inst_vmaddr;
-    inst.offset_ = offset;
-    ref_label_insts_.push_back(inst);
-  }
+  void link_confused_instructions(CodeBufferBase *buffer_);
 
-private:
-  addr_t relocated_pos_;
+  void link_to(int link_type, uint32_t pc_offset) {
+    ref_label_insn_t insn;
+    insn.link_type = link_type;
+    insn.pc_offset = pc_offset;
+    ref_label_insns_.push_back(insn);
+  }
 
 public:
-  addr_t relocated_pos() {
-    return relocated_pos_;
+  addr_t pos() {
+    return pos_;
   };
 
-  void bind_to(vmaddr_t addr) {
-    relocated_pos_ = addr;
-  }
-
-  void relocate_to(vmaddr_t addr) {
-    bind_to(addr);
+  void bind_to(addr_t addr) {
+    pos_ = addr;
   }
 
 protected:
-  std::vector<ref_label_inst_t> ref_label_insts_;
+  tinystl::vector<ref_label_insn_t> ref_label_insns_;
 };
-
-// ---
 
 struct RelocLabel : public AssemblerPseudoLabel {
 public:
   RelocLabel() : AssemblerPseudoLabel(0) {
+    memset(&data_, 0, sizeof(data_));
+    data_size_ = 0;
   }
 
-  template <typename T> RelocLabel(T value) : AssemblerPseudoLabel(0) {
-    *(T *)data_ = value;
-    data_size_ = sizeof(value);
+  template <typename T> static RelocLabel *withData(T value) {
+    auto label = new RelocLabel();
+    label->setData(value);
+    return label;
   }
 
   template <typename T> T data() {
     return *(T *)data_;
   }
 
-  template <typename T> void fixup_data(T value) {
+  template <typename T> void setData(T value) {
+    data_size_ = sizeof(T);
+    memcpy(data_, &value, data_size_);
+  }
+
+  template <typename T> void fixupData(T value) {
     *(T *)data_ = value;
   }
 

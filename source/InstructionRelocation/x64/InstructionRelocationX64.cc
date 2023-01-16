@@ -23,14 +23,15 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
   auto curr_orig_ip = (addr64_t)origin->addr;
   auto curr_relo_ip = (addr64_t)relocated->addr;
 
-  uint8_t *buffer_cursor = (uint8_t *)buffer;
+  auto buffer_cursor = (uint8_t *)buffer;
 
   int predefined_relocate_size = origin->size;
 
   while ((buffer_cursor < ((uint8_t *)buffer + predefined_relocate_size))) {
     x86_insn_decode_t insn = {0};
     memset(&insn, 0, sizeof(insn));
-    GenRelocateSingleX86Insn(curr_orig_ip, curr_relo_ip, buffer_cursor, turbo_assembler_.GetCodeBuffer(), insn, 64);
+    GenRelocateSingleX86Insn(curr_orig_ip, curr_relo_ip, buffer_cursor, &turbo_assembler_,
+                             turbo_assembler_.GetCodeBuffer(), insn, 64);
 
     // go next
     curr_orig_ip += insn.length;

@@ -109,7 +109,7 @@ int64_t relo_label_link_offset(relo_ctx_t *ctx, pcrel_type_t pcrel_type, int64_t
     return 0;
   } else { // pc relative target is already handled
     off_t off = ctx->buffer_cursor + offset - ctx->buffer;
-    off_t relocated_off = label->relocated_pos();
+    off_t relocated_off = label->pos();
     int64_t new_offset = relo_dst_offset_to_vmaddr(ctx, relocated_off) - relo_src_offset_to_vmaddr(ctx, off);
     return new_offset;
   }
@@ -177,7 +177,7 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
       int64_t offset = decode_imm26_offset(inst);
       addr_t dst_vmaddr = relo_cur_src_vmaddr(ctx) + offset;
 
-      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      auto dst_label = RelocLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(dst_label);
 
       {
@@ -250,7 +250,7 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
         set_bits(branch_instr, 5, 23, imm19);
       }
 
-      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      auto dst_label = RelocLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(dst_label);
 
       {
@@ -277,7 +277,7 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
         set_bits(branch_instr, 5, 23, imm19);
       }
 
-      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      auto dst_label = RelocLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(dst_label);
 
       {
@@ -304,7 +304,7 @@ int relo_relocate(relo_ctx_t *ctx, bool branch) {
         set_bits(branch_instr, 5, 18, imm14);
       }
 
-      RelocLabel *dst_label = new RelocLabel(dst_vmaddr);
+      auto dst_label = RelocLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(dst_label);
 
       {

@@ -6,12 +6,12 @@
 void AssemblerPseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
   CodeBuffer *_buffer = (CodeBuffer *)buffer;
 
-  for (auto &ref_label_inst : ref_label_insts_) {
-    arm_inst_t inst = _buffer->LoadARMInst(ref_label_inst.offset_);
-    if (ref_label_inst.type_ == kLdrLiteral) {
-      int64_t pc = ref_label_inst.offset_ + ARM_PC_OFFSET;
+  for (auto &ref_label_insn : ref_label_insns_) {
+    arm_inst_t inst = _buffer->LoadARMInst(ref_label_insn.pc_offset);
+    if (ref_label_insn.link_type == kLdrLiteral) {
+      int64_t pc = ref_label_insn.pc_offset + ARM_PC_OFFSET;
       assert(pc % 4 == 0);
-      int32_t imm12 = relocated_pos() - pc;
+      int32_t imm12 = pos() - pc;
       if (imm12 > 0) {
         set_bit(inst, 23, 1);
       } else {
@@ -20,7 +20,7 @@ void AssemblerPseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
       }
       set_bits(inst, 0, 11, imm12);
     }
-    _buffer->RewriteARMInst(ref_label_inst.offset_, inst);
+    _buffer->RewriteARMInst(ref_label_insn.pc_offset, inst);
   }
 }
 

@@ -1,5 +1,4 @@
-#ifndef CORE_ASSEMBLER_X86_H
-#define CORE_ASSEMBLER_X86_H
+#pragma once
 
 #include "common_header.h"
 
@@ -11,7 +10,6 @@
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
 enum ref_label_type_t { kDisp32_off_7 };
-
 
 namespace zz {
 namespace x86 {
@@ -32,7 +30,6 @@ typedef union _ModRM {
 } ModRM;
 
 // ---
-
 
 class Immediate {
 public:
@@ -158,7 +155,6 @@ public:
 
 // ---
 
-
 class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
@@ -229,7 +225,6 @@ private:
 
 // ---
 
-
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
@@ -252,7 +247,6 @@ public:
 
   // ---
 
-
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
       buffer_->Emit8((uint8_t)imm.value());
@@ -264,7 +258,6 @@ public:
   }
 
   // ---
-
 
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
@@ -306,7 +299,6 @@ public:
 
   // ---
 
-
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
     uint8_t ModRM = 0;
     ModRM |= Mod << 6;
@@ -344,7 +336,6 @@ public:
   }
 
   // ---
-
 
   void pushfq() {
     Emit1(0x9C);
@@ -433,9 +424,6 @@ public:
   }
 };
 
-// ---
-
-
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
@@ -451,9 +439,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabel *addr_label = new RelocLabel(function.address());
-      addr_label->link_to(kDisp32_off_7, 0, ip_offset());
-      this->AppendRelocLabel(addr_label);
+      auto label = RelocLabel::withData(function.address());
+      label->link_to(kDisp32_off_7, ip_offset());
+      AppendRelocLabel(label);
     }
     nop();
   }
@@ -466,5 +454,3 @@ public:
 
 } // namespace x86
 } // namespace zz
-
-#endif

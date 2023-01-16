@@ -168,19 +168,22 @@ int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy_func_t
 typedef void (*dobby_instrument_callback_t)(void *address, DobbyRegisterContext *ctx);
 int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler);
 
+// destroy and restore code patch
 int DobbyDestroy(void *address);
 
 const char *DobbyGetVersion();
 
+// symbol resolver
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
+// import table replace
 int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_func_t fake_func,
                             dobby_dummy_func_t *orig_func);
 
 // [!!! READ ME !!!]
-// for arm, Arm64, dobby will try use b xxx instead of ldr absolute indirect branch
-// for x64, dobby always use absolute indirect jump
-#if defined(__arm__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__)
+// for arm, Arm64, try use b xxx instead of ldr absolute indirect branch
+// for x86/x64, always use absolute indirect jump
+#if defined(TARGET_ARCH_ARM) || defined(TARGET_ARCH_ARM64) || defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 void dobby_enable_near_branch_trampoline();
 void dobby_disable_near_branch_trampoline();
 #endif

@@ -24,8 +24,8 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
 
-  AssemblerPseudoLabel entry_label;
-  AssemblerPseudoLabel forward_bridge_label;
+  AssemblerPseudoLabel entry_label(0);
+  AssemblerPseudoLabel forward_bridge_label(0);
 
   _ Ldr(r12, &entry_label);
   _ Ldr(pc, &forward_bridge_label);
