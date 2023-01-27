@@ -88,7 +88,7 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
   int err = 0;
   err = pthread_create(&(handle_impl->thread), nullptr, thread_handler_wrapper, delegate);
   if (err != 0) {
-    FATAL("pthread create failed");
+    ERROR_LOG("pthread create failed");
     return false;
   }
   return true;

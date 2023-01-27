@@ -25,8 +25,8 @@ typedef enum {
 typedef uintptr_t addr_t;
 typedef uint32_t addr32_t;
 typedef uint64_t addr64_t;
-typedef void (*dobby_dummy_func_t)();
-typedef void (*asm_func_t)();
+typedef void *dobby_dummy_func_t;
+typedef void *asm_func_t;
 
 #if !defined(DISABLE_ARCH_DETECT)
 #if defined(__arm__)

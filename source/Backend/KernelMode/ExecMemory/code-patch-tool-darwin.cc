@@ -34,7 +34,7 @@
 
 PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   if (address == nullptr || buffer == nullptr || buffer_size == 0) {
-    FATAL("invalid argument");
+    ERROR_LOG("invalid argument");
     return kMemoryOperationError;
   }
 

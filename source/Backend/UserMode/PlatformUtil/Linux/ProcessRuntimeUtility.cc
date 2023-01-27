@@ -65,7 +65,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      FATAL("/proc/self/maps parse failed!");
+      ERROR_LOG("/proc/self/maps parse failed!");
       fclose(fp);
       return regions;
     }
@@ -85,7 +85,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
       DLOG(0, "%p --- %p", region_start, region_end);
 #endif
 
-    MemRegion region = MemRegion(region_start,region_end - region_start, permission);
+    MemRegion region = MemRegion(region_start, region_end - region_start, permission);
     regions.push_back(region);
   }
   std::sort(regions.begin(), regions.end(), memory_region_comparator);
@@ -99,7 +99,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
 static std::vector<RuntimeModule> *modules;
 static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
-  if(modules == nullptr) {
+  if (modules == nullptr) {
     modules = new std::vector<RuntimeModule>();
   }
 
@@ -144,7 +144,7 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      FATAL("/proc/self/maps parse failed!");
+      ERROR_LOG("/proc/self/maps parse failed!");
       fclose(fp);
       return *modules;
     }

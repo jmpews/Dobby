@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdlib.h>
+
 #define LOG_TAG NULL
 
 typedef enum {
@@ -49,11 +51,6 @@ extern "C" {
 #endif
 #endif
 
-#define RAW_LOG(level, fmt, ...)                                                                                       \
-  do {                                                                                                                 \
-    LOG_FUNCTION_IMPL(level, fmt, ##__VA_ARGS__);                                                                      \
-  } while (0)
-
 #define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
     if (LOG_TAG)                                                                                                       \
@@ -75,7 +72,7 @@ extern "C" {
 #define FATAL(fmt, ...)                                                                                                \
   do {                                                                                                                 \
     LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
-    assert(0);                                                                                                         \
+    abort();                                                                                                          \
   } while (0)
 
 #if defined(LOGGING_DEBUG)
