@@ -2,15 +2,10 @@
 #include <mach/task.h>
 #include <mach-o/dyld_images.h>
 
-#include <pthread.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include "mmap_file_util.h"
 
 #include "SymbolResolver/macho/shared_cache_internal.h"
 #include "SymbolResolver/macho/shared-cache/dyld_cache_format.h"
@@ -47,48 +42,35 @@ struct dyld_cache_header *shared_cache_get_load_addr() {
 
 int shared_cache_load_symbols(shared_cache_ctx_t *ctx) {
   uint64_t localSymbolsOffset = 0;
+
   bool latest_shared_cache_format = true;
+
   const char *shared_cache_path = shared_cache_get_file_path();
-  int fd = 0;
   char shared_cache_symbols_path[4096] = {0};
   {
     strcat(shared_cache_symbols_path, shared_cache_path);
     strcat(shared_cache_symbols_path, ".symbols");
-    fd = open(shared_cache_symbols_path, O_RDONLY);
   }
-  if (fd > 0) { // iphoneos >= 15.0, which has .symbols file
-    size_t file_size = 0;
-    {
-      struct stat statbuf;
-      stat(shared_cache_symbols_path, &statbuf);
-      file_size = statbuf.st_size;
-    }
-    auto mmap_buffer = mmap(0, file_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
-    if (mmap_buffer == MAP_FAILED) {
-      ERROR_LOG("mmap %s failed", shared_cache_symbols_path);
-      return -1;
-    }
+
+  auto mmapSharedCacheSymbolsMng = new MmapFileManager(shared_cache_symbols_path);
+  auto mmap_buffer = mmapSharedCacheSymbolsMng->map();
+  if (mmap_buffer) { // iphoneos >= 15.0, which has .symbols file
     ctx->mmap_shared_cache = (struct dyld_cache_header *)mmap_buffer;
 
     localSymbolsOffset = ctx->mmap_shared_cache->localSymbolsOffset;
   } else {
     // iphoneos < 15.0, which has no .symbols file
-    fd = open(shared_cache_path, O_RDONLY);
-    if (fd < 0) {
-      ERROR_LOG("open %s failed", shared_cache_path);
-      return -1;
-    }
+    auto mmapSharedCacheMng = new MmapFileManager(shared_cache_symbols_path);
 
     auto runtime_shared_cache = ctx->runtime_shared_cache;
     uint64_t mmap_length = runtime_shared_cache->localSymbolsSize;
     uint64_t mmap_offset = runtime_shared_cache->localSymbolsOffset;
 
-    if(mmap_length == 0)
+    if (mmap_length == 0)
       return -1;
 
-    auto mmap_buffer = mmap(0, mmap_length, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_offset);
-    if (mmap_buffer == MAP_FAILED) {
-      ERROR_LOG("mmap %s failed", shared_cache_path);
+    auto mmap_buffer = mmapSharedCacheMng->map_options(mmap_length, mmap_offset);
+    if (!mmap_buffer) {
       return -1;
     }
 

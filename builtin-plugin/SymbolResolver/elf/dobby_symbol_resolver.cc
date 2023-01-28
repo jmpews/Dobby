@@ -4,13 +4,9 @@
 #include <elf.h>
 #include <dlfcn.h>
 #include <link.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <string>
 #include <string.h>
+
+#include "mmap_file_util.h"
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
@@ -18,50 +14,6 @@
 
 #undef LOG_TAG
 #define LOG_TAG "DobbySymbolResolver"
-
-static void file_mmap(const char *file_path, uint8_t **data_ptr, size_t *data_size_ptr) {
-  uint8_t *mmap_data = NULL;
-  size_t file_size = 0;
-
-  int fd = open(file_path, O_RDONLY, 0);
-  if (fd < 0) {
-    ERROR_LOG("%s open failed", file_path);
-    goto finished;
-  }
-
-  {
-    struct stat s;
-    int rt = fstat(fd, &s);
-    if (rt != 0) {
-      ERROR_LOG("mmap failed");
-      goto finished;
-    }
-    file_size = s.st_size;
-  }
-
-  // auto align
-  mmap_data = (uint8_t *)mmap(0, file_size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
-  if (mmap_data == MAP_FAILED) {
-    ERROR_LOG("mmap failed");
-    goto finished;
-  }
-
-finished:
-  close(fd);
-
-  if (data_size_ptr)
-    *data_size_ptr = file_size;
-  if (data_ptr)
-    *data_ptr = mmap_data;
-}
-
-static void file_unmap(void *data, size_t data_size) {
-  int ret = munmap(data, data_size);
-  if (ret != 0) {
-    ERROR_LOG("munmap failed");
-    return;
-  }
-}
 
 typedef struct elf_ctx {
   void *header;
@@ -218,33 +170,9 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   if (library_name) {
     RuntimeModule module = ProcessRuntimeUtility::GetProcessModule(library_name);
 
-    uint8_t *file_mem = NULL;
-    size_t file_mem_size = 0;
-    if (module.load_address)
-      file_mmap(module.path, &file_mem, &file_mem_size);
-
-    elf_ctx_t ctx;
-    memset(&ctx, 0, sizeof(elf_ctx_t));
-    if (file_mem) {
-      elf_ctx_init(&ctx, file_mem);
-      result = elf_ctx_iterate_symbol_table(&ctx, symbol_name);
-    }
-
-    if (result)
-      result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)file_mem - (addr_t)ctx.load_bias));
-
-    if (file_mem)
-      file_unmap(file_mem, file_mem_size);
-  }
-
-  if (!result) {
-    auto ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
-    for (auto module : ProcessModuleMap) {
-      uint8_t *file_mem = NULL;
-      size_t file_mem_size = 0;
-
-      if (module.load_address)
-        file_mmap(module.path, &file_mem, &file_mem_size);
+    if (module.load_address) {
+      auto mmapFileMng = MmapFileManager(module.path);
+      auto file_mem = mmapFileMng.map();
 
       elf_ctx_t ctx;
       memset(&ctx, 0, sizeof(elf_ctx_t));
@@ -255,9 +183,27 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
       if (result)
         result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)file_mem - (addr_t)ctx.load_bias));
+    }
+  }
 
-      if (file_mem)
-        file_unmap(file_mem, file_mem_size);
+  if (!result) {
+    auto ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
+    for (auto module : ProcessModuleMap) {
+
+      if (module.load_address) {
+        auto mmapFileMng = MmapFileManager(module.path);
+        auto file_mem = mmapFileMng.map();
+
+        elf_ctx_t ctx;
+        memset(&ctx, 0, sizeof(elf_ctx_t));
+        if (file_mem) {
+          elf_ctx_init(&ctx, file_mem);
+          result = elf_ctx_iterate_symbol_table(&ctx, symbol_name);
+        }
+
+        if (result)
+          result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)file_mem - (addr_t)ctx.load_bias));
+      }
 
       if (result)
         break;
