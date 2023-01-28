@@ -82,6 +82,10 @@ int shared_cache_load_symbols(shared_cache_ctx_t *ctx) {
     auto runtime_shared_cache = ctx->runtime_shared_cache;
     uint64_t mmap_length = runtime_shared_cache->localSymbolsSize;
     uint64_t mmap_offset = runtime_shared_cache->localSymbolsOffset;
+
+    if(mmap_length == 0)
+      return -1;
+
     auto mmap_buffer = mmap(0, mmap_length, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, mmap_offset);
     if (mmap_buffer == MAP_FAILED) {
       ERROR_LOG("mmap %s failed", shared_cache_path);

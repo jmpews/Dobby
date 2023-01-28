@@ -370,7 +370,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
       memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
       shared_cache_ctx_init(&shared_cache_ctx);
     }
-    if (shared_cache_ctx.runtime_shared_cache) {
+    if (shared_cache_ctx.mmap_shared_cache) {
       // shared cache library
       if (shared_cache_is_contain(&shared_cache_ctx, (addr_t) header, 0)) {
         shared_cache_get_symbol_table(&shared_cache_ctx, header, &symtab, &symtab_count, &strtab);
