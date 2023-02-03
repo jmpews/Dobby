@@ -82,7 +82,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
     }
 
 #if 0
-      DLOG(0, "%p --- %p", region_start, region_end);
+      DEBUG_LOG("%p --- %p", region_start, region_end);
 #endif
 
     MemRegion region = MemRegion(region_start, region_end - region_start, permission);
@@ -173,7 +173,7 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
     modules->push_back(module);
 
 #if 0
-    DLOG(0, "module: %s", module.path);
+    DEBUG_LOG("module: %s", module.path);
 #endif
   }
 

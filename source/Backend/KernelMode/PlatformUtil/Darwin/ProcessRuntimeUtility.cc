@@ -3,16 +3,16 @@
 #include <mach/mach_types.h>
 
 typedef struct _loaded_kext_summary {
-  char        name[KMOD_MAX_NAME];
-  uuid_t      uuid;
-  uint64_t    address;
-  uint64_t    size;
-  uint64_t    version;
-  uint32_t    loadTag;
-  uint32_t    flags;
-  uint64_t    reference_list;
-  uint64_t    text_exec_address;
-  size_t      text_exec_size;
+  char name[KMOD_MAX_NAME];
+  uuid_t uuid;
+  uint64_t address;
+  uint64_t size;
+  uint64_t version;
+  uint32_t loadTag;
+  uint32_t flags;
+  uint64_t reference_list;
+  uint64_t text_exec_address;
+  size_t text_exec_size;
 } OSKextLoadedKextSummary;
 typedef struct _loaded_kext_summary_header {
   uint32_t version;
@@ -81,7 +81,8 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 
 #include <libkern/OSKextLib.h>
 
-extern "C" void *kernel_info_load_base();;
+extern "C" void *kernel_info_load_base();
+;
 
 std::vector<RuntimeModule> modules;
 const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
@@ -96,17 +97,18 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
       ERROR_LOG("kernel base not found");
       return &modules;
     }
-    LOG(0, "kernel base at: %p", kernel_base);
+    DEBUG_LOG("kernel base at: %p", kernel_base);
 
     extern void *DobbyMachOSymbolResolver(void *header_, const char *symbol_name);
     OSKextLoadedKextSummaryHeader **_gLoadedKextSummariesPtr;
-    _gLoadedKextSummariesPtr = (typeof(_gLoadedKextSummariesPtr))DobbyMachOSymbolResolver(kernel_base, "_gLoadedKextSummaries");
+    _gLoadedKextSummariesPtr =
+        (typeof(_gLoadedKextSummariesPtr))DobbyMachOSymbolResolver(kernel_base, "_gLoadedKextSummaries");
     if (_gLoadedKextSummariesPtr == nullptr) {
       ERROR_LOG("failed resolve gLoadedKextSummaries symbol");
       return &modules;
     }
     _gLoadedKextSummaries = *_gLoadedKextSummariesPtr;
-    LOG(0, "gLoadedKextSummaries at: %p", _gLoadedKextSummaries);
+    DEBUG_LOG("gLoadedKextSummaries at: %p", _gLoadedKextSummaries);
   }
 
   // only kernel

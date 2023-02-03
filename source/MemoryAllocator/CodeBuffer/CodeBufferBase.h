@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 class CodeBufferBase {
 public:

@@ -1,8 +1,8 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 
 #if defined(TARGET_ARCH_X64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-x64.h"
 #include "core/codegen/codegen-x64.h"
@@ -23,7 +23,7 @@ static addr_t allocate_indirect_stub(addr_t jmp_insn_addr) {
     return 0;
   }
 
-  DLOG(0, "forward stub: %p", stub_addr);
+  DEBUG_LOG("forward stub: %p", stub_addr);
   return stub_addr;
 }
 
@@ -47,7 +47,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
-  DLOG(0, "x64 near branch trampoline enable default");
+  DEBUG_LOG("x64 near branch trampoline enable default");
   return nullptr;
 }
 

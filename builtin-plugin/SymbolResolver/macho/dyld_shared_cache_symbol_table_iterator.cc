@@ -171,7 +171,7 @@ int shared_cache_get_symbol_table(shared_cache_ctx_t *ctx, mach_header_t *image_
       static struct dyld_cache_image_info *imageInfos = NULL;
       imageInfos = (struct dyld_cache_image_info *)((addr_t)g_mmap_shared_cache + g_mmap_shared_cache->imagesOffset);
       char *image_name = (char *)g_mmap_shared_cache + imageInfos[i].pathFileOffset;
-      LOG(1, "dyld image: %s", image_name);
+      INFO_LOG("dyld image: %s", image_name);
 #endif
   }
   *out_symtab = localNlists;

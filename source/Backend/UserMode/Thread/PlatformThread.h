@@ -1,7 +1,7 @@
 #ifndef USER_MODE_PLATFORM_THREAD_H
 #define USER_MODE_PLATFORM_THREAD_H
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 namespace zz {
 

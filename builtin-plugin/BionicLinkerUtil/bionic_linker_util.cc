@@ -17,7 +17,7 @@
 #include "dobby.h"
 #include "dobby_symbol_resolver.h"
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #undef LOG_TAG
 #define LOG_TAG "BionicLinkerUtil"
@@ -146,7 +146,7 @@ void linker_iterate_soinfo(int (*cb)(soinfo_t soinfo)) {
 static int iterate_soinfo_cb(soinfo_t soinfo) {
   android_namespace_t ns = NULL;
   ns = linker_soinfo_get_primary_namespace(soinfo);
-  LOG(1, "lib: %s", linker_soinfo_get_realpath(soinfo));
+  INFO_LOG("lib: %s", linker_soinfo_get_realpath(soinfo));
 
   // set is_isolated_ as false
   // no need for this actually
@@ -178,7 +178,7 @@ static int iterate_soinfo_cb(soinfo_t soinfo) {
 
 bool (*orig_linker_namespace_is_is_accessible)(android_namespace_t ns, const std::string &file);
 bool linker_namespace_is_is_accessible(android_namespace_t ns, const std::string &file) {
-  LOG(1, "check %s", file.c_str());
+  INFO_LOG("check %s", file.c_str());
   return true;
   return orig_linker_namespace_is_is_accessible(ns, file);
 }
@@ -193,5 +193,5 @@ void linker_disable_namespace_restriction() {
   DobbyHook(linker_namespace_is_is_accessible_ptr, (void *)linker_namespace_is_is_accessible,
             (void **)&orig_linker_namespace_is_is_accessible);
 
-  LOG(1, "disable namespace restriction done");
+  INFO_LOG("disable namespace restriction done");
 }

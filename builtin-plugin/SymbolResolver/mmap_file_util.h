@@ -30,7 +30,7 @@ public:
       struct stat s;
       int rt = stat(file_, &s);
       if (rt != 0) {
-        printf("mmap %s failed", file_);
+        // printf("mmap %s failed\n", file_);
         return NULL;
       }
       file_size = s.st_size;
@@ -43,14 +43,14 @@ public:
     if (!mmap_buffer_) {
       int fd = open(file_, O_RDONLY, 0);
       if (fd < 0) {
-        printf("%s open failed", file_);
+        // printf("%s open failed\n", file_);
         return NULL;
       }
 
       // auto align
       auto mmap_buffer = (uint8_t *)mmap(0, _size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, _off);
       if (mmap_buffer == MAP_FAILED) {
-        printf("mmap %s failed", file_);
+        // printf("mmap %s failed\n", file_);
         return NULL;
       }
 

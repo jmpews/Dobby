@@ -17,24 +17,18 @@
 // #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 #define OFFSETOF_ClourseTrampolineEntry_carry_data 4
 #define OFFSETOF_ClourseTrampolineEntry_carry_handler 0
-.globl cdecl(closure_trampoline_template)
-cdecl(closure_trampoline_template):
-    ldr r12, ClourseTrampolineEntryPtr
-    ldr pc, [r12, #0]
-ClourseTrampolineEntryPtr:
-    .long 0
+    .globl
+    cdecl(closure_trampoline_template) cdecl(closure_trampoline_template)
+    : ldr r12,
+ClourseTrampolineEntryPtr ldr pc, [ r12, #0 ] ClourseTrampolineEntryPtr :.long 0
 
 #else
 
-; closure trampoline just carray the required members from the object.
-.globl cdecl(closure_trampoline_template)
-cdecl(closure_trampoline_template):
-    ldr r12, =carry_data
-    ldr pc, =carry_handler
-carry_data:
-    .long 0
-carry_handler:
-    .long 0
+    ;
+closure trampoline just carray the required members from the object..globl cdecl(closure_trampoline_template)
+    cdecl(closure_trampoline_template)
+    : ldr r12,
+= carry_data ldr pc, = carry_handler carry_data :.long 0 carry_handler :.long 0
 #endif
 
 #endif

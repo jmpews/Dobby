@@ -1,11 +1,6 @@
 #pragma once
 
-#include "common_header.h"
-
-#include "dobby.h"
-
-#include "logging/logging.h"
-#include "logging/check_logging.h"
+#include "dobby/common.h"
 
 #include "UnifiedInterface/platform.h"
 

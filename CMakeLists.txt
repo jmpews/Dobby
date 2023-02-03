@@ -75,7 +75,7 @@ include_directories(
   .
   ./include
   ./source
-  ./source/include
+  source/dobby
 
   ./external
   ./external/logging

@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "source/Backend/UserMode/Thread/PlatformThread.h"
 

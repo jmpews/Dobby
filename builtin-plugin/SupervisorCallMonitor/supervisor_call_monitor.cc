@@ -1,5 +1,5 @@
 #include "SupervisorCallMonitor/misc_utility.h"
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include "misc-helper/async_logger.h"
@@ -78,7 +78,7 @@ void supervisor_call_monitor_register_main_app() {
   auto module_map = ProcessRuntimeUtility::GetProcessModuleMap();
   for (auto module : module_map) {
     if (strstr(module.path, main_bundle_udid)) {
-      LOG(2, "[supervisor_call_monitor] %s", module.path);
+      INFO_LOG("[supervisor_call_monitor] %s", module.path);
       supervisor_call_monitor_register_image((void *)module.load_address);
     }
   }
@@ -131,7 +131,7 @@ void supervisor_call_monitor_init() {
   // create logger file
   char logger_path[1024] = {0};
   sprintf(logger_path, "%s%s", getenv("HOME"), "/Documents/svc_monitor.txt");
-  LOG(2, "HOME: %s", logger_path);
+  INFO_LOG("HOME: %s", logger_path);
   async_logger_init(logger_path);
 
   dobby_enable_near_branch_trampoline();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/arch/arm/registers-arm.h"

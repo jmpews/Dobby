@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "InterceptRouting/InterceptRouting.h"
 #include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
@@ -10,7 +10,7 @@ void log_hex_format(uint8_t *buffer, uint32_t buffer_size) {
   for (int i = 0; i < buffer_size && i < sizeof(output); i++) {
     snprintf(output + strlen(output), 3, "%02x ", *((uint8_t *)buffer + i));
   }
-  DLOG(0, "%s", output);
+  DEBUG_LOG("%s", output);
 };
 
 void InterceptRouting::Prepare() {
@@ -42,10 +42,10 @@ bool InterceptRouting::GenerateRelocatedCode() {
   entry_->origin_insn_size = origin_->size;
 
   // log
-  DLOG(0, "[insn relocate] origin %p - %d", origin_->addr, origin_->size);
+  DEBUG_LOG("[insn relocate] origin %p - %d", origin_->addr, origin_->size);
   log_hex_format((uint8_t *)origin_->addr, origin_->size);
 
-  DLOG(0, "[insn relocate] relocated %p - %d", relocated_->addr, relocated_->size);
+  DEBUG_LOG("[insn relocate] relocated %p - %d", relocated_->addr, relocated_->size);
   log_hex_format((uint8_t *)relocated_->addr, relocated_->size);
 
   return true;
@@ -56,7 +56,7 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
   if (RoutingPluginManager::near_branch_trampoline) {
     auto plugin = static_cast<RoutingPluginInterface *>(RoutingPluginManager::near_branch_trampoline);
     if (plugin->GenerateTrampolineBuffer(this, src, dst) == false) {
-      DLOG(0, "Failed enable near branch trampoline plugin");
+      DEBUG_LOG("Failed enable near branch trampoline plugin");
     }
   }
 
@@ -69,14 +69,13 @@ bool InterceptRouting::GenerateTrampolineBuffer(addr_t src, addr_t dst) {
 
 // active routing, patch origin instructions as trampoline
 void InterceptRouting::Active() {
-  MemoryOperationError err;
-  err = DobbyCodePatch((void *)entry_->patched_addr, trampoline_buffer_->GetBuffer(),
-                       trampoline_buffer_->GetBufferSize());
-  if (err != kMemoryOperationSuccess) {
+  auto ret = DobbyCodePatch((void *)entry_->patched_addr, trampoline_buffer_->GetBuffer(),
+                            trampoline_buffer_->GetBufferSize());
+  if (ret == -1) {
     ERROR_LOG("[intercept routing] active failed");
     return;
   }
-  DLOG(0, "[intercept routing] active");
+  DEBUG_LOG("[intercept routing] active");
 }
 
 void InterceptRouting::Commit() {

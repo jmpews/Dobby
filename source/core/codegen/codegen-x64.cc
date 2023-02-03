@@ -1,4 +1,4 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_X64)
 
 #include "core/codegen/codegen-x64.h"

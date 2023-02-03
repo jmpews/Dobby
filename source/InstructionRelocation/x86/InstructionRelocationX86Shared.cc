@@ -1,8 +1,8 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 
 #if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "InstructionRelocation/x86/InstructionRelocationX86.h"
 #include "InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h"
@@ -52,7 +52,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
   auto x86_insn_encode_end = [&] { x86_insn_encoded_len = code_buffer->GetBufferSize() - x86_insn_encode_start; };
 
   if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jcc rel8
-    DLOG(0, "[x86 relo] %p: jc rel8", buffer_cursor);
+    DEBUG_LOG("[x86 relo] %p: jc rel8", buffer_cursor);
 
     int8_t offset = insn.immediate;
     addr_t orig_dst_ip = curr_orig_ip + offset;
@@ -80,7 +80,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
 
   } else if (mode == 64 && (insn.flags & X86_INSN_DECODE_FLAG_IP_RELATIVE) &&
              (insn.operands[1].mem.base == RIP)) { // RIP
-    DLOG(0, "[x86 relo] %p: rip", buffer_cursor);
+    DEBUG_LOG("[x86 relo] %p: rip", buffer_cursor);
 
     int32_t orig_disp = insn.operands[1].mem.disp;
     addr_t orig_dst_ip = curr_orig_ip + orig_disp;
@@ -127,7 +127,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
     }
 
   } else if (insn.primary_opcode == 0xEB) { // jmp rel8
-    DLOG(0, "[x86 relo] %p: jmp rel8", buffer_cursor);
+    DEBUG_LOG("[x86 relo] %p: jmp rel8", buffer_cursor);
 
     int8_t offset = insn.immediate;
     addr_t orig_dst_ip = curr_orig_ip + offset;
@@ -141,7 +141,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
     codegen_x64_jmp_absolute_addr(code_buffer, orig_dst_ip);
 #endif
   } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
-    DLOG(0, "[x86 relo] %p:jmp or call rel32", buffer_cursor);
+    DEBUG_LOG("[x86 relo] %p:jmp or call rel32", buffer_cursor);
 
     int32_t offset = insn.immediate;
     addr_t orig_dst_ip = curr_orig_ip + offset;
@@ -189,7 +189,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
   {
     int relo_offset = code_buffer->GetBufferSize();
     int relo_len = relo_offset - last_relo_offset;
-    DLOG(0, "insn -> relocated insn: %d -> %d", insn.length, relo_len);
+    DEBUG_LOG("insn -> relocated insn: %d -> %d", insn.length, relo_len);
   }
   return relocated_insn_len;
 }
@@ -206,7 +206,7 @@ x86_try_again:
   }
 
   int ret = GenRelocateCodeFixed(buffer, origin, relocated, branch);
-  if (ret != RT_SUCCESS) {
+  if (ret != 0) {
     const int step_size = 16;
     expected_relocated_mem_size += step_size;
     relocated->reset(0, 0);

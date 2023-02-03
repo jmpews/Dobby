@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "core/arch/x86/constants-x86.h"
 

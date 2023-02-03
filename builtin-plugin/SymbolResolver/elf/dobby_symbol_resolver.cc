@@ -1,5 +1,5 @@
 #include "SymbolResolver/dobby_symbol_resolver.h"
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include <elf.h>
 #include <dlfcn.h>

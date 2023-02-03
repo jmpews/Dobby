@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include <sys/param.h>
 #include <mach/mach.h>
@@ -18,22 +18,22 @@ static void sensitive_api_handler(DobbyRegisterContext *ctx, const InterceptEntr
       int request = ctx->general.x[1];
       if (request == PT_DENY_ATTACH) {
         ctx->general.x[1] = 0;
-        // LOG(2, "syscall svc ptrace deny");
+        // INFO_LOG("syscall svc ptrace deny");
       }
     }
     if (syscall_rum == SYS_exit) {
-      // LOG(2, "syscall svc exit");
+      // INFO_LOG("syscall svc exit");
     }
   } else if (syscall_rum > 0) {
     if (syscall_rum == SYS_ptrace) {
       int request = ctx->general.x[0];
       if (request == PT_DENY_ATTACH) {
         ctx->general.x[0] = 0;
-        // LOG(2, "svc ptrace deny");
+        // INFO_LOG("svc ptrace deny");
       }
     }
     if (syscall_rum == SYS_exit) {
-      // LOG(2, "svc exit");
+      // INFO_LOG("svc exit");
     }
   }
   async_logger_print(buffer);
@@ -76,12 +76,12 @@ void supervisor_call_monitor_register_sensitive_api_handler() {
       func_addr = (addr_t)DobbySymbolResolver("libsystem_kernel.dylib", sensitive_func_array[i]);
     }
     if (func_addr == 0) {
-      LOG(2, "not found func %s", sensitive_func_array[i]);
+      INFO_LOG("not found func %s", sensitive_func_array[i]);
       continue;
     }
     int func_svc_offset = get_func_svc_offset(func_addr);
     if (func_svc_offset == 0) {
-      LOG(2, "not found svc %s", sensitive_func_array[i]);
+      INFO_LOG("not found svc %s", sensitive_func_array[i]);
       continue;
     }
     addr_t func_svc_addr = func_addr + func_svc_offset;

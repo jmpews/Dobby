@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-arm.h"
 
@@ -13,7 +13,7 @@ using namespace zz::arm;
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
   ClosureTrampolineEntry *tramp_entry = nullptr;
   tramp_entry = new ClosureTrampolineEntry;
-  
+
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
   // use closure trampoline template code, find the executable memory and patch it.

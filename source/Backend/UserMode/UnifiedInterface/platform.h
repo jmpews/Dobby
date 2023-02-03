@@ -1,12 +1,9 @@
-#ifndef PLATFORM_INTERFACE_COMMON_PLATFORM_H
-#define PLATFORM_INTERFACE_COMMON_PLATFORM_H
+#pragma once
 
 #include <stdarg.h>
 #include <stdint.h>
 
 namespace base {
-// ================================================================
-// base :: ThreadLocalStorageInterface
 
 class ThreadLocalStorageInterface {
   using LocalStorageKey = int32_t;
@@ -32,9 +29,6 @@ class ThreadLocalStorageInterface {
     return GetThreadLocal(key) != nullptr;
   }
 };
-
-// ================================================================
-// base :: Thread
 
 typedef void *ThreadHandle;
 
@@ -66,9 +60,6 @@ private:
 };
 } // namespace base
 
-// ================================================================
-// base :: OSMemory
-
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 
 class OSMemory {
@@ -86,24 +77,9 @@ public:
   static bool SetPermission(void *address, size_t size, MemoryPermission access);
 };
 
-// ================================================================
-// base :: OSPrint
-
 class OSPrint {
 public:
-  // Print output to console. This is mostly used for debugging output.
-  // On platforms that has standard terminal output, the output
-  // should go to stdout.
   static void Print(const char *format, ...);
 
   static void VPrint(const char *format, va_list args);
-
-  // Print error output to console. This is mostly used for error message
-  // output. On platforms that has standard terminal output, the output
-  // should go to stderr.
-  static void PrintError(const char *format, ...);
-
-  static void VPrintError(const char *format, va_list args);
 };
-
-#endif

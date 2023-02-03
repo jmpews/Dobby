@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "PlatformUnifiedInterface/MemoryAllocator.h"
 
@@ -48,7 +48,7 @@ CodeMemBlock *MemoryAllocator::allocateExecBlock(uint32_t size) {
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
+  DEBUG_LOG("[memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
   return block;
 }
 
@@ -59,7 +59,7 @@ uint8_t *MemoryAllocator::allocateExecMemory(uint32_t size) {
 uint8_t *MemoryAllocator::allocateExecMemory(uint8_t *buffer, uint32_t buffer_size) {
   auto mem = allocateExecMemory(buffer_size);
   auto ret = DobbyCodePatch(mem, buffer, buffer_size);
-  CHECK_EQ(ret, kMemoryOperationSuccess);
+  CHECK_EQ(ret, 0);
   return mem;
 }
 
@@ -90,7 +90,7 @@ DataMemBlock *MemoryAllocator::allocateDataBlock(uint32_t size) {
     CHECK_NOT_NULL(block);
   }
 
-  DLOG(0, "[memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
+  DEBUG_LOG("[memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
   return block;
 }
 

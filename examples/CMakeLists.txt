@@ -8,10 +8,10 @@ target_link_libraries(socket_example
   )
 
 
-add_library(socket_example_x SHARED
+add_library(socket_example_lib SHARED
   socket_example.cc
   )
 
-target_link_libraries(socket_example_x
+target_link_libraries(socket_example_lib
   dobby
   )

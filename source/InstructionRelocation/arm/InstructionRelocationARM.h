@@ -1,5 +1,5 @@
 #pragma once
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/assembler/assembler-arm.h"
@@ -47,7 +47,7 @@ public:
         _buffer->RewriteThumb1Inst(ref_label_insn.pc_offset, insn1);
         _buffer->RewriteThumb1Inst(ref_label_insn.pc_offset + Thumb1_INST_LEN, insn2);
 
-        DLOG(0, "[thumb label link] insn offset %d link offset %d", ref_label_insn.pc_offset, imm12);
+        DEBUG_LOG("[thumb label link] insn offset %d link offset %d", ref_label_insn.pc_offset, imm12);
       } break;
       default:
         UNREACHABLE();

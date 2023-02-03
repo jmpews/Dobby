@@ -1,8 +1,8 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 
 #if defined(TARGET_ARCH_X64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "InstructionRelocation/x64/InstructionRelocationX64.h"
 #include "InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h"
@@ -54,8 +54,8 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
 
   int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
   if (relo_len > relocated->size) {
-    DLOG(0, "pre-alloc code chunk not enough");
-    return RT_FAILED;
+    DEBUG_LOG("pre-alloc code chunk not enough");
+    return -1;
   }
 
   // generate executable code
@@ -65,7 +65,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
     delete code;
   }
 
-  return RT_SUCCESS;
+  return 0;
 }
 
 void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {

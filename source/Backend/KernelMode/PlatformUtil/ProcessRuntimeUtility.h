@@ -11,8 +11,7 @@ typedef struct _RuntimeModule {
 
 struct MemRegion : MemRange {
   MemoryPermission permission;
-  MemRegion(addr_t addr, size_t size, MemoryPermission perm): MemRange(addr, size), permission(perm) {
-
+  MemRegion(addr_t addr, size_t size, MemoryPermission perm) : MemRange(addr, size), permission(perm) {
   }
 };
 

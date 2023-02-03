@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "logging/logging.h"
 
@@ -8,7 +8,7 @@
 #include "function-wrapper.h"
 
 PUBLIC int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call) {
-  DLOG(0, "Initialize 'DobbyWrap' hook at %p", function_address);
+  DEBUG_LOG("Initialize 'DobbyWrap' hook at %p", function_address);
 
   Interceptor *interceptor = Interceptor::SharedInstance();
 
@@ -22,6 +22,6 @@ PUBLIC int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post
   interceptor->addHookEntry(entry);
   routing->Commit();
 
-  DLOG(0, "Finalize %p", function_address);
-  return RS_SUCCESS;
+  DEBUG_LOG("Finalize %p", function_address);
+  return 0;
 }

@@ -1,5 +1,5 @@
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
@@ -16,7 +16,7 @@ void InstructionInstrumentRouting::BuildRouting() {
 #endif
   auto closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   this->SetTrampolineTarget((addr_t)closure_trampoline->address);
-  DLOG(0, "[closure trampoline] closure trampoline: %p, data: %p", closure_trampoline->address, entry_);
+  DEBUG_LOG("[closure trampoline] closure trampoline: %p, data: %p", closure_trampoline->address, entry_);
 
   // generate trampoline buffer, before `GenerateRelocatedCode`
   addr_t from = entry_->patched_addr;

@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "Interceptor.h"
 #include "InterceptRouting/InterceptRouting.h"
@@ -7,7 +7,7 @@
 PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler) {
   if (!address) {
     ERROR_LOG("address is 0x0.\n");
-    return RS_FAILED;
+    return -1;
   }
 
 #if defined(__APPLE__) && defined(__arm64__)
@@ -19,16 +19,16 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handle
 #if defined(ANDROID)
   void *page_align_address = (void *)ALIGN_FLOOR(address, OSMemory::PageSize());
   if (!OSMemory::SetPermission(page_align_address, OSMemory::PageSize(), kReadExecute)) {
-    return RS_FAILED;
+    return -1;
   }
 #endif
 
-  DLOG(0, "\n\n----- [DobbyInstrument:%p] -----", address);
+  DEBUG_LOG("\n\n----- [DobbyInstrument:%p] -----", address);
 
   auto entry = Interceptor::SharedInstance()->find((addr_t)address);
   if (entry) {
     ERROR_LOG("%s already been instrumented.", address);
-    return RS_FAILED;
+    return -1;
   }
 
   entry = new InterceptEntry(kInstructionInstrument, (addr_t)address);
@@ -40,5 +40,5 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handle
 
   Interceptor::SharedInstance()->add(entry);
 
-  return RS_SUCCESS;
+  return 0;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/assembler/assembler.h"

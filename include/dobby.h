@@ -8,41 +8,14 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-void log_set_level(int level);
-void log_set_tag(const char *tag);
-void log_enable_time_tag();
-void log_switch_to_syslog();
-void log_switch_to_file(const char *path);
-
-typedef enum {
-  kMemoryOperationSuccess,
-  kMemoryOperationError,
-  kNotSupportAllocateExecutableMemory,
-  kNotEnough,
-  kNone
-} MemoryOperationError;
-
 typedef uintptr_t addr_t;
 typedef uint32_t addr32_t;
 typedef uint64_t addr64_t;
+
 typedef void *dobby_dummy_func_t;
 typedef void *asm_func_t;
 
-#if !defined(DISABLE_ARCH_DETECT)
 #if defined(__arm__)
-#define TARGET_ARCH_ARM 1
-#elif defined(__arm64__) || defined(__aarch64__)
-#define TARGET_ARCH_ARM64 1
-#elif defined(_M_IX86) || defined(__i386__)
-#define TARGET_ARCH_IA32 1
-#elif defined(_M_X64) || defined(__x86_64__)
-#define TARGET_ARCH_X64 1
-#else
-#error Target architecture was not detected as supported by Dobby
-#endif
-#endif
-
-#if defined(TARGET_ARCH_ARM)
 typedef struct {
   uint32_t dummy_0;
   uint32_t dummy_1;
@@ -59,7 +32,7 @@ typedef struct {
 
   uint32_t lr;
 } DobbyRegisterContext;
-#elif defined(TARGET_ARCH_ARM64)
+#elif defined(__arm64__) || defined(__aarch64__)
 #define ARM64_TMP_REG_NDX_0 17
 
 typedef union _FPReg {
@@ -104,7 +77,7 @@ typedef struct {
     } regs;
   } floating;
 } DobbyRegisterContext;
-#elif defined(TARGET_ARCH_IA32)
+#elif defined(_M_IX86) || defined(__i386__)
 typedef struct _RegisterContext {
   uint32_t dummy_0;
   uint32_t esp;
@@ -119,7 +92,7 @@ typedef struct _RegisterContext {
   } general;
 
 } DobbyRegisterContext;
-#elif defined(TARGET_ARCH_X64)
+#elif defined(_M_X64) || defined(__x86_64__)
 typedef struct {
   uint64_t dummy_0;
   uint64_t rsp;
@@ -135,10 +108,6 @@ typedef struct {
 } DobbyRegisterContext;
 #endif
 
-#define RT_FAILED -1
-#define RT_SUCCESS 0
-typedef enum { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
-
 #define install_hook_name(name, fn_ret_t, fn_args_t...)                                                                \
   static fn_ret_t fake_##name(fn_args_t);                                                                              \
   static fn_ret_t (*orig_##name)(fn_args_t);                                                                           \
@@ -148,22 +117,13 @@ typedef enum { RS_FAILED = -1, RS_SUCCESS = 0 } RetStatus;
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
 
-// DobbyWrap <==> DobbyInstrument, so use DobbyInstrument instead of DobbyWrap
-#if 0
-// wrap function with pre_call and post_call
-typedef void (*PreCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info);
-typedef void (*PostCallTy)(DobbyRegisterContext *ctx, const InterceptEntry *info);
-int DobbyWrap(void *function_address, PreCallTy pre_call, PostCallTy post_call);
-#endif
-
 // memory code patch
-MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
+int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 // function inline hook
 int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy_func_t *origin_func);
 
 // dynamic binary instruction instrument
-// [!!! READ ME !!!]
 // for Arm64, can't access q8 - q31, unless enable full floating-point register pack
 typedef void (*dobby_instrument_callback_t)(void *address, DobbyRegisterContext *ctx);
 int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handler);
@@ -180,13 +140,10 @@ void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_func_t fake_func,
                             dobby_dummy_func_t *orig_func);
 
-// [!!! READ ME !!!]
 // for arm, Arm64, try use b xxx instead of ldr absolute indirect branch
-// for x86/x64, always use absolute indirect jump
-#if defined(TARGET_ARCH_ARM) || defined(TARGET_ARCH_ARM64) || defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
+// for x86, x64, always use absolute indirect jump
 void dobby_enable_near_branch_trampoline();
 void dobby_disable_near_branch_trampoline();
-#endif
 
 #ifdef __cplusplus
 }

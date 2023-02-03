@@ -16,7 +16,7 @@ public:
   typedef struct {
     int link_type;
     size_t pc_offset;
-    vmaddr_t vmaddr_;
+    addr_t vmaddr_;
   } ref_label_insn_t;
 
 public:
