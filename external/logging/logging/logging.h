@@ -29,7 +29,7 @@ public:
   const char *log_tag_;
 
   const char *log_file_;
-  std::fstream log_file_stream_;
+  std::fstream *log_file_stream_;
 
   LogLevel log_level_;
 
@@ -62,8 +62,10 @@ public:
   }
 
   void setOptions(const char *tag, const char *file, LogLevel level, bool enable_time_tag, bool enable_syslog) {
-    setTag(tag);
-    setLogFile(file);
+    if (tag)
+      setTag(tag);
+    if (file)
+      setLogFile(file);
     setLogLevel(level);
     enable_time_tag_ = enable_time_tag;
     enable_syslog_ = enable_syslog;
@@ -75,7 +77,8 @@ public:
 
   void setLogFile(const char *file) {
     log_file_ = file;
-    log_file_stream_.open(log_file_, std::ios::out | std::ios::trunc);
+    log_file_stream_ = new std::fstream();
+    log_file_stream_->open(log_file_, std::ios::out | std::ios::trunc);
   }
 
   void setLogLevel(LogLevel level) {

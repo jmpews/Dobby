@@ -59,15 +59,18 @@ void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
     static void (*os_log_with_args)(void *oslog, char type, const char *format, va_list args, void *ret_addr) = 0;
     if (!os_log_with_args)
       os_log_with_args = (__typeof(os_log_with_args))dlsym((void *)-2, "os_log_with_args");
-    os_log_with_args(&_os_log_default, 0x10, fmt_buffer, ap, (void *)&os_log_with_args);
+    // os_log_with_args(&_os_log_default, 0x10, fmt_buffer, ap, (void *)&os_log_with_args);
+    syslog(LOG_ERR, fmt_buffer, ap);
 #elif defined(_POSIX_VERSION)
     vsyslog(LOG_ERR, fmt_buffer, ap);
 #endif
   }
 
   if (log_file_ != nullptr) {
-    log_file_stream_.write(fmt_buffer, strlen(fmt_buffer) + 1);
-    log_file_stream_.flush();
+    char buffer[0x4000] = {0};
+    vsnprintf(buffer, sizeof(buffer) - 1, fmt_buffer, ap);
+    log_file_stream_->write(buffer, strlen(buffer));
+    log_file_stream_->flush();
   }
 
   if (!enable_syslog_ && log_file_ == nullptr) {
