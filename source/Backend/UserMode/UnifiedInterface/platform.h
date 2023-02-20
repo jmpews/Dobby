@@ -48,15 +48,14 @@ public:
 };
 
 class Thread : public ThreadInterface, public ThreadInterface::Delegate {
+  ThreadHandle handle_;
+
+  char name_[256];
+
 public:
   Thread(const char *name);
 
   bool Start();
-
-private:
-  ThreadHandle handle_;
-
-  char name_[256];
 };
 } // namespace base
 

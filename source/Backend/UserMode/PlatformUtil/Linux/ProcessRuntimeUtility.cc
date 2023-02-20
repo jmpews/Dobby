@@ -168,7 +168,7 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
     if (path_buffer[strlen(path_buffer) - 1] == '\n') {
       path_buffer[strlen(path_buffer) - 1] = 0;
     }
-    strncpy(module.path, path_buffer, sizeof(module.path));
+    strncpy(module.path, path_buffer, sizeof(module.path) - 1);
     module.load_address = (void *)region_start;
     modules->push_back(module);
 

@@ -17,6 +17,11 @@
 
 #if defined(__APPLE__)
 #include <dlfcn.h>
+#include <sys/un.h>
+#include <sys/uio.h>
+#include <sys/sysctl.h>
+#include <sys/socket.h>
+#include "./priv_headers/_simple.h"
 #endif
 
 #if defined(_WIN32)
@@ -60,7 +65,26 @@ void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
     if (!os_log_with_args)
       os_log_with_args = (__typeof(os_log_with_args))dlsym((void *)-2, "os_log_with_args");
     // os_log_with_args(&_os_log_default, 0x10, fmt_buffer, ap, (void *)&os_log_with_args);
-    syslog(LOG_ERR, fmt_buffer, ap);
+    vsyslog(LOG_ALERT, fmt_buffer, ap);
+
+    static int _logDescriptor = 0;
+    if (_logDescriptor == 0) {
+      _logDescriptor = socket(AF_UNIX, SOCK_DGRAM, 0);
+      if (_logDescriptor != -1) {
+        fcntl(_logDescriptor, F_SETFD, FD_CLOEXEC);
+        struct sockaddr_un addr;
+        addr.sun_family = AF_UNIX;
+        strncpy(addr.sun_path, _PATH_LOG, sizeof(addr.sun_path));
+        if (connect(_logDescriptor, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+          close(_logDescriptor);
+          _logDescriptor = -1;
+          ERROR_LOG("Failed to connect to syslogd: %s", strerror(errno));
+        }
+      }
+    }
+    if (_logDescriptor > 0) {
+      vdprintf(_logDescriptor, fmt_buffer, ap);
+    }
 #elif defined(_POSIX_VERSION)
     vsyslog(LOG_ERR, fmt_buffer, ap);
 #endif
@@ -73,7 +97,7 @@ void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
     log_file_stream_->flush();
   }
 
-  if (!enable_syslog_ && log_file_ == nullptr) {
+  if (1 || !enable_syslog_ && log_file_ == nullptr) {
 #if defined(__ANDROID__)
     __android_log_vprint(ANDROID_LOG_INFO, NULL, fmt_buffer, ap);
 #else

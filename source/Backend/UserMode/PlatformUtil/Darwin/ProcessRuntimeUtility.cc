@@ -105,7 +105,7 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   uint32_t infoArrayCount = infos->infoArrayCount;
 
   RuntimeModule module = {0};
-  strncpy(module.path, "dummy-placeholder-module", sizeof(module.path));
+  strncpy(module.path, "dummy-placeholder-module", sizeof(module.path) - 1);
   module.load_address = 0;
   modules->push_back(module);
 
@@ -113,7 +113,7 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
     const struct dyld_image_info *info = &infoArray[i];
 
     {
-      strncpy(module.path, info->imageFilePath, sizeof(module.path));
+      strncpy(module.path, info->imageFilePath, sizeof(module.path) - 1);
       module.load_address = (void *)info->imageLoadAddress;
       modules->push_back(module);
     }

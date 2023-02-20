@@ -113,13 +113,13 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 
   // only kernel
   RuntimeModule module = {0};
-  strncpy(module.path, "kernel", sizeof(module.path));
+  strncpy(module.path, "kernel", sizeof(module.path) - 1);
   module.load_address = (void *)kernel_base;
   modules.push_back(module);
 
   // kext
   for (int i = 0; i < _gLoadedKextSummaries->numSummaries; ++i) {
-    strncpy(module.path, _gLoadedKextSummaries->summaries[i].name, sizeof(module.path));
+    strncpy(module.path, _gLoadedKextSummaries->summaries[i].name, sizeof(module.path) - 1);
     module.load_address = (void *)_gLoadedKextSummaries->summaries[i].address;
     modules.push_back(module);
   }

@@ -50,9 +50,18 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
   mach_vm_address_t remap_dummy_page = 0;
 
   auto self_task = mach_task_self();
+  kern_return_t kr;
 
-  auto kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
-  if (kr == KERN_SUCCESS) {
+  static int is_enable_remap = -1;
+  if (is_enable_remap == -1) {
+    auto kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
+    if (kr == KERN_SUCCESS) {
+      is_enable_remap = 1;
+    } else {
+      is_enable_remap = 0;
+    }
+  }
+  if (is_enable_remap == 1) {
     addr_t remap_dummy_page = 0;
     {
       kr = mach_vm_allocate(self_task, (mach_vm_address_t *)&remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
@@ -90,7 +99,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
     KERN_RETURN_ERROR(kr, -1);
 
     kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
-    
+
     // the kr always return KERN_PROTECTION_FAILURE
     kr = KERN_PROTECTION_FAILURE;
     if (kr == KERN_PROTECTION_FAILURE) {

@@ -92,7 +92,7 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
 }
 
 Thread::Thread(const char *name) {
-  strncpy(name_, name, sizeof(name_));
+  strncpy(name_, name, sizeof(name_) -1);
 }
 
 bool Thread::Start() {
