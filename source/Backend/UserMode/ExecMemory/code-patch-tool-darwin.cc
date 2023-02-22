@@ -52,13 +52,36 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
   auto self_task = mach_task_self();
   kern_return_t kr;
 
-  static int is_enable_remap = -1;
+  int orig_prot = 0;
+  int orig_max_prot = 0;
+  int share_mode = 0;
+  int is_enable_remap = -1;
   if (is_enable_remap == -1) {
-    auto kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
-    if (kr == KERN_SUCCESS) {
+    auto get_region_info = [&](addr_t region_start) -> void {
+      vm_region_submap_info_64 region_submap_info;
+      mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
+      mach_vm_address_t addr = region_start;
+      mach_vm_size_t size = 0;
+      natural_t depth = 0;
+      while (1) {
+        kr = mach_vm_region_recurse(mach_task_self(), (mach_vm_address_t *)&addr, (mach_vm_size_t *)&size, &depth,
+                                    (vm_region_recurse_info_t)&region_submap_info, &count);
+        if (region_submap_info.is_submap) {
+          depth++;
+        } else {
+          orig_prot = region_submap_info.protection;
+          orig_max_prot = region_submap_info.max_protection;
+          share_mode = region_submap_info.share_mode;
+          return;
+        }
+      }
+    };
+    get_region_info(remap_dest_page);
+    if (orig_max_prot != 5 && share_mode != 2) {
       is_enable_remap = 1;
     } else {
       is_enable_remap = 0;
+      DEBUG_LOG("code patch %p won't use remap", address);
     }
   }
   if (is_enable_remap == 1) {
@@ -85,6 +108,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
     kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
     KERN_RETURN_ERROR(kr, -1);
   } else {
+
     {
       auto kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
       KERN_RETURN_ERROR(kr, -1);
@@ -108,7 +132,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
 
       memcpy((void *)(patch_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
 
-      kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
+      kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, orig_prot);
       KERN_RETURN_ERROR(kr, -1);
     } else {
       memcpy((void *)(remap_dummy_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
