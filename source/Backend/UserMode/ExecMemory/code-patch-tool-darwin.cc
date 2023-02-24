@@ -20,6 +20,23 @@
     }                                                                                                                  \
   } while (0);
 
+#include <sys/mman.h>
+
+#if defined(TARGET_ARCH_ARM64)
+#define SYS_mprotect 74
+int mprotect_impl(void *addr, size_t len, int prot) {
+  int ret = 0;
+  __asm__ __volatile__("mov x16, %[_SYS_mprotect]\n"
+                       "svc 0x80\n"
+                       "mov %[_ret], x0\n"
+                       "add %[_ret], %[_ret], #0x0\n"
+                       : [_ret] "=r"(ret)
+                       : [_SYS_mprotect] "n"(SYS_mprotect)
+                       :);
+  return ret;
+}
+#endif
+
 PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   if (address == nullptr || buffer == nullptr || buffer_size == 0) {
     ERROR_LOG("invalid argument");
@@ -109,33 +126,42 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
     KERN_RETURN_ERROR(kr, -1);
   } else {
 
-    {
-      auto kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
+    if (0) {
+      {
+        auto kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
+        KERN_RETURN_ERROR(kr, -1);
+
+        kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
+        KERN_RETURN_ERROR(kr, -1);
+      }
+
+      vm_prot_t prot, max_prot;
+      kr = mach_vm_remap(self_task, &remap_dummy_page, page_size, 0, VM_FLAGS_ANYWHERE, self_task, remap_dest_page,
+                         false, &prot, &max_prot, VM_INHERIT_SHARE);
       KERN_RETURN_ERROR(kr, -1);
 
-      kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
-      KERN_RETURN_ERROR(kr, -1);
+      kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
+      // the kr always return KERN_PROTECTION_FAILURE
+      kr = KERN_PROTECTION_FAILURE;
+
+      memcpy((void *)(remap_dummy_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
     }
 
-    vm_prot_t prot, max_prot;
-    kr = mach_vm_remap(self_task, &remap_dummy_page, page_size, 0, VM_FLAGS_ANYWHERE, self_task, remap_dest_page, false,
-                       &prot, &max_prot, VM_INHERIT_SHARE);
-    KERN_RETURN_ERROR(kr, -1);
-
-    kr = mach_vm_protect(self_task, remap_dummy_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE);
-
-    // the kr always return KERN_PROTECTION_FAILURE
-    kr = KERN_PROTECTION_FAILURE;
-    if (kr == KERN_PROTECTION_FAILURE) {
-      kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+    static __typeof(vm_protect) *vm_protect_impl = nullptr;
+    if (vm_protect_impl == nullptr) {
+      vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("dyld", "vm_protect");
+      if (vm_protect_impl == nullptr) {
+        vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
+      }
+    }
+    {
+      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
       KERN_RETURN_ERROR(kr, -1);
 
       memcpy((void *)(patch_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
 
-      kr = mach_vm_protect(self_task, remap_dest_page, page_size, false, orig_prot);
+      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, orig_prot);
       KERN_RETURN_ERROR(kr, -1);
-    } else {
-      memcpy((void *)(remap_dummy_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
     }
   }
 
