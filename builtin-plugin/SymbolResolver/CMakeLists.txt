@@ -6,6 +6,7 @@ endif()
 
 if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+    ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/dyld_shared_cache_symbol_table_iterator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/dobby_symbol_resolver.cc
 
