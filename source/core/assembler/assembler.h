@@ -12,9 +12,7 @@ class ExternalReference {
 public:
   explicit ExternalReference(void *address) : address_(address) {
 #if defined(__APPLE__) && __arm64e__
-#if __has_feature(ptrauth_calls)
-    address_ = ptrauth_strip(address, ptrauth_key_asia);
-#endif
+    address_ = pac_strip((void *)address_);
 #endif
   }
 

@@ -10,9 +10,7 @@
 void InstructionInstrumentRouting::BuildRouting() {
   void *handler = (void *)instrument_routing_dispatch;
 #if defined(__APPLE__) && defined(__arm64__)
-#if __has_feature(ptrauth_calls)
-  handler = ptrauth_strip(handler, ptrauth_key_asia);
-#endif
+  handler = pac_strip(handler);
 #endif
   auto closure_trampoline = ClosureTrampoline::CreateClosureTrampoline(entry_, handler);
   this->SetTrampolineTarget((addr_t)closure_trampoline->address);

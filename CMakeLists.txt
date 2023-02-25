@@ -16,8 +16,6 @@ auto_source_group("." "auto-source-group" "\\.(cc|cpp|c|h)$")
 
 # ===== handle option =====
 
-option(DOBBY_GENERATE_SHARED "Build shared library" ON)
-
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
 option(NearBranch "Enable near branch trampoline" ON)
@@ -266,6 +264,8 @@ endif ()
 add_subdirectory(external/logging)
 get_target_property(logging.SOURCE_FILE_LIST logging SOURCES)
 
+# add osbase library
+add_subdirectory(external/osbase)
 # ---
 
 if (Plugin.SymbolResolver)
@@ -306,18 +306,25 @@ message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
 # ---
 
-if (DOBBY_GENERATE_SHARED)
-  message(STATUS "[Dobby] Generate shared library")
-  set(DOBBY_LIBRARY_TYPE SHARED)
-else ()
-  message(STATUS "[Dobby] Generate static library")
-  set(DOBBY_LIBRARY_TYPE STATIC)
-endif ()
-add_library(dobby ${DOBBY_LIBRARY_TYPE} ${dobby.HEADER_FILE_LIST} ${dobby.SOURCE_FILE_LIST} ${logging.SOURCE_FILE_LIST} ${misc_helper.SOURCE_FILE_LIST} ${dobby.plugin.SOURCE_FILE_LIST})
+add_library(dobby SHARED
+  ${dobby.HEADER_FILE_LIST}
+  ${dobby.SOURCE_FILE_LIST}
+  ${logging.SOURCE_FILE_LIST}
+  ${misc_helper.SOURCE_FILE_LIST}
+  ${dobby.plugin.SOURCE_FILE_LIST}
+  )
 
-# ---
+add_library(dobby_static STATIC
+  ${dobby.HEADER_FILE_LIST}
+  ${dobby.SOURCE_FILE_LIST}
+  ${logging.SOURCE_FILE_LIST}
+  ${misc_helper.SOURCE_FILE_LIST}
+  ${dobby.plugin.SOURCE_FILE_LIST}
+  )
 
 target_include_directories(dobby PUBLIC include)
+
+target_include_directories(dobby_static PUBLIC include)
 
 # ---
 
@@ -331,12 +338,21 @@ set_target_properties(dobby
   COMPILE_FLAGS "${compiler_flags}"
   )
 
+set_target_properties(dobby_static
+  PROPERTIES
+  COMPILE_FLAGS "${compiler_flags}"
+  )
+
 # ---
 
 if (SYSTEM.Android)
   target_link_libraries(dobby log)
   if (PROCESSOR.ARM)
     set_target_properties(dobby
+      PROPERTIES
+      ANDROID_ARM_MODE arm
+      )
+    set_target_properties(dobby_static
       PROPERTIES
       ANDROID_ARM_MODE arm
       )

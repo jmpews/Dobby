@@ -91,11 +91,11 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
   return true;
 }
 
-Thread::Thread(const char *name) {
+OSThread::OSThread(const char *name) {
   strncpy(name_, name, sizeof(name_) -1);
 }
 
-bool Thread::Start() {
+bool OSThread::Start() {
   if (ThreadInterface::Create(this, &handle_) == false) {
     return false;
   }

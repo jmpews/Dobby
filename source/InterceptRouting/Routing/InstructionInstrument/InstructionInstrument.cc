@@ -11,9 +11,7 @@ PUBLIC int DobbyInstrument(void *address, dobby_instrument_callback_t pre_handle
   }
 
 #if defined(__APPLE__) && defined(__arm64__)
-#if __has_feature(ptrauth_calls)
-  address = ptrauth_strip(address, ptrauth_key_asia);
-#endif
+  address = pac_strip(address);
 #endif
 
 #if defined(ANDROID)

@@ -28,8 +28,8 @@ int mprotect_impl(void *addr, size_t len, int prot) {
   int ret = 0;
   __asm__ __volatile__("mov x16, %[_SYS_mprotect]\n"
                        "svc 0x80\n"
-                       "mov %[_ret], x0\n"
-                       "add %[_ret], %[_ret], #0x0\n"
+                       "mov %w[_ret], w0\n"
+                       "add %w[_ret], %w[_ret], #0x0\n"
                        : [_ret] "=r"(ret)
                        : [_SYS_mprotect] "n"(SYS_mprotect)
                        :);
@@ -153,6 +153,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
       if (vm_protect_impl == nullptr) {
         vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
       }
+      vm_protect_impl = (__typeof(vm_protect) *)pac_sign((void *)vm_protect_impl);
     }
     {
       kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);

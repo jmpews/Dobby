@@ -8,7 +8,6 @@ namespace base {
 class ThreadLocalStorageInterface {
   using LocalStorageKey = int32_t;
 
-  // Thread-local storage.
   static LocalStorageKey CreateThreadLocalKey();
 
   static void DeleteThreadLocalKey(LocalStorageKey key);
@@ -46,18 +45,18 @@ public:
 
   static void SetName(const char *);
 };
+} // namespace base
 
-class Thread : public ThreadInterface, public ThreadInterface::Delegate {
-  ThreadHandle handle_;
+class OSThread : public base::ThreadInterface, public base::ThreadInterface::Delegate {
+  base::ThreadHandle handle_;
 
   char name_[256];
 
 public:
-  Thread(const char *name);
+  OSThread(const char *name);
 
   bool Start();
 };
-} // namespace base
 
 enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
 

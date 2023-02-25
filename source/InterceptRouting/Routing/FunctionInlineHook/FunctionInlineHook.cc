@@ -10,10 +10,8 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
   }
 
 #if defined(__APPLE__) && defined(__arm64__)
-#if __has_feature(ptrauth_calls)
-  address = ptrauth_strip(address, ptrauth_key_asia);
-  replace_func = ptrauth_strip(replace_func, ptrauth_key_asia);
-#endif
+  address = pac_strip(address);
+  replace_func = pac_strip(replace_func);
 #endif
 
 #if defined(ANDROID)
@@ -41,6 +39,9 @@ PUBLIC int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy
   // set origin func entry with as relocated instructions
   if (origin_func) {
     *origin_func = (dobby_dummy_func_t)entry->relocated_addr;
+#if defined(__APPLE__) && defined(__arm64__)
+    *origin_func = pac_sign(*origin_func);
+#endif
   }
 
   routing->Commit();
