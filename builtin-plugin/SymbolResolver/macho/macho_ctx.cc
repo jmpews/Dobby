@@ -177,7 +177,8 @@ intptr_t read_sleb128(const uint8_t **pp, const uint8_t *end) {
 
 // dyld
 // bool MachOLoaded::findExportedSymbol
-uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char *symbol) {
+// MachOLoaded::trieWalk
+uint8_t *tail_walk(const uint8_t *start, const uint8_t *end, const char *symbol) {
   uint32_t visitedNodeOffsets[128];
   int visitedNodeOffsetCount = 0;
   visitedNodeOffsets[visitedNodeOffsetCount++] = 0;
@@ -191,9 +192,6 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
     }
     if ((*symbol == '\0') && (terminalSize != 0)) {
       return (uint8_t *)p;
-      // skip flag == EXPORT_SYMBOL_FLAGS_REEXPORT
-      read_uleb128(&p, end);
-      return (uint8_t *)read_uleb128(&p, end);
     }
     const uint8_t *children = p + terminalSize;
     if (children > end) {
@@ -203,6 +201,7 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
     uint8_t childrenRemaining = *children++;
     p = children;
     uint64_t nodeOffset = 0;
+
     for (; childrenRemaining > 0; --childrenRemaining) {
       const char *ss = symbol;
       bool wrongEdge = false;
@@ -227,7 +226,7 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
         ++p; // skip over last byte of uleb128
         if (p > end) {
           // diag.error("malformed trie node, child node extends past end of trie\n");
-          return NULL;
+          return nullptr;
         }
       } else {
         // the symbol so far matches this edge (child)
@@ -236,12 +235,13 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
         nodeOffset = read_uleb128(&p, end);
         if ((nodeOffset == 0) || (&start[nodeOffset] > end)) {
           // diag.error("malformed trie child, nodeOffset=0x%llX out of range\n", nodeOffset);
-          return NULL;
+          return nullptr;
         }
         symbol = ss;
         break;
       }
     }
+
     if (nodeOffset != 0) {
       if (nodeOffset > (uint64_t)(end - start)) {
         // diag.error("malformed trie child, nodeOffset=0x%llX out of range\n", nodeOffset);
@@ -254,10 +254,6 @@ uint8_t *walk_exported_trie(const uint8_t *start, const uint8_t *end, const char
         }
       }
       visitedNodeOffsets[visitedNodeOffsetCount++] = (uint32_t)nodeOffset;
-      if (visitedNodeOffsetCount >= 128) {
-        // diag.error("malformed trie too deep\n");
-        return NULL;
-      }
       p = &start[nodeOffset];
     } else
       p = end;
@@ -284,16 +280,24 @@ uintptr_t macho_ctx_iterate_exported_symbol(macho_ctx_t *ctx, const char *symbol
 
   uint8_t *exports_start = (uint8_t *)exports;
   uint8_t *exports_end = exports_start + trieFileSize;
-  uint8_t *node = (uint8_t *)walk_exported_trie(exports_start, exports_end, symbol_name);
+  uint8_t *node = (uint8_t *)tail_walk(exports_start, exports_end, symbol_name);
   if (node == NULL)
     return 0;
   const uint8_t *p = node;
   const uintptr_t flags = read_uleb128(&p, exports_end);
-  if (flags & EXPORT_SYMBOL_FLAGS_REEXPORT) {
-    return 0;
-  }
   if (out_flags)
     *out_flags = flags;
+  if (flags & EXPORT_SYMBOL_FLAGS_REEXPORT) {
+    const uint64_t ordinal = read_uleb128(&p, exports_end);
+    const char *importedName = (const char *)p;
+    if (importedName[0] == '\0') {
+      importedName = symbol_name;
+      return 0;
+    }
+    // trick
+    printf("reexported symbol: %s\n", importedName);
+    return (uintptr_t)importedName;
+  }
   uint64_t trieValue = read_uleb128(&p, exports_end);
   return trieValue;
 #if 0
