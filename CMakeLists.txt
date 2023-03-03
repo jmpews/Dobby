@@ -272,7 +272,7 @@ if (Plugin.SymbolResolver)
   message(STATUS "[Dobby] Enable symbol resolver")
   include_directories(builtin-plugin/SymbolResolver)
   add_subdirectory(builtin-plugin/SymbolResolver)
-  get_target_property(symbol_resolver.SOURCE_FILE_LIST symbol_resolver SOURCES)
+  get_target_property(symbol_resolver.SOURCE_FILE_LIST dobby_symbol_resolver SOURCES)
   set(dobby.plugin.SOURCE_FILE_LIST ${dobby.plugin.SOURCE_FILE_LIST}
     ${symbol_resolver.SOURCE_FILE_LIST}
     )
@@ -314,6 +314,10 @@ add_library(dobby SHARED
   ${dobby.plugin.SOURCE_FILE_LIST}
   )
 
+target_include_directories(dobby PUBLIC include)
+
+# ---
+
 add_library(dobby_static STATIC
   ${dobby.HEADER_FILE_LIST}
   ${dobby.SOURCE_FILE_LIST}
@@ -322,9 +326,9 @@ add_library(dobby_static STATIC
   ${dobby.plugin.SOURCE_FILE_LIST}
   )
 
-target_include_directories(dobby PUBLIC include)
-
 target_include_directories(dobby_static PUBLIC include)
+
+set_target_properties(dobby_static PROPERTIES OUTPUT_NAME "dobby")
 
 # ---
 
