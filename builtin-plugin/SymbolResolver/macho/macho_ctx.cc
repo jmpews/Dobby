@@ -295,7 +295,7 @@ uintptr_t macho_ctx_iterate_exported_symbol(macho_ctx_t *ctx, const char *symbol
       return 0;
     }
     // trick
-    printf("reexported symbol: %s\n", importedName);
+    // printf("reexported symbol: %s\n", importedName);
     return (uintptr_t)importedName;
   }
   uint64_t trieValue = read_uleb128(&p, exports_end);
@@ -360,22 +360,44 @@ uintptr_t macho_symbol_resolve(mach_header_t *header, const char *symbol_name_pa
   return macho_symbol_resolve_options(header, symbol_name_pattern, RESOLVE_SYMBOL_TYPE_ALL);
 }
 
-uintptr_t macho_file_memory_symbol_resolve(cpu_type_t cpu, cpu_subtype_t subtype, const uint8_t *file_mem,
+uintptr_t macho_file_memory_symbol_resolve(cpu_type_t in_cputype, cpu_subtype_t in_cpusubtype, const uint8_t *file_mem,
                                            char *symbol_name_pattern) {
+
   mach_header_t *header = (mach_header_t *)file_mem;
   struct fat_header *fh = (struct fat_header *)file_mem;
   if (fh->magic == OSSwapBigToHostInt32(FAT_MAGIC)) {
     const struct fat_arch *archs = (struct fat_arch *)(((uintptr_t)fh) + sizeof(fat_header));
+    mach_header_t *header_arm64 = NULL;
+    mach_header_t *header_arm64e = NULL;
+    mach_header_t *header_x64 = NULL;
     for (size_t i = 0; i < OSSwapBigToHostInt32(fh->nfat_arch); i++) {
       uint64_t offset;
       uint64_t len;
       cpu_type_t cputype = (cpu_type_t)OSSwapBigToHostInt32(archs[i].cputype);
       cpu_subtype_t cpusubtype = (cpu_subtype_t)OSSwapBigToHostInt32(archs[i].cpusubtype);
-      if ((cputype == cpu) && ((cpusubtype & subtype) == subtype)) {
-        offset = OSSwapBigToHostInt32(archs[i].offset);
-        len = OSSwapBigToHostInt32(archs[i].size);
+      offset = OSSwapBigToHostInt32(archs[i].offset);
+      len = OSSwapBigToHostInt32(archs[i].size);
+      if (cputype == CPU_TYPE_X86_64) {
+        header_x64 = (mach_header_t *)&file_mem[offset];
+      } else if (cputype == CPU_TYPE_ARM64 && (cpusubtype & ~CPU_SUBTYPE_MASK) == CPU_SUBTYPE_ARM64E) {
+        header_arm64e = (mach_header_t *)&file_mem[offset];
+      } else if (cputype == CPU_TYPE_ARM64) {
+        header_arm64 = (mach_header_t *)&file_mem[offset];
+      }
+
+      if ((cputype == in_cputype) && ((cpusubtype & in_cpusubtype) == in_cpusubtype)) {
         header = (mach_header_t *)&file_mem[offset];
         break;
+      }
+    }
+
+    if (header == (mach_header_t *)file_mem) {
+      if (in_cputype == 0 && in_cpusubtype == 0) {
+#if defined(__arm64__) || defined(__aarch64__)
+      header = header_arm64e ? header_arm64e : header_arm64;
+#else
+        header = header_x64;
+#endif
       }
     }
   }
