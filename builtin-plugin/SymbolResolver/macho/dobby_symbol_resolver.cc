@@ -9,13 +9,13 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include "macho_ctx.h"
+#include "shared_cache_ctx.h"
 
 #if defined(BUILDING_KERNEL)
 #else
 
 #include <mach-o/dyld.h>
 #include <mach-o/dyld_images.h>
-#include "SymbolResolver/macho/shared_cache_internal.h"
 
 #endif
 
@@ -49,8 +49,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     static shared_cache_ctx_t shared_cache_ctx;
     if (shared_cache_ctx_init_once == 0) {
       shared_cache_ctx_init_once = 1;
-      memset(&shared_cache_ctx, 0, sizeof(shared_cache_ctx_t));
       shared_cache_ctx_init(&shared_cache_ctx);
+      shared_cache_load_symbols(&shared_cache_ctx);
     }
     if (shared_cache_ctx.mmap_shared_cache) {
       // shared cache library
@@ -92,7 +92,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     macho_ctx_init(&ctx, dyld_header, true);
     result = (uintptr_t)macho_ctx_symbol_resolve(&ctx, symbol_name_pattern);
 
-    if (result == 0) {
+    bool is_dyld_in_cache = ((mach_header_t *)dyld_header)->flags & MH_DYLIB_IN_CACHE;
+    if (!is_dyld_in_cache && result == 0) {
       result = macho_file_symbol_resolve(dyld_header->cputype, dyld_header->cpusubtype, "/usr/lib/dyld",
                                          (char *)symbol_name_pattern);
       result += (uintptr_t)dyld_header;

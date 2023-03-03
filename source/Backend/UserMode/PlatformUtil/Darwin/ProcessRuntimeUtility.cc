@@ -109,6 +109,10 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   module.load_address = 0;
   modules->push_back(module);
 
+  strncpy(module.path, infos->dyldPath, sizeof(module.path) - 1);
+  module.load_address = (void *)infos->dyldImageLoadAddress;
+  modules->push_back(module);
+
   for (int i = 0; i < infoArrayCount; ++i) {
     const struct dyld_image_info *info = &infoArray[i];
 
@@ -118,6 +122,11 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
       modules->push_back(module);
     }
   }
+
+  std::sort(modules->begin(), modules->end(), [](RuntimeModule a, RuntimeModule b) {
+    ;
+    return a.load_address < b.load_address;
+  });
 
   return *modules;
 }

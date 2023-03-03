@@ -1,19 +1,14 @@
+#include "shared_cache_ctx.h"
+
 #include <mach/mach.h>
 #include <mach/task.h>
 #include <mach-o/dyld_images.h>
 
-#include <string.h>
-#include <stdlib.h>
+#include "logging/logging.h"
 
 #include "mmap_file_util.h"
 
-#include "SymbolResolver/macho/shared_cache_internal.h"
-#include "SymbolResolver/macho/shared-cache/dyld_cache_format.h"
-
-#include "logging/logging.h"
-
-#undef LOG_TAG
-#define LOG_TAG "DobbySymbolResolverSharedCache"
+typedef uintptr_t addr_t;
 
 extern "C" {
 extern const char *dyld_shared_cache_file_path();
@@ -25,6 +20,14 @@ const char *shared_cache_get_file_path() {
 }
 
 struct dyld_cache_header *shared_cache_get_load_addr() {
+  addr_t shared_cache_base = 0;
+  if (__shared_region_check_np((uint64_t *)&shared_cache_base) != 0) {
+    WARN_LOG("__shared_region_check_np failed");
+  }
+
+  if (shared_cache_base)
+    return (struct dyld_cache_header *)shared_cache_base;
+
   // task info
   task_dyld_info_data_t task_dyld_info;
   mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
@@ -106,14 +109,13 @@ int shared_cache_load_symbols(shared_cache_ctx_t *ctx) {
 }
 
 int shared_cache_ctx_init(shared_cache_ctx_t *ctx) {
+  memset(ctx, 0, sizeof(shared_cache_ctx_t));
 
   auto runtime_shared_cache = shared_cache_get_load_addr();
   if (!runtime_shared_cache) {
     return -1;
   }
   ctx->runtime_shared_cache = runtime_shared_cache;
-
-  shared_cache_load_symbols(ctx);
 
   // shared cache slide
   auto mappings =
