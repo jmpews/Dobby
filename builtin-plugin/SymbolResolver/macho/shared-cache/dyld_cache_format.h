@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <uuid/uuid.h>
+#include <TargetConditionals.h>
 
 
 struct dyld_cache_header

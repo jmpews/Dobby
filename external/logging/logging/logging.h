@@ -78,7 +78,7 @@ public:
   void setLogFile(const char *file) {
     log_file_ = file;
     log_file_stream_ = new std::fstream();
-    log_file_stream_->open(log_file_, std::ios::out | std::ios::trunc);
+    log_file_stream_->open(log_file_, std::ios::out | std::ios::app);
   }
 
   void setLogLevel(LogLevel level) {
