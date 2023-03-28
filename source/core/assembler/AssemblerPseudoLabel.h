@@ -57,7 +57,7 @@ protected:
 struct RelocLabel : public AssemblerPseudoLabel {
 public:
   RelocLabel() : AssemblerPseudoLabel(0) {
-    memset(&data_, 0, sizeof(data_));
+    memset(data_, 0, sizeof(data_));
     data_size_ = 0;
   }
 

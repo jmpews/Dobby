@@ -4,7 +4,7 @@ if (NOT DEFINED DOBBY_DIR)
   message(FATAL_ERROR "DOBBY_DIR must be set!")
 endif ()
 
-if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
+if (SYSTEM.Darwin AND (NOT DOBBY_BUILD_KERNEL_MODE))
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.cpp
@@ -14,7 +14,7 @@ if (SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
     ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
     )
 endif ()
-if (SYSTEM.Darwin AND BUILDING_KERNEL)
+if (SYSTEM.Darwin AND DOBBY_BUILD_KERNEL_MODE)
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/dobby_symbol_resolver.cc
 

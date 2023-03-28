@@ -17,9 +17,9 @@ option(Plugin.ImportTableReplace "Enable import table replace " OFF)
 
 option(Plugin.Android.BionicLinkerUtil "Enable android bionic linker util" OFF)
 
-option(BUILD_EXAMPLE "Build example" OFF)
+option(DOBBY_BUILD_EXAMPLE "Build example" OFF)
 
-option(BUILD_TEST "Build test" OFF)
+option(DOBBY_BUILD_TEST "Build test" OFF)
 ```
 
 ## Build with `scripts/platform_builder.py`

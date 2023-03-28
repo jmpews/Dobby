@@ -32,7 +32,7 @@ asm_func_t get_closure_bridge();
 
 class ClosureTrampoline {
 private:
-  static std::vector<ClosureTrampolineEntry> *trampolines_;
+  static tinystl::vector<ClosureTrampolineEntry> *trampolines_;
 
 public:
   static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_handler);

@@ -35,9 +35,9 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.start < b.start);
 }
 
-std::vector<MemRegion> regions;
+tinystl::vector<MemRegion> regions;
 
-const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
   vm_region_submap_info_64 region_submap_info;
@@ -84,11 +84,11 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return regions;
 }
 
-static std::vector<RuntimeModule> *modules;
+static tinystl::vector<RuntimeModule> *modules;
 
-const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
+const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   if (modules == nullptr) {
-    modules = new std::vector<RuntimeModule>();
+    modules = new tinystl::vector<RuntimeModule>();
   }
   modules->clear();
 
@@ -123,10 +123,7 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
     }
   }
 
-  std::sort(modules->begin(), modules->end(), [](RuntimeModule a, RuntimeModule b) {
-    ;
-    return a.load_address < b.load_address;
-  });
+  modules->sort([](const RuntimeModule &a, const RuntimeModule &b) -> int { return a.load_address < b.load_address; });
 
   return *modules;
 }

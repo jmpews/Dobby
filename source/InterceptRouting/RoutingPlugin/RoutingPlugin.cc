@@ -1,6 +1,6 @@
 #include "InterceptRouting/RoutingPlugin/RoutingPlugin.h"
 
-std::vector<RoutingPluginInterface *> RoutingPluginManager::plugins;
+tinystl::vector<RoutingPluginInterface *> RoutingPluginManager::plugins;
 
 RoutingPluginInterface *RoutingPluginManager::near_branch_trampoline = NULL;
 

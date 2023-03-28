@@ -15,8 +15,8 @@ static bool memory_region_comparator(MemRange a, MemRange b) {
 
 // https://gist.github.com/jedwardsol/9d4fe1fd806043a5767affbd200088ca
 
-std::vector<MemRange> ProcessMemoryLayout;
-std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
+tinystl::vector<MemRange> ProcessMemoryLayout;
+tinystl::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -61,9 +61,9 @@ std::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
 // ================================================================
 // GetProcessModuleMap
 
-std::vector<RuntimeModule> ProcessModuleMap;
+tinystl::vector<RuntimeModule> ProcessModuleMap;
 
-std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
+tinystl::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -71,7 +71,7 @@ std::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  std::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
+  tinystl::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
   for (auto module : ProcessModuleMap) {
     if (strstr(module.path, name) != 0) {
       return module;

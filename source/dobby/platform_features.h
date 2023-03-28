@@ -43,9 +43,8 @@
 #endif
 #else
 #ifdef __cplusplus
-#include <type_traits>
-#include <vector>
-#include <map>
+// #include "TINYSTL/vector.h"
+// #include "TINYSTL/unordered_map.h"
 #include "TINYSTL/vector.h"
 #include "TINYSTL/unordered_map.h"
 #endif

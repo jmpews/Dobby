@@ -1,14 +1,12 @@
 #pragma once
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdbool.h>
 
 #define LOG_TAG NULL
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 typedef enum {
   LOG_LEVEL_DEBUG = 0,
   LOG_LEVEL_INFO = 1,
@@ -16,20 +14,23 @@ typedef enum {
   LOG_LEVEL_ERROR = 3,
   LOG_LEVEL_FATAL = 4
 } LogLevel;
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __cplusplus
 
+#if defined(USE_CXX_FILESTREAM)
 #include <fstream>
+#endif
 
 class Logger {
 public:
   const char *log_tag_;
 
   const char *log_file_;
+#if defined(USE_CXX_FILESTREAM)
   std::fstream *log_file_stream_;
+#else
+  FILE *log_file_stream_;
+#endif
 
   LogLevel log_level_;
 
@@ -77,8 +78,12 @@ public:
 
   void setLogFile(const char *file) {
     log_file_ = file;
+#if defined(USE_CXX_FILESTREAM)
     log_file_stream_ = new std::fstream();
     log_file_stream_->open(log_file_, std::ios::out | std::ios::app);
+#else
+    log_file_stream_ = fopen(log_file_, "a");
+#endif
   }
 
   void setLogLevel(LogLevel level) {
@@ -144,18 +149,18 @@ public:
 extern "C" {
 #endif
 
+#if defined(DOBBY_LOGGING_DISABLE)
+#define LOG_FUNCTION_IMPL(...)
+#else
 #if !defined(LOG_FUNCTION_IMPL)
 #define LOG_FUNCTION_IMPL logger_log_impl
+#endif
 #endif
 
 void *logger_create(const char *tag, const char *file, LogLevel level, bool enable_time_tag, bool enable_syslog);
 void logger_set_options(void *logger, const char *tag, const char *file, LogLevel level, bool enable_time_tag,
                         bool enable_syslog);
 void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
-
-#if defined(LOGGING_DISABLE)
-#define LOG_FUNCTION_IMPL(...)
-#endif
 
 #ifdef __cplusplus
 }

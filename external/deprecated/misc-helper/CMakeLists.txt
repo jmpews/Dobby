@@ -1,6 +1,6 @@
 include_directories(.)
 
-if(NOT BUILDING_KERNEL)
+if(NOT DOBBY_BUILD_KERNEL_MODE)
   set(SOURCE_FILE_LIST
     ${CMAKE_CURRENT_SOURCE_DIR}/variable_cache.c
     ${CMAKE_CURRENT_SOURCE_DIR}/async_logger.cc

@@ -41,7 +41,7 @@ public:
   void AppendRelocLabel(RelocLabel *label);
 
 protected:
-  std::vector<RelocLabel *> data_labels_;
+  tinystl::vector<RelocLabel *> data_labels_;
 
 public:
   virtual void *GetRealizedAddress();

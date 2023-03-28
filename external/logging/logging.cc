@@ -93,8 +93,13 @@ void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
   if (log_file_ != nullptr) {
     char buffer[0x4000] = {0};
     vsnprintf(buffer, sizeof(buffer) - 1, fmt_buffer, ap);
+#if defined(USER_CXX_FILESTREAM)
     log_file_stream_->write(buffer, strlen(buffer));
     log_file_stream_->flush();
+#else
+    fwrite(buffer, strlen(buffer), 1, log_file_stream_);
+    fflush(log_file_stream_);
+#endif
   }
 
   if (1 || !enable_syslog_ && log_file_ == nullptr) {

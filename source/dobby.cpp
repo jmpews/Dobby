@@ -2,10 +2,10 @@
 #include "Interceptor.h"
 
 __attribute__((constructor)) static void ctor() {
-  INFO_LOG("================================");
-  INFO_LOG("Dobby");
-  INFO_LOG("dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
-  INFO_LOG("================================");
+  DEBUG_LOG("================================");
+  DEBUG_LOG("Dobby");
+  DEBUG_LOG("dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
+  DEBUG_LOG("================================");
 }
 
 PUBLIC const char *DobbyGetVersion() {

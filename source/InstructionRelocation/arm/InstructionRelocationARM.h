@@ -296,7 +296,7 @@ public:
   }
 
 private:
-  std::vector<ThumbRelocLabelEntry *> data_labels_;
+  tinystl::vector<ThumbRelocLabelEntry *> data_labels_;
 };
 
 #if 0

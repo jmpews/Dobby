@@ -24,11 +24,18 @@
 
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
-  const std::vector<RuntimeModule> modules = ProcessRuntimeUtility::GetProcessModuleMap();
+  auto modules = ProcessRuntimeUtility::GetProcessModuleMap();
 
   for (auto iter = modules.begin(); iter != modules.end(); iter++) {
     auto module = *iter;
-    if (image_name != NULL && strnstr(module.path, image_name, strlen(module.path)) == NULL)
+
+    // image filter
+    if (image_name && !strstr(module.path, image_name))
+      continue;
+
+    // dyld in shared cached at new os version
+    // ignore dyld, as some functions as own implementation in dyld
+    if (!image_name && strstr(module.path, "dyld"))
       continue;
 
     auto header = (mach_header_t *)module.load_address;
@@ -102,7 +109,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 #endif
 
   if (result == 0) {
-    LOG(LOG_LEVEL_DEBUG, "symbol resolver failed: %s", symbol_name_pattern);
+    DEBUG_LOG("symbol resolver failed: %s", symbol_name_pattern);
   }
 
   return (void *)result;

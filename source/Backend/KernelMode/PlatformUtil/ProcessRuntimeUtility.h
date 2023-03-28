@@ -17,9 +17,9 @@ struct MemRegion : MemRange {
 
 class ProcessRuntimeUtility {
 public:
-  static const std::vector<MemRegion> &GetProcessMemoryLayout();
+  static const tinystl::vector<MemRegion> &GetProcessMemoryLayout();
 
-  static const std::vector<RuntimeModule> *GetProcessModuleMap();
+  static const tinystl::vector<RuntimeModule> *GetProcessModuleMap();
 
   static RuntimeModule GetProcessModule(const char *name);
 };

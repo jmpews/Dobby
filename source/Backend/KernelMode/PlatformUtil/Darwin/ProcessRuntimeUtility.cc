@@ -72,8 +72,8 @@ static inline vm_map_entry_t vm_map_first_entry(vm_map_t map) {
 
 // ---
 
-static std::vector<MemRegion> regions;
-const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+static tinystl::vector<MemRegion> regions;
+const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return regions;
 }
 
@@ -84,8 +84,8 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 extern "C" void *kernel_info_load_base();
 ;
 
-std::vector<RuntimeModule> modules;
-const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
+tinystl::vector<RuntimeModule> modules;
+const tinystl::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
   modules.clear();
 
   // brute force kernel base ? so rude :)
@@ -128,6 +128,6 @@ const std::vector<RuntimeModule> *ProcessRuntimeUtility::GetProcessModuleMap() {
 }
 
 RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
-  const std::vector<RuntimeModule> *modules = GetProcessModuleMap();
+  const tinystl::vector<RuntimeModule> *modules = GetProcessModuleMap();
   return RuntimeModule{0};
 }
