@@ -36,15 +36,17 @@ if (SYSTEM.Windows)
     )
 endif ()
 
-add_library(macho_ctx_kit
-  macho/macho_ctx.h
-  macho/macho_ctx.cc
-  )
-
-add_library(shared_cache_ctx_kit
-  macho/shared_cache_ctx.h
-  macho/shared_cache_ctx.cpp
-  )
+if (SYSTEM.Darwin)
+  add_library(macho_ctx_kit
+    macho/macho_ctx.h
+    macho/macho_ctx.cc
+    )
+  
+  add_library(shared_cache_ctx_kit
+    macho/shared_cache_ctx.h
+    macho/shared_cache_ctx.cpp
+    )
+endif ()
 
 add_library(dobby_symbol_resolver
   ${SOURCE_FILE_LIST}
