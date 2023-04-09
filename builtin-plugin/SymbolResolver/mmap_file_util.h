@@ -9,18 +9,17 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 
-class MmapFileManager {
+struct MmapFileManager {
   const char *file_;
-  uint8_t *mmap_buffer_;
-  size_t mmap_buffer_size_;
+  uint8_t *mmap_buffer;
+  size_t mmap_buffer_size;
 
-public:
-  explicit MmapFileManager(const char *file) : file_(file), mmap_buffer_(nullptr) {
+  explicit MmapFileManager(const char *file) : file_(file), mmap_buffer(nullptr) {
   }
 
   ~MmapFileManager() {
-    if (mmap_buffer_) {
-      munmap((void *)mmap_buffer_, mmap_buffer_size_);
+    if (mmap_buffer) {
+      munmap((void *)mmap_buffer, mmap_buffer_size);
     }
   }
 
@@ -39,8 +38,8 @@ public:
     return map_options(file_size, 0);
   }
 
-  uint8_t *map_options(size_t _size, off_t _off) {
-    if (!mmap_buffer_) {
+  uint8_t *map_options(size_t in_map_size, off_t in_map_off) {
+    if (!mmap_buffer) {
       int fd = open(file_, O_RDONLY, 0);
       if (fd < 0) {
         // printf("%s open failed\n", file_);
@@ -48,7 +47,7 @@ public:
       }
 
       // auto align
-      auto mmap_buffer = (uint8_t *)mmap(0, _size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, _off);
+      auto mmap_buffer = (uint8_t *)mmap(0, in_map_size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, in_map_off);
       if (mmap_buffer == MAP_FAILED) {
         // printf("mmap %s failed\n", file_);
         return NULL;
@@ -56,9 +55,9 @@ public:
 
       close(fd);
 
-      mmap_buffer_ = mmap_buffer;
-      mmap_buffer_size_ = _size;
+      this->mmap_buffer = mmap_buffer;
+      this->mmap_buffer_size = in_map_size;
     }
-    return mmap_buffer_;
+    return mmap_buffer;
   }
 };

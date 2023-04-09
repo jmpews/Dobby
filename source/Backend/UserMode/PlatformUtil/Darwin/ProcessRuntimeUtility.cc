@@ -35,10 +35,14 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.start < b.start);
 }
 
-tinystl::vector<MemRegion> regions;
+tinystl::vector<MemRegion> *regions;
 
 const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
-  regions.clear();
+  if (regions == nullptr) {
+    regions = new tinystl::vector<MemRegion>();
+  }
+
+  regions->clear();
 
   vm_region_submap_info_64 region_submap_info;
   mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
@@ -74,14 +78,14 @@ const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout(
       DEBUG_LOG("%p --- %p", addr, addr + size);
 #endif
       MemRegion region = MemRegion(addr, size, permission);
-      regions.push_back(region);
+      regions->push_back(region);
       addr += size;
     }
   }
 
   // std::sort(ProcessMemoryLayout.begin(), ProcessMemoryLayout.end(), memory_region_comparator);
 
-  return regions;
+  return *regions;
 }
 
 static tinystl::vector<RuntimeModule> *modules;

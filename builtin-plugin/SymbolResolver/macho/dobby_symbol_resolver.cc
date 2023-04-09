@@ -1,5 +1,6 @@
 #include "dobby_symbol_resolver.h"
 #include "macho/dobby_symbol_resolver_priv.h"
+#include "macho_file_symbol_resolver.h"
 
 #include "dobby/common.h"
 
@@ -75,7 +76,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
 #endif
 #endif
 
-    result = macho_symbol_resolve(header, symbol_name_pattern);
+    macho_ctx_t macho_ctx(header);
+    result = macho_ctx.symbol_resolve(symbol_name_pattern);
     if (result) {
       return (void *)result;
     }
@@ -95,9 +97,8 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     const struct dyld_all_image_infos *infos =
         (struct dyld_all_image_infos *)(uintptr_t)task_dyld_info.all_image_info_addr;
     dyld_header = (mach_header_t *)infos->dyldImageLoadAddress;
-    macho_ctx_t ctx;
-    macho_ctx_init(&ctx, dyld_header, true);
-    result = (uintptr_t)macho_ctx_symbol_resolve(&ctx, symbol_name_pattern);
+    macho_ctx_t dyld_ctx(dyld_header);
+    result = dyld_ctx.symbol_resolve(symbol_name_pattern);
 
     bool is_dyld_in_cache = ((mach_header_t *)dyld_header)->flags & MH_DYLIB_IN_CACHE;
     if (!is_dyld_in_cache && result == 0) {

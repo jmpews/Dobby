@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#ifndef PAC_KIT
+#define PAC_KIT
 #if defined(__arm64e__) && __has_feature(ptrauth_calls)
 #include <ptrauth.h>
 #endif
@@ -29,3 +31,5 @@ static inline void *pac_sign(void *addr) {
 static inline void *pac_strip_and_sign(void *addr) {
   return pac_sign(pac_strip(addr));
 }
+
+#endif

@@ -8,7 +8,7 @@ if (NOT DOBBY_DEBUG)
   set(linker_flags "${linker_flags} -Wl,-x -Wl,-S")
 endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions -fno-stack-protector")
 
 if (SYSTEM.Darwin)
   # set(compiler_flags "${compiler_flags} -nostdinc++")

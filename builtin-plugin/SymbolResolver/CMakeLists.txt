@@ -9,7 +9,7 @@ if (SYSTEM.Darwin AND (NOT DOBBY_BUILD_KERNEL_MODE))
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/macho/dobby_symbol_resolver.cc
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_file_symbol_resolver.cpp
 
     ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
     )
@@ -37,13 +37,13 @@ if (SYSTEM.Windows)
 endif ()
 
 add_library(macho_ctx_kit
-  macho/macho_ctx.h
-  macho/macho_ctx.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.cc
   )
 
 add_library(shared_cache_ctx_kit
-  macho/shared_cache_ctx.h
-  macho/shared_cache_ctx.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.cpp
   )
 
 add_library(dobby_symbol_resolver
