@@ -8,6 +8,29 @@
 
 #define ASSERT(x)
 
+uintptr_t macho_iterate_symbol_table(char *symbol_name_pattern, nlist_t *symtab, uint32_t symtab_count, char *strtab) {
+  for (uint32_t i = 0; i < symtab_count; i++) {
+    if (symtab[i].n_value) {
+      uint32_t strtab_offset = symtab[i].n_un.n_strx;
+      char *symbol_name = strtab + strtab_offset;
+#if 0
+      printf("> %s", symbol_name);
+#endif
+      if (strcmp(symbol_name_pattern, symbol_name) == 0) {
+        return symtab[i].n_value;
+      }
+      if (symbol_name[0] == '_') {
+        if (strcmp(symbol_name_pattern, &symbol_name[1]) == 0) {
+          return symtab[i].n_value;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+// ---
+
 void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode) {
   memset(this, 0, sizeof(macho_ctx_t));
 
@@ -62,6 +85,15 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode) {
     linkedit_base = (uintptr_t)slide + linkedit_segment_vmaddr - linkedit_segment->fileoff;
   }
 
+  vm_region_start = segments[0]->vmaddr;
+  // skip __LINKEDIT
+  if (strcmp(segments[0]->segname, "__LINKEDIT") == 0) {
+    vm_region_start = segments[1]->vmaddr;
+  }
+  vm_region_end = segments[segments_count - 1]->vmaddr + segments[segments_count - 1]->vmsize;
+  vmaddr = vm_region_start;
+  vmsize = vm_region_end - vm_region_start;
+
   this->text_seg = text_segment;
   this->text_exec_seg = text_exec_segment;
   this->data_seg = data_segment;
@@ -80,27 +112,6 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode) {
   this->symtab = (nlist_t *)(this->linkedit_base + this->symtab_cmd->symoff);
   this->strtab = (char *)(this->linkedit_base + this->symtab_cmd->stroff);
   this->indirect_symtab = (uint32_t *)(this->linkedit_base + this->dysymtab_cmd->indirectsymoff);
-}
-
-uintptr_t macho_iterate_symbol_table(char *symbol_name_pattern, nlist_t *symtab, uint32_t symtab_count, char *strtab) {
-  for (uint32_t i = 0; i < symtab_count; i++) {
-    if (symtab[i].n_value) {
-      uint32_t strtab_offset = symtab[i].n_un.n_strx;
-      char *symbol_name = strtab + strtab_offset;
-#if 0
-      printf("> %s", symbol_name);
-#endif
-      if (strcmp(symbol_name_pattern, symbol_name) == 0) {
-        return symtab[i].n_value;
-      }
-      if (symbol_name[0] == '_') {
-        if (strcmp(symbol_name_pattern, &symbol_name[1]) == 0) {
-          return symtab[i].n_value;
-        }
-      }
-    }
-  }
-  return 0;
 }
 
 uintptr_t macho_ctx_t::iterate_symbol_table(const char *symbol_name_pattern) {

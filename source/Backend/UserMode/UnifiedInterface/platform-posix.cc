@@ -24,7 +24,7 @@
 
 #include "logging/logging.h"
 #include "logging/check_logging.h"
-#include "UnifiedInterface/platform.h"
+#include "PlatformUnifiedInterface/platform.h"
 
 #if defined(__APPLE__)
 #include <dlfcn.h>

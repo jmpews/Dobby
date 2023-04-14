@@ -12,12 +12,9 @@
 #include "macho_ctx.h"
 #include "shared_cache_ctx.h"
 
-#if defined(BUILDING_KERNEL)
-#else
-
+#if !defined(BUILDING_KERNEL)
 #include <mach-o/dyld.h>
 #include <mach-o/dyld_images.h>
-
 #endif
 
 #undef LOG_TAG

@@ -23,6 +23,8 @@ typedef enum {
 
 class Logger {
 public:
+  LogLevel log_level_;
+
   const char *log_tag_;
 
   const char *log_file_;
@@ -32,10 +34,7 @@ public:
   FILE *log_file_stream_;
 #endif
 
-  LogLevel log_level_;
-
   bool enable_time_tag_;
-
   bool enable_syslog_;
 
   static Logger *g_logger;
@@ -197,7 +196,6 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
 #define FATAL_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
     LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
-    abort();                                                                                                           \
   } while (0)
 
 #define UNIMPLEMENTED() FATAL_LOG("%s\n", "unimplemented code!!!")

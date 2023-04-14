@@ -90,11 +90,7 @@ include_directories(
   ./builtin-plugin
 )
 
-if (SYSTEM.Darwin AND DOBBY_BUILD_KERNEL_MODE)
-  include_directories(
-    source/Backend/KernelMode
-  )
-else ()
+if (SYSTEM.Darwin AND (NOT DOBBY_BUILD_KERNEL_MODE))
   include_directories(
     source/Backend/UserMode
   )
@@ -177,53 +173,32 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/InterceptEntry.cpp
   )
 
-if (SYSTEM.Darwin AND DOBBY_BUILD_KERNEL_MODE)
-  set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    # platform util
-    source/Backend/KernelMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
 
-    # kernel mode - platform interface
-    source/Backend/KernelMode/UnifiedInterface/platform-darwin.cc
-    source/Backend/KernelMode/UnifiedInterface/exec_mem_placeholder.asm
-
-    # kernel mode - executable memory
-    source/Backend/KernelMode/ExecMemory/code-patch-tool-darwin.cc
-    source/Backend/KernelMode/ExecMemory/clear-cache-tool-all.c
-    )
-elseif (SYSTEM.Darwin)
+if (SYSTEM.Darwin AND NOT DOBBY_BUILD_KERNEL_MODE)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    # platform util
     source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
 
-    # user mode - platform interface
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
-    # user mode - executable memory
     source/Backend/UserMode/ExecMemory/code-patch-tool-darwin.cc
     source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
     )
 
 elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    # platform util
     source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
 
-    # user mode - platform interface
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
-    # user mode - executable memory
     source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
     source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
     )
 elseif (SYSTEM.Windows)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    # platform util
     source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
 
-    # user mode - platform interface
     source/Backend/UserMode/UnifiedInterface/platform-windows.cc
 
-    # user mode - executable memory
     source/Backend/UserMode/ExecMemory/code-patch-tool-windows.cc
     source/Backend/UserMode/ExecMemory/clear-cache-tool-all.c
     )
@@ -314,12 +289,18 @@ message(STATUS "[Dobby] ${DOBBY_BUILD_VERSION}")
 
 # ---
 
-add_library(dobby SHARED
+set(SOURCE_FILE_LIST
   ${dobby.HEADER_FILE_LIST}
   ${dobby.SOURCE_FILE_LIST}
   ${logging.SOURCE_FILE_LIST}
-  ${misc_helper.SOURCE_FILE_LIST}
   ${dobby.plugin.SOURCE_FILE_LIST}
+  )
+
+get_absolute_path_list(SOURCE_FILE_LIST SOURCE_FILE_LIST_)
+set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST_})
+
+add_library(dobby SHARED
+  ${SOURCE_FILE_LIST}
   )
 
 target_include_directories(dobby PUBLIC
@@ -329,11 +310,7 @@ target_include_directories(dobby PUBLIC
 # ---
 
 add_library(dobby_static STATIC
-  ${dobby.HEADER_FILE_LIST}
-  ${dobby.SOURCE_FILE_LIST}
-  ${logging.SOURCE_FILE_LIST}
-  ${misc_helper.SOURCE_FILE_LIST}
-  ${dobby.plugin.SOURCE_FILE_LIST}
+  ${SOURCE_FILE_LIST}
   )
 
 target_include_directories(dobby_static PUBLIC

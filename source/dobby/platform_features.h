@@ -42,10 +42,9 @@
 #define abs(a) ((a) < 0 ? -(a) : (a))
 #endif
 #else
+#endif
+
 #ifdef __cplusplus
-// #include "TINYSTL/vector.h"
-// #include "TINYSTL/unordered_map.h"
 #include "TINYSTL/vector.h"
 #include "TINYSTL/unordered_map.h"
-#endif
 #endif

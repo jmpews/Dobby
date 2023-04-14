@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <sys/types.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
 
@@ -33,6 +32,11 @@ struct macho_ctx_t {
   bool is_runtime_mode;
 
   mach_header_t *header;
+
+  uintptr_t vmaddr;
+  size_t vmsize;
+  uintptr_t vm_region_start;
+  uintptr_t vm_region_end;
 
   uintptr_t slide;
   uintptr_t linkedit_base;

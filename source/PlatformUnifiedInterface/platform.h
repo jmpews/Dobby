@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdarg.h>
-#include <stdint.h>
+#include "dobby/common.h"
 
 namespace base {
 
