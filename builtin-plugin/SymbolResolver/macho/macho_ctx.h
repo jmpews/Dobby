@@ -60,11 +60,11 @@ struct macho_ctx_t {
   char *strtab;
   uint32_t *indirect_symtab;
 
-  explicit macho_ctx_t(mach_header_t *header, bool is_runtime_mode = true) {
-    init(header, is_runtime_mode);
+  explicit macho_ctx_t(mach_header_t *header, bool is_runtime_mode = true, mach_header_t *cache_header = 0) {
+    init(header, is_runtime_mode, cache_header);
   }
 
-  void init(mach_header_t *header, bool is_runtime_mode);
+  void init(mach_header_t *header, bool is_runtime_mode, mach_header_t *cache_header);
 
   uintptr_t iterate_symbol_table(const char *symbol_name_pattern);
 

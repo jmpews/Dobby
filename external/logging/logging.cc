@@ -37,9 +37,7 @@
 
 #pragma clang diagnostic ignored "-Wformat"
 
-Logger *Logger::g_logger = nullptr;
-
-void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
+void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
   if (level < log_level_)
     return;
 
@@ -56,7 +54,7 @@ void Logger::logv(LogLevel level, const char *_fmt, va_list ap) {
              tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
   }
 
-  snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%s\n", _fmt);
+  snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%s\n", in_fmt);
 
   if (enable_syslog_) {
 #if defined(__APPLE__)

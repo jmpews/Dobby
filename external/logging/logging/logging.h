@@ -37,14 +37,6 @@ public:
   bool enable_time_tag_;
   bool enable_syslog_;
 
-  static Logger *g_logger;
-  static Logger *Shared() {
-    if (g_logger == nullptr) {
-      g_logger = new Logger();
-    }
-    return g_logger;
-  }
-
   Logger() {
     log_tag_ = nullptr;
     log_file_ = nullptr;
@@ -60,6 +52,8 @@ public:
     enable_time_tag_ = enable_time_tag;
     enable_syslog_ = enable_syslog;
   }
+
+  static Logger *Shared();
 
   void setOptions(const char *tag, const char *file, LogLevel level, bool enable_time_tag, bool enable_syslog) {
     if (tag)
@@ -97,7 +91,7 @@ public:
     enable_syslog_ = true;
   }
 
-  void logv(LogLevel level, const char *fmt, va_list ap);
+  void logv(LogLevel level, const char *in_fmt, va_list ap);
 
   void log(LogLevel level, const char *fmt, ...) {
     va_list ap;
@@ -141,6 +135,11 @@ public:
     va_end(ap);
   }
 };
+
+inline static Logger gLogger;
+Logger *Logger::Shared() {
+  return &gLogger;
+}
 
 #endif
 
@@ -197,6 +196,8 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
   do {                                                                                                                 \
     LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
+
+#define __FUNC_CALL_TRACE__() INFO_LOG("[+] call %s:%s:%d", "", __func__, __LINE__)
 
 #define UNIMPLEMENTED() FATAL_LOG("%s\n", "unimplemented code!!!")
 #define UNREACHABLE() FATAL_LOG("%s\n", "unreachable code!!!")
