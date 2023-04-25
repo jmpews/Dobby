@@ -3,10 +3,10 @@
 
 #include "core/assembler/assembler-arm.h"
 
-void AssemblerPseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
+void PseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
   CodeBuffer *_buffer = (CodeBuffer *)buffer;
 
-  for (auto &ref_label_insn : ref_label_insns_) {
+  for (auto &ref_label_insn : ref_insts) {
     arm_inst_t inst = _buffer->LoadARMInst(ref_label_insn.pc_offset);
     if (ref_label_insn.link_type == kLdrLiteral) {
       int64_t pc = ref_label_insn.pc_offset + ARM_PC_OFFSET;

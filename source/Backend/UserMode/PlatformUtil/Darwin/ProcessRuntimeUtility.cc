@@ -110,11 +110,11 @@ const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap
 
   RuntimeModule module = {0};
   strncpy(module.path, "dummy-placeholder-module", sizeof(module.path) - 1);
-  module.load_address = 0;
+  module.base = 0;
   modules->push_back(module);
 
   strncpy(module.path, infos->dyldPath, sizeof(module.path) - 1);
-  module.load_address = (void *)infos->dyldImageLoadAddress;
+  module.base = (void *)infos->dyldImageLoadAddress;
   modules->push_back(module);
 
   for (int i = 0; i < infoArrayCount; ++i) {
@@ -122,12 +122,12 @@ const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap
 
     {
       strncpy(module.path, info->imageFilePath, sizeof(module.path) - 1);
-      module.load_address = (void *)info->imageLoadAddress;
+      module.base = (void *)info->imageLoadAddress;
       modules->push_back(module);
     }
   }
 
-  modules->sort([](const RuntimeModule &a, const RuntimeModule &b) -> int { return a.load_address < b.load_address; });
+  modules->sort([](const RuntimeModule &a, const RuntimeModule &b) -> int { return a.base < b.base; });
 
   return *modules;
 }

@@ -24,15 +24,15 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
 
-  AssemblerPseudoLabel entry_label(0);
-  AssemblerPseudoLabel forward_bridge_label(0);
+  PseudoLabel entry_label(0);
+  PseudoLabel forward_bridge_label(0);
 
   _ Ldr(r12, &entry_label);
   _ Ldr(pc, &forward_bridge_label);
-  _ PseudoBind(&entry_label);
+  _ bindLabel(&entry_label);
   _ EmitAddress((uint32_t)(uintptr_t)tramp_entry);
-  _ PseudoBind(&forward_bridge_label);
-  _ EmitAddress((uint32_t)(uintptr_t)get_closure_bridge());
+  _ bindLabel(&forward_bridge_label);
+  _ EmitAddress((uint32_t)(uintptr_t)get_closure_bridge_addr());
 
   auto closure_tramp = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   tramp_entry->address = (void *)closure_tramp->addr;

@@ -9,7 +9,7 @@ namespace x86 {
 void CodeGen::JmpNear(uint32_t address) {
   TurboAssembler *turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
 #define _ turbo_assembler_->
-#define __ turbo_assembler_->GetCodeBuffer()->
+#define __ turbo_assembler_->code_buffer()->
   uint32_t currIP = turbo_assembler_->CurrentIP() + 5;
   int32_t offset = (int32_t)(address - currIP);
 

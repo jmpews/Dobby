@@ -2,28 +2,41 @@
 #if defined(TARGET_ARCH_ARM64)
 
 #include "dobby/dobby_internal.h"
-
 #include "core/assembler/assembler-arm64.h"
-
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
 
 using namespace zz;
 using namespace zz::arm64;
 
-// // tips
-// _ ldr(TMP_REG_1, OFFSETOF(ClosureTrampolineEntry, carry_data));
-// _ ldr(TMP_REG_0, OFFSETOF(ClosureTrampolineEntry, carry_handler));
+extern "C" void closure_trampoline_asm();
+extern "C" void closure_trampoline_asm_end();
 
-// use assembler and codegen modules instead of template_code
-ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
-  ClosureTrampolineEntry *tramp_entry = nullptr;
-  tramp_entry = new ClosureTrampolineEntry;
+ClosureTrampoline *GenerateClosureTrampoline(void *carry_data, void *carry_handler) {
+  auto closure_tramp = new ClosureTrampoline(CLOSURE_TRAMPOLINE_ARM64, CodeMemBlock{}, carry_data, carry_handler);
 
-#define _ turbo_assembler_.
-  TurboAssembler turbo_assembler_(0);
+  if (!closure_bridge_addr) {
+    closure_bridge_init();
+  }
 
-  AssemblerPseudoLabel entry_label(0);
-  AssemblerPseudoLabel forward_bridge_label(0);
+#if defined(BUILD_WITH_TRAMPOLINE_ASM)
+  auto tramp_size = (addr_t)closure_trampoline_asm_end - (addr_t)closure_trampoline_asm;
+  uint8_t tramp_buf[64] = {0};
+  memcpy(tramp_buf, (void *)&closure_trampoline_asm, tramp_size);
+  const uint32_t closure_tramp_off = 9 * 4;
+  const uint32_t closure_bridge_addr_off = closure_tramp_off + 8;
+  *(addr_t *)(tramp_buf + closure_tramp_off) = (addr_t)closure_tramp;
+  *(addr_t *)(tramp_buf + closure_bridge_addr_off) = (addr_t)closure_bridge_addr;
+  auto tramp_block = gMemoryAllocator.allocExecBlock(tramp_size);
+  DobbyCodePatch((void *)tramp_block.addr(), tramp_buf, tramp_size);
+#else
+  TurboAssembler turbo_assembler_;
+#define _ turbo_assembler_. // NOLINT: clang-tidy
+
+  auto closure_bridge_addr = (addr_t)get_closure_bridge_addr();
+  auto closure_bridge_data_label = _ createDataLabel(closure_bridge_addr);
+
+  PseudoLabel entry_label;
 
   // prologue: alloc stack, store lr
   _ sub(SP, SP, 2 * 8);
@@ -33,7 +46,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   _ Ldr(TMP_REG_0, &entry_label);
   _ str(TMP_REG_0, MemOperand(SP, 0));
 
-  _ Ldr(TMP_REG_0, &forward_bridge_label);
+  _ Ldr(TMP_REG_0, closure_bridge_data_label);
   _ blr(TMP_REG_0);
 
   // epilogue: release stack(won't restore lr)
@@ -43,21 +56,19 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   // branch to next hop
   _ br(TMP_REG_0);
 
-  _ PseudoBind(&entry_label);
+  _ bindLabel(&entry_label);
   _ EmitInt64((uint64_t)tramp_entry);
-  _ PseudoBind(&forward_bridge_label);
-  _ EmitInt64((uint64_t)get_closure_bridge());
 
-  auto closure_tramp = AssemblyCodeBuilder::FinalizeFromTurboAssembler(static_cast<AssemblerBase *>(&turbo_assembler_));
+  _ relocDataLabels();
 
-  tramp_entry->address = (void *)closure_tramp->addr;
-  tramp_entry->size = closure_tramp->size;
-  tramp_entry->carry_data = carry_data;
-  tramp_entry->carry_handler = carry_handler;
+  auto tramp_code_block =
+      AssemblerCodeBuilder::FinalizeFromTurboAssembler(static_cast<AssemblerBase *>(&turbo_assembler_));
+#endif
 
-  delete closure_tramp;
-
-  return tramp_entry;
+  closure_tramp->buffer = tramp_block;
+  DEBUG_LOG("closure trampoline addr: %p, size: %d", closure_tramp->addr(), closure_tramp->size());
+  debug_hex_log_buffer((uint8_t *)closure_tramp->addr(), closure_tramp->size());
+  return closure_tramp;
 }
 
 #endif

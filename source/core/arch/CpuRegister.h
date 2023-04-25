@@ -1,25 +1,24 @@
-#ifndef CORE_ARCH_CPU_REGISTER_H
-#define CORE_ARCH_CPU_REGISTER_H
+#pragma once
 
-class RegisterBase {
-public:
-  static constexpr RegisterBase from_code(int code);
+struct RegisterBase {
+  int reg_id;
 
-  static constexpr RegisterBase no_reg();
+  static constexpr RegisterBase from_code(int reg_id) {
+    return RegisterBase{reg_id};
+  }
 
-  virtual bool Is(const RegisterBase &reg) const {
-    return (reg.reg_code_ == this->reg_code_);
+  static constexpr RegisterBase no_reg() {
+    return RegisterBase{0};
+  }
+
+  explicit constexpr RegisterBase(int code) : reg_id(code) {
+  }
+
+  bool operator==(const RegisterBase &other) const {
+    return reg_id == other.reg_id;
   }
 
   int code() const {
-    return reg_code_;
+    return reg_id;
   };
-
-protected:
-  explicit constexpr RegisterBase(int code) : reg_code_(code) {
-  }
-
-  int reg_code_;
 };
-
-#endif

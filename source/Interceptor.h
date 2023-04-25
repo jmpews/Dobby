@@ -1,25 +1,84 @@
 #pragma once
 
-#include "dobby/dobby_internal.h"
-#include "InterceptEntry.h"
+#include "dobby/common.h"
+#include "MemoryAllocator/MemoryAllocator.h"
 
-class Interceptor {
-public:
-  static Interceptor *SharedInstance();
+typedef enum { kFunctionInlineHook, kInstructionInstrument } InterceptRoutingType;
 
-public:
-  InterceptEntry *find(addr_t addr);
+struct InterceptRouting;
+struct Interceptor {
+  struct Entry {
+    uint32_t id = 0;
 
-  void remove(addr_t addr);
+    struct {
+      bool arm_thumb_mode;
+    } features;
 
-  void add(InterceptEntry *entry);
+    addr_t fake_func_addr;
+    dobby_instrument_callback_t pre_handler;
+    dobby_instrument_callback_t post_handler;
 
-  const InterceptEntry *getEntry(int i);
+    addr_t addr;
 
-  int count();
+    MemBlock patched;
+    MemBlock relocated;
 
-private:
-  static Interceptor *instance;
+    uint8_t *origin_code_buffer = 0;
 
-  tinystl::vector<InterceptEntry *> entries;
+    Entry(addr_t addr) {
+      this->addr = addr;
+    }
+
+    ~Entry() {
+      if (origin_code_buffer) {
+        free(origin_code_buffer);
+      }
+    }
+
+    void set_arm_thumb_feature(bool thumb) {
+      features.arm_thumb_mode = thumb;
+    }
+  };
+
+  tinystl::vector<Entry *> entries;
+
+  static Interceptor *Shared();
+
+  Entry *find(addr_t addr) {
+    for (auto *entry : entries) {
+      if (entry->patched.addr() == addr) {
+        return entry;
+      }
+    }
+    return nullptr;
+  }
+
+  Entry *remove(addr_t addr) {
+    for (auto iter = entries.begin(); iter != entries.end(); iter++) {
+      if ((*iter)->patched.addr() == addr) {
+        Entry *entry = *iter;
+        entries.erase(iter);
+        return entry;
+      }
+    }
+    return nullptr;
+  }
+
+  void add(Entry *entry) {
+    entries.push_back(entry);
+  }
+
+  const Entry *get(int i) {
+    return entries[i];
+  }
+
+  int count() const {
+    return entries.size();
+  }
 };
+
+inline static Interceptor gInterceptor;
+
+inline Interceptor *Interceptor::Shared() {
+  return &gInterceptor;
+}

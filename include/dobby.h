@@ -121,7 +121,7 @@ typedef struct {
 int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 // function inline hook
-int DobbyHook(void *address, dobby_dummy_func_t replace_func, dobby_dummy_func_t *origin_func);
+int DobbyHook(void *address, dobby_dummy_func_t fake_func, dobby_dummy_func_t *out_origin_func);
 
 // dynamic binary instruction instrument
 // for Arm64, can't access q8 - q31, unless enable full floating-point register pack
@@ -142,8 +142,8 @@ int DobbyImportTableReplace(char *image_name, char *symbol_name, dobby_dummy_fun
 
 // for arm, Arm64, try use b xxx instead of ldr absolute indirect branch
 // for x86, x64, always use absolute indirect jump
-void dobby_enable_near_branch_trampoline();
-void dobby_disable_near_branch_trampoline();
+void dobby_enable_near_trampoline();
+void dobby_disable_near_trampoline();
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@ using namespace zz::x64;
 
 static asm_func_t closure_bridge = nullptr;
 
-asm_func_t get_closure_bridge() {
+asm_func_t get_closure_bridge_addr() {
   // if already initialized, just return.
   if (closure_bridge)
     return closure_bridge;
@@ -27,7 +27,7 @@ asm_func_t get_closure_bridge() {
 
 // otherwise, use the Assembler build the closure_bridge
 #define _ turbo_assembler_.
-#define __ turbo_assembler_.GetCodeBuffer()->
+#define __ turbo_assembler_.code_buffer()->
 
   uint8_t *pushfq = (uint8_t *)"\x9c";
   uint8_t *popfq = (uint8_t *)"\x9d";
@@ -128,7 +128,7 @@ asm_func_t get_closure_bridge() {
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
-  _ RelocBind();
+  _ relocDataLabels();
 
   auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge = (asm_func_t)code->addr;

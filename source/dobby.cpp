@@ -1,5 +1,9 @@
-#include "dobby/dobby_internal.h"
+#include "dobby/common.h"
 #include "Interceptor.h"
+#include "InterceptRouting/InlineHookRouting.h"
+#include "InterceptRouting/InstrumentRouting.h"
+#include "InterceptRouting/NearBranchTrampoline/NearBranchTrampoline.h"
+#include  "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
 
 __attribute__((constructor)) static void ctor() {
   DEBUG_LOG("================================");
@@ -8,24 +12,23 @@ __attribute__((constructor)) static void ctor() {
   DEBUG_LOG("================================");
 }
 
-PUBLIC const char *DobbyGetVersion() {
-  return "";
-}
-
 PUBLIC int DobbyDestroy(void *address) {
-#if defined(TARGET_ARCH_ARM)
-  if ((addr_t)address % 2) {
-    address = (void *)((addr_t)address - 1);
-  }
-#endif
-  auto entry = Interceptor::SharedInstance()->find((addr_t)address);
+  features::arm_thumb_fix_addr((uintptr_t &)address);
+  auto entry = gInterceptor.find((addr_t)address);
   if (entry) {
-    uint8_t *buffer = entry->origin_insns;
-    uint32_t buffer_size = entry->origin_insn_size;
-    DobbyCodePatch(address, buffer, buffer_size);
-    Interceptor::SharedInstance()->remove((addr_t)address);
+    DobbyCodePatch(address, entry->origin_code_buffer, entry->patched.size);
+    gInterceptor.remove((addr_t)address);
     return 0;
   }
 
   return -1;
+}
+
+PUBLIC int placeholder() {
+  &DobbyHook;
+  &DobbyInstrument;
+  &dobby_enable_near_trampoline;
+  &dobby_disable_near_trampoline;
+  &common_closure_bridge_handler;
+  return 0;
 }

@@ -20,7 +20,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
     return nullptr;
   }
 #define _ turbo_assembler_.
-#define __ turbo_assembler_.GetCodeBuffer()->
+#define __ turbo_assembler_.code_buffer()->
   TurboAssembler turbo_assembler_(0);
 
   uint8_t *push_rip_6 = (uint8_t *)"\xff\x35\x06\x00\x00\x00";
@@ -29,15 +29,15 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   __ EmitBuffer(push_rip_6, 6);
   __ EmitBuffer(jmp_rip_8, 6);
   __ Emit64((uint64_t)tramp_entry);
-  __ Emit64((uint64_t)get_closure_bridge());
+  __ Emit64((uint64_t)get_closure_bridge_addr());
 
   tramp_entry->address = tramp_mem;
   tramp_entry->size = tramp_size;
   tramp_entry->carry_data = carry_data;
   tramp_entry->carry_handler = carry_handler;
 
-  auto closure_tramp_buffer = static_cast<CodeBufferBase *>(turbo_assembler_.GetCodeBuffer());
-  DobbyCodePatch(tramp_mem, (uint8_t *)closure_tramp_buffer->GetBuffer(), closure_tramp_buffer->GetBufferSize());
+  auto closure_tramp_buffer = static_cast<CodeBufferBase *>(turbo_assembler_.code_buffer());
+  DobbyCodePatch(tramp_mem, (uint8_t *)closure_tramp_buffer->buffer(), closure_tramp_buffer->buffer_size());
 
   return tramp_entry;
 }

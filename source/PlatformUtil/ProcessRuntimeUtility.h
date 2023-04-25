@@ -1,18 +1,20 @@
 #pragma once
 
-#include "PlatformUnifiedInterface/MemoryAllocator.h"
-
+#include "MemoryAllocator//MemoryAllocator.h"
 #include "PlatformUnifiedInterface/platform.h"
 
-typedef struct _RuntimeModule {
+struct RuntimeModule {
+  void *base;
   char path[1024];
-  void *load_address;
-} RuntimeModule;
+};
 
+#define MEM_PERM_R 0x1
+#define MEM_PERM_W 0x2
+#define MEM_PERM_X 0x4
 struct MemRegion : MemRange {
-  MemoryPermission permission;
+  int perm;
 
-  MemRegion(addr_t addr, size_t size, MemoryPermission perm) : MemRange(addr, size), permission(perm) {
+  MemRegion(addr_t addr, size_t size, int perm) : MemRange(addr, size), perm(perm) {
   }
 };
 

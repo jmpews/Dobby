@@ -579,7 +579,7 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      auto label = RelocLabel::withData((uint64_t)function.address());
+      auto label = RelocDataLabel::withData((uint64_t)function.address());
       label->link_to(kDisp32_off_9, ip_offset());
       this->AppendRelocLabel(label);
     }

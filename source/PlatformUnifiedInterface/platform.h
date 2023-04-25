@@ -57,7 +57,15 @@ public:
   bool Start();
 };
 
-enum MemoryPermission { kNoAccess, kRead, kReadWrite, kReadWriteExecute, kReadExecute };
+enum MemoryPermission {
+  kNoAccess,
+  kRead = 1,
+  kWrite = 2,
+  kExecute = 4,
+  kReadWrite = kRead | kWrite,
+  kReadExecute = kRead | kExecute,
+  kReadWriteExecute = kRead | kWrite | kExecute,
+};
 
 class OSMemory {
 public:

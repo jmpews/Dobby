@@ -18,7 +18,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
   // Set fixed executable code chunk address
   turbo_assembler_.SetRealizedAddress((void *)relocated->addr);
 #define _ turbo_assembler_.
-#define __ turbo_assembler_.GetCodeBuffer()->
+#define __ turbo_assembler_.code_buffer()->
 
   auto curr_orig_ip = (addr64_t)origin->addr;
   auto curr_relo_ip = (addr64_t)relocated->addr;
@@ -31,7 +31,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
     x86_insn_decode_t insn = {0};
     memset(&insn, 0, sizeof(insn));
     GenRelocateSingleX86Insn(curr_orig_ip, curr_relo_ip, buffer_cursor, &turbo_assembler_,
-                             turbo_assembler_.GetCodeBuffer(), insn, 64);
+                             turbo_assembler_.code_buffer(), insn, 64);
 
     // go next
     curr_orig_ip += insn.length;
@@ -45,14 +45,14 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
     // TODO: 6 == jmp [RIP + disp32] instruction size
     addr64_t stub_addr = curr_relo_ip + 6;
     codegen.JmpNearIndirect(stub_addr);
-    turbo_assembler_.GetCodeBuffer()->Emit64(curr_orig_ip);
+    turbo_assembler_.code_buffer()->Emit64(curr_orig_ip);
   }
 
   // update origin
   int new_origin_len = curr_orig_ip - (addr_t)origin->addr;
   origin->reset(origin->addr, new_origin_len);
 
-  int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
+  int relo_len = turbo_assembler_.code_buffer()->buffer_size();
   if (relo_len > relocated->size) {
     DEBUG_LOG("pre-alloc code chunk not enough");
     return -1;

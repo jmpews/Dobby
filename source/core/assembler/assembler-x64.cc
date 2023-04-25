@@ -5,10 +5,10 @@
 
 using namespace zz::x64;
 
-void AssemblerPseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
+void PseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
   CodeBuffer *_buffer = (CodeBuffer *)buffer;
 
-  for (auto &ref_label_insn : ref_label_insns_) {
+  for (auto &ref_label_insn : ref_insts) {
     int64_t new_offset = pos() - ref_label_insn.pc_offset;
 
     if (ref_label_insn.link_type == kDisp32_off_9) {

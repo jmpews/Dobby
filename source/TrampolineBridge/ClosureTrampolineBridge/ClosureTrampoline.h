@@ -2,38 +2,22 @@
 
 #include "dobby/dobby_internal.h"
 
-#ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
-#ifdef __cplusplus
-extern "C" {
-#endif //__cplusplus
-void closure_trampoline_template();
-void closure_bridge_template();
-#ifdef __cplusplus
-}
-#endif //__cplusplus
-#endif
+extern "C" void instrument_routing_dispatch(Interceptor::Entry *entry, DobbyRegisterContext *ctx);
 
-#ifdef __cplusplus
-extern "C" {
-#endif //__cplusplus
-
-typedef struct {
-  void *address;
-  int size;
-  void *carry_handler;
+struct ClosureTrampoline : Trampoline {
   void *carry_data;
-} ClosureTrampolineEntry;
+  void *carry_handler;
 
-asm_func_t get_closure_bridge();
-
-#ifdef __cplusplus
-}
-#endif //__cplusplus
-
-class ClosureTrampoline {
-private:
-  static tinystl::vector<ClosureTrampolineEntry> *trampolines_;
-
-public:
-  static ClosureTrampolineEntry *CreateClosureTrampoline(void *carry_data, void *carry_handler);
+  ClosureTrampoline(int type, CodeMemBlock buffer, void *carry_data, void *carry_handler) : Trampoline(type, buffer) {
+    this->carry_data = carry_data;
+    this->carry_handler = carry_handler;
+  }
 };
+
+ClosureTrampoline *GenerateClosureTrampoline(void *carry_data, void *carry_handler);
+
+inline ClosureTrampoline *GenerateInstrumentClosureTrampoline(Interceptor::Entry *entry) {
+  auto handler = (void *)instrument_routing_dispatch;
+  features::apple::pac_strip(handler);
+  return GenerateClosureTrampoline(entry, handler);
+}

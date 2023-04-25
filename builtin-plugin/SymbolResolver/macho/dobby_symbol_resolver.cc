@@ -36,7 +36,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
     if (!image_name && strstr(module.path, "dyld"))
       continue;
 
-    auto header = (mach_header_t *)module.load_address;
+    auto header = (mach_header_t *)module.base;
     if (header == nullptr)
       continue;
 

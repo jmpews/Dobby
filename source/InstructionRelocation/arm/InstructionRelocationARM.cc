@@ -16,7 +16,7 @@ using namespace zz::arm;
 typedef struct {
   addr_t mapped_addr;
 
-  bool thumb_mode;
+  bool arm_thumb_mode;
 
   uint8_t *buffer;
   uint8_t *buffer_cursor;
@@ -38,7 +38,7 @@ typedef struct {
 
   tinystl::unordered_map<off_t, off_t> relocated_offset_map;
 
-  tinystl::unordered_map<addr_t, AssemblerPseudoLabel *> label_map;
+  tinystl::unordered_map<addr_t, PseudoLabel *> label_map;
 } relo_ctx_t;
 
 // ---
@@ -180,7 +180,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
         dst_vmaddr = relo_cur_src_vmaddr(ctx) - imm12;
       Register regRt = Register::R(Rt);
 
-      auto label = RelocLabel::withData(dst_vmaddr);
+      auto label = RelocDataLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(label);
 
       if (regRt.code() == pc.code()) {
@@ -225,7 +225,7 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
 
         if (dst_vmaddr != -1) {
           Register regRd = Register::R(Rd);
-          auto dst_label = RelocLabel::withData(dst_vmaddr);
+          auto dst_label = RelocDataLabel::withData(dst_vmaddr);
           _ AppendRelocLabel(dst_label);
 
           _ Ldr(regRd, dst_label);
@@ -687,7 +687,7 @@ void gen_arm_relocate_code(relo_ctx_t *ctx) {
   auto turbo_assembler_ = static_cast<TurboAssembler *>(ctx->curr_assembler);
 #define _ turbo_assembler_->
 
-  auto relocated_buffer = turbo_assembler_->GetCodeBuffer();
+  auto relocated_buffer = turbo_assembler_->code_buffer();
 
   DEBUG_LOG("[arm] ARM relocate %d start >>>>>", ctx->buffer_size);
 
@@ -698,7 +698,7 @@ void gen_arm_relocate_code(relo_ctx_t *ctx) {
 
     arm_inst_t insn = *(arm_inst_t *)ctx->buffer_cursor;
 
-    int last_relo_offset = turbo_assembler_->GetCodeBuffer()->GetBufferSize();
+    int last_relo_offset = turbo_assembler_->code_buffer()->GetBufferSize();
 
     ARMRelocateSingleInsn(ctx, insn);
     DEBUG_LOG("[arm] Relocate arm insn: 0x%x", insn);
@@ -725,7 +725,7 @@ void gen_thumb_relocate_code(relo_ctx_t *ctx) {
   auto turbo_assembler_ = static_cast<ThumbTurboAssembler *>(ctx->curr_assembler);
 #define _ turbo_assembler_->
 
-  auto relocated_buffer = turbo_assembler_->GetCodeBuffer();
+  auto relocated_buffer = turbo_assembler_->code_buffer();
 
   DEBUG_LOG("[arm] Thumb relocate %d start >>>>>", ctx->buffer_size);
 
@@ -855,8 +855,8 @@ relocate_remain:
   thumb_turbo_assembler_.RelocLabelFixup(&ctx.relocated_offset_map);
 
   // realize all the pseudo data label
-  thumb_turbo_assembler_.RelocBind();
-  arm_turbo_assembler_.RelocBind();
+  thumb_turbo_assembler_.relocDataLabels();
+  arm_turbo_assembler_.relocDataLabels();
 
   // generate executable code
   {

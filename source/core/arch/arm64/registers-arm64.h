@@ -1,8 +1,7 @@
-#ifndef ARCH_ARM64_REGISTERS
-#define ARCH_ARM64_REGISTERS
+#pragma once
 
 #include "core/arch/arm64/constants-arm64.h"
-#include "core/arch/Cpu.h"
+#include "core/arch/CpuRegister.h"
 
 namespace zz {
 namespace arm64 {
@@ -38,8 +37,6 @@ public:
     return CPURegister(code, size, type);
   }
 
-  // =====
-
   static constexpr CPURegister X(int code) {
     return CPURegister(code, 64, kRegister_64);
   }
@@ -56,10 +53,8 @@ public:
     return CPURegister(0, 0, kInvalid);
   }
 
-  // =====
-
   bool Is(const CPURegister &reg) const {
-    return (reg.reg_code_ == this->reg_code_);
+    return (reg.reg_id == this->reg_id);
   }
 
   bool Is64Bits() const {
@@ -74,14 +69,12 @@ public:
     return reg_type_ > kVRegister;
   }
 
-  // =====
-
   RegisterType type() const {
     return reg_type_;
   }
 
   int32_t code() const {
-    return reg_code_;
+    return reg_id;
   };
 
 private:
@@ -119,8 +112,6 @@ GENERAL_REGISTER_CODE_LIST(DEFINE_VREGISTERS)
 #undef DEFINE_REGISTER
 // clang-format on
 
-// =====
-
 constexpr Register wzr = w31;
 constexpr Register xzr = x31;
 
@@ -138,5 +129,3 @@ constexpr Register wLR = w30;
 #define X(code) CPURegister::X(code)
 #define Q(code) CPURegister::Q(code)
 #define InvalidRegister CPURegister::InvalidRegister()
-
-#endif

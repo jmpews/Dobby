@@ -11,25 +11,19 @@
 using namespace zz;
 using namespace zz::arm64;
 
-static asm_func_t closure_bridge = nullptr;
+extern "C" void closure_bridge_asm();
 
-asm_func_t get_closure_bridge() {
-  // if already initialized, just return.
-  if (closure_bridge)
-    return closure_bridge;
+void closure_bridge_init() {
+  __FUNC_CALL_TRACE__();
 
-// check if enable the inline-assembly closure_bridge_template
-#if ENABLE_CLOSURE_BRIDGE_TEMPLATE
-  extern void closure_bridge_tempate();
-  closure_bridge = closure_bridge_template;
-// otherwise, use the Assembler build the closure_bridge
+#if defined(BUILD_WITH_TRAMPOLINE_ASM)
+  closure_bridge_addr = (asm_func_t)closure_bridge_asm;
 #else
-#define _ turbo_assembler_.
 #define MEM(reg, offset) MemOperand(reg, offset)
-  TurboAssembler turbo_assembler_(0);
+  TurboAssembler turbo_assembler_;
+#define _ turbo_assembler_. // NOLINT: clang-tidy
 
 #if defined(FULL_FLOATING_POINT_REGISTER_PACK)
-
   _ sub(SP, SP, 24 * 16);
   _ stp(Q(30), Q(31), MEM(SP, 22 * 16));
   _ stp(Q(28), Q(29), MEM(SP, 20 * 16));
@@ -43,7 +37,6 @@ asm_func_t get_closure_bridge() {
   _ stp(Q(12), Q(13), MEM(SP, 4 * 16));
   _ stp(Q(10), Q(11), MEM(SP, 2 * 16));
   _ stp(Q(8), Q(9), MEM(SP, 0 * 16));
-
 #endif
 
   // save {q0-q7}
@@ -91,13 +84,14 @@ asm_func_t get_closure_bridge() {
 #else
 #define REGISTER_CONTEXT_SIZE (sizeof(DobbyRegisterContext) - 24 * 16)
 #endif
+
   // create function arm64 call convention
   _ mov(x0, SP); // arg1: register context
   // load package(closure trampoline entry reserved)
   _ ldr(x1, MEM(SP, REGISTER_CONTEXT_SIZE + 0)); // arg2: closure trampoline entry
   _ CallFunction(ExternalReference((void *)common_closure_bridge_handler));
 
-  // restore sp placeholder stack
+  // restore stack, saved original sp
   _ add(SP, SP, 2 * 8);
 
   // restore {x0}
@@ -148,12 +142,10 @@ asm_func_t get_closure_bridge() {
   // return to closure trampoline, but TMP_REG_0, had been modified with next hop address
   _ ret(); // AKA br x30
 
-  auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = (asm_func_t)code->addr;
-
-  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge);
+  auto closure_bridge = AssemblerCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge_addr = (void *)closure_bridge.addr();
+  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge_addr);
 #endif
-  return closure_bridge;
 }
 
 #endif

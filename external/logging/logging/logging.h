@@ -137,7 +137,7 @@ public:
 };
 
 inline static Logger gLogger;
-Logger *Logger::Shared() {
+inline Logger *Logger::Shared() {
   return &gLogger;
 }
 
@@ -197,7 +197,7 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
     LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
-#define __FUNC_CALL_TRACE__() INFO_LOG("[+] call %s:%s:%d", "", __func__, __LINE__)
+#define __FUNC_CALL_TRACE__() INFO_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__)
 
 #define UNIMPLEMENTED() FATAL_LOG("%s\n", "unimplemented code!!!")
 #define UNREACHABLE() FATAL_LOG("%s\n", "unreachable code!!!")

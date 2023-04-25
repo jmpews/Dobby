@@ -317,13 +317,13 @@ public:
   TurboAssembler(void *address, CodeBuffer *buffer) : Assembler(address, buffer) {
   }
 
-  void Ldr(Register rt, AssemblerPseudoLabel *label) {
+  void Ldr(Register rt, PseudoLabel *label) {
     if (label->pos()) {
-      int offset = label->pos() - buffer_->GetBufferSize();
+      int offset = label->pos() - buffer_->buffer_size();
       ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(kLdrLiteral, buffer_->GetBufferSize());
+      label->link_to(kLdrLiteral, buffer_->buffer_size());
       ldr(rt, MemOperand(pc, 0));
     }
   }

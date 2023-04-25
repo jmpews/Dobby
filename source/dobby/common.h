@@ -9,3 +9,6 @@
 
 #include "logging/logging.h"
 #include "logging/check_logging.h"
+
+#include "common/os_arch_features.h"
+#include "common/hex_log.h"

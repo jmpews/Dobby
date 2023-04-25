@@ -12,7 +12,7 @@ using namespace zz::arm;
 
 static asm_func_t closure_bridge = nullptr;
 
-asm_func_t get_closure_bridge() {
+asm_func_t get_closure_bridge_addr() {
 
   // if already initialized, just return.
   if (closure_bridge)

@@ -39,8 +39,8 @@ __attribute__((constructor)) static void ctor() {
   
   sleep(1);
 
-  dobby_enable_near_branch_trampoline();
+  dobby_enable_near_trampoline();
   DobbyInstrument((void *)MGCopyAnswer_addr, common_handler);
-  dobby_disable_near_branch_trampoline();
+  dobby_disable_near_trampoline();
 }
 #endif

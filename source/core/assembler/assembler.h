@@ -1,74 +1,67 @@
 #pragma once
 
-#include "MemoryAllocator/CodeBuffer/CodeBufferBase.h"
+#include "dobby/common.h"
+#include "pseudo_label.h"
 
-#include "AssemblerPseudoLabel.h"
-
-class CodeBuffer;
+class CodeMemBuffer;
 
 namespace zz {
 
-class ExternalReference {
-public:
-  explicit ExternalReference(void *address) : address_(address) {
+struct ExternalReference {
+  void *address;
+
+  explicit ExternalReference(void *address) : address(address) {
 #if defined(__APPLE__) && __arm64e__
-    address_ = pac_strip((void *)address_);
+    address = pac_strip((void *)address);
 #endif
   }
-
-  const void *address();
-
-private:
-  const void *address_;
 };
 
-class AssemblerBase {
-public:
-  explicit AssemblerBase(void *address);
+struct AssemblerBase {
+  addr_t fixed_addr;
+  CodeMemBuffer code_buffer_;
+  tinystl::vector<RelocDataLabel *> data_labels;
 
-  ~AssemblerBase();
+  explicit AssemblerBase(addr_t fixed_addr) {
+    this->fixed_addr = fixed_addr;
+  }
 
-  size_t ip_offset() const;
+  ~AssemblerBase() {
+  }
 
-  size_t pc_offset() const;
+  size_t pc_offset() {
+    return code_buffer_.size();
+  }
 
-  CodeBuffer *GetCodeBuffer();
+  void set_fixed_addr(addr_t in_fixed_addr) {
+    this->fixed_addr = in_fixed_addr;
+  }
 
-  void PseudoBind(AssemblerPseudoLabel *label);
+  CodeMemBuffer *code_buffer() {
+    return &code_buffer_;
+  }
 
-  void RelocBind();
+  // --- label
 
-  void AppendRelocLabel(RelocLabel *label);
+  RelocDataLabel *createDataLabel(uint64_t data) {
+    auto data_label = new RelocDataLabel(data);
+    data_labels.push_back(data_label);
+    return data_label;
+  }
 
-protected:
-  tinystl::vector<RelocLabel *> data_labels_;
+  void bindLabel(PseudoLabel *label) {
+    label->bind_to(pc_offset());
+    if (label->has_confused_instructions()) {
+      label->link_confused_instructions(&code_buffer_);
+    }
+  }
 
-public:
-  virtual void *GetRealizedAddress();
-
-  virtual void SetRealizedAddress(void *address);
-
-  static void FlushICache(addr_t start, int size);
-
-  static void FlushICache(addr_t start, addr_t end);
-
-protected:
-  CodeBuffer *buffer_;
-
-  void *realized_addr_;
+  void relocDataLabels() {
+    for (auto *data_label : data_labels) {
+      bindLabel(data_label);
+      code_buffer_.emit(data_label->data_, data_label->data_size_);
+    }
+  }
 };
 
 } // namespace zz
-
-#if 0
-#include "globals.h"
-#if TARGET_ARCH_ARM
-#include "core/assembler/assembler-arm.h"
-#elif TARGET_ARCH_ARM64
-#include "core/assembler/assembler-arm64.h"
-#elif TARGET_ARCH_X64
-#include "core/assembler/assembler-x64.h"
-#else
-#error "unsupported architecture"
-#endif
-#endif

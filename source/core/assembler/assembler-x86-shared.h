@@ -20,9 +20,9 @@ using namespace x64;
 constexpr Register VOLATILE_REGISTER = r11;
 
 // ================================================================
-// AssemblerPseudoLabel
+// PseudoLabel
 
-class AssemblerPseudoLabel : public Label {
+class PseudoLabel : public Label {
 public:
   enum PseudoLabelType { kDisp32_off_9 };
 
@@ -32,10 +32,10 @@ public:
   } PseudoLabelInstruction;
 
 public:
-  AssemblerPseudoLabel(void) {
+  PseudoLabel(void) {
     instructions_.initWithCapacity(8);
   }
-  ~AssemblerPseudoLabel(void) {
+  ~PseudoLabel(void) {
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
       delete item;
@@ -81,9 +81,9 @@ private:
   LiteMutableArray instructions_;
 };
 
-class RelocLabel : public AssemblerPseudoLabel {
+class RelocDataLabel : public PseudoLabel {
 public:
-  explicit RelocLabel(uint64_t data) : data_size_(0) {
+  explicit RelocDataLabel(uint64_t data) : data_size_(0) {
     data_ = data;
   }
 
@@ -654,8 +654,8 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabel *addrLabel = new RelocLabel((uint64_t)function.address());
-      addrLabel->link_to(ip_offset(), AssemblerPseudoLabel::kDisp32_off_9);
+      RelocDataLabel *addrLabel = new RelocDataLabel((uint64_t)function.address());
+      addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
       this->AppendRelocLabel(addrLabel);
     }
     nop();
@@ -667,28 +667,28 @@ public:
   }
 
   // ================================================================
-  // RelocLabel
+  // RelocDataLabel
 
-  void PseudoBind(AssemblerPseudoLabel *label) {
+  void bindLabel(PseudoLabel *label) {
     const addr_t bound_pc = buffer_->GetBufferSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
-      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
+      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->code_buffer()));
     }
   }
 
-  void RelocBind() {
+  void relocDataLabels() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      RelocLabel *label = (RelocLabel *)data_labels_->getObject(i);
-      PseudoBind(label);
+      RelocDataLabel *label = (RelocDataLabel *)data_labels_->getObject(i);
+      bindLabel(label);
       EmitAddr(label->data());
     }
   }
 
-  void AppendRelocLabel(RelocLabel *label) {
+  void AppendRelocLabel(RelocDataLabel *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }

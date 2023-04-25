@@ -103,11 +103,13 @@ __attribute__((constructor)) static void ctor() {
       }
     }
     if (is_short) {
-      dobby_enable_near_branch_trampoline();
-      DobbyInstrument(iter->first, common_handler);
-      dobby_disable_near_branch_trampoline();
+      //      dobby_enable_near_trampoline();
+      //      DobbyInstrument(iter->first, common_handler);
+      //      dobby_disable_near_trampoline();
+      break;
     } else {
-      DobbyInstrument(iter->first, common_handler);
+      // DobbyInstrument(iter->first, common_handler);
+      break;
     }
   }
 
@@ -115,7 +117,7 @@ __attribute__((constructor)) static void ctor() {
   // DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 #endif
 
-  // install_hook_pthread_create();
+  install_hook_pthread_create();
 
   pthread_t socket_server;
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);

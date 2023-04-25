@@ -134,5 +134,5 @@ void supervisor_call_monitor_init() {
   INFO_LOG("HOME: %s", logger_path);
   async_logger_init(logger_path);
 
-  dobby_enable_near_branch_trampoline();
+  dobby_enable_near_trampoline();
 }

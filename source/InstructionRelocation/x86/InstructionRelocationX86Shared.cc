@@ -22,7 +22,7 @@ inline void codegen_x64_jmp_absolute_addr(CodeBufferBase *buffer, addr_t target)
 
 // simple impl for ReloLabel
 inline void emit_rel32_label(CodeBufferBase *buffer, uint32_t last_offset, addr_t curr_relo_ip, addr_t orig_dst_ip) {
-  addr_t curr_offset = buffer->GetBufferSize();
+  addr_t curr_offset = buffer->buffer_size();
   uint32_t relo_insn_len = curr_offset + sizeof(uint32_t) - last_offset;
   addr_t relo_ip = curr_relo_ip + relo_insn_len;
   int32_t new_offset = orig_dst_ip - relo_ip;
@@ -44,12 +44,12 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
   // x86 ip register == next instruction address
   curr_orig_ip = curr_orig_ip + insn.length;
 
-  auto last_relo_offset = code_buffer->GetBufferSize();
+  auto last_relo_offset = code_buffer->buffer_size();
 
   static auto x86_insn_encode_start = 0;
   static auto x86_insn_encoded_len = 0;
-  auto x86_insn_encode_begin = [&] { x86_insn_encode_start = code_buffer->GetBufferSize(); };
-  auto x86_insn_encode_end = [&] { x86_insn_encoded_len = code_buffer->GetBufferSize() - x86_insn_encode_start; };
+  auto x86_insn_encode_begin = [&] { x86_insn_encode_start = code_buffer->buffer_size(); };
+  auto x86_insn_encode_end = [&] { x86_insn_encoded_len = code_buffer->buffer_size() - x86_insn_encode_start; };
 
   if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jcc rel8
     DEBUG_LOG("[x86 relo] %p: jc rel8", buffer_cursor);
@@ -89,7 +89,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
     {
 
       uint32_t jmp_near_range = (uint32_t)2 * 1024 * 1024 * 1024;
-      auto rip_insn_seq = (addr_t)NearMemoryAllocator::SharedAllocator()->allocateNearExecMemory(
+      auto rip_insn_seq = (addr_t)NearMemoryAllocator::Shared()->allocateNearExecMemory(
           insn.length + 6 + 8, orig_dst_ip, jmp_near_range);
 
       rip_insn_seq_addr = rip_insn_seq;
@@ -123,7 +123,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
       auto relo_next_ip = curr_relo_ip + x86_insn_encoded_len;
       codegen_x64_jmp_absolute_addr(&rip_insn_seq_buffer, relo_next_ip);
 
-      DobbyCodePatch((void *)rip_insn_seq_addr, rip_insn_seq_buffer.GetBuffer(), rip_insn_seq_buffer.GetBufferSize());
+      DobbyCodePatch((void *)rip_insn_seq_addr, rip_insn_seq_buffer.buffer(), rip_insn_seq_buffer.buffer_size());
     }
 
   } else if (insn.primary_opcode == 0xEB) { // jmp rel8
@@ -187,7 +187,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
 
   // insn -> relocated insn
   {
-    int relo_offset = code_buffer->GetBufferSize();
+    int relo_offset = code_buffer->buffer_size();
     int relo_len = relo_offset - last_relo_offset;
     DEBUG_LOG("insn -> relocated insn: %d -> %d", insn.length, relo_len);
   }
