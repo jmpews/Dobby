@@ -39,7 +39,7 @@ Trampoline *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   auto tramp_buffer = turbo_assembler_.code_buffer();
   auto tramp_block = tramp_buffer->dup();
   auto tramp = new Trampoline(tramp_type, tramp_block);
-  DEBUG_LOG("[trampoline] trampoline addr: %p, size: %d", tramp->addr(), tramp->size());
+  DEBUG_LOG("[trampoline] trampoline addr: %p(temp), %p(real), size: %d", tramp->addr(), from, tramp->size());
   debug_hex_log_buffer((uint8_t *)tramp->addr(), tramp->size());
   return tramp;
 }

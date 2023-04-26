@@ -3,6 +3,7 @@
 #include "dobby/common.h"
 #include "MemoryAllocator.h"
 #include "PlatformUtil/ProcessRuntimeUtility.h"
+#include <stdint.h>
 
 #define KB (1024uLL)
 #define MB (1024uLL * KB)
@@ -31,12 +32,24 @@ inline void *memmem_impl(const void *haystack, size_t haystacklen, const void *n
   }
 }
 
+inline dobby_alloc_near_code_callback_t custom_alloc_near_code_handler = nullptr;
+PUBLIC inline void dobby_register_alloc_near_code_callback(dobby_alloc_near_code_callback_t handler) {
+  custom_alloc_near_code_handler = handler;
+}
+
 struct NearMemoryAllocator {
   inline static NearMemoryAllocator *Shared();
 
   MemBlock allocNearCodeBlock(uint32_t in_size, addr_t pos, size_t range) {
-    auto search_range = MemRange(pos - range, range * 2);
-    return allocNearCodeBlock(in_size, search_range);
+    if (custom_alloc_near_code_handler) {
+      auto near_code = custom_alloc_near_code_handler(in_size, pos, range);
+      if (near_code)
+        return MemBlock(near_code, in_size);
+    } else {
+      auto search_range = MemRange(pos - range, range * 2);
+      return allocNearCodeBlock(in_size, search_range);
+    }
+    return {};
   }
 
   MemBlock allocNearCodeBlock(uint32_t in_size, MemRange search_range) {

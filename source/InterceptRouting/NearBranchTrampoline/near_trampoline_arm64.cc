@@ -62,7 +62,7 @@ Trampoline *GenerateNearTrampolineBuffer(addr_t src, addr_t dst) {
   auto tramp_buffer = turbo_assembler_.code_buffer();
   auto tramp_block = tramp_buffer->dup();
   auto tramp = new Trampoline(tramp_type, tramp_block, forward_tramp);
-  DEBUG_LOG("[near trampoline] trampoline addr: %p, size: %d", tramp->addr(), tramp->size());
+  DEBUG_LOG("[near trampoline] trampoline addr: %p(temp), %p(real), size: %d", tramp->addr(), src, tramp->size());
   debug_hex_log_buffer((uint8_t *)tramp->addr(), tramp->size());
   return tramp;
 }

@@ -1,9 +1,12 @@
+#include "dobby.h"
 #include "dobby/common.h"
 #include "Interceptor.h"
 #include "InterceptRouting/InlineHookRouting.h"
 #include "InterceptRouting/InstrumentRouting.h"
 #include "InterceptRouting/NearBranchTrampoline/NearBranchTrampoline.h"
-#include  "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
+#include "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
+#include "MemoryAllocator/NearMemoryAllocator.h"
+#include <stdint.h>
 
 __attribute__((constructor)) static void ctor() {
   DEBUG_LOG("================================");
@@ -24,11 +27,17 @@ PUBLIC int DobbyDestroy(void *address) {
   return -1;
 }
 
-PUBLIC int placeholder() {
-  &DobbyHook;
-  &DobbyInstrument;
-  &dobby_enable_near_trampoline;
-  &dobby_disable_near_trampoline;
-  &common_closure_bridge_handler;
+PUBLIC void dobby_set_options(bool enable_near_trampoline, dobby_alloc_near_code_callback_t alloc_near_code_callback) {
+  dobby_set_near_trampoline(enable_near_trampoline);
+  dobby_register_alloc_near_code_callback(alloc_near_code_callback);
+}
+
+PUBLIC uintptr_t placeholder() {
+  uintptr_t x;
+  x += (uintptr_t)&DobbyHook;
+  x += (uintptr_t)&DobbyInstrument;
+  x += (uintptr_t)&dobby_set_near_trampoline;
+  x += (uintptr_t)&common_closure_bridge_handler;
+  x += (uintptr_t)&dobby_register_alloc_near_code_callback;
   return 0;
 }

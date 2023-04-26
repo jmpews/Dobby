@@ -47,9 +47,15 @@ PUBLIC inline int DobbyHook(void *address, void *fake_func, void **out_origin_fu
   entry = new Interceptor::Entry((addr_t)address);
   entry->fake_func_addr = (addr_t)fake_func;
 
-  InlineHookRouting routing(entry, (addr_t)fake_func);
-  routing.BuildRouting();
-  routing.Active();
+  auto routing = new InlineHookRouting(entry, (addr_t)fake_func);
+  routing->BuildRouting();
+  routing->Active();
+  entry->routing = routing;
+
+  if (routing->error) {
+    ERROR_LOG("build routing error.");
+    return -1;
+  }
 
   if (out_origin_func) {
     *out_origin_func = (void *)entry->relocated.addr();

@@ -55,7 +55,7 @@ const char *func_short_array[] = {
   fn_ret_t fake_##name(fn_args_t);                                                                                     \
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
-    DobbyHook(sym_addr, (dobby_dummy_func_t)fake_##name, (dobby_dummy_func_t *)&orig_##name);                          \
+    DobbyHook(sym_addr, (void *)fake_##name, (void * *)&orig_##name);                          \
     pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
@@ -82,6 +82,7 @@ uint64_t socket_demo_client(void *ctx);
 
 __attribute__((constructor)) static void ctor() {
   logger_set_options(0, 0, 0, LOG_LEVEL_DEBUG, false, false);
+  dobby_set_near_trampoline(true);
 
   void *func = NULL;
   func_map = new std::map<void *, const char *>();
@@ -103,12 +104,9 @@ __attribute__((constructor)) static void ctor() {
       }
     }
     if (is_short) {
-      //      dobby_enable_near_trampoline();
-      //      DobbyInstrument(iter->first, common_handler);
-      //      dobby_disable_near_trampoline();
       break;
     } else {
-      // DobbyInstrument(iter->first, common_handler);
+      DobbyInstrument(iter->first, common_handler);
       break;
     }
   }
@@ -117,7 +115,7 @@ __attribute__((constructor)) static void ctor() {
   // DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 #endif
 
-  install_hook_pthread_create();
+  // install_hook_pthread_create();
 
   pthread_t socket_server;
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);

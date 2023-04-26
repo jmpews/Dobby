@@ -25,7 +25,7 @@ struct Interceptor {
     MemBlock patched;
     MemBlock relocated;
 
-    Trampoline *trampoline;
+    InterceptRouting *routing;
 
     uint8_t *origin_code_buffer = 0;
 

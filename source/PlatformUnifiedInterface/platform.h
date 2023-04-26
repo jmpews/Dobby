@@ -73,7 +73,7 @@ public:
 
   static void *Allocate(size_t size, MemoryPermission access);
 
-  static void *Allocate(size_t size, MemoryPermission access, void *fixed_address);
+  static void *Allocate(size_t size, MemoryPermission access, void *fixed_addr);
 
   static bool Free(void *address, size_t size);
 

@@ -60,11 +60,12 @@ PUBLIC inline int DobbyInstrument(void *address, dobby_instrument_callback_t pre
   entry = new Interceptor::Entry((addr_t)address);
   entry->pre_handler = pre_handler;
 
-  InstrumentRouting routing(entry, pre_handler);
-  routing.BuildRouting();
-  routing.Active();
+  auto routing = new InstrumentRouting(entry, pre_handler);
+  routing->BuildRouting();
+  routing->Active();
+  entry->routing = routing;
 
-  if (routing.error) {
+  if (routing->error) {
     ERROR_LOG("build routing error.");
     return -1;
   }

@@ -91,5 +91,6 @@ ret
 cdecl(closure_bridge_asm_end):
 
 .data
+.align 8
 common_closure_bridge_handler_addr:
 .quad cdecl(common_closure_bridge_handler)
