@@ -3,6 +3,8 @@
 #include "dobby/common.h"
 #include "MemoryAllocator/MemoryAllocator.h"
 
+#include "TrampolineBridge/Trampoline/Trampoline.h"
+
 typedef enum { kFunctionInlineHook, kInstructionInstrument } InterceptRoutingType;
 
 struct InterceptRouting;
@@ -23,6 +25,8 @@ struct Interceptor {
     MemBlock patched;
     MemBlock relocated;
 
+    Trampoline *trampoline;
+
     uint8_t *origin_code_buffer = 0;
 
     Entry(addr_t addr) {
@@ -31,16 +35,16 @@ struct Interceptor {
 
     ~Entry() {
       if (origin_code_buffer) {
-        free(origin_code_buffer);
+        operator delete(origin_code_buffer);
       }
     }
 
-    void set_arm_thumb_feature(bool thumb) {
+    void feature_set_arm_thumb(bool thumb) {
       features.arm_thumb_mode = thumb;
     }
   };
 
-  tinystl::vector<Entry *> entries;
+  stl::vector<Entry *> entries;
 
   static Interceptor *Shared();
 

@@ -18,7 +18,7 @@ typedef struct _StackFrame {
 
 // (thead) CallStack base in thread
 typedef struct _CallStack {
-  tinystl::vector<StackFrame *> stackframes;
+  stl::vector<StackFrame *> stackframes;
 } CallStack;
 
 // ThreadSupport base on vm_core, support mutipl platforms.

@@ -34,11 +34,11 @@ typedef struct {
   ThumbTurboAssembler *thumb_assembler;
   TurboAssembler *arm_assembler;
 
-  tinystl::unordered_map<addr_t, ExecuteState> execute_state_map;
+  stl::unordered_map<addr_t, ExecuteState> execute_state_map;
 
-  tinystl::unordered_map<off_t, off_t> relocated_offset_map;
+  stl::unordered_map<off_t, off_t> relocated_offset_map;
 
-  tinystl::unordered_map<addr_t, PseudoLabel *> label_map;
+  stl::unordered_map<addr_t, PseudoLabel *> label_map;
 } relo_ctx_t;
 
 // ---

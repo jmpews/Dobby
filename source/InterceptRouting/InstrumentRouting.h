@@ -5,13 +5,16 @@
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
 struct InstrumentRouting : InterceptRouting {
-  dobby_instrument_callback_t pre_handler = 0;
-  dobby_instrument_callback_t post_handler = 0;
-
   ClosureTrampoline *instrument_tramp = nullptr;
 
   InstrumentRouting(Interceptor::Entry *entry, dobby_instrument_callback_t pre_handler) : InterceptRouting(entry) {
-    this->pre_handler = pre_handler;
+  }
+
+  ~InstrumentRouting() {
+    if (instrument_tramp) {
+      // TODO: free code block
+      delete instrument_tramp;
+    }
   }
 
   addr_t TrampolineTarget() override {

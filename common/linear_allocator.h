@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include "logging/logging.h"
 
 #if !defined(ALIGN_FLOOR)
 #define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))

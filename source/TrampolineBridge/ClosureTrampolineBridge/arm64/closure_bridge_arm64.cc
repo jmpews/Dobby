@@ -16,7 +16,7 @@ extern "C" void closure_bridge_asm();
 void closure_bridge_init() {
   __FUNC_CALL_TRACE__();
 
-#if defined(BUILD_WITH_TRAMPOLINE_ASM)
+#if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
   closure_bridge_addr = (asm_func_t)closure_bridge_asm;
 #else
 #define MEM(reg, offset) MemOperand(reg, offset)

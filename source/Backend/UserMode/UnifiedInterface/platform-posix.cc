@@ -102,6 +102,8 @@ bool OSThread::Start() {
   return true;
 }
 
+// --- memory
+
 static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   int prot = 0;
   if (access & MemoryPermission::kRead)

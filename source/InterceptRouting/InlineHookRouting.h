@@ -10,6 +10,8 @@ struct InlineHookRouting : InterceptRouting {
   InlineHookRouting(Interceptor::Entry *entry, addr_t fake_func) : InterceptRouting(entry), fake_func(fake_func) {
   }
 
+  ~InlineHookRouting() = default;
+
   addr_t TrampolineTarget() override {
     return fake_func;
   }
@@ -46,9 +48,8 @@ PUBLIC inline int DobbyHook(void *address, void *fake_func, void **out_origin_fu
   entry->fake_func_addr = (addr_t)fake_func;
 
   InlineHookRouting routing(entry, (addr_t)fake_func);
-  routing.Prepare();
-  routing.DispatchRouting();
-  routing.Commit();
+  routing.BuildRouting();
+  routing.Active();
 
   if (out_origin_func) {
     *out_origin_func = (void *)entry->relocated.addr();

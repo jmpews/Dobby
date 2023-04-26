@@ -35,11 +35,11 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.start < b.start);
 }
 
-tinystl::vector<MemRegion> *regions;
+stl::vector<MemRegion> *regions;
 
-const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+const stl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (regions == nullptr) {
-    regions = new tinystl::vector<MemRegion>();
+    regions = new stl::vector<MemRegion>();
   }
 
   regions->clear();
@@ -88,11 +88,11 @@ const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout(
   return *regions;
 }
 
-static tinystl::vector<RuntimeModule> *modules;
+static stl::vector<RuntimeModule> *modules;
 
-const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
+const stl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   if (modules == nullptr) {
-    modules = new tinystl::vector<RuntimeModule>();
+    modules = new stl::vector<RuntimeModule>();
   }
   modules->clear();
 

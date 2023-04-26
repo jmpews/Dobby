@@ -19,7 +19,7 @@ ClosureTrampoline *GenerateClosureTrampoline(void *carry_data, void *carry_handl
     closure_bridge_init();
   }
 
-#if defined(BUILD_WITH_TRAMPOLINE_ASM)
+#if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
   auto tramp_size = (addr_t)closure_trampoline_asm_end - (addr_t)closure_trampoline_asm;
   uint8_t tramp_buf[64] = {0};
   memcpy(tramp_buf, (void *)&closure_trampoline_asm, tramp_size);

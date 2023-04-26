@@ -19,6 +19,17 @@ struct InterceptRouting {
   explicit InterceptRouting(Interceptor::Entry *entry) : entry(entry) {
   }
 
+  ~InterceptRouting() {
+    if (trampoline) {
+      // TODO: free code block
+      delete trampoline;
+    }
+    if (near_trampoline) {
+      // TODO: free code block
+      delete near_trampoline;
+    }
+  }
+
   virtual void Prepare() {
   }
   virtual void DispatchRouting() {
@@ -73,7 +84,10 @@ struct InterceptRouting {
 
   void GenerateRelocatedCode() {
     __FUNC_CALL_TRACE__();
-    assert(trampoline_addr() != 0 && "GenerateTrampoline must be called first");
+    if (trampoline_addr() == 0) {
+      ERROR_LOG("GenerateTrampoline must be called first");
+      error = 1;
+    }
 
     auto code_addr = entry->addr;
     features::arm_thumb_fix_addr(code_addr);
@@ -96,7 +110,7 @@ struct InterceptRouting {
 
   void BackupOriginCode() {
     __FUNC_CALL_TRACE__();
-    entry->origin_code_buffer = (uint8_t *)malloc(entry->patched.size);
+    entry->origin_code_buffer = (uint8_t *)operator new(entry->patched.size);
     memcpy(entry->origin_code_buffer, (void *)entry->addr, entry->patched.size);
   }
 };

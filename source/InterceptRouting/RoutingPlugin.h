@@ -22,7 +22,7 @@ struct RoutingPluginManager {
     RoutingPluginManager::plugins.push_back(plugin);
   }
 
-  inline static tinystl::vector<RoutingPluginInterface *> plugins;
+  inline static stl::vector<RoutingPluginInterface *> plugins;
 
   inline static RoutingPluginInterface *near_branch_trampoline;
 };

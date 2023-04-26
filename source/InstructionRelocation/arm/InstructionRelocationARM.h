@@ -285,7 +285,7 @@ public:
     data_labels_.push_back(label);
   }
 
-  void RelocLabelFixup(tinystl::unordered_map<off_t, off_t> *relocated_offset_map) {
+  void RelocLabelFixup(stl::unordered_map<off_t, off_t> *relocated_offset_map) {
     for (auto *data_label : data_labels_) {
       auto val = data_label->data<int32_t>();
       auto iter = relocated_offset_map->find(val);
@@ -296,7 +296,7 @@ public:
   }
 
 private:
-  tinystl::vector<ThumbRelocLabelEntry *> data_labels_;
+  stl::vector<ThumbRelocLabelEntry *> data_labels_;
 };
 
 #if 0
