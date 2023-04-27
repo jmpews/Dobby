@@ -46,7 +46,7 @@ PUBLIC inline int DobbyInstrument(void *address, dobby_instrument_callback_t pre
     return -1;
   }
 
-  features::apple::pac_strip(address);
+  features::apple::arm64e_pac_strip(address);
   features::android::make_memory_readable(address, 4);
 
   DEBUG_LOG("----- [DobbyInstrument: %p] -----", address);

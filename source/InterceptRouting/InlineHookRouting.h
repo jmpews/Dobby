@@ -32,8 +32,8 @@ PUBLIC inline int DobbyHook(void *address, void *fake_func, void **out_origin_fu
     return -1;
   }
 
-  features::apple::pac_strip(address);
-  features::apple::pac_strip(fake_func);
+  features::apple::arm64e_pac_strip(address);
+  features::apple::arm64e_pac_strip(fake_func);
   features::android::make_memory_readable(address, 4);
 
   DEBUG_LOG("----- [DobbyHook: %p] -----", address);
@@ -60,7 +60,7 @@ PUBLIC inline int DobbyHook(void *address, void *fake_func, void **out_origin_fu
   if (out_origin_func) {
     *out_origin_func = (void *)entry->relocated.addr();
   }
-  features::apple::arm64e_pac_strip_and_resign(*out_origin_func);
+  features::apple::arm64e_pac_strip_and_sign(*out_origin_func);
 
   gInterceptor.add(entry);
 

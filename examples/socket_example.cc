@@ -42,7 +42,7 @@ const char *func_short_array[] = {
 };
 // clang-format on
 
-#define pac_strip(symbol)
+#define arm64e_pac_strip(symbol)
 #if defined(__APPLE__) && __arm64e__
 #if __has_feature(ptrauth_calls)
 #define pac_strip(symbol)
@@ -56,7 +56,7 @@ const char *func_short_array[] = {
   /* __attribute__((constructor)) */ static void install_hook_##name() {                                               \
     void *sym_addr = DobbySymbolResolver(NULL, #name);                                                                 \
     DobbyHook(sym_addr, (void *)fake_##name, (void * *)&orig_##name);                          \
-    pac_strip(orig_##name);                                                                                            \
+    arm64e_pac_strip(orig_##name);                                                                                            \
     printf("install hook %s:%p:%p\n", #name, sym_addr, orig_##name);                                                   \
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)

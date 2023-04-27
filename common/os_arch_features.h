@@ -18,7 +18,7 @@ inline uintptr_t arm_thumb_fix_addr(uintptr_t &addr) {
 }
 
 namespace apple {
-inline void *pac_strip(void *&addr) {
+inline void *arm64e_pac_strip(void *&addr) {
   if (addr == 0) {
     return 0;
   }
@@ -28,7 +28,7 @@ inline void *pac_strip(void *&addr) {
   return addr;
 }
 
-inline void *arm64e_pac_strip_and_resign(void *&routing_handler) {
+inline void *arm64e_pac_strip_and_sign(void *&routing_handler) {
 #if defined(__APPLE__) && __arm64e__
 #if __has_feature(ptrauth_calls)
   uint64_t discriminator = 0;

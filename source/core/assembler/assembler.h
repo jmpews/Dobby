@@ -12,7 +12,7 @@ struct ExternalReference {
 
   explicit ExternalReference(void *address) : address(address) {
 #if defined(__APPLE__) && __arm64e__
-    address = pac_strip((void *)address);
+    address = pac_strip(address);
 #endif
   }
 };

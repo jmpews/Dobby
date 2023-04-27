@@ -18,6 +18,6 @@ ClosureTrampoline *GenerateClosureTrampoline(void *carry_data, void *carry_handl
 
 inline ClosureTrampoline *GenerateInstrumentClosureTrampoline(Interceptor::Entry *entry) {
   auto handler = (void *)instrument_routing_dispatch;
-  features::apple::pac_strip(handler);
+  features::apple::arm64e_pac_strip(handler);
   return GenerateClosureTrampoline(entry, handler);
 }
