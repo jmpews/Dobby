@@ -27,16 +27,28 @@ struct Interceptor {
 
     InterceptRouting *routing;
 
-    uint8_t *origin_code_buffer = 0;
+    uint8_t *origin_code_ = 0;
 
     Entry(addr_t addr) {
       this->addr = addr;
     }
 
     ~Entry() {
-      if (origin_code_buffer) {
-        operator delete(origin_code_buffer);
-      }
+    }
+
+    void backup_orig_code() {
+      __FUNC_CALL_TRACE__();
+      auto orig = (uint8_t *)this->addr;
+      uint32_t tramp_size = this->patched.size;
+      origin_code_ = (uint8_t *)operator new(tramp_size);
+      memcpy(origin_code_, orig, tramp_size);
+    }
+
+    void restore_orig_code() {
+      __FUNC_CALL_TRACE__();
+      DobbyCodePatch((void *)patched.addr(), origin_code_, patched.size);
+      operator delete(origin_code_);
+      origin_code_ = nullptr;
     }
 
     void feature_set_arm_thumb(bool thumb) {
@@ -59,8 +71,8 @@ struct Interceptor {
 
   Entry *remove(addr_t addr) {
     for (auto iter = entries.begin(); iter != entries.end(); iter++) {
-      if ((*iter)->patched.addr() == addr) {
-        Entry *entry = *iter;
+      Entry *entry = *iter;
+      if (entry->patched.addr() == addr) {
         entries.erase(iter);
         return entry;
       }

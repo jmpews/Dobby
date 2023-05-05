@@ -34,9 +34,10 @@ uintptr_t macho_iterate_symbol_table(char *symbol_name_pattern, nlist_t *symtab,
 void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode, mach_header_t *cache_header) {
   memset(this, 0, sizeof(macho_ctx_t));
 
-  this->is_runtime_mode = is_runtime_mode;
-
   this->header = header;
+  this->is_runtime_mode = is_runtime_mode;
+  this->cache_header = cache_header;
+
   load_command *curr_cmd;
   segment_command_t *text_segment = 0, *text_exec_segment = 0, *data_segment = 0, *data_const_segment = 0,
                     *linkedit_segment = 0;
@@ -84,7 +85,8 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode, mach_header_
   if (!is_runtime_mode) {
     // as mmap, all segment is close
     uintptr_t linkedit_segment_vmaddr = linkedit_segment->fileoff;
-    linkedit_base = (uintptr_t)(cache_header ? cache_header : header) + linkedit_segment_vmaddr - linkedit_segment->fileoff;
+    linkedit_base =
+        (uintptr_t)(cache_header ? cache_header : header) + linkedit_segment_vmaddr - linkedit_segment->fileoff;
   }
 
   vm_region_start = segments[0]->vmaddr;

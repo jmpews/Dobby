@@ -153,7 +153,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
       if (vm_protect_impl == nullptr) {
         vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
       }
-      vm_protect_impl = (__typeof(vm_protect) *)pac_sign((void *)vm_protect_impl);
+      vm_protect_impl = (__typeof(vm_protect) *)pac_sign((void * &)vm_protect_impl);
     }
     {
       kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);

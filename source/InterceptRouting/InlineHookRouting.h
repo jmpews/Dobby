@@ -22,6 +22,8 @@ struct InlineHookRouting : InterceptRouting {
     GenerateTrampoline();
 
     GenerateRelocatedCode();
+
+    BackupOriginCode();
   }
 };
 

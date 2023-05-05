@@ -7,30 +7,25 @@
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
 struct MemRange {
-  addr_t start;
+  addr_t start_;
   size_t size;
 
-  MemRange() : start(0), size(0) {
+  MemRange() : start_(0), size(0) {
   }
 
-  MemRange(addr_t start, size_t size) : start(start), size(size) {
+  MemRange(addr_t start, size_t size) : start_(start), size(size) {
+  }
+
+  addr_t start() const {
+    return start_;
   }
 
   addr_t addr() const {
-    return start;
+    return start_;
   }
 
   addr_t end() const {
-    return start + size;
-  }
-
-  MemRange intersect(const MemRange &other) const {
-    auto start = max(this->start, other.start);
-    auto end = min(this->end(), other.end());
-    if (start < end)
-      return MemRange(start, end - start);
-    else
-      return MemRange(0, 0);
+    return start_ + size;
   }
 
   void resize(size_t in_size) {
@@ -38,8 +33,17 @@ struct MemRange {
   }
 
   void reset(addr_t in_start, size_t in_size) {
-    start = in_start;
+    start_ = in_start;
     size = in_size;
+  }
+
+  MemRange intersect(const MemRange &other) const {
+    auto start = max(this->addr(), other.addr());
+    auto end = min(this->end(), other.end());
+    if (start < end)
+      return MemRange(start, end - start);
+    else
+      return MemRange{};
   }
 };
 

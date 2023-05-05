@@ -19,8 +19,9 @@ PUBLIC int DobbyDestroy(void *address) {
   features::arm_thumb_fix_addr((uintptr_t &)address);
   auto entry = gInterceptor.find((addr_t)address);
   if (entry) {
-    DobbyCodePatch(address, entry->origin_code_buffer, entry->patched.size);
     gInterceptor.remove((addr_t)address);
+    entry->restore_orig_code();
+    delete entry;
     return 0;
   }
 

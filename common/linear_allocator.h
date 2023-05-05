@@ -2,7 +2,13 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+
+#if defined(BUILD_DYLD_LINKER)
+#include "dyld_linker/external_call.h"
+#define DEBUG_LOG DYLD_DEBUG_LOG
+#else
 #include "logging/logging.h"
+#endif
 
 #if !defined(ALIGN_FLOOR)
 #define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
@@ -22,6 +28,8 @@ struct simple_linear_allocator_t {
   uint32_t size;
   uint32_t capacity;
   uint8_t *cursor;
+
+  simple_linear_allocator_t() = default;
 
   explicit simple_linear_allocator_t(uint8_t *in_buffer, uint32_t in_capacity) {
     init(in_buffer, in_capacity);
@@ -53,7 +61,6 @@ struct simple_linear_allocator_t {
 };
 
 struct linear_allocator_t {
-
   struct mem_block_t {
     uint32_t magic;
     uint32_t data_size_;
@@ -156,7 +163,9 @@ struct linear_allocator_t {
   uint8_t *buffer;
   uint32_t buffer_size;
 
-  bool is_free_blocks_merged = true;
+  bool is_free_blocks_merged;
+
+  linear_allocator_t() = default;
 
   linear_allocator_t(uint8_t *in_buffer, uint32_t in_buffer_size) {
     init(in_buffer, in_buffer_size);
@@ -227,6 +236,7 @@ struct linear_allocator_t {
   }
 
   void status() {
+    return;
     uint32_t used_data_size = 0;
     uint32_t used_block_count = 0;
     uint32_t freed_data_size = 0;
@@ -244,7 +254,7 @@ struct linear_allocator_t {
       cursor += block->block_size();
     }
     DEBUG_LOG("status: used_data_size=%p, used_block_count=%p, freed_data_size=%p, freed_block_count=%p",
-                   used_data_size, used_block_count, freed_data_size, freed_block_count);
+              used_data_size, used_block_count, freed_data_size, freed_block_count);
   }
 };
 

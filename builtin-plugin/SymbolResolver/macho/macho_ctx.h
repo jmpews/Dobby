@@ -32,6 +32,7 @@ struct macho_ctx_t {
   bool is_runtime_mode;
 
   mach_header_t *header;
+  mach_header_t *cache_header;
 
   uintptr_t vmaddr;
   size_t vmsize;
@@ -62,6 +63,12 @@ struct macho_ctx_t {
 
   explicit macho_ctx_t(mach_header_t *header, bool is_runtime_mode = true, mach_header_t *cache_header = 0) {
     init(header, is_runtime_mode, cache_header);
+  }
+
+  uint8_t *seg_content(segment_command_t *seg) {
+    auto header_ = cache_header ? cache_header : header;
+    auto seg_offset = is_runtime_mode ? seg->vmaddr - vmaddr : seg->fileoff;
+    return (uint8_t *)header_ + seg_offset;
   }
 
   void init(mach_header_t *header, bool is_runtime_mode, mach_header_t *cache_header);

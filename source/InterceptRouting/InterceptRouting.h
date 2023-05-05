@@ -110,7 +110,6 @@ struct InterceptRouting {
 
   void BackupOriginCode() {
     __FUNC_CALL_TRACE__();
-    entry->origin_code_buffer = (uint8_t *)operator new(entry->patched.size);
-    memcpy(entry->origin_code_buffer, (void *)entry->addr, entry->patched.size);
+    entry->backup_orig_code();
   }
 };

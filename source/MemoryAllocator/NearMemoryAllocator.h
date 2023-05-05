@@ -64,19 +64,19 @@ struct NearMemoryAllocator {
         break;
 
       auto unused_region_start = region->end();
-      auto unused_region_size = next_region->start - region->end();
+      auto unused_region_size = next_region->addr() - region->end();
       MemRegion unused_region(unused_region_start, unused_region_size, kNoAccess);
       auto intersect = search_range.intersect(unused_region);
       if (intersect.size < in_size)
         continue;
 
-      auto unused_page = (void *)ALIGN_FLOOR(intersect.start, OSMemory::PageSize());
+      auto unused_page = (void *)ALIGN_FLOOR(intersect.addr(), OSMemory::PageSize());
       if (OSMemory::Allocate(OSMemory::PageSize(), kReadExecute, unused_page) != unused_page) {
         ERROR_LOG("allocate unused page failed");
         continue;
       }
 
-      return MemBlock(intersect.start, (size_t)in_size);
+      return MemBlock(intersect.addr(), (size_t)in_size);
     }
 
     // search unused code gap in region
@@ -86,7 +86,7 @@ struct NearMemoryAllocator {
       if (!(region->perm & MEM_PERM_X))
         continue;
 
-      auto unused_code_gap = memmem_impl((void *)region->start, region->size, invalid_code_seq, in_size);
+      auto unused_code_gap = memmem_impl((void *)region->addr(), region->size, invalid_code_seq, in_size);
       if (!unused_code_gap)
         continue;
       return MemBlock((addr_t)unused_code_gap, (size_t)in_size);

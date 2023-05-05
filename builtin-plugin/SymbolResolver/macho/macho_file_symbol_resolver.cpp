@@ -1,6 +1,6 @@
 #include "macho_file_symbol_resolver.h"
 
-#include "SymbolResolver/mmap_file_util.h"
+#include "common/mmap_file_util.h"
 
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>

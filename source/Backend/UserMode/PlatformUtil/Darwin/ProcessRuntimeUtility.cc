@@ -32,7 +32,7 @@
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
 static bool memory_region_comparator(MemRegion a, MemRegion b) {
-  return (a.start < b.start);
+  return (a.addr() < b.addr());
 }
 
 stl::vector<MemRegion> *regions;

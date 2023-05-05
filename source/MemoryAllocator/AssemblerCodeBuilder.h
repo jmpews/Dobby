@@ -26,8 +26,8 @@ struct AssemblerCodeBuilder {
 #endif
 
       auto block = gMemoryAllocator.allocExecBlock(buffer_size);
-      if (block.start == 0)
-        return {};
+      if (block.addr() == 0)
+        return MemBlock{};
 
       fixed_addr = block.addr();
       assembler->set_fixed_addr(fixed_addr);

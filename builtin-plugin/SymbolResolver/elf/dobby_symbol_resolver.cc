@@ -6,7 +6,7 @@
 #include <link.h>
 #include <string.h>
 
-#include "mmap_file_util.h"
+#include "common/mmap_file_util.h"
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
