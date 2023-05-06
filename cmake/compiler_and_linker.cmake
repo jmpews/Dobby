@@ -42,7 +42,7 @@ endif ()
 if (PROCESSOR.ARM)
   set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch armv7 -x assembler-with-cpp")
 elseif (PROCESSOR.AARCH64)
-  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -arch arm64 -x assembler-with-cpp")
+  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -x assembler-with-cpp")
 endif ()
 
 # sync cxx with c flags

@@ -34,11 +34,11 @@ PUBLIC void dobby_set_options(bool enable_near_trampoline, dobby_alloc_near_code
 }
 
 PUBLIC uintptr_t placeholder() {
-  uintptr_t x;
+  uintptr_t x = 0;
   x += (uintptr_t)&DobbyHook;
   x += (uintptr_t)&DobbyInstrument;
   x += (uintptr_t)&dobby_set_near_trampoline;
   x += (uintptr_t)&common_closure_bridge_handler;
   x += (uintptr_t)&dobby_register_alloc_near_code_callback;
-  return 0;
+  return x;
 }
