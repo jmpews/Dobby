@@ -21,11 +21,11 @@ if (SYSTEM.Darwin)
 
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
     macho/macho_ctx.cc
-    macho/dobby_symbol_resolver.cc
     )
 
   if (NOT DOBBY_BUILD_KERNEL_MODE)
     set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+      macho/dobby_symbol_resolver.cc
       macho/macho_file_symbol_resolver.cpp
       macho/shared_cache_ctx.cpp
       ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
@@ -51,5 +51,3 @@ set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST_})
 add_library(dobby_symbol_resolver
   ${SOURCE_FILE_LIST}
   )
-
-

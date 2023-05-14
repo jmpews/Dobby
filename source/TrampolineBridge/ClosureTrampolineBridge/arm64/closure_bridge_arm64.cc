@@ -18,6 +18,7 @@ void closure_bridge_init() {
 
 #if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
   closure_bridge_addr = (asm_func_t)closure_bridge_asm;
+  features::apple::arm64e_pac_strip(closure_bridge_addr);
 #else
 #define MEM(reg, offset) MemOperand(reg, offset)
   TurboAssembler turbo_assembler_;

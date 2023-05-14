@@ -16,6 +16,8 @@ using namespace zz::arm64;
 
 static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
   __FUNC_CALL_TRACE__();
+  DEBUG_LOG("fast forward trampoline: %p -> %p", src, dst);
+
   TurboAssembler turbo_assembler_;
 #undef _
 #define _ turbo_assembler_. // NOLINT: clang-tidy
@@ -41,6 +43,9 @@ static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
 }
 
 Trampoline *GenerateNearTrampolineBuffer(addr_t src, addr_t dst) {
+  __FUNC_CALL_TRACE__();
+  DEBUG_LOG("near trampoline: %p -> %p", src, dst);
+
   TurboAssembler turbo_assembler_(src);
 #define _ turbo_assembler_. // NOLINT: clang-tidy
 

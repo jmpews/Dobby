@@ -39,7 +39,7 @@ struct simple_linear_allocator_t {
     buffer = in_buffer;
     size = 0;
     capacity = in_capacity;
-    cursor = buffer;
+    cursor = buffer + (uintptr_t)buffer % 8;
   }
 
   uint8_t *alloc(uint32_t in_data_size) {
@@ -212,7 +212,7 @@ struct linear_allocator_t {
       auto *buf = alloc(in_data_size);
       return buf;
     } else {
-      DEBUG_LOG("alloc: %p", freed_blk->data_size());
+      // DEBUG_LOG("alloc: %p", freed_blk->data_size());
       freed_blk->mark_used();
       status();
       return freed_blk->data;
@@ -228,7 +228,7 @@ struct linear_allocator_t {
       DEBUG_LOG("free: invalid magic %p", block->magic);
       return;
     }
-    DEBUG_LOG("free: %p", block->data_size());
+    // DEBUG_LOG("free: %p", block->data_size());
 
     block->free();
     is_free_blocks_merged = false;

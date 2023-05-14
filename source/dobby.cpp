@@ -16,7 +16,15 @@ __attribute__((constructor)) static void ctor() {
 }
 
 PUBLIC int DobbyDestroy(void *address) {
-  features::arm_thumb_fix_addr((uintptr_t &)address);
+  __FUNC_CALL_TRACE__();
+  if (!address) {
+    ERROR_LOG("address is 0x0");
+    return -1;
+  }
+  
+  features::arm_thumb_fix_addr(address);
+  features::apple::arm64e_pac_strip(address);
+
   auto entry = gInterceptor.find((addr_t)address);
   if (entry) {
     gInterceptor.remove((addr_t)address);

@@ -147,21 +147,21 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
       memcpy((void *)(remap_dummy_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
     }
 
-    static __typeof(vm_protect) *vm_protect_impl = nullptr;
-    if (vm_protect_impl == nullptr) {
-      vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("dyld", "vm_protect");
-      if (vm_protect_impl == nullptr) {
-        vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
+    static __typeof(vm_protect) *vm_protect_fn = nullptr;
+    if (vm_protect_fn == nullptr) {
+      vm_protect_fn = (__typeof(vm_protect) *)DobbySymbolResolver("dyld", "vm_protect");
+      if (vm_protect_fn == nullptr) {
+        vm_protect_fn = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
       }
-      vm_protect_impl = (__typeof(vm_protect) *)pac_sign((void * &)vm_protect_impl);
+      pac_sign(vm_protect_fn);
     }
     {
-      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+      kr = vm_protect_fn(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
       KERN_RETURN_ERROR(kr, -1);
 
       memcpy((void *)(patch_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
 
-      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, orig_prot);
+      kr = vm_protect_fn(self_task, remap_dest_page, page_size, false, orig_prot);
       KERN_RETURN_ERROR(kr, -1);
     }
   }

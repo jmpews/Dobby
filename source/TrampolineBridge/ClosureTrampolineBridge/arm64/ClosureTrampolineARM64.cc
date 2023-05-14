@@ -20,9 +20,14 @@ ClosureTrampoline *GenerateClosureTrampoline(void *carry_data, void *carry_handl
   }
 
 #if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
-  auto tramp_size = (addr_t)closure_trampoline_asm_end - (addr_t)closure_trampoline_asm;
+  auto closure_trampoline_asm_end_addr = (addr_t)closure_trampoline_asm_end;
+  features::apple::arm64e_pac_strip(closure_trampoline_asm_end_addr);
+  auto closure_trampoline_asm_addr = (addr_t)closure_trampoline_asm;
+  features::apple::arm64e_pac_strip(closure_trampoline_asm_addr);
+
+  auto tramp_size = closure_trampoline_asm_end_addr - closure_trampoline_asm_addr;
   uint8_t tramp_buf[64] = {0};
-  memcpy(tramp_buf, (void *)&closure_trampoline_asm, tramp_size);
+  memcpy(tramp_buf, (void *)closure_trampoline_asm_addr, tramp_size);
   const uint32_t closure_tramp_off = 9 * 4;
   const uint32_t closure_bridge_addr_off = closure_tramp_off + 8;
   *(addr_t *)(tramp_buf + closure_tramp_off) = (addr_t)closure_tramp;

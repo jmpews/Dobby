@@ -6,7 +6,7 @@
 void instrument_forward_handler(Interceptor::Entry *entry, DobbyRegisterContext *ctx);
 
 extern "C" void instrument_routing_dispatch(Interceptor::Entry *entry, DobbyRegisterContext *ctx) {
-  __FUNC_CALL_TRACE__();
+  // __FUNC_CALL_TRACE__();
   auto instrument_callback_fn = (dobby_instrument_callback_t)entry->pre_handler;
   if (instrument_callback_fn) {
     instrument_callback_fn((void *)entry->addr, ctx);
