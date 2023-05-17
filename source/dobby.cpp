@@ -21,7 +21,7 @@ PUBLIC int DobbyDestroy(void *address) {
     ERROR_LOG("address is 0x0");
     return -1;
   }
-  
+
   features::arm_thumb_fix_addr(address);
   features::apple::arm64e_pac_strip(address);
 
@@ -29,7 +29,8 @@ PUBLIC int DobbyDestroy(void *address) {
   if (entry) {
     gInterceptor.remove((addr_t)address);
     entry->restore_orig_code();
-    delete entry;
+    // FIXME: delete entry safely
+    // delete entry;
     return 0;
   }
 

@@ -6,7 +6,14 @@
 #include <mach-o/nlist.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #define ASSERT(x)
+
+#define assert(x)                                                                                                      \
+  if (!(x)) {                                                                                                          \
+    *(int *)0x41414141 = 0;                                                                                            \
+  }
 
 uintptr_t macho_iterate_symbol_table(char *symbol_name_pattern, nlist_t *symtab, uint32_t symtab_count, char *strtab) {
   for (uint32_t i = 0; i < symtab_count; i++) {
@@ -89,13 +96,25 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode, mach_header_
         (uintptr_t)(cache_header ? cache_header : header) + linkedit_segment_vmaddr - linkedit_segment->fileoff;
   }
 
-  vm_region_start = segments[0]->vmaddr;
-  // skip __LINKEDIT
-  if (strcmp(segments[0]->segname, "__LINKEDIT") == 0) {
-    vm_region_start = segments[1]->vmaddr;
+  vm_region_start = (uintptr_t)-1;
+  vm_region_end = 0;
+  for (int i = 0; i < segments_count; i++) {
+    if (strcmp(segments[i]->segname, "__PAGEZERO") == 0) {
+      continue;
+    }
+    if (strcmp(segments[i]->segname, "__TEXT") == 0) {
+      load_vmaddr = segments[i]->vmaddr;
+    }
+
+    if (vm_region_start > segments[i]->vmaddr) {
+      vm_region_start = segments[i]->vmaddr;
+    }
+
+    if (vm_region_end < segments[i]->vmaddr + segments[i]->vmsize) {
+      vm_region_end = segments[i]->vmaddr + segments[i]->vmsize;
+    }
   }
-  vm_region_end = segments[segments_count - 1]->vmaddr + segments[segments_count - 1]->vmsize;
-  vmaddr = vm_region_start;
+
   vmsize = vm_region_end - vm_region_start;
 
   this->text_seg = text_segment;
@@ -120,6 +139,12 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode, mach_header_
 
   if (dysymtab_cmd)
     this->indirect_symtab = (uint32_t *)(this->linkedit_base + this->dysymtab_cmd->indirectsymoff);
+
+#if 0
+#pragma message("!!! printf used !!!")
+  printf("%p: region: %p - %p, load_vmaddr: %p, vmsize: %p, slide: %p\n", this->header, vm_region_start, vm_region_end,
+         load_vmaddr, vmsize, slide);
+#endif
 }
 
 uintptr_t macho_ctx_t::iterate_symbol_table(const char *symbol_name_pattern) {

@@ -6,8 +6,8 @@
 
 class NearBranchTrampolinePlugin : public RoutingPluginInterface {};
 
-inline bool enable_near_trampoline = false;
+inline bool g_enable_near_trampoline = false;
 
 PUBLIC extern "C" inline void dobby_set_near_trampoline(bool enable) {
-  enable_near_trampoline = enable;
+  g_enable_near_trampoline = enable;
 }

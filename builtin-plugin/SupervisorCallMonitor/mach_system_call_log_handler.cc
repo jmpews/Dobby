@@ -135,7 +135,7 @@ static addr_t fast_get_caller_from_main_binary(DobbyRegisterContext *ctx) {
     addr_t main_header = (addr_t)main.load_address;
 
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");
-    slide = main_header - text_segment->vmaddr;
+    slide = main_header - text_segment->load_vmaddr;
 
     auto text_section = macho_kit_get_section_by_name((mach_header_t *)main_header, "__TEXT", "__text");
     text_section_start = main_header + (addr_t)text_section->offset;

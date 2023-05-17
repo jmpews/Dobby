@@ -34,7 +34,7 @@ struct macho_ctx_t {
   mach_header_t *header;
   mach_header_t *cache_header;
 
-  uintptr_t vmaddr;
+  uintptr_t load_vmaddr;
   size_t vmsize;
   uintptr_t vm_region_start;
   uintptr_t vm_region_end;
@@ -67,7 +67,7 @@ struct macho_ctx_t {
 
   uint8_t *seg_content(segment_command_t *seg) {
     auto header_ = cache_header ? cache_header : header;
-    auto seg_offset = is_runtime_mode ? seg->vmaddr - vmaddr : seg->fileoff;
+    auto seg_offset = is_runtime_mode ? seg->vmaddr - load_vmaddr : seg->fileoff;
     return (uint8_t *)header_ + seg_offset;
   }
 
