@@ -25,38 +25,45 @@
 
 struct simple_linear_allocator_t {
   uint8_t *buffer;
-  uint32_t size;
+  uint32_t size = 0;
   uint32_t capacity;
-  uint8_t *cursor;
+  uint32_t alignment;
 
   simple_linear_allocator_t() = default;
 
-  explicit simple_linear_allocator_t(uint8_t *in_buffer, uint32_t in_capacity) {
-    init(in_buffer, in_capacity);
+  explicit simple_linear_allocator_t(uint8_t *buffer, uint32_t capacity, uint32_t alignment = 8) {
+    init(buffer, capacity, alignment);
   }
 
-  void init(uint8_t *in_buffer, uint32_t in_capacity) {
+  void init(uint8_t *in_buffer, uint32_t in_capacity, uint32_t in_alignment = 8) {
     buffer = in_buffer;
-    size = 0;
     capacity = in_capacity;
-    cursor = buffer + (uintptr_t)buffer % 8;
+    alignment = in_alignment;
+    if(alignment == 0) {
+      alignment = 1;
+    }
+    size = ALIGN_CEIL(buffer, alignment) - (uintptr_t)buffer;
   }
 
-  uint8_t *alloc(uint32_t in_data_size) {
-    in_data_size = ALIGN_CEIL(in_data_size, 8);
-    if (size + in_data_size > capacity) {
+  uint8_t *alloc(uint32_t in_size) {
+    in_size = ALIGN_CEIL(in_size, alignment);
+    if (size + in_size > capacity) {
       return nullptr;
     }
 
-    uint8_t *block = cursor;
-    size += in_data_size;
-    cursor += in_data_size;
-
-    return block;
+    auto data = cursor();
+    // DEBUG_LOG("alloc: %p - %p", data, in_size);
+    
+    size += in_size;
+    return data;
   }
 
   void free(uint8_t *buf) {
     // do nothing
+  }
+
+  uint8_t *cursor() {
+    return buffer + size;
   }
 };
 
