@@ -116,3 +116,6 @@ inline static MemoryAllocator gMemoryAllocator;
 MemoryAllocator *MemoryAllocator::Shared() {
   return &gMemoryAllocator;
 }
+
+#undef min
+#undef max

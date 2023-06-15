@@ -189,12 +189,12 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
+    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s] " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
 #define FATAL_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
+    LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s] " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
 #define __FUNC_CALL_TRACE__() INFO_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__)

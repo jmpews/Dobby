@@ -27,7 +27,7 @@ struct simple_linear_allocator_t {
   uint8_t *buffer;
   uint32_t size = 0;
   uint32_t capacity;
-  uint32_t alignment;
+  uint32_t buitin_alignment;
 
   simple_linear_allocator_t() = default;
 
@@ -38,22 +38,25 @@ struct simple_linear_allocator_t {
   void init(uint8_t *in_buffer, uint32_t in_capacity, uint32_t in_alignment = 8) {
     buffer = in_buffer;
     capacity = in_capacity;
-    alignment = in_alignment;
-    if(alignment == 0) {
-      alignment = 1;
+    buitin_alignment = in_alignment;
+    if (buitin_alignment == 0) {
+      buitin_alignment = 1;
     }
-    size = ALIGN_CEIL(buffer, alignment) - (uintptr_t)buffer;
+    size = 0;
   }
 
-  uint8_t *alloc(uint32_t in_size) {
-    in_size = ALIGN_CEIL(in_size, alignment);
+  uint8_t *alloc(uint32_t in_size, uint32_t in_alignment = 0) {
+    auto alignment = in_alignment ? in_alignment : buitin_alignment;
+    uint32_t gap_size = ALIGN_CEIL((uintptr_t)cursor(), alignment) - (uintptr_t)cursor();
+    size += gap_size;
+
     if (size + in_size > capacity) {
       return nullptr;
     }
 
     auto data = cursor();
     // DEBUG_LOG("alloc: %p - %p", data, in_size);
-    
+
     size += in_size;
     return data;
   }
