@@ -178,18 +178,27 @@ static void ARMRelocateSingleInsn(relo_ctx_t *ctx, int32_t insn) {
         dst_vmaddr = relo_cur_src_vmaddr(ctx) + imm12;
       else
         dst_vmaddr = relo_cur_src_vmaddr(ctx) - imm12;
+
+      Register intermediateReg = Register::R(Rt == pc.code() ? VOLATILE_REGISTER.code() : Rt);
       Register regRt = Register::R(Rt);
 
       auto label = RelocLabel::withData(dst_vmaddr);
       _ AppendRelocLabel(label);
 
-      if (regRt.code() == pc.code()) {
-        _ Ldr(VOLATILE_REGISTER, label);
-        _ ldr(regRt, MemOperand(VOLATILE_REGISTER));
-      } else {
-        _ Ldr(regRt, label);
-        _ ldr(regRt, MemOperand(regRt));
+      /*
+      // save and restore r12 when Rt is pc, not necessary
+      RegisterList intermediateRegList(intermediateReg);
+      if (Rt == pc.code()) {
+        _ push(intermediateRegList);
       }
+      */
+      _ Ldr(intermediateReg, label);
+      _ ldr(regRt, MemOperand(intermediateReg));
+      /*
+      if (Rt == pc.code()) {
+        _ pop(intermediateRegList);
+      }
+      */
 
       is_insn_relocated = true;
     } while (0);
