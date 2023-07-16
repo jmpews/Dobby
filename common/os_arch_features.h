@@ -1,5 +1,6 @@
+#pragma once
+
 #include <cstdint>
-#pragma
 
 #include <sys/types.h>
 #include <stddef.h>

@@ -34,7 +34,7 @@ class ThreadInterface {
 public:
   class Delegate {
   public:
-    virtual void ThreadMain() = 0;
+    [[noreturn]] virtual void ThreadMain() = 0;
   };
 
 public:
