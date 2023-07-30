@@ -4,7 +4,7 @@ typedef struct x86_insn_reader_t {
   const unsigned char *opcode; /* pointer to opcode */
   const unsigned char *modrm;  /* pointer to modrm byte */
 
-  unsigned char        buffer[20];    /* buffer used when few bytes left */
+  unsigned char buffer[20];           /* buffer used when few bytes left */
   const unsigned char *buffer_cursor; /* pointer to buffer_cursor of insn + 1 */
 } x86_insn_reader_t;
 
@@ -30,7 +30,7 @@ static uint8_t peek_byte(const x86_insn_reader_t *rd) {
 
 #define read_uint8 read_byte
 static uint8_t read_byte(x86_insn_reader_t *rd) {
-  DLOG(0, "[x86 insn reader] %p - 1", rd->buffer_cursor);
+  DEBUG_LOG("[x86 insn reader] %p - 1", rd->buffer_cursor);
 
   const unsigned char *p = rd->buffer_cursor;
   rd->buffer_cursor++;
@@ -39,7 +39,7 @@ static uint8_t read_byte(x86_insn_reader_t *rd) {
 
 #define read_uint16 read_word
 static uint16_t read_word(x86_insn_reader_t *rd) {
-  DLOG(0, "[x86 insn reader] %p - 2", rd->buffer_cursor);
+  DEBUG_LOG("[x86 insn reader] %p - 2", rd->buffer_cursor);
 
   const unsigned char *p = rd->buffer_cursor;
   rd->buffer_cursor += 2;
@@ -48,7 +48,7 @@ static uint16_t read_word(x86_insn_reader_t *rd) {
 
 #define read_uint32 read_dword
 static uint32_t read_dword(x86_insn_reader_t *rd) {
-  DLOG(0, "[x86 insn reader] %p - 4", rd->buffer_cursor);
+  DEBUG_LOG("[x86 insn reader] %p - 4", rd->buffer_cursor);
 
   const unsigned char *p = rd->buffer_cursor;
   rd->buffer_cursor += 4;
@@ -57,7 +57,7 @@ static uint32_t read_dword(x86_insn_reader_t *rd) {
 
 #define read_uint64 read_qword
 static uint64_t read_qword(x86_insn_reader_t *rd) {
-  DLOG(0, "[x86 insn reader] %p - 8", rd->buffer_cursor);
+  DEBUG_LOG("[x86 insn reader] %p - 8", rd->buffer_cursor);
 
   uint64_t *p = (uint64_t *)rd->buffer_cursor;
   rd->buffer_cursor += 4;
@@ -65,7 +65,7 @@ static uint64_t read_qword(x86_insn_reader_t *rd) {
 }
 
 static uint32_t read_imm(x86_insn_reader_t *rd, int size) {
-  DLOG(0, "[x86 insn reader] %p", rd->buffer_cursor);
+  DEBUG_LOG("[x86 insn reader] %p", rd->buffer_cursor);
 
   return (size == 8) ? read_byte(rd) : (size == 16) ? read_word(rd) : (size == 32) ? read_dword(rd) : 0;
 }

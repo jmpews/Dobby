@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -35,9 +35,9 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
   return (a.start < b.start);
 }
 
-std::vector<MemRegion> regions;
+tinystl::vector<MemRegion> regions;
 
-const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
   vm_region_submap_info_64 region_submap_info;
@@ -47,7 +47,8 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   natural_t depth = 0;
   while (true) {
     count = VM_REGION_SUBMAP_INFO_COUNT_64;
-    kern_return_t kr = mach_vm_region_recurse(mach_task_self(), (mach_vm_address_t *)&addr, (mach_vm_size_t *)&size, &depth, (vm_region_recurse_info_t)&region_submap_info, &count);
+    kern_return_t kr = mach_vm_region_recurse(mach_task_self(), (mach_vm_address_t *)&addr, (mach_vm_size_t *)&size,
+                                              &depth, (vm_region_recurse_info_t)&region_submap_info, &count);
     if (kr != KERN_SUCCESS) {
       if (kr == KERN_INVALID_ADDRESS) {
         break;
@@ -70,7 +71,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
         permission = MemoryPermission::kNoAccess;
       }
 #if 0
-      DLOG(0, "%p --- %p", addr, addr + size);
+      DEBUG_LOG("%p --- %p", addr, addr + size);
 #endif
       MemRegion region = MemRegion(addr, size, permission);
       regions.push_back(region);
@@ -83,11 +84,11 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   return regions;
 }
 
-static std::vector<RuntimeModule> *modules;
+static tinystl::vector<RuntimeModule> *modules;
 
-const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
+const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   if (modules == nullptr) {
-    modules = new std::vector<RuntimeModule>();
+    modules = new tinystl::vector<RuntimeModule>();
   }
   modules->clear();
 
@@ -104,19 +105,25 @@ const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   uint32_t infoArrayCount = infos->infoArrayCount;
 
   RuntimeModule module = {0};
-  strncpy(module.path, "dummy-placeholder-module", sizeof(module.path));
+  strncpy(module.path, "dummy-placeholder-module", sizeof(module.path) - 1);
   module.load_address = 0;
+  modules->push_back(module);
+
+  strncpy(module.path, infos->dyldPath, sizeof(module.path) - 1);
+  module.load_address = (void *)infos->dyldImageLoadAddress;
   modules->push_back(module);
 
   for (int i = 0; i < infoArrayCount; ++i) {
     const struct dyld_image_info *info = &infoArray[i];
 
     {
-      strncpy(module.path, info->imageFilePath, sizeof(module.path));
+      strncpy(module.path, info->imageFilePath, sizeof(module.path) - 1);
       module.load_address = (void *)info->imageLoadAddress;
       modules->push_back(module);
     }
   }
+
+  modules->sort([](const RuntimeModule &a, const RuntimeModule &b) -> int { return a.load_address < b.load_address; });
 
   return *modules;
 }

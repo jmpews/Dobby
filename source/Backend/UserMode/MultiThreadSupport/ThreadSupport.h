@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "source/Backend/UserMode/Thread/PlatformThread.h"
 
@@ -18,7 +18,7 @@ typedef struct _StackFrame {
 
 // (thead) CallStack base in thread
 typedef struct _CallStack {
-  std::vector<StackFrame *> stackframes;
+  tinystl::vector<StackFrame *> stackframes;
 } CallStack;
 
 // ThreadSupport base on vm_core, support mutipl platforms.

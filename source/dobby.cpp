@@ -1,12 +1,11 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 #include "Interceptor.h"
 
 __attribute__((constructor)) static void ctor() {
-  DLOG(-1, "================================");
-  DLOG(-1, "Dobby");
-  DLOG(-1, "================================");
-
-  DLOG(-1, "dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
+  DEBUG_LOG("================================");
+  DEBUG_LOG("Dobby");
+  DEBUG_LOG("dobby in debug log mode, disable with cmake flag \"-DDOBBY_DEBUG=OFF\"");
+  DEBUG_LOG("================================");
 }
 
 PUBLIC const char *DobbyGetVersion() {
@@ -25,8 +24,8 @@ PUBLIC int DobbyDestroy(void *address) {
     uint32_t buffer_size = entry->origin_insn_size;
     DobbyCodePatch(address, buffer, buffer_size);
     Interceptor::SharedInstance()->remove((addr_t)address);
-    return RT_SUCCESS;
+    return 0;
   }
 
-  return RT_FAILED;
+  return -1;
 }

@@ -15,7 +15,7 @@
 
 #include <vector>
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "logging/logging.h"
 
@@ -161,7 +161,7 @@ PUBLIC int DobbyImportTableReplace(char *image_name, char *symbol_name, void *fa
 #endif
 
 #if 0
-    LOG(1, "resolve image: %s", module.path);
+    INFO_LOG("resolve image: %s", module.path);
 #endif
 
     uint32_t nlist_count = 0;

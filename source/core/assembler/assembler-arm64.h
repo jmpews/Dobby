@@ -1,7 +1,6 @@
-#ifndef CORE_ASSEMBLER_ARM64_H
-#define CORE_ASSEMBLER_ARM64_H
+#pragma once
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/arch/arm64/constants-arm64.h"
 #include "core/arch/arm64/registers-arm64.h"
@@ -525,11 +524,11 @@ public:
   }
 
   void Ldr(Register rt, AssemblerPseudoLabel *label) {
-    if (label->relocated_pos()) {
-      int offset = label->relocated_pos() - buffer_->GetBufferSize();
+    if (label->pos()) {
+      int offset = label->pos() - buffer_->GetBufferSize();
       ldr(rt, offset);
     } else {
-      label->link_to(kLabelImm19, 0, buffer_->GetBufferSize());
+      label->link_to(kLabelImm19, buffer_->GetBufferSize());
       ldr(rt, 0);
     }
   }
@@ -559,5 +558,3 @@ public:
 
 } // namespace arm64
 } // namespace zz
-
-#endif

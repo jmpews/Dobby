@@ -3,7 +3,7 @@
 
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 #include "Interceptor.h"
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

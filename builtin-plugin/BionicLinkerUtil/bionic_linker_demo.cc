@@ -20,7 +20,7 @@ __attribute__((constructor)) static void ctor() {
   void *vm = NULL;
 
   vm = DobbySymbolResolver(lib, "_ZN7android14AndroidRuntime7mJavaVME");
-  LOG(1, "DobbySymbolResolver::vm %p", vm);
+  INFO_LOG("DobbySymbolResolver::vm %p", vm);
 
 #if 0
   linker_disable_namespace_restriction();
@@ -32,5 +32,5 @@ __attribute__((constructor)) static void ctor() {
   handle = linker_dlopen(lib, RTLD_LAZY);
   vm = dlsym(handle, "_ZN7android14AndroidRuntime7mJavaVME");
 #endif
-  LOG(1, "vm %p", vm);
+  INFO_LOG("vm %p", vm);
 }

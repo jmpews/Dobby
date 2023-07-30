@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_ARM64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-arm64.h"
 #include "core/codegen/codegen-arm64.h"
@@ -22,14 +22,17 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
     // adrp, add, br
     _ AdrpAdd(TMP_REG_0, from, to);
     _ br(TMP_REG_0);
-    DLOG(0, "[trampoline] use [adrp, add, br]");
+    DEBUG_LOG("[trampoline] use [adrp, add, br]");
   } else {
     // ldr, br, branch-address
     CodeGen codegen(&turbo_assembler_);
     codegen.LiteralLdrBranch((uint64_t)to);
-    DLOG(0, "[trampoline] use [ldr, br, #label]");
+    DEBUG_LOG("[trampoline] use [ldr, br, #label]");
   }
 #undef _
+
+  // Bind all labels
+  turbo_assembler_.RelocBind();
 
   auto result = turbo_assembler_.GetCodeBuffer()->Copy();
   return result;

@@ -1,6 +1,6 @@
-#pragma  once
+#pragma once
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "InterceptRouting/InterceptRouting.h"
 
@@ -24,7 +24,7 @@ public:
   static void registerPlugin(const char *name, RoutingPluginInterface *plugin);
 
 public:
-  static std::vector<RoutingPluginInterface *> plugins;
+  static tinystl::vector<RoutingPluginInterface *> plugins;
 
   static RoutingPluginInterface *near_branch_trampoline;
 };

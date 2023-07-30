@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_X64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-x64.h"
 

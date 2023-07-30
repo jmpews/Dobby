@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 
@@ -18,7 +18,7 @@ void FunctionWrapperRouting::BuildPreCallRouting() {
   ClosureTrampolineEntry *cte = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)prologue_routing_dispatch);
   this->prologue_dispatch_bridge = cte->address;
 
-  DLOG(0, "Create pre call closure trampoline to 'prologue_routing_dispatch' at %p", cte->address);
+  DEBUG_LOG("Create pre call closure trampoline to 'prologue_routing_dispatch' at %p", cte->address);
 }
 
 // Add post_call(epilogue) handler before `Return` of the origin function, as implementation is replace the origin
@@ -28,8 +28,8 @@ void FunctionWrapperRouting::BuildPostCallRouting() {
   ClosureTrampolineEntry *closure_trampoline_entry;
   // format trampoline
   closure_trampoline_entry = ClosureTrampoline::CreateClosureTrampoline(entry_, (void *)epilogue_routing_dispatch);
-  DLOG(0, "Create post call closure trampoline to 'prologue_routing_dispatch' at %p",
-       closure_trampoline_entry->address);
+  DEBUG_LOG("Create post call closure trampoline to 'prologue_routing_dispatch' at %p",
+            closure_trampoline_entry->address);
 
   this->SetTrampolineTarget(closure_trampoline_entry->address);
   this->epilogue_dispatch_bridge = closure_trampoline_entry->address;

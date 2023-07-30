@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "common_header.h"
+#include "dobby/common.h"
 
 typedef enum { kFunctionInlineHook, kInstructionInstrument } InterceptEntryType;
 

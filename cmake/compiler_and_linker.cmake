@@ -8,6 +8,8 @@ if (NOT DOBBY_DEBUG)
   set(linker_flags "${linker_flags} -Wl,-x -Wl,-S")
 endif ()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
+
 if (SYSTEM.Darwin)
   # set(compiler_flags "${compiler_flags} -nostdinc++")
 elseif (SYSTEM.Android)
@@ -44,7 +46,7 @@ elseif (PROCESSOR.AARCH64)
 endif ()
 
 # sync cxx with c flags
-# set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")
 message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")

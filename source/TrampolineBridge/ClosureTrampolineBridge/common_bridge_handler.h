@@ -1,7 +1,7 @@
 #ifndef CLOSURE_TRAMPOLINE_COMMON_HANDLER_H
 #define CLOSURE_TRAMPOLINE_COMMON_HANDLER_H
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "Interceptor.h"
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"

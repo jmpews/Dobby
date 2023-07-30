@@ -17,7 +17,7 @@
 #include <sys/param.h>
 
 #include "dobby.h"
-#include "common_header.h"
+#include "dobby/common.h"
 
 #define LOG_TAG "PosixFileOperationMonitor"
 
@@ -38,7 +38,7 @@ int fake_open(const char *pathname, int flags, ...) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    LOG(1, "[-] trace open handle: %s", pathname);
+    INFO_LOG("[-] trace open handle: %s", pathname);
 
     if (posix_file_descriptors == NULL) {
       posix_file_descriptors = new std::unordered_map<int, const char *>();
@@ -55,7 +55,7 @@ int fake___open(const char *pathname, int flags, int mode) {
     traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, pathname);
-    LOG(1, "[-] trace open handle: ", pathname);
+    INFO_LOG("[-] trace open handle: ", pathname);
   }
   int result = orig___open(pathname, flags, mode);
   if (result != -1) {
@@ -84,7 +84,7 @@ ssize_t (*orig_read)(int fd, void *buf, size_t count);
 ssize_t fake_read(int fd, void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG(1, "[-] read: %s, buffer: %p, size: %zu", traced_filename, buf, count);
+    INFO_LOG("[-] read: %s, buffer: %p, size: %zu", traced_filename, buf, count);
   }
   return orig_read(fd, buf, count);
 }
@@ -93,7 +93,7 @@ ssize_t (*orig_write)(int fd, const void *buf, size_t count);
 ssize_t fake_write(int fd, const void *buf, size_t count) {
   const char *traced_filename = get_traced_filename(fd, false);
   if (traced_filename) {
-    LOG(1, "[-] write: %s, buffer: %p, size: %zu", traced_filename, buf, count);
+    INFO_LOG("[-] write: %s, buffer: %p, size: %zu", traced_filename, buf, count);
   }
   return orig_write(fd, buf, count);
 }
@@ -101,7 +101,7 @@ int (*orig_close)(int fd);
 int fake_close(int fd) {
   const char *traced_filename = get_traced_filename(fd, true);
   if (traced_filename) {
-    LOG(1, "[-] close: %s", traced_filename);
+    INFO_LOG("[-] close: %s", traced_filename);
     free((void *)traced_filename);
   }
   return orig_close(fd);

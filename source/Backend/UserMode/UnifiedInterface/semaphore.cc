@@ -62,7 +62,7 @@ void Semaphore::Signal() {
   // semaphore is destroyed while sem_post is still executed. A work around is
   // to extend the lifetime of the semaphore.
   if (result != 0) {
-    FATAL("Error when signaling semaphore, errno: %d", errno);
+    ERROR_LOG("Error when signaling semaphore, errno: %d", errno);
   }
 }
 

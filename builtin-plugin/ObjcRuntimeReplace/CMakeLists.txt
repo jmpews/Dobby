@@ -1,5 +1,5 @@
 add_library(objc_runtime_replace
-  objc_runtime_replace.mm
+  dobby_objc_runtime_replace.mm
   )
 
 target_link_libraries(objc_runtime_replace

@@ -49,9 +49,6 @@ const int kMmapFd = -1;
 
 const int kMmapFdOffset = 0;
 
-// ================================================================
-// base :: Thread
-
 using namespace base;
 
 typedef struct thread_handle_t {
@@ -88,24 +85,22 @@ bool ThreadInterface::Create(ThreadInterface::Delegate *delegate, ThreadHandle *
   int err = 0;
   err = pthread_create(&(handle_impl->thread), nullptr, thread_handler_wrapper, delegate);
   if (err != 0) {
-    FATAL("pthread create failed");
+    ERROR_LOG("pthread create failed");
     return false;
   }
   return true;
 }
 
-Thread::Thread(const char *name) {
-  strncpy(name_, name, sizeof(name_));
+OSThread::OSThread(const char *name) {
+  strncpy(name_, name, sizeof(name_) -1);
 }
 
-bool Thread::Start() {
+bool OSThread::Start() {
   if (ThreadInterface::Create(this, &handle_) == false) {
     return false;
   }
   return true;
 }
-
-// --- OSMemory
 
 static int GetProtectionFromMemoryPermission(MemoryPermission access) {
   switch (access) {
@@ -172,8 +167,6 @@ bool OSMemory::SetPermission(void *address, size_t size, MemoryPermission access
   return ret == 0;
 }
 
-// --- OSPrint
-
 void OSPrint::Print(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -186,20 +179,5 @@ void OSPrint::VPrint(const char *format, va_list args) {
   __android_log_vprint(ANDROID_LOG_INFO, ANDROID_LOG_TAG, format, args);
 #else
   vprintf(format, args);
-#endif
-}
-
-void OSPrint::PrintError(const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  VPrintError(format, args);
-  va_end(args);
-}
-
-void OSPrint::VPrintError(const char *format, va_list args) {
-#if defined(ANDROID) && !defined(ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
-#else
-  vfprintf(stderr, format, args);
 #endif
 }

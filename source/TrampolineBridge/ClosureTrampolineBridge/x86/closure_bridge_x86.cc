@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-ia32.h"
 
@@ -104,7 +104,7 @@ asm_func_t get_closure_bridge() {
   auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge = (asm_func_t)code->addr;
 
-  DLOG(0, "[closure bridge]  closure bridge at %p", closure_bridge);
+  DEBUG_LOG("[closure bridge]  closure bridge at %p", closure_bridge);
 #endif
   return closure_bridge;
 }

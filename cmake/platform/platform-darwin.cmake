@@ -21,7 +21,7 @@ set_target_properties(DobbyX PROPERTIES
   XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
   )
 
-if ((SYSTEM.Darwin AND BUILDING_PLUGIN) AND (NOT BUILDING_KERNEL))
+if ((SYSTEM.Darwin AND BUILDING_PLUGIN) AND (NOT DOBBY_BUILD_KERNEL_MODE))
 add_subdirectory(builtin-plugin/Dyld2HideLibrary)
 add_subdirectory(builtin-plugin/ObjcRuntimeHook)
 if (PROCESSOR.AARCH64)

@@ -2,7 +2,6 @@
 
 #include <windows.h>
 
-
 #include "logging/logging.h"
 #include "logging/check_logging.h"
 #include "UnifiedInterface/platform.h"

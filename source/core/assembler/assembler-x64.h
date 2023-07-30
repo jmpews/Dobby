@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/assembler/assembler.h"
@@ -579,9 +579,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocLabel *addr_label = new RelocLabel((uint64_t)function.address());
-      addr_label->link_to(kDisp32_off_9, 0, ip_offset());
-      this->AppendRelocLabel(addr_label);
+      auto label = RelocLabel::withData((uint64_t)function.address());
+      label->link_to(kDisp32_off_9, ip_offset());
+      this->AppendRelocLabel(label);
     }
     nop();
   }

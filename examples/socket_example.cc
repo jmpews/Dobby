@@ -63,14 +63,14 @@ const char *func_short_array[] = {
 
 install_hook(pthread_create, int, pthread_t *thread, const pthread_attr_t *attrs, void *(*start_routine)(void *),
              void *arg, unsigned int create_flags) {
-  LOG(1, "pthread_create: %p", start_routine);
+  INFO_LOG("pthread_create: %p", start_routine);
   return orig_pthread_create(thread, attrs, start_routine, arg, create_flags);
 }
 
 void common_handler(void *address, DobbyRegisterContext *ctx) {
   auto iter = func_map->find(address);
   if (iter != func_map->end()) {
-    LOG(1, "func %s:%p invoke", iter->second, iter->first);
+    INFO_LOG("func %s:%p invoke", iter->second, iter->first);
   }
 }
 
@@ -81,14 +81,14 @@ uint64_t socket_demo_client(void *ctx);
 #if 1
 
 __attribute__((constructor)) static void ctor() {
-  void *func = NULL;
-  log_set_level(0);
+  logger_set_options(0, 0, 0, LOG_LEVEL_DEBUG, false, false);
 
+  void *func = NULL;
   func_map = new std::map<void *, const char *>();
   for (int i = 0; i < sizeof(func_array) / sizeof(char *); ++i) {
     func = DobbySymbolResolver(NULL, func_array[i]);
     if (func == NULL) {
-      LOG(1, "func %s not resolve", func_array[i]);
+      INFO_LOG("func %s not resolve", func_array[i]);
       continue;
     }
     func_map->insert(std::pair<void *, const char *>(func, func_array[i]));
@@ -115,7 +115,7 @@ __attribute__((constructor)) static void ctor() {
   // DobbyImportTableReplace(NULL, "_pthread_create", (void *)fake_pthread_create, (void **)&orig_pthread_create);
 #endif
 
-  install_hook_pthread_create();
+  // install_hook_pthread_create();
 
   pthread_t socket_server;
   pthread_create(&socket_server, NULL, (void *(*)(void *))socket_demo_server, NULL);
@@ -124,8 +124,8 @@ __attribute__((constructor)) static void ctor() {
   pthread_t socket_client;
   pthread_create(&socket_client, NULL, (void *(*)(void *))socket_demo_client, NULL);
 
-  // pthread_join(socket_client, 0);
-  // pthread_join(socket_server, 0);
+  //   pthread_join(socket_client, 0);
+  //   pthread_join(socket_server, 0);
 }
 
 #include <sys/socket.h>
@@ -170,10 +170,10 @@ uint64_t socket_demo_server(void *ctx) {
   }
 
   int ret = recv(new_socket, buffer, 1024, 0);
-  LOG(1, "[server] %s", buffer);
+  INFO_LOG("[server] %s", buffer);
 
   send(new_socket, hello, strlen(hello), 0);
-  LOG(1, "[server] Hello message sent");
+  INFO_LOG("[server] Hello message sent");
   return 0;
 }
 
@@ -202,10 +202,10 @@ uint64_t socket_demo_client(void *ctx) {
   }
 
   send(sock, hello, strlen(hello), 0);
-  LOG(1, "[client] Hello message sent");
+  INFO_LOG("[client] Hello message sent");
 
   int ret = recv(sock, buffer, 1024, 0);
-  LOG(1, "[client] %s", buffer);
+  INFO_LOG("[client] %s", buffer);
   return 0;
 }
 

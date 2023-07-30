@@ -1,4 +1,4 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_IA32) || defined(TARGET_ARCH_X64)
 
 #include "x86_insn_decode.h"
@@ -285,7 +285,7 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
   else if (conf->mode == 32)
     effective_address_bits = (insn->prefix & INSN_PREFIX_ADDRESS_SIZE) ? 16 : 32;
   else {
-    FATAL("16-bit address mode not supported");
+    ERROR_LOG("16-bit address mode not supported");
   }
 
   if (effective_address_bits == 32 || effective_address_bits == 64) {
@@ -554,7 +554,7 @@ void x86_insn_decode(x86_insn_decode_t *insn, uint8_t *buffer, x86_options_t *co
   }
 
 #if 1
-  DLOG(0, "[x86 insn] %s", insn->insn_spec.name);
+  DEBUG_LOG("[x86 insn] %s", insn->insn_spec.name);
 #endif
 
   // set insn length

@@ -1,7 +1,7 @@
 #ifndef FUNCTION_WRAPPER_H
 #define FUNCTION_WRAPPER_H
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "TrampolineBridge/ClosureTrampolineBridge/ClosureTrampoline.h"
 #include "InterceptRouting/InterceptRouting.h"

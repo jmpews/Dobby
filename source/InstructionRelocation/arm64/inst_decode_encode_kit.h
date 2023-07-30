@@ -1,16 +1,16 @@
 #pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 static inline int64_t SignExtend(unsigned long x, int M, int N) {
 #if 1
-  char sign_bit      = bit(x, M - 1);
+  char sign_bit = bit(x, M - 1);
   unsigned long sign_mask = 0 - sign_bit;
   x |= ((sign_mask >> M) << M);
 #else
   x = (long)((long)x << (N - M)) >> (N - M);
 #endif
-  return (int64_t )x;
+  return (int64_t)x;
 }
 
 static inline int64_t decode_imm14_offset(uint32_t instr) {

@@ -1,6 +1,6 @@
 #include "NearMemoryAllocator.h"
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "PlatformUtil/ProcessRuntimeUtility.h"
 
@@ -61,17 +61,17 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromDefaultAllocator(uint32_t si
 
     unused_mem_start = max(unused_mem_start, min_valid_addr);
     unused_mem_end = min(unused_mem_end, max_valid_addr);
-    
+
     // check if invalid
-    if(unused_mem_start >= unused_mem_end)
+    if (unused_mem_start >= unused_mem_end)
       return 0;
-    
 
     // check if has sufficient memory
     if (unused_mem_end - unused_mem_start < size)
       return 0;
-    
-    LOG(0, "[near memory allocator] unused memory from default allocator %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
+
+    DEBUG_LOG("[near memory allocator] unused memory from default allocator %p(%p), within pos: %p, serach_range: %p",
+              unused_mem_start, size, pos, search_range);
     return unused_mem_start;
   };
 
@@ -94,15 +94,14 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromDefaultAllocator(uint32_t si
         continue;
     }
   }
-  
+
   if (!unused_mem)
     return nullptr;
-  
+
   // skip placeholder block
   // FIXME: allocate the placeholder but mark it as freed
   auto placeholder_block_size = unused_mem - arena->cursor_addr;
   arena->allocMemBlock(placeholder_block_size);
-  
 
   auto block = arena->allocMemBlock(size);
   return block;
@@ -115,7 +114,8 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
   min_valid_addr = pos - search_range;
   max_valid_addr = pos + search_range;
 
-  auto check_has_sufficient_memory_between_region = [&](MemRegion region, MemRegion next_region, uint32_t size) -> addr_t {
+  auto check_has_sufficient_memory_between_region = [&](MemRegion region, MemRegion next_region,
+                                                        uint32_t size) -> addr_t {
     addr_t unused_mem_start = region.start + region.size;
     addr_t unused_mem_end = next_region.start;
 
@@ -136,8 +136,9 @@ MemBlock *NearMemoryAllocator::allocateNearBlockFromUnusedRegion(uint32_t size, 
     // check if has sufficient memory
     if (unused_mem_end - unused_mem_start < size)
       return 0;
-    
-    DLOG(0, "[near memory allocator] unused memory from unused region %p(%p), within pos: %p, serach_range: %p", unused_mem_start, size, pos, search_range);
+
+    DEBUG_LOG("[near memory allocator] unused memory from unused region %p(%p), within pos: %p, serach_range: %p",
+              unused_mem_start, size, pos, search_range);
     return unused_mem_start;
   };
 
@@ -205,7 +206,7 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint32_t size, addr_t pos, 
   if (!block)
     return nullptr;
 
-  DLOG(0, "[near memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
+  DEBUG_LOG("[near memory allocator] allocate exec memory at: %p, size: %p", block->addr, block->size);
   return (uint8_t *)block->addr;
 }
 
@@ -213,7 +214,7 @@ uint8_t *NearMemoryAllocator::allocateNearExecMemory(uint8_t *buffer, uint32_t b
                                                      size_t search_range) {
   auto mem = allocateNearExecMemory(buffer_size, pos, search_range);
   auto ret = DobbyCodePatch(mem, buffer, buffer_size);
-  CHECK_EQ(ret, kMemoryOperationSuccess);
+  CHECK_EQ(ret, 0);
   return mem;
 }
 
@@ -222,7 +223,7 @@ uint8_t *NearMemoryAllocator::allocateNearDataMemory(uint32_t size, addr_t pos, 
   if (!block)
     return nullptr;
 
-  DLOG(0, "[near memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
+  DEBUG_LOG("[near memory allocator] allocate data memory at: %p, size: %p", block->addr, block->size);
   return (uint8_t *)block->addr;
 }
 

@@ -1,5 +1,5 @@
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "logging/logging.h"
 
@@ -64,7 +64,7 @@ void post_call_forward_handler(DobbyRegisterContext *ctx, InterceptEntry *entry)
 
 // run the user handler **before run the origin-instructions(which have been relocated)**
 void prologue_routing_dispatch(DobbyRegisterContext *ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
-  DLOG(0, "Catch prologue dispatch");
+  DEBUG_LOG("Catch prologue dispatch");
   InterceptEntry *entry = static_cast<InterceptEntry *>(closure_trampoline_entry->carry_data);
   pre_call_forward_handler(ctx, entry);
   return;
@@ -72,7 +72,7 @@ void prologue_routing_dispatch(DobbyRegisterContext *ctx, ClosureTrampolineEntry
 
 // run the user handler **before the function return** by replace the lr register
 void epilogue_routing_dispatch(DobbyRegisterContext *ctx, ClosureTrampolineEntry *closure_trampoline_entry) {
-  DLOG(0, "Catch epilogue dispatch");
+  DEBUG_LOG("Catch epilogue dispatch");
   InterceptEntry *entry = static_cast<InterceptEntry *>(closure_trampoline_entry->carry_data);
   post_call_forward_handler(ctx, entry);
   return;

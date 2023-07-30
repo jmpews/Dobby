@@ -1,4 +1,4 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
 #include "core/codegen/codegen-ia32.h"

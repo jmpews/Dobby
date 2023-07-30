@@ -1,10 +1,10 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include <windows.h>
 
 using namespace zz;
 
-PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
+PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) {
   DWORD oldProtect;
   int page_size;
 
@@ -23,5 +23,5 @@ PUBLIC MemoryOperationError DobbyCodePatch(void *address, uint8_t *buffer, uint3
   if (!VirtualProtect(addressPageAlign, page_size, oldProtect, &oldProtect))
     return kMemoryOperationError;
 
-  return kMemoryOperationSuccess;
+  return 0;
 }

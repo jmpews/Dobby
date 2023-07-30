@@ -1,7 +1,7 @@
 #ifndef CORE_ARCH_CPU_FEATURE_H
 #define CORE_ARCH_CPU_FEATURE_H
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 class CpuFeatures {
 private:

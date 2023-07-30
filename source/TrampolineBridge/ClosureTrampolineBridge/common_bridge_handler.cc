@@ -3,8 +3,8 @@
 #include "TrampolineBridge/ClosureTrampolineBridge/common_bridge_handler.h"
 
 PUBLIC void common_closure_bridge_handler(DobbyRegisterContext *ctx, ClosureTrampolineEntry *entry) {
-  DLOG(0, "common bridge handler: carry data: %p, carry handler: %p", (InterceptEntry *)entry->carry_data,
-       entry->carry_handler);
+  DEBUG_LOG("common bridge handler: carry data: %p, carry handler: %p", (InterceptEntry *)entry->carry_data,
+            entry->carry_handler);
 
   typedef void (*routing_handler_t)(InterceptEntry *, DobbyRegisterContext *);
   auto routing_handler = (routing_handler_t)entry->carry_handler;

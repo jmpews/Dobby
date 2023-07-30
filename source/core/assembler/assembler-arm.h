@@ -1,7 +1,6 @@
-#ifndef CORE_ASSEMBLER_ARM_H
-#define CORE_ASSEMBLER_ARM_H
+#pragma once
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/arch/arm/registers-arm.h"
@@ -319,12 +318,12 @@ public:
   }
 
   void Ldr(Register rt, AssemblerPseudoLabel *label) {
-    if (label->relocated_pos()) {
-      int offset = label->relocated_pos() - buffer_->GetBufferSize();
+    if (label->pos()) {
+      int offset = label->pos() - buffer_->GetBufferSize();
       ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(kLdrLiteral, 0, buffer_->GetBufferSize());
+      label->link_to(kLdrLiteral, buffer_->GetBufferSize());
       ldr(rt, MemOperand(pc, 0));
     }
   }
@@ -345,7 +344,7 @@ public:
       auto val = data_label->data<int32_t>();
       auto iter = relocated_offset_map->find(val);
       if (iter != relocated_offset_map->end()) {
-        data_label->fixup_data<int32_t>(iter->second);
+        data_label->fixupData<int32_t>(iter->second);
       }
     }
   }
@@ -353,5 +352,3 @@ public:
 
 } // namespace arm
 } // namespace zz
-
-#endif

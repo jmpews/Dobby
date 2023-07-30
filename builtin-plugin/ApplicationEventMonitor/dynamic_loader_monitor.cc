@@ -13,7 +13,7 @@
 
 #include "dobby.h"
 
-#include "common_header.h"
+#include "dobby/common.h"
 
 #define LOG_TAG "DynamicLoaderMonitor"
 
@@ -26,7 +26,7 @@ static void *fake_dlopen(const char *__file, int __mode) {
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, __file);
-    LOG(1, "[-] dlopen handle: %s", __file);
+    INFO_LOG("[-] dlopen handle: %s", __file);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -39,7 +39,7 @@ static void *fake_loader_dlopen(const char *filename, int flags, const void *cal
     char *traced_filename = (char *)malloc(MAXPATHLEN);
     // FIXME: strncpy
     strcpy(traced_filename, filename);
-    LOG(1, "[-] dlopen handle: %s", filename);
+    INFO_LOG("[-] dlopen handle: %s", filename);
     traced_dlopen_handle_list.insert(std::make_pair(result, (const char *)traced_filename));
   }
   return result;
@@ -60,7 +60,7 @@ static void *(*orig_dlsym)(void *__handle, const char *__symbol);
 static void *fake_dlsym(void *__handle, const char *__symbol) {
   const char *traced_filename = get_traced_filename(__handle, false);
   if (traced_filename) {
-    LOG(1, "[-] dlsym: %s, symbol: %s", traced_filename, __symbol);
+    INFO_LOG("[-] dlsym: %s, symbol: %s", traced_filename, __symbol);
   }
   return orig_dlsym(__handle, __symbol);
 }
@@ -69,7 +69,7 @@ static int (*orig_dlclose)(void *__handle);
 static int fake_dlclose(void *__handle) {
   const char *traced_filename = get_traced_filename(__handle, true);
   if (traced_filename) {
-    LOG(1, "[-] dlclose: %s", traced_filename);
+    INFO_LOG("[-] dlclose: %s", traced_filename);
     free((void *)traced_filename);
   }
   return orig_dlclose(__handle);

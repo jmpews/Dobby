@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_ARM64)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-arm64.h"
 #include "core/codegen/codegen-arm64.h"
@@ -21,7 +21,7 @@ static AssemblyCode *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
 #define _ turbo_assembler_.
 
   // [adrp + add + br branch]
-  auto tramp_size = 3 *4;
+  auto tramp_size = 3 * 4;
   auto tramp_mem = NearMemoryAllocator::SharedAllocator()->allocateNearExecMemory(tramp_size, src, ARM64_B_XXX_RANGE);
   if (tramp_mem == nullptr) {
     ERROR_LOG("search near code block failed");
@@ -35,16 +35,15 @@ static AssemblyCode *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
     // use adrp + add + br branch == (3 * 4) trampoline size
     _ AdrpAdd(TMP_REG_0, (uint64_t)tramp_mem, dst);
     _ br(TMP_REG_0);
-    DLOG(0, "forward trampoline use [adrp, add, br]");
+    DEBUG_LOG("forward trampoline use [adrp, add, br]");
   } else {
     // use mov + br == (4 * 5) trampoline size
     _ Mov(TMP_REG_0, dst);
     _ br(TMP_REG_0);
-    DLOG(0, "forward trampoline use  [mov, br]");
+    DEBUG_LOG("forward trampoline use  [mov, br]");
 
     auto tramp_size = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
-    tramp_mem =
-        NearMemoryAllocator::SharedAllocator()->allocateNearExecMemory(tramp_size, src, ARM64_B_XXX_RANGE);
+    tramp_mem = NearMemoryAllocator::SharedAllocator()->allocateNearExecMemory(tramp_size, src, ARM64_B_XXX_RANGE);
     if (tramp_mem == nullptr) {
       ERROR_LOG("Can't found near code chunk");
       return nullptr;

@@ -1,7 +1,7 @@
-#include "platform_macro.h"
+#include "platform_detect_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/assembler/assembler-ia32.h"
 #include "core/codegen/codegen-ia32.h"
@@ -26,7 +26,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
 }
 
 CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
-  DLOG(0, "x86 near branch trampoline enable default");
+  DEBUG_LOG("x86 near branch trampoline enable default");
   return NULL;
 }
 

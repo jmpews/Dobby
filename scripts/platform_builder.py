@@ -9,10 +9,10 @@ import logging
 import argparse
 
 platforms = {
-    "macos": ["x86_64", "arm64", "arm64e"],
-    "iphoneos": ["arm64", "arm64e"],
-    "linux": ["x86", "x86_64", "arm", "arm64"],
-    "android": ["x86", "x86_64", "armeabi-v7a", "arm64-v8a"]
+  "macos": ["x86_64", "arm64", "arm64e"],
+  "iphoneos": ["arm64", "arm64e"],
+  "linux": ["x86", "x86_64", "arm", "arm64"],
+  "android": ["x86", "x86_64", "armeabi-v7a", "arm64-v8a"]
 }
 
 
@@ -26,7 +26,9 @@ class PlatformBuilder(object):
 
   project_dir = ""
   output_dir = ""
-  output_name = ""
+
+  shared_output_name = ""
+  static_output_name = ""
 
   platform = ""
   arch = ""
@@ -60,18 +62,21 @@ class PlatformBuilder(object):
     self.cmake_args += ["-DCMAKE_BUILD_TYPE={}".format(self.cmake_build_type)]
 
     if self.library_build_type == "shared":
-      self.cmake_args += ["-DDOBBY_GENERATE_SHARED=ON"]
+      pass
+      # self.cmake_args += ["-DDOBBY_GENERATE_SHARED=ON"]
     elif self.library_build_type == "static":
-      self.cmake_args += ["-DDOBBY_GENERATE_SHARED=OFF"]
+      pass
+      # self.cmake_args += ["-DDOBBY_GENERATE_SHARED=OFF"]
 
   def build(self):
     subprocess.run(["mkdir", "-p", "{}".format(self.output_dir)], check=True)
     self.cmake_generate_build_system()
 
-    subprocess.run(["make", "-j8", "dobby"], cwd=self.cmake_build_dir, check=True)
+    subprocess.run("cmake --build . --clean-first --target dobby --target dobby_static -- -j8", cwd=self.cmake_build_dir, shell=True, check=True)
 
     os.system(f"mkdir -p {self.output_dir}")
-    os.system(f"cp {self.cmake_build_dir}/{self.output_name} {self.output_dir}")
+    os.system(f"cp {self.cmake_build_dir}/{self.shared_output_name} {self.output_dir}")
+    os.system(f"cp {self.cmake_build_dir}/{self.static_output_name} {self.output_dir}")
 
 
 class WindowsPlatformBuilder(PlatformBuilder):
@@ -85,15 +90,15 @@ class WindowsPlatformBuilder(PlatformBuilder):
       self.output_name = "libdobby.lib"
 
     triples = {
-        "x86": "i686-pc-windows-msvc",
-        "x64": "x86_64-pc-windows-msvc",
-        # "arm": "arm-pc-windows-msvc",
-        "arm64": "arm64-pc-windows-msvc",
+      "x86": "i686-pc-windows-msvc",
+      "x64": "x86_64-pc-windows-msvc",
+      # "arm": "arm-pc-windows-msvc",
+      "arm64": "arm64-pc-windows-msvc",
     }
 
     # self.cmake_args += ["--target {}".format(triples[arch])]
     self.cmake_args += [
-        "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
+      "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
     ]
 
 
@@ -102,22 +107,20 @@ class LinuxPlatformBuilder(PlatformBuilder):
   def __init__(self, project_dir, library_build_type, arch):
     super().__init__(project_dir, library_build_type, "linux", arch)
 
-    if self.library_build_type == "shared":
-      self.output_name = "libdobby.so"
-    else:
-      self.output_name = "libdobby.a"
+    self.shared_output_name = "libdobby.so"
+    self.static_output_name = "libdobby.a"
 
     targets = {
-        "x86": "i686-linux-gnu",
-        "x86_64": "x86_64-linux-gnu",
-        "arm": "arm-linux-gnueabi",
-        "aarch64": "aarch64-linux-gnu",
+      "x86": "i686-linux-gnu",
+      "x86_64": "x86_64-linux-gnu",
+      "arm": "arm-linux-gnueabi",
+      "aarch64": "aarch64-linux-gnu",
     }
 
     # self.cmake_args += ["--target={}".format(targets[arch])]
     self.cmake_args += [
-        "-DCMAKE_SYSTEM_NAME=Linux",
-        "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
+      "-DCMAKE_SYSTEM_NAME=Linux",
+      "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
     ]
 
 
@@ -126,18 +129,16 @@ class AndroidPlatformBuilder(PlatformBuilder):
   def __init__(self, android_nkd_dir, project_dir, library_build_type, arch):
     super().__init__(project_dir, library_build_type, "android", arch)
 
-    if self.library_build_type == "shared":
-      self.output_name = "libdobby.so"
-    else:
-      self.output_name = "libdobby.a"
+    self.shared_output_name = "libdobby.so"
+    self.static_output_name = "libdobby.a"
 
     android_api_level = 21
     if arch == "armeabi-v7a" or arch == "x86":
       android_api_level = 19
 
     self.cmake_args += [
-        "-DCMAKE_SYSTEM_NAME=Android", f"-DCMAKE_ANDROID_NDK={android_nkd_dir}", f"-DCMAKE_ANDROID_ARCH_ABI={arch}",
-        f"-DCMAKE_SYSTEM_VERSION={android_api_level}"
+      "-DCMAKE_SYSTEM_NAME=Android", f"-DCMAKE_ANDROID_NDK={android_nkd_dir}", f"-DCMAKE_ANDROID_ARCH_ABI={arch}",
+      f"-DCMAKE_SYSTEM_VERSION={android_api_level}"
     ]
 
 
@@ -147,8 +148,8 @@ class DarwinPlatformBuilder(PlatformBuilder):
     super().__init__(project_dir, library_build_type, platform, arch)
 
     self.cmake_args += [
-        "-DCMAKE_OSX_ARCHITECTURES={}".format(arch),
-        "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
+      "-DCMAKE_OSX_ARCHITECTURES={}".format(arch),
+      "-DCMAKE_SYSTEM_PROCESSOR={}".format(arch),
     ]
 
     if platform == "macos":
@@ -156,10 +157,8 @@ class DarwinPlatformBuilder(PlatformBuilder):
     elif platform == "iphoneos":
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3"]
 
-    if self.library_build_type == "shared":
-      self.output_name = "libdobby.dylib"
-    else:
-      self.output_name = "libdobby.a"
+    self.shared_output_name = "libdobby.dylib"
+    self.static_output_name = "libdobby.a"
 
   @classmethod
   def lipo_create_fat(cls, project_dir, platform, output_name):
@@ -169,7 +168,9 @@ class DarwinPlatformBuilder(PlatformBuilder):
       file = f"{project_dir}/build/{platform}/{arch}/{output_name}"
       files.append(file)
 
-    cmd = ["lipo", "-create"] + files + ["-output", f"{project_dir}/build/{platform}/{output_name}"]
+    fat_output_dir = f"{project_dir}/build/{platform}/universal"
+    subprocess.run(["mkdir", "-p", "{}".format(fat_output_dir)], check=True)
+    cmd = ["lipo", "-create"] + files + ["-output", f"{fat_output_dir}/{output_name}"]
     subprocess.run(cmd, check=True)
 
 
@@ -218,6 +219,7 @@ if __name__ == "__main__":
     archs.append(arch)
   logging.info("build platform: {}, archs: {}".format(platform, archs))
 
+  builder: PlatformBuilder = None
   for arch_ in archs:
     if platform == "macos":
       builder = DarwinPlatformBuilder(project_dir, library_build_type, platform, arch_)
@@ -231,10 +233,10 @@ if __name__ == "__main__":
       logging.error("invalid platform {}".format(platform))
       sys.exit(-1)
     logging.info(
-        f"build platform: {platform}, arch: {arch_}, cmake_build_dir: {builder.cmake_build_dir}, output_dir: {builder.output_dir}"
+      f"build platform: {platform}, arch: {arch_}, cmake_build_dir: {builder.cmake_build_dir}, output_dir: {builder.output_dir}"
     )
     builder.build()
 
   if platform in ["iphoneos", "macos"] and arch == "all":
-    output_name = "libdobby.dylib" if library_build_type == "shared" else "libdobby.a"
-    DarwinPlatformBuilder.lipo_create_fat(project_dir, platform, output_name)
+    DarwinPlatformBuilder.lipo_create_fat(project_dir, platform, builder.shared_output_name)
+    DarwinPlatformBuilder.lipo_create_fat(project_dir, platform, builder.static_output_name)

@@ -6,8 +6,8 @@ on:
       - master
 
 env:
-  CMAKE_VERSION: 3.20.2
-  LLVM_VERSION: 14.0.0
+  CMAKE_VERSION: 3.25.2
+  LLVM_VERSION: 15.0.6
   NDK_VERSION: r25b
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       uses: actions/checkout@master
 
     - name: delete latest release
-      uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      uses: dev-drprasad/delete-tag-and-release@v0.2.1
       with:
         delete_release: true
         tag_name: latest

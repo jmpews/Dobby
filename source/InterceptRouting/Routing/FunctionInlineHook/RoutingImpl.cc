@@ -1,4 +1,4 @@
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 #include "InterceptRouting/Routing/FunctionInlineHook/FunctionInlineHookRouting.h"
 
 void FunctionInlineHookRouting::BuildRouting() {

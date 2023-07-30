@@ -1,6 +1,6 @@
 #include "MemoryAllocator/AssemblyCodeBuilder.h"
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 #include "PlatformUnifiedInterface/ExecMemory/CodePatchTool.h"
 
 AssemblyCode *AssemblyCodeBuilder::FinalizeFromTurboAssembler(AssemblerBase *assembler) {

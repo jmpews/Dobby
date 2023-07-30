@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "core/arch/arm64/constants-arm64.h"
 

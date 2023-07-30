@@ -1,6 +1,6 @@
 #include "InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.h"
 
-#include "dobby_internal.h"
+#include "dobby/dobby_internal.h"
 
 #include "MemoryAllocator/NearMemoryAllocator.h"
 

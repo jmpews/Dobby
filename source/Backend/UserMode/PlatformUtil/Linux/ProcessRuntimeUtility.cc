@@ -20,8 +20,8 @@ static bool memory_region_comparator(MemRange a, MemRange b) {
   return (a.start < b.start);
 }
 
-std::vector<MemRegion> regions;
-const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
+tinystl::vector<MemRegion> regions;
+const tinystl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
   FILE *fp = fopen("/proc/self/maps", "r");
@@ -65,7 +65,7 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      FATAL("/proc/self/maps parse failed!");
+      ERROR_LOG("/proc/self/maps parse failed!");
       fclose(fp);
       return regions;
     }
@@ -82,10 +82,10 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
     }
 
 #if 0
-      DLOG(0, "%p --- %p", region_start, region_end);
+      DEBUG_LOG("%p --- %p", region_start, region_end);
 #endif
 
-    MemRegion region = MemRegion(region_start,region_end - region_start, permission);
+    MemRegion region = MemRegion(region_start, region_end - region_start, permission);
     regions.push_back(region);
   }
   std::sort(regions.begin(), regions.end(), memory_region_comparator);
@@ -97,10 +97,10 @@ const std::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
 // ================================================================
 // GetProcessModuleMap
 
-static std::vector<RuntimeModule> *modules;
-static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
-  if(modules == nullptr) {
-    modules = new std::vector<RuntimeModule>();
+static tinystl::vector<RuntimeModule> *modules;
+static tinystl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
+  if (modules == nullptr) {
+    modules = new tinystl::vector<RuntimeModule>();
   }
 
   FILE *fp = fopen("/proc/self/maps", "r");
@@ -144,7 +144,7 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
                "%" PRIxPTR " %hhx:%hhx %ld %n",
                &region_start, &region_end, permissions, &region_offset, &dev_major, &dev_minor, &inode,
                &path_index) < 7) {
-      FATAL("/proc/self/maps parse failed!");
+      ERROR_LOG("/proc/self/maps parse failed!");
       fclose(fp);
       return *modules;
     }
@@ -168,12 +168,12 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
     if (path_buffer[strlen(path_buffer) - 1] == '\n') {
       path_buffer[strlen(path_buffer) - 1] = 0;
     }
-    strncpy(module.path, path_buffer, sizeof(module.path));
+    strncpy(module.path, path_buffer, sizeof(module.path) - 1);
     module.load_address = (void *)region_start;
     modules->push_back(module);
 
 #if 0
-    DLOG(0, "module: %s", module.path);
+    DEBUG_LOG("module: %s", module.path);
 #endif
   }
 
@@ -182,8 +182,8 @@ static std::vector<RuntimeModule> &get_process_map_with_proc_maps() {
 }
 
 #if defined(__LP64__)
-static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
-  std::vector<RuntimeModule> ProcessModuleMap;
+static tinystl::vector<RuntimeModule> get_process_map_with_linker_iterator() {
+  tinystl::vector<RuntimeModule> ProcessModuleMap;
 
   static int (*dl_iterate_phdr_ptr)(int (*)(struct dl_phdr_info *, size_t, void *), void *);
   dl_iterate_phdr_ptr = (__typeof(dl_iterate_phdr_ptr))dlsym(RTLD_DEFAULT, "dl_iterate_phdr");
@@ -207,7 +207,7 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
         }
 
         // push to vector
-        auto ProcessModuleMap = reinterpret_cast<std::vector<RuntimeModule> *>(data);
+        auto ProcessModuleMap = reinterpret_cast<tinystl::vector<RuntimeModule> *>(data);
         ProcessModuleMap->push_back(module);
         return 0;
       },
@@ -217,7 +217,7 @@ static std::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 }
 #endif
 
-const std::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
+const tinystl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
 #if defined(__LP64__) && 0
   // TODO: won't resolve main binary
   return get_process_map_with_linker_iterator();
