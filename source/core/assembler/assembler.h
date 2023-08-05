@@ -3,10 +3,7 @@
 #include "dobby/common.h"
 #include "pseudo_label.h"
 
-class CodeMemBuffer;
-
 namespace zz {
-
 struct ExternalReference {
   void *address;
 
@@ -24,8 +21,7 @@ struct AssemblerBase {
     this->fixed_addr = fixed_addr;
   }
 
-  ~AssemblerBase() {
-  }
+  ~AssemblerBase() = default;
 
   size_t pc_offset() {
     return code_buffer_.size();

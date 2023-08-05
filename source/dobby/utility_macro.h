@@ -60,3 +60,5 @@
 #define PUBLIC __attribute__((visibility("default")))
 #define INTERNAL __attribute__((visibility("internal")))
 #endif
+
+#define ALWAYS_INLINE inline __attribute__((always_inline))

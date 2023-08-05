@@ -66,7 +66,7 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
     vsyslog(LOG_ALERT, fmt_buffer, ap);
 
     static int _logDescriptor = 0;
-    if (_logDescriptor == 0) {
+    if (0 && _logDescriptor == 0) {
       _logDescriptor = socket(AF_UNIX, SOCK_DGRAM, 0);
       if (_logDescriptor != -1) {
         fcntl(_logDescriptor, F_SETFD, FD_CLOEXEC);

@@ -160,12 +160,19 @@ void logger_set_options(void *logger, const char *tag, const char *file, LogLeve
                         bool enable_syslog);
 void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
 
+#if defined(LOG_LEVEL)
+#else
+#define LOG_LEVEL LOG_LEVEL_DEBUG
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
 #define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
+    if (LOG_LEVEL > level)                                                                                             \
+      break;                                                                                                           \
     if (LOG_TAG)                                                                                                       \
       LOG_FUNCTION_IMPL(NULL, level, "[%s] " fmt, LOG_TAG, ##__VA_ARGS__);                                             \
     else                                                                                                               \
@@ -198,7 +205,14 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
     *(uint64_t *)0x41414141 = 0x41414141;                                                                              \
   } while (0)
 
-#define __FUNC_CALL_TRACE__() INFO_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__)
+#if defined(NO_FUNC_CALL_TRACE)
+#define __FUNC_CALL_TRACE__()
+#else
+#define __FUNC_CALL_TRACE__()                                                                                          \
+  do {                                                                                                                 \
+    DEBUG_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__);                                                     \
+  } while (0)
+#endif
 
 #define UNIMPLEMENTED() FATAL_LOG("%s\n", "unimplemented code!!!")
 #define UNREACHABLE() FATAL_LOG("%s\n", "unreachable code!!!")

@@ -30,29 +30,30 @@ class ThreadLocalStorageInterface {
 
 typedef void *ThreadHandle;
 
-class ThreadInterface {
-public:
-  class Delegate {
-  public:
+struct ThreadInterface {
+  base::ThreadHandle handle;
+  int id = 0;
+  char name[256] = {0};
+  uint32_t stack_size = 4 * 1024 * 1024;
+
+  struct Delegate {
     [[noreturn]] virtual void ThreadMain() = 0;
   };
 
-public:
-  static bool Create(Delegate *delegate, ThreadHandle *handle);
+  bool Create(Delegate *delegate);
 
   static int CurrentId();
 
   static void SetName(const char *);
+
+  static void *thread_handler_wrapper(Delegate *ctx);
 };
 } // namespace base
 
-class OSThread : public base::ThreadInterface, public base::ThreadInterface::Delegate {
-  base::ThreadHandle handle_;
-
-  char name_[256];
-
-public:
+struct OSThread : base::ThreadInterface, base::ThreadInterface::Delegate {
   OSThread(const char *name);
+
+  OSThread(const char *name, uint32_t stack_size);
 
   bool Start();
 };
