@@ -8,6 +8,8 @@ InterceptEntry::InterceptEntry(InterceptEntryType type, addr_t address) {
   if (address % 2) {
     address -= 1;
     this->thumb_mode = true;
+  } else {
+    this->thumb_mode = false;
   }
 #endif
 
