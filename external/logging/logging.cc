@@ -37,6 +37,11 @@
 
 #pragma clang diagnostic ignored "-Wformat"
 
+Logger gLogger{};
+Logger *Logger::Shared() {
+  return &gLogger;
+}
+
 void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
   if (level < log_level_)
     return;
@@ -48,10 +53,13 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
   }
 
   if (enable_time_tag_) {
-    time_t now = time(NULL);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    time_t now = tv.tv_sec;
     struct tm *tm = localtime(&now);
-    snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%04d-%02d-%02d %02d:%02d:%02d ",
-             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer),
+             "%04d-%02d-%02d %02d:%02d:%02d.%d ", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
+             tm->tm_min, tm->tm_sec, tv.tv_usec / 1000);
   }
 
   snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%s\n", in_fmt);
@@ -95,8 +103,10 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
     log_file_stream_->write(buffer, strlen(buffer));
     log_file_stream_->flush();
 #else
-    fwrite(buffer, strlen(buffer), 1, log_file_stream_);
-    fflush(log_file_stream_);
+    if (log_file_stream_) {
+      fwrite(buffer, strlen(buffer), 1, log_file_stream_);
+      fflush(log_file_stream_);
+    }
 #endif
   }
 

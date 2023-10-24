@@ -2,7 +2,7 @@
 #define ARCH_X64_REGISTERS
 
 #include "core/arch/x64/constants-x64.h"
-#include "core/arch/Cpu.h"
+#include "core/arch/CpuRegister.h"
 
 namespace zz {
 namespace x64 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dobby/common.h"
-
+#include "MemoryAllocator.h"
 struct MemBuffer {
   uint8_t *buffer;
   uint32_t buffer_size;

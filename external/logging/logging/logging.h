@@ -38,11 +38,6 @@ public:
   bool enable_syslog_;
 
   Logger() {
-    log_tag_ = nullptr;
-    log_file_ = nullptr;
-    log_level_ = LOG_LEVEL_DEBUG;
-    enable_time_tag_ = false;
-    enable_syslog_ = false;
   }
 
   Logger(const char *tag, const char *file, LogLevel level, bool enable_time_tag, bool enable_syslog) {
@@ -135,11 +130,6 @@ public:
     va_end(ap);
   }
 };
-
-inline static Logger gLogger;
-inline Logger *Logger::Shared() {
-  return &gLogger;
-}
 
 #endif
 

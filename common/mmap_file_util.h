@@ -47,7 +47,7 @@ struct MmapFileManager {
       }
 
       // auto align
-      auto mmap_buffer = (uint8_t *)mmap(0, in_map_size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, in_map_off);
+      auto mmap_buffer = (uint8_t *)mmap(0, in_map_size, PROT_READ | PROT_WRITE,  MAP_PRIVATE, fd, in_map_off);
       if (mmap_buffer == MAP_FAILED) {
         // printf("mmap %s failed\n", file_);
         return NULL;
