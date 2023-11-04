@@ -87,9 +87,19 @@ struct NearMemoryAllocator {
       if (!(region->perm & MEM_PERM_X))
         continue;
 
-      auto unused_code_gap = memmem_impl((void *)region->addr(), region->size, invalid_code_seq, in_size);
+      auto intersect = search_range.intersect(*region);
+      if (intersect.size < in_size)
+        continue;
+
+      auto search_start = intersect.addr();
+      auto search_size = intersect.size;
+
+      auto alignmemt = 4;
+      auto unused_code_gap =
+          memmem_impl((void *)search_start, search_size, invalid_code_seq, in_size + (alignmemt - 1));
       if (!unused_code_gap)
         continue;
+      unused_code_gap = (void *)ALIGN_CEIL(unused_code_gap, alignmemt);
       return MemBlock((addr_t)unused_code_gap, (size_t)in_size);
     }
 

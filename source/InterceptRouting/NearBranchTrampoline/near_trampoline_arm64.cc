@@ -12,7 +12,12 @@
 
 using namespace zz::arm64;
 
-#define ARM64_B_XXX_RANGE ((1 << 25) << 2) // signed
+#define assert(x)                                                                                                      \
+  if (!(x)) {                                                                                                          \
+    *(int *)0x41414141 = 0;                                                                                            \
+  }
+
+#define ARM64_B_XXX_RANGE ((1ull << 25) << 2) // signed
 
 static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
   __FUNC_CALL_TRACE__();
@@ -25,6 +30,7 @@ static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
   // [ldr + br + #label]
   auto forward_tramp_insns_needed = 4 * 4;
   auto near_code_block = gNearMemoryAllocator.allocNearCodeBlock(forward_tramp_insns_needed, src, ARM64_B_XXX_RANGE);
+  assert(near_code_block.addr() % 4 == 0 && "address must be aligned to 4 bytes");
   if (!near_code_block.addr()) {
     ERROR_LOG("search near code block failed");
     return {};

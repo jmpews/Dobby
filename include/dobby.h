@@ -112,7 +112,7 @@ typedef struct {
   static fn_ret_t fake_##name(fn_args_t);                                                                              \
   static fn_ret_t (*orig_##name)(fn_args_t);                                                                           \
   /* __attribute__((constructor)) */ static void install_hook_##name(void *sym_addr) {                                 \
-    DobbyHook(sym_addr, (void *)fake_##name, (void * *)&orig_##name);                          \
+    DobbyHook(sym_addr, (void *)fake_##name, (void **)&orig_##name);                                                   \
     return;                                                                                                            \
   }                                                                                                                    \
   fn_ret_t fake_##name(fn_args_t)
@@ -121,7 +121,7 @@ typedef struct {
 int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size);
 
 // function inline hook
-int DobbyHook(void *address, void * fake_func, void * *out_origin_func);
+int DobbyHook(void *address, void *fake_func, void **out_origin_func);
 
 // dynamic binary instruction instrument
 // for Arm64, can't access q8 - q31, unless enable full floating-point register pack
@@ -137,8 +137,7 @@ const char *DobbyGetVersion();
 void *DobbySymbolResolver(const char *image_name, const char *symbol_name);
 
 // import table replace
-int DobbyImportTableReplace(char *image_name, char *symbol_name, void * fake_func,
-                            void * *orig_func);
+int DobbyImportTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func);
 
 // for arm, Arm64, try use b xxx instead of ldr absolute indirect branch
 // for x86, x64, always use absolute indirect jump
