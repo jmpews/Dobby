@@ -155,7 +155,7 @@ class DarwinPlatformBuilder(PlatformBuilder):
     if platform == "macos":
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=Darwin"]
     elif platform == "iphoneos":
-      self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3"]
+      self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3", "-DCMAKE_OSX_SYSROOT=iphoneos"]
 
     self.shared_output_name = "libdobby.dylib"
     self.static_output_name = "libdobby.a"
