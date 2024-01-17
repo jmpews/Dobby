@@ -156,6 +156,11 @@ class DarwinPlatformBuilder(PlatformBuilder):
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=Darwin"]
     elif platform == "iphoneos":
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3"]
+    
+    sdk_name = "macosx" if platform == "macos" else "iphoneos"
+    sdk_path = subprocess.run(f"xcrun --sdk {sdk_name} --show-sdk-path", shell=True, stdout=subprocess.PIPE, check=True)
+    sdk_path = sdk_path.stdout.decode("utf-8").strip()
+    self.cmake_args += [f"-DCMAKE_OSX_SYSROOT={sdk_path}"]
 
     self.shared_output_name = "libdobby.dylib"
     self.static_output_name = "libdobby.a"
