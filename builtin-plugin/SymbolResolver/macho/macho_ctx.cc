@@ -147,6 +147,34 @@ void macho_ctx_t::init(mach_header_t *header, bool is_runtime_mode, mach_header_
 #endif
 }
 
+section_t *macho_ctx_t::sect(char *seg_name, char *sect_name) {
+  load_command *curr_cmd;
+  curr_cmd = (load_command *)((uintptr_t)header + sizeof(mach_header_t));
+  for (int i = 0; i < header->ncmds; i++) {
+    if (curr_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
+      segment_command_t *curr_seg_cmd = (segment_command_t *)curr_cmd;
+      if (strcmp(curr_seg_cmd->segname, seg_name) == 0) {
+        section_t *curr_sect = (section_t *)((uintptr_t)curr_seg_cmd + sizeof(segment_command_t));
+        for (int j = 0; j < curr_seg_cmd->nsects; j++) {
+          if (strcmp(curr_sect->sectname, sect_name) == 0) {
+            return curr_sect;
+          }
+          curr_sect = (section_t *)((uintptr_t)curr_sect + sizeof(section_t));
+        }
+      }
+    }
+    curr_cmd = (load_command *)((uintptr_t)curr_cmd + curr_cmd->cmdsize);
+  }
+  return 0;
+}
+
+uint8_t *macho_ctx_t::sect_content(section_t *sect) {
+  if (is_runtime_mode)
+    return (uint8_t *)sect->addr + slide;
+  else
+    return (uint8_t *)header + sect->offset;
+}
+
 uintptr_t macho_ctx_t::iterate_symbol_table(const char *symbol_name_pattern) {
   nlist_t *symtab = this->symtab;
   uint32_t symtab_count = this->symtab_cmd->nsyms;

@@ -1,10 +1,10 @@
 {
   "cmake.configureArgs": [
+    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     "-DCMAKE_OSX_ARCHITECTURES=arm64",
     "-DCMAKE_SYSTEM_PROCESSOR=arm64",
     "-DDOBBY_BUILD_SILICON=ON",
     "-DCMAKE_VERBOSE_MAKEFILE=ON"
-
   ],
   "cmake.generator": "Ninja",
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",

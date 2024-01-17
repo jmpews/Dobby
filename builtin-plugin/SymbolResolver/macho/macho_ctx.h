@@ -71,6 +71,10 @@ struct macho_ctx_t {
     return (uint8_t *)header_ + seg_offset;
   }
 
+  section_t *sect(char *seg_name, char *sect_name);
+
+  uint8_t *sect_content(section_t *sect);
+
   void init(mach_header_t *header, bool is_runtime_mode, mach_header_t *cache_header);
 
   uintptr_t iterate_symbol_table(const char *symbol_name_pattern);
