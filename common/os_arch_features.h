@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include <sys/types.h>
 #include <stddef.h>
 #include "pac_kit.h"
