@@ -1,6 +1,6 @@
 #include "SupervisorCallMonitor/misc_utility.h"
 #include "dobby/dobby_internal.h"
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 
 #include "misc-helper/async_logger.h"
 
@@ -12,7 +12,7 @@ static const char *fast_get_main_app_bundle_udid() {
   if (main_app_bundle_udid)
     return main_app_bundle_udid;
 
-  auto main = ProcessRuntimeUtility::GetProcessModuleMap()[0];
+  auto main = ProcessRuntime::getModuleMap()[0];
   char main_binary_path[2048] = {0};
   if (realpath(main.path, main_binary_path) == NULL)
     return NULL;
@@ -75,7 +75,7 @@ void supervisor_call_monitor_register_image(void *header) {
 
 void supervisor_call_monitor_register_main_app() {
   const char *main_bundle_udid = fast_get_main_app_bundle_udid();
-  auto module_map = ProcessRuntimeUtility::GetProcessModuleMap();
+  auto module_map = ProcessRuntime::getModuleMap();
   for (auto module : module_map) {
     if (strstr(module.path, main_bundle_udid)) {
       INFO_LOG("[supervisor_call_monitor] %s", module.path);
@@ -101,7 +101,7 @@ struct dyld_cache_header *shared_cache_get_load_addr() {
 return shared_cache_load_addr;
 }
 void supervisor_call_monitor_register_system_kernel() {
-  auto libsystem = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
+  auto libsystem = ProcessRuntime::getModule("libsystem_kernel.dylib");
   addr_t libsystem_header = (addr_t)libsystem.load_address;
   auto text_section = macho_kit_get_section_by_name((mach_header_t *)libsystem_header, "__TEXT", "__text");
 

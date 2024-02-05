@@ -7,7 +7,7 @@
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
 
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 
 #include "macho_ctx.h"
 #include "shared_cache_ctx.h"
@@ -22,7 +22,7 @@
 
 PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name_pattern) {
   uintptr_t result = 0;
-  auto modules = ProcessRuntimeUtility::GetProcessModuleMap();
+  auto modules = ProcessRuntime::getModuleMap();
 
   for (auto iter = modules.begin(); iter != modules.end(); iter++) {
     auto module = *iter;

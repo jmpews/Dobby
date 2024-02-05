@@ -54,7 +54,7 @@ set(dobby.SOURCE_FILE_LIST
   # unified interface
 
   # platform util
-  source/UserMode/PlatformUtil/${platform2}/ProcessRuntimeUtility.cc
+  source/UserMode/PlatformUtil/${platform2}/ProcessRuntime.cc
 
   # user mode - platform interface
   source/UserMode/UnifiedInterface/platform-${platform1}.cc

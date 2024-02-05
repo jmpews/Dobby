@@ -11,7 +11,7 @@
 #include <mach/mach.h>
 
 #include "misc-helper/async_logger.h"
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 #include "SupervisorCallMonitor/misc_utility.h"
 #include "SupervisorCallMonitor/supervisor_call_monitor.h"
 
@@ -131,7 +131,7 @@ static addr_t fast_get_caller_from_main_binary(DobbyRegisterContext *ctx) {
   static addr_t text_section_start = 0, text_section_end = 0;
   static addr_t slide = 0;
   if (text_section_start == 0 || text_section_end == 0) {
-    auto main = ProcessRuntimeUtility::GetProcessModule("mobilex");
+    auto main = ProcessRuntime::getModule("mobilex");
     addr_t main_header = (addr_t)main.load_address;
 
     auto text_segment = macho_kit_get_segment_by_name((mach_header_t *)main_header, "__TEXT");

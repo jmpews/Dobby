@@ -28,20 +28,20 @@ if (SYSTEM.Darwin)
       macho/dobby_symbol_resolver.cc
       macho/macho_file_symbol_resolver.cpp
       macho/shared_cache_ctx.cpp
-      ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
+      ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
       )
   endif ()
 elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
     elf/dobby_symbol_resolver.cc
 
-    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
+    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
     )
 elseif (SYSTEM.Windows)
   set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
     pe/dobby_symbol_resolver.cc
 
-    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
+    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntime.cc
     )
 endif ()
 

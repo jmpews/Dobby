@@ -2,7 +2,7 @@
 
 #include "dobby/common.h"
 #include "MemoryAllocator.h"
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 #include <stdint.h>
 
 #define KB (1024uLL)
@@ -54,7 +54,7 @@ struct NearMemoryAllocator {
   }
 
   MemBlock allocNearCodeBlock(uint32_t in_size, MemRange search_range) {
-    auto regions = ProcessRuntimeUtility::GetProcessMemoryLayout();
+    auto regions = ProcessRuntime::getMemoryLayout();
 
     // search from unused gap between regions
     for (int i = 0; i < regions.size(); ++i) {

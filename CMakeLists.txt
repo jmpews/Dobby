@@ -166,7 +166,7 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
 
 if (SYSTEM.Darwin AND NOT DOBBY_BUILD_KERNEL_MODE)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
+    source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
@@ -176,7 +176,7 @@ if (SYSTEM.Darwin AND NOT DOBBY_BUILD_KERNEL_MODE)
 
 elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
+    source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
@@ -185,7 +185,7 @@ elseif (SYSTEM.Linux OR SYSTEM.Android)
     )
 elseif (SYSTEM.Windows)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
+    source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntime.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-windows.cc
 

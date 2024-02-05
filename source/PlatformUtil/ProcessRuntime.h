@@ -18,11 +18,11 @@ struct MemRegion : MemRange {
   }
 };
 
-class ProcessRuntimeUtility {
+class ProcessRuntime {
 public:
-  static const stl::vector<MemRegion> &GetProcessMemoryLayout();
+  static const stl::vector<MemRegion> &getMemoryLayout();
 
-  static const stl::vector<RuntimeModule> &GetProcessModuleMap();
+  static const stl::vector<RuntimeModule> &getModuleMap();
 
-  static RuntimeModule GetProcessModule(const char *name);
+  static RuntimeModule getModule(const char *name);
 };

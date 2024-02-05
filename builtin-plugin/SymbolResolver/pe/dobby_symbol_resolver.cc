@@ -6,7 +6,7 @@
 #include <string>
 #include <string.h>
 
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 
 #include <vector>
 

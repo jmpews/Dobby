@@ -19,7 +19,7 @@
 
 #include "logging/logging.h"
 
-#include "PlatformUtil/ProcessRuntimeUtility.h"
+#include "PlatformUtil/ProcessRuntime.h"
 
 #if defined(__LP64__)
 typedef struct mach_header_64 mach_header_t;
@@ -144,7 +144,7 @@ static void *get_global_offset_table_stub(mach_header_t *header, char *symbol_na
 }
 
 PUBLIC int DobbyImportTableReplace(char *image_name, char *symbol_name, void *fake_func, void **orig_func_ptr) {
-  std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
+  std::vector<RuntimeModule> ProcessModuleMap = ProcessRuntime::getModuleMap();
 
   for (auto module : ProcessModuleMap) {
     if (image_name != NULL && strstr(module.path, image_name) == NULL)
