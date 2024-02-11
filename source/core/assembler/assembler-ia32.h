@@ -238,20 +238,20 @@ public:
 
 public:
   void Emit1(byte_t val) {
-    buffer_->Emit8(val);
+    buffer_->Emit<int8_t>(val);
   }
 
   void Emit(int32_t value) {
-    buffer_->Emit32(value);
+    buffer_->Emit<int32_t>(value);
   }
 
   // ---
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
-      buffer_->Emit8((uint8_t)imm.value());
+      buffer_->Emit<int8_t>((uint8_t)imm.value());
     } else if (imm_size == 32) {
-      buffer_->Emit32((uint32_t)imm.value());
+      buffer_->Emit<int32_t>((uint32_t)imm.value());
     } else {
       UNREACHABLE();
     }

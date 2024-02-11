@@ -3,7 +3,7 @@
 
 #include "core/assembler/assembler-arm.h"
 
-void PseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
+void PseudoLabel::link_confused_instructions(CodeMemBuffer *buffer) {
   CodeBuffer *_buffer = (CodeBuffer *)buffer;
 
   for (auto &ref_label_insn : ref_insts) {
@@ -32,7 +32,7 @@ void Assembler::EmitARMInst(arm_inst_t instr) {
 }
 
 void Assembler::EmitAddress(uint32_t value) {
-  buffer_->Emit32(value);
+  buffer_->Emit<int32_t>(value);
 }
 
 } // namespace arm

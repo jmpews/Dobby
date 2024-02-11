@@ -213,7 +213,7 @@ struct OpEncode {
     return LeftShift(shift, 2, 22);
   }
 
-  // LogicalImmeidate
+  // LogicalImmediate
   static int32_t EncodeLogicalImmediate(const Register &rd, const Register &rn, const Operand &operand) {
     int64_t imm = operand.immediate();
     int32_t N, imms, immr;

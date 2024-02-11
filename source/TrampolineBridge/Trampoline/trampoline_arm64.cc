@@ -8,7 +8,7 @@
 
 #include "MemoryAllocator/NearMemoryAllocator.h"
 #include "InstructionRelocation/arm64/InstructionRelocationARM64.h"
-#include "source/InterceptRouting/RoutingPlugin.h"
+#include "InterceptRouting/RoutingPlugin.h"
 
 using namespace zz::arm64;
 

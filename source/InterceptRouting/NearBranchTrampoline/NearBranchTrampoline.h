@@ -2,7 +2,7 @@
 
 #include "dobby/dobby_internal.h"
 
-#include "source/InterceptRouting/RoutingPlugin.h"
+#include "InterceptRouting/RoutingPlugin.h"
 
 class NearBranchTrampolinePlugin : public RoutingPluginInterface {};
 

@@ -112,7 +112,6 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # codegen
   source/core/codegen/codegen-arm.cc
   source/core/codegen/codegen-ia32.cc
-  source/core/codegen/codegen-x64.cc
 
   # memory kit
 
@@ -156,6 +155,8 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/TrampolineBridge/ClosureTrampolineBridge/x64/helper_x64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_bridge_x64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x64/ClosureTrampolineX64.cc
+  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_bridge_x64.asm
+  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_trampoline_x64.asm
 
   # plugin register
 

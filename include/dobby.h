@@ -94,17 +94,15 @@ typedef struct _RegisterContext {
 } DobbyRegisterContext;
 #elif defined(_M_X64) || defined(__x86_64__)
 typedef struct {
-  uint64_t dummy_0;
-  uint64_t rsp;
-
   union {
     struct {
       uint64_t rax, rbx, rcx, rdx, rbp, rsp, rdi, rsi, r8, r9, r10, r11, r12, r13, r14, r15;
     } regs;
   } general;
 
-  uint64_t dummy_1;
+  uint64_t dummy_0;
   uint64_t flags;
+  uint64_t ret;
 } DobbyRegisterContext;
 #endif
 

@@ -13,7 +13,7 @@
 
 using namespace zz::arm;
 
-static CodeBufferBase *generate_arm_trampoline(addr32_t from, addr32_t to) {
+static CodeMemBuffer *generate_arm_trampoline(addr32_t from, addr32_t to) {
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
@@ -23,7 +23,7 @@ static CodeBufferBase *generate_arm_trampoline(addr32_t from, addr32_t to) {
   return turbo_assembler_.code_buffer()->Copy();
 }
 
-CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
+CodeMemBuffer *generate_thumb_trampoline(addr32_t from, addr32_t to) {
   ThumbTurboAssembler thumb_turbo_assembler_((void *)from);
 #undef _
 #define _ thumb_turbo_assembler_.
@@ -35,7 +35,7 @@ CodeBufferBase *generate_thumb_trampoline(addr32_t from, addr32_t to) {
   return thumb_turbo_assembler_.code_buffer()->Copy();
 }
 
-CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
+CodeMemBuffer *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   enum ExecuteState { ARMExecuteState, ThumbExecuteState };
 
   // set instruction running state
@@ -55,7 +55,7 @@ CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   return NULL;
 }
 
-CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
+CodeMemBuffer *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
   return NULL;
 }
 

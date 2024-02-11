@@ -333,7 +333,7 @@ public:
     bl(0);
     b(4);
     ldr(pc, MemOperand(pc, -4));
-    buffer_->Emit32((uint32_t)(uintptr_t)function.address());
+    buffer_->Emit<int32_t>((uint32_t)(uintptr_t)function.address());
   }
 
   void Move32Immeidate(Register rd, const Operand &x, Condition cond = AL) {

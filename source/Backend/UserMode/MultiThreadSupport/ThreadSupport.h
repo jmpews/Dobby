@@ -6,7 +6,7 @@
 
 #include "dobby/dobby_internal.h"
 
-#include "source/Backend/UserMode/Thread/PlatformThread.h"
+#include "Backend/UserMode/Thread/PlatformThread.h"
 
 // StackFrame base in CallStack
 typedef struct _StackFrame {

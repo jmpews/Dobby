@@ -13,7 +13,9 @@
 namespace features {
 
 template <typename T> inline T arm_thumb_fix_addr(T &addr) {
+#if defined(__arm__) || defined(__aarch64__)
   addr = (T)((uintptr_t)addr & ~1);
+#endif
   return addr;
 }
 

@@ -10,32 +10,26 @@
 using namespace zz;
 using namespace zz::x64;
 
-static asm_func_t closure_bridge = nullptr;
+extern "C" void closure_bridge_asm();
 
-asm_func_t get_closure_bridge_addr() {
-  // if already initialized, just return.
-  if (closure_bridge)
-    return closure_bridge;
+void closure_bridge_init() {
+  __FUNC_CALL_TRACE__();
 
 // Check if enable the inline-assembly closure_bridge_template
-#if ENABLE_CLOSURE_BRIDGE_TEMPLATE
-
-  extern void closure_bridge_tempate();
-  closure_bridge = closure_bridge_template;
-
+#if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
+  closure_bridge_addr = (asm_func_t)closure_bridge_asm;
 #else
-
-// otherwise, use the Assembler build the closure_bridge
-#define _ turbo_assembler_.
-#define __ turbo_assembler_.code_buffer()->
-
+  // otherwise, use the Assembler build the closure_bridge
   uint8_t *pushfq = (uint8_t *)"\x9c";
   uint8_t *popfq = (uint8_t *)"\x9d";
 
-  TurboAssembler turbo_assembler_(0);
+  TurboAssembler turbo_assembler_;
+#define _ turbo_assembler_. // NOLINT: clang-tidy
+#define __ turbo_assembler_.code_buffer()->
 
   // save flags register
   __ EmitBuffer(pushfq, 1);
+
   // align rsp 16-byte
   _ sub(rsp, Immediate(8, 32));
 
@@ -128,14 +122,10 @@ asm_func_t get_closure_bridge_addr() {
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
-  _ relocDataLabels();
-
-  auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge = (asm_func_t)code->addr;
-
-  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge);
+  auto closure_bridge = AssemblerCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge_addr = (void *)closure_bridge.addr();
+  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge_addr);
 #endif
-  return closure_bridge;
 }
 
 #endif

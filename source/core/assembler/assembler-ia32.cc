@@ -6,15 +6,15 @@
 using namespace zz::x86;
 
 void Assembler::jmp(Immediate imm) {
-  buffer_->Emit8(0xE9);
-  buffer_->Emit32((int)imm.value());
+  buffer_->Emit<int8_t>(0xE9);
+  buffer_->Emit<int32_t>((int)imm.value());
 }
 
 addr32_t TurboAssembler::CurrentIP() {
   return pc_offset() + (addr_t)realized_addr_;
 }
 
-void PseudoLabel::link_confused_instructions(CodeBufferBase *buffer) {
+void PseudoLabel::link_confused_instructions(CodeMemBuffer *buffer) {
   auto _buffer = (CodeBuffer *)buffer;
 
   for (auto &ref_label_insn : ref_insts) {

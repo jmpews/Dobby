@@ -35,7 +35,7 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
   tramp_entry->carry_data = carry_data;
   tramp_entry->carry_handler = carry_handler;
 
-  auto closure_tramp_buffer = static_cast<CodeBufferBase *>(turbo_assembler_.code_buffer());
+  auto closure_tramp_buffer = static_cast<CodeMemBuffer *>(turbo_assembler_.code_buffer());
   DobbyCodePatch(tramp_mem, (uint8_t *)closure_tramp_buffer->GetBuffer(), closure_tramp_buffer->GetBufferSize());
 
   return tramp_entry;

@@ -8,7 +8,7 @@
 
 #include "MemoryAllocator/NearMemoryAllocator.h"
 #include "InstructionRelocation/arm64/InstructionRelocationARM64.h"
-#include "source/InterceptRouting/RoutingPlugin.h"
+#include "InterceptRouting/RoutingPlugin.h"
 
 using namespace zz::arm64;
 
@@ -29,9 +29,9 @@ static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
 
   // [ldr + br + #label]
   auto forward_tramp_insns_needed = 4 * 4;
-  auto near_code_block = gNearMemoryAllocator.allocNearCodeBlock(forward_tramp_insns_needed, src, ARM64_B_XXX_RANGE);
-  assert(near_code_block.addr() % 4 == 0 && "address must be aligned to 4 bytes");
-  if (!near_code_block.addr()) {
+  auto blk = gNearMemoryAllocator.allocNearCodeBlock(forward_tramp_insns_needed, src, ARM64_B_XXX_RANGE);
+  assert(blk.addr() % 4 == 0 && "address must be aligned to 4 bytes");
+  if (!blk.addr()) {
     ERROR_LOG("search near code block failed");
     return {};
   }
@@ -40,7 +40,7 @@ static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
   _ br(TMP_REG_0);
   _ EmitInt64((uint64_t)dst);
 
-  turbo_assembler_.fixed_addr = near_code_block.addr();
+  turbo_assembler_.fixed_addr = blk.addr();
   auto forward_tramp_block = AssemblerCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   auto forward_tramp = new Trampoline(FORWARD_TRAMPOLINE_ARM64, forward_tramp_block);
   DEBUG_LOG("[forward trampoline] trampoline addr: %p, size: %d", forward_tramp->addr(), forward_tramp->size());

@@ -1,8 +1,12 @@
-#ifndef X86_INSN_DECODE_H
-#define X86_INSN_DECODE_H
+#pragma once
 
 #include <stdint.h>
-#include "dobby/common.h"
+
+#include "dobby.h"
+#include "dobby/types.h"
+#include "dobby/platform_features.h"
+#include "dobby/platform_detect_macro.h"
+#include "dobby/utility_macro.h"
 
 typedef enum {
   X86_INSN_SPEC_DEFAULT_64_BIT = 1 << 0,
@@ -55,7 +59,7 @@ typedef union {
     uint8_t code;
     uint8_t type;
   };
-  uint8_t data[2];
+  uint8_t data[3];
 } x86_insn_operand_spec_t;
 
 typedef struct {
@@ -69,7 +73,7 @@ typedef struct {
   uint16_t flags;
 #define X86_INSN_FLAG_SET_SSE_GROUP(n) ((n) << 5)
 #define X86_INSN_FLAG_GET_SSE_GROUP(f) (((f) >> 5) & 0x1f)
-#define X86_INSN_FLAG_SET_MODRM_REG_GROUP(n) (((n)&0x3f) << 10)
+#define X86_INSN_FLAG_SET_MODRM_REG_GROUP(n) (((n) & 0x3f) << 10)
 #define X86_INSN_FLAG_GET_MODRM_REG_GROUP(f) (((f) >> 10) & 0x3f)
 } x86_insn_spec_t;
 
@@ -195,6 +199,4 @@ void x86_insn_decode(x86_insn_decode_t *insn, uint8_t *buffer, x86_options_t *co
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

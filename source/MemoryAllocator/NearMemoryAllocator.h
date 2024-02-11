@@ -39,24 +39,51 @@ PUBLIC inline void dobby_register_alloc_near_code_callback(dobby_alloc_near_code
 }
 
 struct NearMemoryAllocator {
+  stl::vector<simple_linear_allocator_t> code_page_allocators;
+  stl::vector<simple_linear_allocator_t> data_page_allocators;
+
   inline static NearMemoryAllocator *Shared();
 
   MemBlock allocNearCodeBlock(uint32_t in_size, addr_t pos, size_t range) {
     if (custom_alloc_near_code_handler) {
-      auto near_code = custom_alloc_near_code_handler(in_size, pos, range);
-      if (near_code)
-        return MemBlock(near_code, in_size);
+      auto addr = custom_alloc_near_code_handler(in_size, pos, range);
+      if (addr)
+        return {addr, in_size};
     } else {
       auto search_range = MemRange(pos - range, range * 2);
-      return allocNearCodeBlock(in_size, search_range);
+      return allocNearBlock(in_size, search_range, true);
     }
     return {};
   }
 
-  MemBlock allocNearCodeBlock(uint32_t in_size, MemRange search_range) {
-    auto regions = ProcessRuntime::getMemoryLayout();
+  MemBlock allocNearDataBlock(uint32_t in_size, addr_t pos, size_t range) {
+    auto search_range = MemRange(pos - range, range * 2);
+    return allocNearBlock(in_size, search_range, false);
+  }
 
-    // search from unused gap between regions
+  MemBlock allocNearBlock(uint32_t in_size, MemRange search_range, bool is_exec = true) {
+    // step-1: search from allocators first
+    auto allocators = is_exec ? &code_page_allocators : &data_page_allocators;
+    for (auto &allocator : *allocators) {
+      auto cursor = allocator.cursor();
+      auto unused_size = allocator.capacity - allocator.size;
+      auto unused_range = MemRange((addr_t)cursor, unused_size);
+      auto intersect = search_range.intersect(unused_range);
+      if (intersect.size < in_size)
+        continue;
+
+      auto gap_size = intersect.addr() - (addr_t)cursor;
+      if (gap_size) {
+        allocator.alloc(gap_size);
+      }
+
+      auto result = allocator.alloc(in_size);
+      DEBUG_LOG("step-1 allocator: %p, size: %d", (void *)result, in_size);
+      return {(addr_t)result, (size_t)in_size};
+    }
+
+    // step-2: search from unused page between regions
+    auto regions = ProcessRuntime::getMemoryLayout();
     for (int i = 0; i < regions.size(); ++i) {
       auto *region = &regions[i];
       auto *prev_region = i > 0 ? &regions[i - 1] : nullptr;
@@ -72,15 +99,29 @@ struct NearMemoryAllocator {
         continue;
 
       auto unused_page = (void *)ALIGN_FLOOR(intersect.addr(), OSMemory::PageSize());
-      if (OSMemory::Allocate(OSMemory::PageSize(), kReadExecute, unused_page) != unused_page) {
-        ERROR_LOG("allocate unused page failed");
-        continue;
+      {
+        auto page = OSMemory::Allocate(OSMemory::PageSize(), kNoAccess, unused_page);
+        if (page != unused_page) {
+          FATAL_LOG("allocate unused page failed");
+        }
+        OSMemory::SetPermission(unused_page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite);
+        DEBUG_LOG("step-2 unused page: %p", unused_page);
+        auto page_allocator = simple_linear_allocator_t((uint8_t *)unused_page, OSMemory::PageSize());
+        if (is_exec)
+          code_page_allocators.push_back(page_allocator);
+        else
+          data_page_allocators.push_back(page_allocator);
       }
-
-      return MemBlock(intersect.addr(), (size_t)in_size);
+      // should be fallthrough to step-1 allocator
+      return allocNearBlock(in_size, search_range, is_exec);
     }
 
-    // search unused code gap in region
+    // step-3 for exec only
+    if (!is_exec) {
+      return {};
+    }
+
+    // step-3: search unused code gap in regions
     const uint8_t invalid_code_seq[0x1000] = {0};
     for (int i = 0; i < regions.size(); ++i) {
       auto *region = &regions[i];
@@ -100,7 +141,8 @@ struct NearMemoryAllocator {
       if (!unused_code_gap)
         continue;
       unused_code_gap = (void *)ALIGN_CEIL(unused_code_gap, alignmemt);
-      return MemBlock((addr_t)unused_code_gap, (size_t)in_size);
+      DEBUG_LOG("step-3 unused code gap: %p, size: %d", unused_code_gap, in_size);
+      return {(addr_t)unused_code_gap, (size_t)in_size};
     }
 
     return {};

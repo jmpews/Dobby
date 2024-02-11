@@ -98,7 +98,7 @@ public:
   }
 
   void EmitAddress(uint32_t value) {
-    buffer_->Emit32(value);
+    buffer_->Emit<int32_t>(value);
   }
 
   // =====
@@ -277,7 +277,7 @@ public:
   void relocDataLabels() {
     for (auto *data_label : data_labels_) {
       bindLabel(data_label);
-      reinterpret_cast<CodeBufferBase *>(buffer_)->EmitBuffer(data_label->data_, data_label->data_size_);
+      reinterpret_cast<CodeMemBuffer *>(buffer_)->EmitBuffer(data_label->data_, data_label->data_size_);
     }
   }
 
