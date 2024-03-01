@@ -59,8 +59,8 @@ using CodeMemBlock = MemBlock;
 using DataMemBlock = MemBlock;
 
 struct MemoryAllocator {
-  stl::vector<simple_linear_allocator_t> code_page_allocators;
-  stl::vector<simple_linear_allocator_t> data_page_allocators;
+  stl::vector<simple_linear_allocator_t *> code_page_allocators;
+  stl::vector<simple_linear_allocator_t *> data_page_allocators;
 
   inline static MemoryAllocator *Shared();
 
@@ -72,8 +72,8 @@ struct MemoryAllocator {
 
     uint8_t *result = nullptr;
     auto allocators = is_exec ? code_page_allocators : data_page_allocators;
-    for (auto &allocator : allocators) {
-      result = (uint8_t *)allocator.alloc(in_size);
+    for (auto allocator : allocators) {
+      result = (uint8_t *)allocator->alloc(in_size);
       if (result)
         break;
     }
@@ -82,13 +82,13 @@ struct MemoryAllocator {
       {
         auto page = OSMemory::Allocate(OSMemory::PageSize(), kNoAccess);
         OSMemory::SetPermission(page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite);
-        auto page_allocator = simple_linear_allocator_t((uint8_t *)page, OSMemory::PageSize());
+        auto page_allocator = new simple_linear_allocator_t((uint8_t *)page, OSMemory::PageSize());
         if (is_exec)
           code_page_allocators.push_back(page_allocator);
         else
           data_page_allocators.push_back(page_allocator);
       }
-      auto allocator = is_exec ? &code_page_allocators.back() : &data_page_allocators.back();
+      auto allocator = is_exec ? code_page_allocators.back() : data_page_allocators.back();
       result = (uint8_t *)allocator->alloc(in_size);
     }
     return MemBlock((addr_t)result, in_size);

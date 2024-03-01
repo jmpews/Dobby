@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dobby/common.h"
-#include "MemoryAllocator.h"
+#include "Memoryallocator.h"
 #include "PlatformUtil/ProcessRuntime.h"
 #include <stdint.h>
 
@@ -39,8 +39,8 @@ PUBLIC inline void dobby_register_alloc_near_code_callback(dobby_alloc_near_code
 }
 
 struct NearMemoryAllocator {
-  stl::vector<simple_linear_allocator_t> code_page_allocators;
-  stl::vector<simple_linear_allocator_t> data_page_allocators;
+  stl::vector<simple_linear_allocator_t*> code_page_allocators;
+  stl::vector<simple_linear_allocator_t*> data_page_allocators;
 
   inline static NearMemoryAllocator *Shared();
 
@@ -63,10 +63,10 @@ struct NearMemoryAllocator {
 
   MemBlock allocNearBlock(uint32_t in_size, MemRange search_range, bool is_exec = true) {
     // step-1: search from allocators first
-    auto allocators = is_exec ? &code_page_allocators : &data_page_allocators;
-    for (auto &allocator : *allocators) {
-      auto cursor = allocator.cursor();
-      auto unused_size = allocator.capacity - allocator.size;
+    auto allocators = is_exec ? code_page_allocators : data_page_allocators;
+    for (auto allocator : allocators) {
+      auto cursor = allocator->cursor();
+      auto unused_size = allocator->capacity - allocator->size;
       auto unused_range = MemRange((addr_t)cursor, unused_size);
       auto intersect = search_range.intersect(unused_range);
       if (intersect.size < in_size)
@@ -74,10 +74,10 @@ struct NearMemoryAllocator {
 
       auto gap_size = intersect.addr() - (addr_t)cursor;
       if (gap_size) {
-        allocator.alloc(gap_size);
+        allocator->alloc(gap_size);
       }
 
-      auto result = allocator.alloc(in_size);
+      auto result = allocator->alloc(in_size);
       DEBUG_LOG("step-1 allocator: %p, size: %d", (void *)result, in_size);
       return {(addr_t)result, (size_t)in_size};
     }
@@ -106,7 +106,7 @@ struct NearMemoryAllocator {
         }
         OSMemory::SetPermission(unused_page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite);
         DEBUG_LOG("step-2 unused page: %p", unused_page);
-        auto page_allocator = simple_linear_allocator_t((uint8_t *)unused_page, OSMemory::PageSize());
+        auto page_allocator = new simple_linear_allocator_t((uint8_t *)unused_page, OSMemory::PageSize());
         if (is_exec)
           code_page_allocators.push_back(page_allocator);
         else
