@@ -49,7 +49,7 @@ python3 scripts/platform_builder.py --platform=linux --arch=all --cmake_dir=$HOM
 ```
 # prepare and download cmake/llvm/ndk
 sh scripts/setup_linux_cross_compile.sh
-python3 scripts/platform_builder.py --platform=android --arch=all --cmake_dir=$HOME/opt/cmake-3.25.2 --llvm_dir=$HOME/opt/llvm-15.0.6 --android_ndk_dir=$HOME/opt/ndk-r25b
+python3 scripts/platform_builder.py --platform=android --arch=all --cmake_dir=$HOME/opt/cmake-3.25.2 --llvm_dir=$HOME/opt/llvm-15.0.6 --android_ndk_dir=$HOME/opt/ndk-r25b --library_build_type=shared
 ```
 
 ## Build with CMake
