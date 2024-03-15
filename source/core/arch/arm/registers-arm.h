@@ -3,6 +3,7 @@
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/arch/Cpu.h"
+#include <set>
 
 namespace zz {
 namespace arm {
@@ -53,6 +54,45 @@ GENERAL_REGISTERS(DECLARE_REGISTER)
 
 constexpr Register no_reg = Register::Create(0);
 
+class RegisterList {
+public:
+  RegisterList(Register r) {
+    add(r);
+  }
+
+  void add(Register r) {
+    int code = r.code();
+    this->regs.insert(code);
+  };
+
+  void remove(Register r) {
+    int code = r.code();
+    this->regs.erase(code);
+  }
+
+  void clear() {
+    this->regs.clear();
+  }
+
+  uint32_t get_code() {
+    uint32_t code = 0;
+    if (this->regs.size() > 1) {
+      for (std::set<uint32_t>::iterator it = this->regs.begin(); it != this->regs.end(); ++it) {
+        code |= 0x01 << *it;
+      }
+    } else {
+      code = 0x0004 | *this->regs.begin() << 12;
+    }
+    return code;
+  }
+
+  int size() {
+    return this->regs.size();
+  }
+
+protected:
+  std::set<uint32_t> regs;
+};
 } // namespace arm
 } // namespace zz
 #endif

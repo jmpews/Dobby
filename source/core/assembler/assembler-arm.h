@@ -302,6 +302,21 @@ public:
     UNIMPLEMENTED();
   }
 
+  // stack operations
+  void push(RegisterList regs) {
+    uint32_t encoding = regs.size() > 1 ? 0xe92d0000 : 0xe52d0000;
+    push_and_pop(encoding, regs);
+  }
+
+  void pop(RegisterList regs) {
+    uint32_t encoding = regs.size() > 1 ? 0xe8bd0000 : 0xe49d0000;
+    push_and_pop(encoding, regs);
+  }
+
+  void push_and_pop(uint32_t encoding, RegisterList regs) {
+    encoding |= regs.get_code();
+    buffer_->EmitARMInst(encoding);
+  }
 }; // namespace arm
 
 // ---
