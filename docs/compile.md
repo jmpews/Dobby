@@ -3,8 +3,6 @@
 ## CMake build options
 
 ```
-option(DOBBY_GENERATE_SHARED "Build shared library" ON)
-
 option(DOBBY_DEBUG "Enable debug logging" OFF)
 
 option(NearBranch "Enable near branch trampoline" ON)
