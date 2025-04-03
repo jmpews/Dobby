@@ -1,7 +1,7 @@
-#include "platform_detect_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/assembler/assembler-arm.h"
 
@@ -13,7 +13,7 @@ using namespace zz::arm;
 ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_data, void *carry_handler) {
   ClosureTrampolineEntry *tramp_entry = nullptr;
   tramp_entry = new ClosureTrampolineEntry;
-
+  
 #ifdef ENABLE_CLOSURE_TRAMPOLINE_TEMPLATE
 #define CLOSURE_TRAMPOLINE_SIZE (7 * 4)
   // use closure trampoline template code, find the executable memory and patch it.
@@ -24,15 +24,15 @@ ClosureTrampolineEntry *ClosureTrampoline::CreateClosureTrampoline(void *carry_d
 #define _ turbo_assembler_.
   TurboAssembler turbo_assembler_(0);
 
-  PseudoLabel entry_label(0);
-  PseudoLabel forward_bridge_label(0);
+  AssemblerPseudoLabel entry_label;
+  AssemblerPseudoLabel forward_bridge_label;
 
   _ Ldr(r12, &entry_label);
   _ Ldr(pc, &forward_bridge_label);
-  _ bindLabel(&entry_label);
+  _ PseudoBind(&entry_label);
   _ EmitAddress((uint32_t)(uintptr_t)tramp_entry);
-  _ bindLabel(&forward_bridge_label);
-  _ EmitAddress((uint32_t)(uintptr_t)get_closure_bridge_addr());
+  _ PseudoBind(&forward_bridge_label);
+  _ EmitAddress((uint32_t)(uintptr_t)get_closure_bridge());
 
   auto closure_tramp = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   tramp_entry->address = (void *)closure_tramp->addr;

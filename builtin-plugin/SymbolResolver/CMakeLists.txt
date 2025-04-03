@@ -1,53 +1,44 @@
-set(SOURCE_FILE_LIST)
+set(SOURCE_FILE_LIST )
+
+if(NOT DEFINED DOBBY_DIR)
+  message(FATAL_ERROR "DOBBY_DIR must be set!")
+endif()
+
+if(SYSTEM.Darwin AND (NOT BUILDING_KERNEL))
+  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+    ${CMAKE_CURRENT_SOURCE_DIR}/macho/dyld_shared_cache_symbol_table_iterator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/macho/dobby_symbol_resolver.cc
+
+    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
+    )
+endif()
+if(SYSTEM.Darwin AND BUILDING_KERNEL)
+  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+    ${CMAKE_CURRENT_SOURCE_DIR}/macho/dobby_symbol_resolver.cc
+
+    ${DOBBY_DIR}/source/Backend/KernelMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
+    )
+endif()
+if(SYSTEM.Linux OR SYSTEM.Android)
+  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+    ${CMAKE_CURRENT_SOURCE_DIR}/elf/dobby_symbol_resolver.cc
+
+    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
+    )
+endif()
+if(SYSTEM.Windows)
+  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
+    ${CMAKE_CURRENT_SOURCE_DIR}/pe/dobby_symbol_resolver.cc
+    
+    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
+  )
+endif()
+
+add_library(symbol_resolver
+  ${SOURCE_FILE_LIST}
+  )
 
 include_directories(
   .
 )
 
-if (NOT DEFINED DOBBY_DIR)
-  message(FATAL_ERROR "DOBBY_DIR must be set!")
-endif ()
-
-if (SYSTEM.Darwin)
-  add_library(macho_ctx_kit
-    ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/macho/macho_ctx.cc
-    )
-
-  add_library(shared_cache_ctx_kit
-    ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/macho/shared_cache_ctx.cpp
-    )
-
-  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
-    macho/macho_ctx.cc
-    )
-
-  if (NOT DOBBY_BUILD_KERNEL_MODE)
-    set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
-      macho/dobby_symbol_resolver.cc
-      macho/macho_file_symbol_resolver.cpp
-      macho/shared_cache_ctx.cpp
-      ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
-      )
-  endif ()
-elseif (SYSTEM.Linux OR SYSTEM.Android)
-  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
-    elf/dobby_symbol_resolver.cc
-
-    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
-    )
-elseif (SYSTEM.Windows)
-  set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST}
-    pe/dobby_symbol_resolver.cc
-
-    ${DOBBY_DIR}/source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntime.cc
-    )
-endif ()
-
-get_absolute_path_list(SOURCE_FILE_LIST SOURCE_FILE_LIST_)
-set(SOURCE_FILE_LIST ${SOURCE_FILE_LIST_})
-
-add_library(dobby_symbol_resolver
-  ${SOURCE_FILE_LIST}
-  )

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CORE_CODEGEN_X64_H
+#define CORE_CODEGEN_X64_H
 
 #include "core/codegen/codegen.h"
 #include "core/assembler/assembler.h"
@@ -7,23 +8,15 @@
 namespace zz {
 namespace x64 {
 
-struct CodeGen : CodeGenBase {
+class CodeGen : public CodeGenBase {
+public:
   CodeGen(TurboAssembler *turbo_assembler) : CodeGenBase(turbo_assembler) {
   }
 
-  void JmpNearIndirect(addr_t forward_stub_addr) {
-    auto turbo_assembler_ = reinterpret_cast<TurboAssembler *>(this->assembler_);
-#define _ turbo_assembler_->
-#define __ turbo_assembler_->code_buffer_.
-    uint64_t currIP = turbo_assembler_->CurrentIP() + 6;
-    int32_t offset = (int32_t)(forward_stub_addr - currIP);
-
-    // jmp *(rip + disp32)
-    __ Emit<int8_t>(0xff);
-    __ Emit<int8_t>(0x25); // ModR/M: 00 100 101
-    __ Emit<int32_t>(offset);
-  }
+  void JmpNearIndirect(addr_t forward_stub_addr);
 };
 
 } // namespace x64
 } // namespace zz
+
+#endif

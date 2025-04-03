@@ -1,6 +1,7 @@
-#pragma once
+#ifndef CORE_ASSEMBLER_X86_H
+#define CORE_ASSEMBLER_X86_H
 
-#include "dobby/common.h"
+#include "common_header.h"
 
 #include "core/arch/x86/registers-x86.h"
 #include "core/assembler/assembler.h"
@@ -10,6 +11,7 @@
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
 enum ref_label_type_t { kDisp32_off_7 };
+
 
 namespace zz {
 namespace x86 {
@@ -30,6 +32,7 @@ typedef union _ModRM {
 } ModRM;
 
 // ---
+
 
 class Immediate {
 public:
@@ -155,6 +158,7 @@ public:
 
 // ---
 
+
 class Address : public Operand {
 public:
   Address(Register base, int32_t disp) {
@@ -225,6 +229,7 @@ private:
 
 // ---
 
+
 class Assembler : public AssemblerBase {
 public:
   Assembler(void *address) : AssemblerBase(address) {
@@ -238,26 +243,28 @@ public:
 
 public:
   void Emit1(byte_t val) {
-    buffer_->Emit<int8_t>(val);
+    buffer_->Emit8(val);
   }
 
   void Emit(int32_t value) {
-    buffer_->Emit<int32_t>(value);
+    buffer_->Emit32(value);
   }
 
   // ---
 
+
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
-      buffer_->Emit<int8_t>((uint8_t)imm.value());
+      buffer_->Emit8((uint8_t)imm.value());
     } else if (imm_size == 32) {
-      buffer_->Emit<int32_t>((uint32_t)imm.value());
+      buffer_->Emit32((uint32_t)imm.value());
     } else {
       UNREACHABLE();
     }
   }
 
   // ---
+
 
   // ATTENTION:
   // ModR/M == 8 registers and 24 addressing mode
@@ -299,6 +306,7 @@ public:
 
   // ---
 
+
   inline void EmitModRM(uint8_t Mod, uint8_t RegOpcode, uint8_t RM) {
     uint8_t ModRM = 0;
     ModRM |= Mod << 6;
@@ -336,6 +344,7 @@ public:
   }
 
   // ---
+
 
   void pushfq() {
     Emit1(0x9C);
@@ -424,6 +433,9 @@ public:
   }
 };
 
+// ---
+
+
 class TurboAssembler : public Assembler {
 public:
   TurboAssembler(void *address) : Assembler(address) {
@@ -439,9 +451,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      auto label = RelocDataLabel::withData(function.address());
-      label->link_to(kDisp32_off_7, ip_offset());
-      AppendRelocLabel(label);
+      RelocLabel *addr_label = new RelocLabel(function.address());
+      addr_label->link_to(kDisp32_off_7, 0, ip_offset());
+      this->AppendRelocLabel(addr_label);
     }
     nop();
   }
@@ -454,3 +466,5 @@ public:
 
 } // namespace x86
 } // namespace zz
+
+#endif

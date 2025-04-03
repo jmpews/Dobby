@@ -1,12 +1,13 @@
-#pragma once
+#ifndef CORE_ASSEMBLER_ARM64_H
+#define CORE_ASSEMBLER_ARM64_H
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/arch/arm64/constants-arm64.h"
 #include "core/arch/arm64/registers-arm64.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeMemBuffer.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_arm64.h"
 
 #include "InstructionRelocation/arm64/inst_decode_encode_kit.h"
 
@@ -25,6 +26,7 @@ static inline uint32_t Low32Bits(uint64_t value) {
 static inline uint32_t High32Bits(uint64_t value) {
   return static_cast<uint32_t>(value >> 32);
 }
+
 enum ref_label_type_t { kLabelImm19 };
 
 namespace zz {
@@ -40,96 +42,87 @@ constexpr Register TMP_REG_0 = X(ARM64_TMP_REG_NDX_0);
 
 // ---
 
-struct Operand {
-  int64_t immediate_;
-  Register reg_;
-
-  Shift shift_;
-  Extend extend_;
-  int32_t shift_extend_imm_;
-
+class Operand {
+public:
   inline explicit Operand(int64_t imm)
-      : immediate_(imm), reg_(InvalidRegister), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extend_imm_(0) {
+      : immediate_(imm), reg_(InvalidRegister), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extent_imm_(0) {
   }
   inline Operand(Register reg, Shift shift = LSL, int32_t shift_imm = 0)
-      : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extend_imm_(shift_imm) {
+      : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(shift_imm) {
   }
   inline Operand(Register reg, Extend extend, int32_t shift_imm = 0)
-      : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extend_imm_(shift_imm) {
+      : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(shift_imm) {
   }
 
   bool IsImmediate() const {
     return reg_.Is(InvalidRegister);
   }
-
   bool IsShiftedRegister() const {
-    return (shift_ != NO_SHIFT);
+    return /* reg_.IsValid() && */ (shift_ != NO_SHIFT);
   }
-
   bool IsExtendedRegister() const {
-    return (extend_ != NO_EXTEND);
+    return /* reg_.IsValid() && */ (extend_ != NO_EXTEND);
   }
 
   Register reg() const {
+    DCHECK((IsShiftedRegister() || IsExtendedRegister()));
     return reg_;
   }
-
-  int64_t immediate() const {
+  int64_t Immediate() const {
     return immediate_;
   }
-
   Shift shift() const {
+    DCHECK(IsShiftedRegister());
     return shift_;
   }
-
   Extend extend() const {
+    DCHECK(IsExtendedRegister());
     return extend_;
   }
-
   int32_t shift_extend_imm() const {
-    return shift_extend_imm_;
+    return shift_extent_imm_;
   }
+
+private:
+  int64_t immediate_;
+
+  Register reg_;
+
+  Shift shift_;
+  Extend extend_;
+  int32_t shift_extent_imm_;
 };
 
 // ---
 
-struct MemOperand {
-  Register base_;
-  Register reg_offset_;
-  int64_t offset_;
-
-  Shift shift_;
-  Extend extend_;
-  uint32_t shift_extend_imm_;
-
-  AddrMode addrmode_;
-
+class MemOperand {
+public:
   inline explicit MemOperand(Register base, int64_t offset = 0, AddrMode addrmode = Offset)
-      : base_(base), reg_offset_(InvalidRegister), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT),
+      : base_(base), regoffset_(InvalidRegister), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT),
         extend_(NO_EXTEND), shift_extend_imm_(0) {
   }
 
   inline explicit MemOperand(Register base, Register regoffset, Extend extend, unsigned extend_imm)
-      : base_(base), reg_offset_(regoffset), offset_(0), addrmode_(Offset), shift_(NO_SHIFT), extend_(extend),
+      : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(NO_SHIFT), extend_(extend),
         shift_extend_imm_(extend_imm) {
   }
 
   inline explicit MemOperand(Register base, Register regoffset, Shift shift = LSL, unsigned shift_imm = 0)
-      : base_(base), reg_offset_(regoffset), offset_(0), addrmode_(Offset), shift_(shift), extend_(NO_EXTEND),
+      : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(shift), extend_(NO_EXTEND),
         shift_extend_imm_(shift_imm) {
   }
 
   inline explicit MemOperand(Register base, const Operand &offset, AddrMode addrmode = Offset)
-      : base_(base), reg_offset_(InvalidRegister), addrmode_(addrmode) {
+      : base_(base), regoffset_(InvalidRegister), addrmode_(addrmode) {
     if (offset.IsShiftedRegister()) {
-      reg_offset_ = offset.reg();
+      regoffset_ = offset.reg();
       shift_ = offset.shift();
       shift_extend_imm_ = offset.shift_extend_imm();
 
       extend_ = NO_EXTEND;
       offset_ = 0;
     } else if (offset.IsExtendedRegister()) {
-      reg_offset_ = offset.reg();
+      regoffset_ = offset.reg();
       extend_ = offset.extend();
       shift_extend_imm_ = offset.shift_extend_imm();
 
@@ -142,7 +135,7 @@ struct MemOperand {
     return base_;
   }
   const Register &regoffset() const {
-    return reg_offset_;
+    return regoffset_;
   }
   int64_t offset() const {
     return offset_;
@@ -172,12 +165,24 @@ struct MemOperand {
   bool IsPostIndex() const {
     return addrmode_ == PostIndex;
   }
+
+private:
+  Register base_;
+  Register regoffset_;
+
+  int64_t offset_;
+
+  Shift shift_;
+  Extend extend_;
+  uint32_t shift_extend_imm_;
+
+  AddrMode addrmode_;
 };
 
 // ---
 
-struct OpEncode {
-
+class OpEncode {
+public:
   static int32_t sf(const Register &reg, int32_t op) {
     return (op | sf(reg));
   }
@@ -213,9 +218,9 @@ struct OpEncode {
     return LeftShift(shift, 2, 22);
   }
 
-  // LogicalImmediate
+  // LogicalImmeidate
   static int32_t EncodeLogicalImmediate(const Register &rd, const Register &rn, const Operand &operand) {
-    int64_t imm = operand.immediate();
+    int64_t imm = operand.Immediate();
     int32_t N, imms, immr;
     immr = bits(imm, 0, 5);
     imms = bits(imm, 6, 11);
@@ -258,19 +263,30 @@ struct OpEncode {
 
 // ---
 
-struct Assembler : AssemblerBase {
-  Assembler(addr_t fixed_addr) : AssemblerBase(fixed_addr) {
+class Assembler : public AssemblerBase {
+public:
+  Assembler(void *address) : AssemblerBase(address) {
+    buffer_ = new CodeBuffer();
   }
 
   ~Assembler() {
+    if (buffer_)
+      delete buffer_;
+    buffer_ = NULL;
+  }
+
+public:
+  void SetRealizedAddress(void *address) {
+    DCHECK_EQ(0, reinterpret_cast<uint64_t>(address) % 4);
+    AssemblerBase::SetRealizedAddress(address);
   }
 
   void Emit(uint32_t value) {
-    code_buffer_.Emit<uint32_t>(value);
+    buffer_->Emit32(value);
   }
 
   void EmitInt64(int64_t value) {
-    code_buffer_.Emit<int64_t>(value);
+    buffer_->Emit64(value);
   }
 
   void bind(Label *label);
@@ -318,7 +334,13 @@ struct Assembler : AssemblerBase {
 
   void b(int64_t imm) {
     int32_t imm26 = bits(imm >> 2, 0, 25);
+
     Emit(B | imm26);
+  }
+
+  void b(Label *label) {
+    int offset = LinkAndGetByteOffsetTo(label);
+    b(offset);
   }
 
   void br(Register rn) {
@@ -393,9 +415,15 @@ struct Assembler : AssemblerBase {
     }
   }
   void movk(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move and keep.
     MoveWide(rd, imm, shift, MOVK);
   }
+  void movn(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move with non-zero.
+    MoveWide(rd, imm, shift, MOVN);
+  }
   void movz(const Register &rd, uint64_t imm, int shift = -1) {
+    // Move with zero.
     MoveWide(rd, imm, shift, MOVZ);
   }
 
@@ -404,9 +432,13 @@ struct Assembler : AssemblerBase {
   }
 
 private:
+  // label helpers.
+  static constexpr int kStartOfLabelLinkChain = 0;
+  int LinkAndGetByteOffsetTo(Label *label);
+
   // load helpers.
   void EmitLoadRegLiteral(LoadRegLiteralOp op, CPURegister rt, int64_t imm) {
-    const int32_t encoding = op | LeftShift(imm >> 2, 26, 5) | Rt(rt);
+    const int32_t encoding = op | LeftShift(imm, 26, 5) | Rt(rt);
     Emit(encoding);
   }
 
@@ -452,7 +484,7 @@ private:
 
   void AddSubImmediate(const Register &rd, const Register &rn, const Operand &operand, AddSubImmediateOp op) {
     if (operand.IsImmediate()) {
-      int64_t immediate = operand.immediate();
+      int64_t immediate = operand.Immediate();
       int32_t imm12 = LeftShift(immediate, 12, 10);
       Emit(op | Rd(rd) | Rn(rn) | imm12);
     } else {
@@ -479,25 +511,27 @@ private:
 
 // ---
 
-struct TurboAssembler : Assembler {
+class TurboAssembler : public Assembler {
 public:
-  TurboAssembler() : TurboAssembler(0) {
-  }
-
-  TurboAssembler(addr_t fixed_addr) : Assembler(fixed_addr) {
+  TurboAssembler(void *address) : Assembler(address) {
   }
 
   ~TurboAssembler() {
   }
 
   void CallFunction(ExternalReference function) {
-    Mov(TMP_REG_0, (uint64_t)function.address);
+    Mov(TMP_REG_0, (uint64_t)function.address());
     blr(TMP_REG_0);
   }
 
-  void Ldr(Register rt, PseudoLabel *label) {
-    label->link_to(kLabelImm19, pc_offset());
-    ldr(rt, 0);
+  void Ldr(Register rt, AssemblerPseudoLabel *label) {
+    if (label->relocated_pos()) {
+      int offset = label->relocated_pos() - buffer_->GetBufferSize();
+      ldr(rt, offset);
+    } else {
+      label->link_to(kLabelImm19, 0, buffer_->GetBufferSize());
+      ldr(rt, 0);
+    }
   }
 
   void Mov(Register rd, uint64_t imm) {
@@ -526,17 +560,4 @@ public:
 } // namespace arm64
 } // namespace zz
 
-inline void PseudoLabel::link_confused_instructions(CodeMemBuffer *buffer) {
-  for (auto &ref_inst : ref_insts) {
-    int64_t fixup_offset = pos - ref_inst.offset();
-
-    uint32_t inst = buffer->LoadInst(ref_inst.offset());
-    uint32_t new_inst = 0;
-
-    if (ref_inst.link_type == kLabelImm19) {
-      new_inst = encode_imm19_offset(inst, fixup_offset);
-    }
-
-    buffer->RewriteInst(ref_inst.offset(), new_inst);
-  }
-}
+#endif

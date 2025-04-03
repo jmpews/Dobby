@@ -1,6 +1,6 @@
 #include "SupervisorCallMonitor/misc_utility.h"
-#include "dobby/dobby_internal.h"
-#include "PlatformUtil/ProcessRuntime.h"
+#include "dobby_internal.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include "misc-helper/async_logger.h"
 
@@ -12,7 +12,7 @@ static const char *fast_get_main_app_bundle_udid() {
   if (main_app_bundle_udid)
     return main_app_bundle_udid;
 
-  auto main = ProcessRuntime::getModuleMap()[0];
+  auto main = ProcessRuntimeUtility::GetProcessModuleMap()[0];
   char main_binary_path[2048] = {0};
   if (realpath(main.path, main_binary_path) == NULL)
     return NULL;
@@ -75,10 +75,10 @@ void supervisor_call_monitor_register_image(void *header) {
 
 void supervisor_call_monitor_register_main_app() {
   const char *main_bundle_udid = fast_get_main_app_bundle_udid();
-  auto module_map = ProcessRuntime::getModuleMap();
+  auto module_map = ProcessRuntimeUtility::GetProcessModuleMap();
   for (auto module : module_map) {
     if (strstr(module.path, main_bundle_udid)) {
-      INFO_LOG("[supervisor_call_monitor] %s", module.path);
+      LOG(2, "[supervisor_call_monitor] %s", module.path);
       supervisor_call_monitor_register_image((void *)module.load_address);
     }
   }
@@ -101,7 +101,7 @@ struct dyld_cache_header *shared_cache_get_load_addr() {
 return shared_cache_load_addr;
 }
 void supervisor_call_monitor_register_system_kernel() {
-  auto libsystem = ProcessRuntime::getModule("libsystem_kernel.dylib");
+  auto libsystem = ProcessRuntimeUtility::GetProcessModule("libsystem_kernel.dylib");
   addr_t libsystem_header = (addr_t)libsystem.load_address;
   auto text_section = macho_kit_get_section_by_name((mach_header_t *)libsystem_header, "__TEXT", "__text");
 
@@ -131,8 +131,8 @@ void supervisor_call_monitor_init() {
   // create logger file
   char logger_path[1024] = {0};
   sprintf(logger_path, "%s%s", getenv("HOME"), "/Documents/svc_monitor.txt");
-  INFO_LOG("HOME: %s", logger_path);
+  LOG(2, "HOME: %s", logger_path);
   async_logger_init(logger_path);
 
-  dobby_enable_near_trampoline();
+  dobby_enable_near_branch_trampoline();
 }

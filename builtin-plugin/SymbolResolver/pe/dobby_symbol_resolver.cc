@@ -1,12 +1,12 @@
 #include "SymbolResolver/dobby_symbol_resolver.h"
-#include "dobby/common.h"
+#include "common_header.h"
 
 #include <windows.h>
 
 #include <string>
 #include <string.h>
 
-#include "PlatformUtil/ProcessRuntime.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 

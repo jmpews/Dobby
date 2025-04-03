@@ -1,5 +1,5 @@
 #pragma once
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/arch/arm/constants-arm.h"
 #include "core/assembler/assembler-arm.h"
@@ -11,31 +11,28 @@ namespace arm {
 enum ref_label_type_t { kThumb1Ldr, kThumb2LiteralLdr };
 
 // custom thumb pseudo label for thumb/thumb2
-class ThumbPseudoLabel : public PseudoLabel {
+class ThumbPseudoLabel : public AssemblerPseudoLabel {
 public:
-  ThumbPseudoLabel(addr_t addr) : PseudoLabel(addr) {
-  }
-
   // fix the instruction which not link to the label yet.
   void link_confused_instructions(CodeBuffer *buffer) {
     CodeBuffer *_buffer;
     if (buffer)
       _buffer = buffer;
 
-    for (auto &ref_label_insn : ref_insts) {
+    for (auto &ref_label_inst : ref_label_insts_) {
       // instruction offset to label
-      thumb2_inst_t insn = _buffer->LoadThumb2Inst(ref_label_insn.pc_offset);
-      thumb1_inst_t insn1 = _buffer->LoadThumb1Inst(ref_label_insn.pc_offset);
-      thumb1_inst_t insn2 = _buffer->LoadThumb1Inst(ref_label_insn.pc_offset + sizeof(thumb1_inst_t));
+      thumb2_inst_t insn = _buffer->LoadThumb2Inst(ref_label_inst.offset_);
+      thumb1_inst_t insn1 = _buffer->LoadThumb1Inst(ref_label_inst.offset_);
+      thumb1_inst_t insn2 = _buffer->LoadThumb1Inst(ref_label_inst.offset_ + sizeof(thumb1_inst_t));
 
-      switch (ref_label_insn.link_type) {
+      switch (ref_label_inst.type_) {
       case kThumb1Ldr: {
         UNREACHABLE();
       } break;
       case kThumb2LiteralLdr: {
-        int64_t pc = ref_label_insn.pc_offset + Thumb_PC_OFFSET;
+        int64_t pc = ref_label_inst.offset_ + Thumb_PC_OFFSET;
         assert(pc % 4 == 0);
-        int32_t imm12 = pos() - pc;
+        int32_t imm12 = relocated_pos() - pc;
 
         if (imm12 > 0) {
           set_bit(insn1, 7, 1);
@@ -44,10 +41,10 @@ public:
           imm12 = -imm12;
         }
         set_bits(insn2, 0, 11, imm12);
-        _buffer->RewriteThumb1Inst(ref_label_insn.pc_offset, insn1);
-        _buffer->RewriteThumb1Inst(ref_label_insn.pc_offset + Thumb1_INST_LEN, insn2);
+        _buffer->RewriteThumb1Inst(ref_label_inst.offset_, insn1);
+        _buffer->RewriteThumb1Inst(ref_label_inst.offset_ + Thumb1_INST_LEN, insn2);
 
-        DEBUG_LOG("[thumb label link] insn offset %d link offset %d", ref_label_insn.pc_offset, imm12);
+        DLOG(0, "[thumb label link] insn offset %d link offset %d", ref_label_inst.offset_, imm12);
       } break;
       default:
         UNREACHABLE();
@@ -57,15 +54,11 @@ public:
   }
 };
 
-class ThumbRelocLabelEntry : public ThumbPseudoLabel, public RelocDataLabel {
+class ThumbRelocLabelEntry : public ThumbPseudoLabel, public RelocLabel {
 public:
-  ThumbRelocLabelEntry(bool is_pc_register) : RelocDataLabel(), ThumbPseudoLabel(0), is_pc_register_(is_pc_register) {
-  }
-
-  template <typename T> static ThumbRelocLabelEntry *withData(T value, bool is_pc_register) {
-    auto label = new ThumbRelocLabelEntry(is_pc_register);
-    label->setData(value);
-    return label;
+  template <typename T>
+  ThumbRelocLabelEntry(T value, bool is_pc_register)
+      : RelocLabel(value), ThumbPseudoLabel(), is_pc_register_(is_pc_register) {
   }
 
   bool is_pc_register() {
@@ -98,7 +91,7 @@ public:
   }
 
   void EmitAddress(uint32_t value) {
-    buffer_->Emit<int32_t>(value);
+    buffer_->Emit32(value);
   }
 
   // =====
@@ -245,18 +238,18 @@ public:
   }
 
   void T2_Ldr(Register rt, ThumbPseudoLabel *label) {
-    if (label->pos()) {
-      int offset = label->pos() - buffer_->buffer_size();
+    if (label->relocated_pos()) {
+      int offset = label->relocated_pos() - buffer_->GetBufferSize();
       t2_ldr(rt, MemOperand(pc, offset));
     } else {
       // record this ldr, and fix later.
-      label->link_to(kThumb2LiteralLdr, buffer_->buffer_size());
+      label->link_to(kThumb2LiteralLdr, 0, buffer_->GetBufferSize());
       t2_ldr(rt, MemOperand(pc, 0));
     }
   }
 
   void AlignThumbNop() {
-    addr32_t pc = this->code_buffer()->buffer_size() + (uintptr_t)GetRealizedAddress();
+    addr32_t pc = this->GetCodeBuffer()->GetBufferSize() + (uintptr_t)GetRealizedAddress();
     if (pc % Thumb2_INST_LEN) {
       t1_nop();
     } else {
@@ -265,19 +258,19 @@ public:
 
   // ---
 
-  void bindLabel(ThumbPseudoLabel *label) {
-    const addr_t bound_pc = buffer_->buffer_size();
+  void PseudoBind(ThumbPseudoLabel *label) {
+    const addr_t bound_pc = buffer_->GetBufferSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
-      label->link_confused_instructions(code_buffer());
+      label->link_confused_instructions(GetCodeBuffer());
     }
   }
 
-  void relocDataLabels() {
+  void RelocBind() {
     for (auto *data_label : data_labels_) {
-      bindLabel(data_label);
-      reinterpret_cast<CodeMemBuffer *>(buffer_)->EmitBuffer(data_label->data_, data_label->data_size_);
+      PseudoBind(data_label);
+      reinterpret_cast<CodeBufferBase *>(buffer_)->EmitBuffer(data_label->data_, data_label->data_size_);
     }
   }
 
@@ -285,18 +278,18 @@ public:
     data_labels_.push_back(label);
   }
 
-  void RelocLabelFixup(stl::unordered_map<off_t, off_t> *relocated_offset_map) {
+  void RelocLabelFixup(tinystl::unordered_map<off_t, off_t> *relocated_offset_map) {
     for (auto *data_label : data_labels_) {
       auto val = data_label->data<int32_t>();
       auto iter = relocated_offset_map->find(val);
       if (iter != relocated_offset_map->end()) {
-        data_label->fixupData<int32_t>(iter->second);
+        data_label->fixup_data<int32_t>(iter->second);
       }
     }
   }
 
 private:
-  stl::vector<ThumbRelocLabelEntry *> data_labels_;
+  std::vector<ThumbRelocLabelEntry *> data_labels_;
 };
 
 #if 0

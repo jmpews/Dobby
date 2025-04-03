@@ -1,7 +1,7 @@
-#include "platform_detect_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_ARM)
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/assembler/assembler-arm.h"
 
@@ -12,7 +12,7 @@ using namespace zz::arm;
 
 static asm_func_t closure_bridge = nullptr;
 
-asm_func_t get_closure_bridge_addr() {
+asm_func_t get_closure_bridge() {
 
   // if already initialized, just return.
   if (closure_bridge)
@@ -82,7 +82,7 @@ asm_func_t get_closure_bridge_addr() {
   auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge = (asm_func_t)code->addr;
 
-  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge);
+  DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif
   return closure_bridge;
 }

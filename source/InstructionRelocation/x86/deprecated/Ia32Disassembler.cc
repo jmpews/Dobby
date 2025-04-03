@@ -114,7 +114,7 @@ void DecodeInstruction(uint8_t *instr) {
 
 #define UnImplOpcode                                                                                                   \
   do {                                                                                                                 \
-    DEBUG_LOG("opcode unreachable");                                                                                   \
+    DLOG(0, "opcode unreachable");                                                                                     \
   } while (0);                                                                                                         \
   break;
 

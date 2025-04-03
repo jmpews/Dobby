@@ -1,7 +1,7 @@
-#include "platform_detect_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_X64)
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/assembler/assembler-x64.h"
 
@@ -10,26 +10,32 @@
 using namespace zz;
 using namespace zz::x64;
 
-extern "C" void closure_bridge_asm();
+static asm_func_t closure_bridge = nullptr;
 
-void closure_bridge_init() {
-  __FUNC_CALL_TRACE__();
+asm_func_t get_closure_bridge() {
+  // if already initialized, just return.
+  if (closure_bridge)
+    return closure_bridge;
 
 // Check if enable the inline-assembly closure_bridge_template
-#if !defined(BUILD_WITH_TRAMPOLINE_ASSEMBLER) || defined(BUILD_WITH_TRAMPOLINE_ASM)
-  closure_bridge_addr = (asm_func_t)closure_bridge_asm;
+#if ENABLE_CLOSURE_BRIDGE_TEMPLATE
+
+  extern void closure_bridge_tempate();
+  closure_bridge = closure_bridge_template;
+
 #else
-  // otherwise, use the Assembler build the closure_bridge
+
+// otherwise, use the Assembler build the closure_bridge
+#define _ turbo_assembler_.
+#define __ turbo_assembler_.GetCodeBuffer()->
+
   uint8_t *pushfq = (uint8_t *)"\x9c";
   uint8_t *popfq = (uint8_t *)"\x9d";
 
-  TurboAssembler turbo_assembler_;
-#define _ turbo_assembler_. // NOLINT: clang-tidy
-#define __ turbo_assembler_.code_buffer()->
+  TurboAssembler turbo_assembler_(0);
 
   // save flags register
   __ EmitBuffer(pushfq, 1);
-
   // align rsp 16-byte
   _ sub(rsp, Immediate(8, 32));
 
@@ -122,10 +128,14 @@ void closure_bridge_init() {
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
-  auto closure_bridge = AssemblerCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
-  closure_bridge_addr = (void *)closure_bridge.addr();
-  DEBUG_LOG("[closure bridge] closure bridge at %p", closure_bridge_addr);
+  _ RelocBind();
+
+  auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
+  closure_bridge = (asm_func_t)code->addr;
+
+  DLOG(0, "[closure bridge] closure bridge at %p", closure_bridge);
 #endif
+  return closure_bridge;
 }
 
 #endif

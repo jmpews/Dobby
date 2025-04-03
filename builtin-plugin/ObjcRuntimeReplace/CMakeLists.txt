@@ -1,5 +1,5 @@
 add_library(objc_runtime_replace
-  dobby_objc_message_hook.mm
+  objc_runtime_replace.mm
   )
 
 target_link_libraries(objc_runtime_replace

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "dobby/common.h"
+#include "common_header.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/assembler/assembler.h"
 
-#include "MemoryAllocator/CodeMemBuffer.h"
+#include "MemoryAllocator/CodeBuffer/code_buffer_x64.h"
 
 #define IsInt8(imm) (-128 <= imm && imm <= 127)
 
@@ -143,7 +143,7 @@ protected:
   void SetModRM(int mod, Register rm) {
     ASSERT((mod & ~3) == 0);
 
-    if ((rm.code() > 7) && !((rm == r12) && (mod != 3))) {
+    if ((rm.code() > 7) && !((rm.Is(r12)) && (mod != 3))) {
       rex_ |= REX_B;
     }
     encoding_[0] = (mod << 6) | (rm.code() & 7);
@@ -270,23 +270,26 @@ private:
 
 class Assembler : public AssemblerBase {
 public:
-  Assembler(addr_t fixed_addr) : AssemblerBase(fixed_addr) {
+  Assembler(void *address) : AssemblerBase(address) {
+    buffer_ = new CodeBuffer();
   }
-
   ~Assembler() {
+    if (buffer_)
+      delete buffer_;
+    buffer_ = NULL;
   }
 
 public:
   void Emit1(byte_t val) {
-    code_buffer_.Emit<uint8_t>(val);
+    buffer_->Emit8(val);
   }
 
   void Emit(int32_t value) {
-    code_buffer_.Emit<int32_t>(value);
+    buffer_->Emit32(value);
   }
 
   void EmitInt64(int64_t value) {
-    code_buffer_.Emit<int64_t>(value);
+    buffer_->Emit64(value);
   }
 
   // ---
@@ -359,11 +362,11 @@ public:
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
-      code_buffer_.Emit<uint8_t>((uint8_t)imm.value());
+      buffer_->Emit8((uint8_t)imm.value());
     } else if (imm_size == 32) {
-      code_buffer_.Emit<int32_t>((uint32_t)imm.value());
+      buffer_->Emit32((uint32_t)imm.value());
     } else if (imm_size == 64) {
-      code_buffer_.Emit<int64_t>((uint64_t)imm.value());
+      buffer_->Emit64((uint64_t)imm.value());
     } else {
       UNREACHABLE();
     }
@@ -376,7 +379,7 @@ public:
 
   void Emit_OpEn_Register_MemOperand(Register dst, Address &operand) {
     EmitModRM_Update_Register(operand.modrm(), dst);
-    code_buffer_.EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
   void Emit_OpEn_Register_RegOperand(Register dst, Register src) {
@@ -385,7 +388,7 @@ public:
 
   void Emit_OpEn_MemOperand_Immediate(uint8_t extra_opcode, Address &operand, Immediate imm) {
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
-    code_buffer_.EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
     EmitImmediate(imm, imm.size());
   }
 
@@ -396,7 +399,7 @@ public:
 
   void Emit_OpEn_MemOperand(uint8_t extra_opcode, Address &operand) {
     EmitModRM_Update_ExtraOpcode(operand.modrm(), extra_opcode);
-    code_buffer_.EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
+    buffer_->EmitBuffer(&operand.encoding_[1], operand.length_ - 1);
   }
 
   void Emit_OpEn_RegOperand(uint8_t extra_opcode, Register reg) {
@@ -453,10 +456,7 @@ public:
     Emit1(0x9C);
   }
 
-  void jmp(Immediate imm) {
-    code_buffer_.Emit<int8_t>(0xE9);
-    code_buffer_.Emit<int32_t>((int)imm.value());
-  }
+  void jmp(Immediate imm);
 
   void sub(Register dst, Immediate imm) {
     EmitREX_Register(dst);
@@ -559,22 +559,15 @@ public:
 
 // ---
 
-struct TurboAssembler : Assembler {
+class TurboAssembler : public Assembler {
 public:
-  TurboAssembler() : TurboAssembler(0) {
-  }
-
-  TurboAssembler(addr_t fixed_addr) : Assembler(fixed_addr) {
+  TurboAssembler(void *address) : Assembler(address) {
   }
 
   ~TurboAssembler() {
   }
 
-  addr64_t CurrentIP(){
-    return pc_offset() + (addr_t)fixed_addr;
-  }
-
-#define DEFINE_DATA_LABEL(data, name) auto name##_data_label = _ createDataLabel(data);
+  addr64_t CurrentIP();
 
   void CallFunction(ExternalReference function) {
 #if 0
@@ -586,8 +579,9 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      auto func_data_label = createDataLabel((uint64_t)function.address);
-      func_data_label->link_to(kDisp32_off_9, pc_offset());
+      RelocLabel *addr_label = new RelocLabel((uint64_t)function.address());
+      addr_label->link_to(kDisp32_off_9, 0, ip_offset());
+      this->AppendRelocLabel(addr_label);
     }
     nop();
   }
@@ -600,18 +594,3 @@ public:
 
 } // namespace x64
 } // namespace zz
-
-inline void PseudoLabel::link_confused_instructions(CodeMemBuffer *buffer) {
-  for (auto &ref_label_insn : ref_insts) {
-    int64_t new_offset = pos - ref_label_insn.offset();
-
-    if (ref_label_insn.link_type == kDisp32_off_9) {
-      // why 9 ?
-      // use `call` and `pop` get the runtime ip register
-      // but the ip register not the real call next insn
-      // it need add two insn length == 9
-      int disp32_fix_pos = ref_label_insn.offset() - sizeof(int32_t);
-      buffer->FixBindLabel(disp32_fix_pos, new_offset + 9);
-    }
-  }
-}

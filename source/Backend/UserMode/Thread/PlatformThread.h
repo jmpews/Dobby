@@ -1,6 +1,7 @@
-#pragma once
+#ifndef USER_MODE_PLATFORM_THREAD_H
+#define USER_MODE_PLATFORM_THREAD_H
 
-#include "dobby/common.h"
+#include "common_header.h"
 
 namespace zz {
 
@@ -12,6 +13,7 @@ public:
 
   static int GetCurrentThreadId();
 
+  // Thread-local storage.
   static LocalStorageKey CreateThreadLocalKey();
 
   static void DeleteThreadLocalKey(LocalStorageKey key);
@@ -30,3 +32,5 @@ public:
 };
 
 } // namespace zz
+
+#endif

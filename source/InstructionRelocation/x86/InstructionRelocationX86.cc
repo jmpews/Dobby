@@ -1,8 +1,8 @@
-#include "platform_detect_macro.h"
+#include "platform_macro.h"
 
 #if defined(TARGET_ARCH_IA32)
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "InstructionRelocation/x86/InstructionRelocationX86.h"
 #include "InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h"
@@ -18,7 +18,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
   // Set fixed executable code chunk address
   turbo_assembler_.SetRealizedAddress((void *)relocated->addr);
 #define _ turbo_assembler_.
-#define __ turbo_assembler_.code_buffer()->
+#define __ turbo_assembler_.GetCodeBuffer()->
 
   auto curr_orig_ip = (addr32_t)origin->addr;
   auto curr_relo_ip = (addr32_t)relocated->addr;
@@ -33,8 +33,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
   while ((buffer_cursor < ((uint8_t *)buffer + predefined_relocate_size))) {
     x86_insn_decode_t insn = {0};
     memset(&insn, 0, sizeof(insn));
-    GenRelocateSingleX86Insn(curr_orig_ip, curr_relo_ip, buffer_cursor, &turbo_assembler_,
-                             turbo_assembler_.code_buffer(), insn, 64);
+    GenRelocateSingleX86Insn(curr_orig_ip, curr_relo_ip, buffer_cursor, turbo_assembler_.GetCodeBuffer(), insn, 64);
 
     // go next
     curr_orig_ip += insn.length;
@@ -44,19 +43,19 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
 
   // jmp to the origin rest instructions
   if (branch) {
-    CodeGen codegen(&turbo_assembler_);
-    addr32_t stub_addr = curr_relo_ip + 6;
-    codegen.JmpNear(curr_orig_ip);
+  CodeGen codegen(&turbo_assembler_);
+  addr32_t stub_addr = curr_relo_ip + 6;
+  codegen.JmpNear(curr_orig_ip);
   }
 
   // update origin
   int new_origin_len = curr_orig_ip - (addr_t)origin->addr;
   origin->reset(origin->addr, new_origin_len);
 
-  int relo_len = turbo_assembler_.code_buffer()->GetBufferSize();
+  int relo_len = turbo_assembler_.GetCodeBuffer()->GetBufferSize();
   if (relo_len > relocated->size) {
-    DEBUG_LOG("pre-alloc code chunk not enough");
-    return -1;
+    DLOG(0, "pre-alloc code chunk not enough");
+    return RT_FAILED;
   }
 
   // generate executable code
@@ -66,7 +65,7 @@ int GenRelocateCodeFixed(void *buffer, CodeMemBlock *origin, CodeMemBlock *reloc
     delete code;
   }
 
-  return 0;
+  return RT_SUCCESS;
 }
 
 void GenRelocateCodeAndBranch(void *buffer, CodeMemBlock *origin, CodeMemBlock *relocated) {

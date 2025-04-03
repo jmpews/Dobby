@@ -1,7 +1,7 @@
-#include "platform_detect_macro.h"
+#include "platform_macro.h"
 #if defined(TARGET_ARCH_IA32)
 
-#include "dobby/dobby_internal.h"
+#include "dobby_internal.h"
 
 #include "core/assembler/assembler-ia32.h"
 
@@ -12,7 +12,7 @@ using namespace zz::x86;
 
 static asm_func_t closure_bridge = NULL;
 
-asm_func_t get_closure_bridge_addr() {
+asm_func_t get_closure_bridge() {
   // if already initialized, just return.
   if (closure_bridge)
     return closure_bridge;
@@ -27,7 +27,7 @@ asm_func_t get_closure_bridge_addr() {
 
 // otherwise, use the Assembler build the closure_bridge
 #define _ turbo_assembler_.
-#define __ turbo_assembler_.code_buffer()->
+#define __ turbo_assembler_.GetCodeBuffer()->
 
   auto pushfd = (uint8_t *)"\x9c";
   auto popfd = (uint8_t *)"\x9d";
@@ -99,12 +99,12 @@ asm_func_t get_closure_bridge_addr() {
   // trick: use the 'carry_data' stack(remain at closure trampoline) placeholder, as the return address
   _ ret();
 
-  _ relocDataLabels();
+  _ RelocBind();
 
   auto code = AssemblyCodeBuilder::FinalizeFromTurboAssembler(&turbo_assembler_);
   closure_bridge = (asm_func_t)code->addr;
 
-  DEBUG_LOG("[closure bridge]  closure bridge at %p", closure_bridge);
+  DLOG(0, "[closure bridge]  closure bridge at %p", closure_bridge);
 #endif
   return closure_bridge;
 }

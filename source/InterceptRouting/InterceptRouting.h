@@ -1,115 +1,62 @@
 #pragma once
 
-#include "Interceptor.h"
-#include "MemoryAllocator/AssemblerCodeBuilder.h"
+#include "InterceptEntry.h"
+#include "MemoryAllocator/AssemblyCodeBuilder.h"
 #include "InstructionRelocation/InstructionRelocation.h"
 #include "TrampolineBridge/Trampoline/Trampoline.h"
-#include "RoutingPlugin.h"
-#include "NearBranchTrampoline/NearBranchTrampoline.h"
 
-Trampoline *GenerateNearTrampolineBuffer(addr_t src, addr_t dst);
-Trampoline *GenerateNormalTrampolineBuffer(addr_t from, addr_t to);
+class InterceptRouting {
+public:
+  explicit InterceptRouting(InterceptEntry *entry) : entry_(entry) {
+    entry->routing = this;
 
-struct InterceptRouting {
-  Interceptor::Entry *entry = 0;
-  Trampoline *trampoline = 0;
-  Trampoline *near_trampoline = 0;
-  int error = 0;
+    origin_ = nullptr;
+    relocated_ = nullptr;
 
-  explicit InterceptRouting(Interceptor::Entry *entry) : entry(entry) {
+    trampoline_ = nullptr;
+    trampoline_buffer_ = nullptr;
+    trampoline_target_ = 0;
   }
 
-  ~InterceptRouting() {
-    if (trampoline) {
-      // TODO: free code block
-      delete trampoline;
-    }
-    if (near_trampoline) {
-      // TODO: free code block
-      delete near_trampoline;
-    }
+  virtual void DispatchRouting() = 0;
+
+  virtual void Prepare();
+
+  virtual void Active();
+
+  void Commit();
+
+  InterceptEntry *GetInterceptEntry();
+
+  void SetTrampolineBuffer(CodeBufferBase *buffer) {
+    trampoline_buffer_ = buffer;
   }
 
-  virtual void Prepare() {
-  }
-  virtual void DispatchRouting() {
-  }
-  void Commit() {
+  CodeBufferBase *GetTrampolineBuffer() {
+    return trampoline_buffer_;
   }
 
-  virtual addr_t TrampolineTarget() {
-    UNREACHABLE();
-    return -1;
+  void SetTrampolineTarget(addr_t address) {
+    trampoline_target_ = address;
   }
 
-  addr_t trampoline_addr() {
-    if (near_trampoline)
-      return near_trampoline->addr();
-    return trampoline->addr();
+  addr_t GetTrampolineTarget() {
+    return trampoline_target_;
   }
 
-  size_t trampoline_size() {
-    if (near_trampoline)
-      return near_trampoline->size();
-    return trampoline->size();
-  }
+protected:
+  bool GenerateRelocatedCode();
 
-  virtual void Active() {
-    __FUNC_CALL_TRACE__();
-    auto ret = DobbyCodePatch((void *)entry->addr, (uint8_t *)trampoline_addr(), trampoline_size());
-    error |= (ret != 0);
-  }
+  bool GenerateTrampolineBuffer(addr_t src, addr_t dst);
 
-  bool GenerateTrampoline() {
-    __FUNC_CALL_TRACE__();
-    addr_t from = entry->addr;
-    features::arm_thumb_fix_addr(from);
+protected:
+  InterceptEntry *entry_;
 
-    addr_t to = TrampolineTarget();
+  CodeMemBlock *origin_;
+  CodeMemBlock *relocated_;
 
-    if (0 && RoutingPluginManager::near_branch_trampoline) {
-      auto plugin = static_cast<RoutingPluginInterface *>(RoutingPluginManager::near_branch_trampoline);
-      plugin->GenerateTrampolineBuffer(this, from, to);
-    }
-
-    if (g_enable_near_trampoline) {
-      near_trampoline = GenerateNearTrampolineBuffer(from, to);
-    }
-
-    if (!near_trampoline) {
-      trampoline = GenerateNormalTrampolineBuffer(from, to);
-    }
-    return true;
-  }
-
-  void GenerateRelocatedCode() {
-    __FUNC_CALL_TRACE__();
-    if (trampoline_addr() == 0) {
-      ERROR_LOG("GenerateTrampoline must be called first");
-      error = 1;
-    }
-
-    auto code_addr = entry->addr;
-    features::arm_thumb_fix_addr(code_addr);
-    auto preferred_size = trampoline_size();
-    auto origin = CodeMemBlock(code_addr, preferred_size);
-    auto relocated = CodeMemBlock(0, 0);
-    GenRelocateCodeAndBranch((void *)code_addr, &origin, &relocated);
-    if (relocated.size == 0) {
-      error = 1;
-      return;
-    }
-    DEBUG_LOG("origin: %p, size: %d", origin.addr(), origin.size);
-    debug_hex_log_buffer((uint8_t *)origin.addr(), origin.size);
-    DEBUG_LOG("relocated: %p, size: %d", relocated.addr(), relocated.size);
-    debug_hex_log_buffer((uint8_t *)relocated.addr(), relocated.size);
-
-    entry->patched = origin;
-    entry->relocated = relocated;
-  }
-
-  void BackupOriginCode() {
-    __FUNC_CALL_TRACE__();
-    entry->backup_orig_code();
-  }
+  CodeMemBlock *trampoline_;
+  // trampoline buffer before active
+  CodeBufferBase *trampoline_buffer_;
+  addr_t trampoline_target_;
 };

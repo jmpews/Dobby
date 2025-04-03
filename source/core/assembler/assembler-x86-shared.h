@@ -1,6 +1,7 @@
-#pragma once
+#ifndef CORE_ASSEMBLER_X64_H
+#define CORE_ASSEMBLER_X64_H
 
-#include "dobby/common.h"
+#include "common_header.h"
 
 #include "core/arch/x64/registers-x64.h"
 #include "core/assembler/assembler.h"
@@ -20,9 +21,9 @@ using namespace x64;
 constexpr Register VOLATILE_REGISTER = r11;
 
 // ================================================================
-// PseudoLabel
+// AssemblerPseudoLabel
 
-class PseudoLabel : public Label {
+class AssemblerPseudoLabel : public Label {
 public:
   enum PseudoLabelType { kDisp32_off_9 };
 
@@ -32,10 +33,10 @@ public:
   } PseudoLabelInstruction;
 
 public:
-  PseudoLabel(void) {
+  AssemblerPseudoLabel(void) {
     instructions_.initWithCapacity(8);
   }
-  ~PseudoLabel(void) {
+  ~AssemblerPseudoLabel(void) {
     for (size_t i = 0; i < instructions_.getCount(); i++) {
       PseudoLabelInstruction *item = (PseudoLabelInstruction *)instructions_.getObject(i);
       delete item;
@@ -81,9 +82,9 @@ private:
   LiteMutableArray instructions_;
 };
 
-class RelocDataLabel : public PseudoLabel {
+class RelocLabel : public AssemblerPseudoLabel {
 public:
-  explicit RelocDataLabel(uint64_t data) : data_size_(0) {
+  explicit RelocLabel(uint64_t data) : data_size_(0) {
     data_ = data;
   }
 
@@ -364,15 +365,15 @@ public:
 
 public:
   void Emit1(byte_t val) {
-    buffer_->Emit<int8_t>(val);
+    buffer_->Emit8(val);
   }
 
   void Emit(int32_t value) {
-    buffer_->Emit<int32_t>(value);
+    buffer_->Emit32(value);
   }
 
   void EmitInt64(int64_t value) {
-    buffer_->Emit<int64_t>(value);
+    buffer_->Emit64(value);
   }
 
   void EmitAddr(uint64_t addr) {
@@ -455,11 +456,11 @@ public:
 
   void EmitImmediate(Immediate imm, int imm_size) {
     if (imm_size == 8) {
-      buffer_->Emit<int8_t>((uint8_t)imm.value());
+      buffer_->Emit8((uint8_t)imm.value());
     } else if (imm_size == 32) {
-      buffer_->Emit<int32_t>((uint32_t)imm.value());
+      buffer_->Emit32((uint32_t)imm.value());
     } else if (imm_size == 64) {
-      buffer_->Emit<int64_t>((uint64_t)imm.value());
+      buffer_->Emit64((uint64_t)imm.value());
     } else {
       UNREACHABLE();
     }
@@ -654,8 +655,8 @@ public:
     MovRipToRegister(VOLATILE_REGISTER);
     call(Address(VOLATILE_REGISTER, INT32_MAX));
     {
-      RelocDataLabel *addrLabel = new RelocDataLabel((uint64_t)function.address());
-      addrLabel->link_to(ip_offset(), PseudoLabel::kDisp32_off_9);
+      RelocLabel *addrLabel = new RelocLabel((uint64_t)function.address());
+      addrLabel->link_to(ip_offset(), AssemblerPseudoLabel::kDisp32_off_9);
       this->AppendRelocLabel(addrLabel);
     }
     nop();
@@ -667,28 +668,28 @@ public:
   }
 
   // ================================================================
-  // RelocDataLabel
+  // RelocLabel
 
-  void bindLabel(PseudoLabel *label) {
+  void PseudoBind(AssemblerPseudoLabel *label) {
     const addr_t bound_pc = buffer_->GetBufferSize();
     label->bind_to(bound_pc);
     // If some instructions have been wrote, before the label bound, we need link these `confused` instructions
     if (label->has_confused_instructions()) {
-      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->code_buffer()));
+      label->link_confused_instructions(reinterpret_cast<CodeBuffer *>(this->GetCodeBuffer()));
     }
   }
 
-  void relocDataLabels() {
+  void RelocBind() {
     if (data_labels_ == NULL)
       return;
     for (size_t i = 0; i < data_labels_->getCount(); i++) {
-      RelocDataLabel *label = (RelocDataLabel *)data_labels_->getObject(i);
-      bindLabel(label);
+      RelocLabel *label = (RelocLabel *)data_labels_->getObject(i);
+      PseudoBind(label);
       EmitAddr(label->data());
     }
   }
 
-  void AppendRelocLabel(RelocDataLabel *label) {
+  void AppendRelocLabel(RelocLabel *label) {
     if (data_labels_ == NULL) {
       data_labels_ = new LiteMutableArray(8);
     }
@@ -705,3 +706,5 @@ private:
 
 } // namespace x86shared
 } // namespace zz
+
+#endif
