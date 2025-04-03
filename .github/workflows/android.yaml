@@ -1,0 +1,43 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - revert
+
+env:
+  CMAKE_VERSION: 3.20.2
+  LLVM_VERSION: 14.0.0
+  NDK_VERSION: r25b
+
+jobs:
+  delete_latest_release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout master
+      uses: actions/checkout@master
+
+  linux_and_android:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout master
+      uses: actions/checkout@master
+
+    - name: init linux cross compile env
+      run: |
+        sh scripts/setup_linux_cross_compile.sh
+        mkdir -p artifact
+      shell: bash
+    
+    - name: compile android
+      run: |
+        python3 scripts/platform_builder.py --platform=android --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION --llvm_dir=$HOME/opt/llvm-$LLVM_VERSION --android_ndk_dir=$HOME/opt/ndk-$NDK_VERSION
+        cp include/dobby.h build/android
+        tar -zcvf build/dobby-android-all.tar.gz build/android
+        cp build/dobby-android-all.tar.gz artifact/
+      shell: bash
+
+    - name: print output
+      run: |
+        ls -lha .
+        
