@@ -2,8 +2,7 @@ name: Android Build
 
 on:
   push:
-    branches:
-      - revert
+  workflow_dispatch:
 
 env:
   CMAKE_VERSION: 3.20.2
@@ -40,4 +39,10 @@ jobs:
     - name: print output
       run: |
         ls -lha .
+        
+    - name: Upload Build 
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output
+        path: build/
         
