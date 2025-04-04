@@ -10,17 +10,11 @@ env:
   NDK_VERSION: r25b
 
 jobs:
-  delete_latest_release:
+  android:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout master
-      uses: actions/checkout@master
-
-  linux_and_android:
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout master
-      uses: actions/checkout@master
+    - name: checkout
+      uses: actions/checkout@v4
 
     - name: init linux cross compile env
       run: |
@@ -32,17 +26,10 @@ jobs:
       run: |
         python3 scripts/platform_builder.py --platform=android --arch=all --cmake_dir=$HOME/opt/cmake-$CMAKE_VERSION --llvm_dir=$HOME/opt/llvm-$LLVM_VERSION --android_ndk_dir=$HOME/opt/ndk-$NDK_VERSION
         cp include/dobby.h build/android
-        tar -zcvf build/dobby-android-all.tar.gz build/android
-        cp build/dobby-android-all.tar.gz artifact/
       shell: bash
-
-    - name: print output
-      run: |
-        ls -lha .
         
     - name: Upload Build 
       uses: actions/upload-artifact@v4
       with:
         name: build-output
         path: build/
-        
