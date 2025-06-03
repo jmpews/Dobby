@@ -13,8 +13,8 @@ void CodeGen::JmpNear(uint32_t address) {
   uint32_t currIP = turbo_assembler_->CurrentIP() + 5;
   int32_t offset = (int32_t)(address - currIP);
 
-  __ Emit<int8_t>(0xe9);
-  __ Emit<int32_t>(offset);
+  __ Emit8(0xe9);
+  __ Emit32(offset);
 }
 
 } // namespace x86

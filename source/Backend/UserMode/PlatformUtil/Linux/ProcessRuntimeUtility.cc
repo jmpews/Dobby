@@ -1,4 +1,4 @@
-#include "PlatformUtil/ProcessRuntime.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <elf.h>
 #include <dlfcn.h>
@@ -13,12 +13,15 @@
 
 #define LINE_MAX 2048
 
+// ================================================================
+// GetProcessMemoryLayout
+
 static bool memory_region_comparator(MemRange a, MemRange b) {
   return (a.start < b.start);
 }
 
 stl::vector<MemRegion> regions;
-const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+const stl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   regions.clear();
 
   FILE *fp = fopen("/proc/self/maps", "r");
@@ -90,6 +93,9 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
   fclose(fp);
   return regions;
 }
+
+// ================================================================
+// GetProcessModuleMap
 
 static stl::vector<RuntimeModule> *modules;
 static stl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
@@ -211,7 +217,7 @@ static stl::vector<RuntimeModule> get_process_map_with_linker_iterator() {
 }
 #endif
 
-const stl::vector<RuntimeModule> &ProcessRuntime::getModuleMap() {
+const stl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
 #if defined(__LP64__) && 0
   // TODO: won't resolve main binary
   return get_process_map_with_linker_iterator();
@@ -220,8 +226,8 @@ const stl::vector<RuntimeModule> &ProcessRuntime::getModuleMap() {
 #endif
 }
 
-RuntimeModule ProcessRuntime::getModule(const char *name) {
-  auto modules = getModuleMap();
+RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
+  auto modules = GetProcessModuleMap();
   for (auto module : modules) {
     if (strstr(module.path, name) != 0) {
       return module;

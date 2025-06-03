@@ -6,9 +6,9 @@
 #include <link.h>
 #include <string.h>
 
-#include "common/mmap_file_util.h"
+#include "mmap_file_util.h"
 
-#include "PlatformUtil/ProcessRuntime.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 
@@ -168,7 +168,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   void *result = NULL;
 
   if (library_name) {
-    RuntimeModule module = ProcessRuntime::getModule(library_name);
+    RuntimeModule module = ProcessRuntimeUtility::GetProcessModule(library_name);
 
     if (module.load_address) {
       auto mmapFileMng = MmapFileManager(module.path);
@@ -187,7 +187,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
   }
 
   if (!result) {
-    auto ProcessModuleMap = ProcessRuntime::getModuleMap();
+    auto ProcessModuleMap = ProcessRuntimeUtility::GetProcessModuleMap();
     for (auto module : ProcessModuleMap) {
 
       if (module.load_address) {

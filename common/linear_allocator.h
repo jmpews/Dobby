@@ -2,13 +2,7 @@
 
 #include <stdint.h>
 #include <sys/types.h>
-
-#if defined(BUILD_DYLD_LINKER)
-#include "dyld_linker/external_call.h"
-#define DEBUG_LOG DYLD_DEBUG_LOG
-#else
 #include "logging/logging.h"
-#endif
 
 #if !defined(ALIGN_FLOOR)
 #define ALIGN_FLOOR(address, range) ((uintptr_t)address & ~((uintptr_t)range - 1))
@@ -25,52 +19,41 @@
 
 struct simple_linear_allocator_t {
   uint8_t *buffer;
-  uint32_t size = 0;
+  uint32_t size;
   uint32_t capacity;
-  uint32_t builtin_alignment;
+  uint8_t *cursor;
 
-  simple_linear_allocator_t() = default;
-
-  explicit simple_linear_allocator_t(uint8_t *buffer, uint32_t capacity, uint32_t alignment = 8) {
-    init(buffer, capacity, alignment);
+  explicit simple_linear_allocator_t(uint8_t *in_buffer, uint32_t in_capacity) {
+    init(in_buffer, in_capacity);
   }
 
-  void init(uint8_t *in_buffer, uint32_t in_capacity, uint32_t in_alignment = 8) {
+  void init(uint8_t *in_buffer, uint32_t in_capacity) {
     buffer = in_buffer;
-    capacity = in_capacity;
-    builtin_alignment = in_alignment;
-    if (builtin_alignment == 0) {
-      builtin_alignment = 1;
-    }
     size = 0;
+    capacity = in_capacity;
+    cursor = buffer;
   }
 
-  uint8_t *alloc(uint32_t in_size, uint32_t in_alignment = 0) {
-    auto alignment = in_alignment ? in_alignment : builtin_alignment;
-    uint32_t gap_size = ALIGN_CEIL((uintptr_t)cursor(), alignment) - (uintptr_t)cursor();
-    size += gap_size;
-
-    if (size + in_size > capacity) {
+  uint8_t *alloc(uint32_t in_data_size) {
+    in_data_size = ALIGN_CEIL(in_data_size, 8);
+    if (size + in_data_size > capacity) {
       return nullptr;
     }
 
-    auto data = cursor();
-    // DEBUG_LOG("alloc: %p - %p", data, in_size);
+    uint8_t *block = cursor;
+    size += in_data_size;
+    cursor += in_data_size;
 
-    size += in_size;
-    return data;
+    return block;
   }
 
   void free(uint8_t *buf) {
     // do nothing
   }
-
-  uint8_t *cursor() {
-    return buffer + size;
-  }
 };
 
 struct linear_allocator_t {
+
   struct mem_block_t {
     uint32_t magic;
     uint32_t data_size_;
@@ -173,9 +156,7 @@ struct linear_allocator_t {
   uint8_t *buffer;
   uint32_t buffer_size;
 
-  bool is_free_blocks_merged;
-
-  linear_allocator_t() = default;
+  bool is_free_blocks_merged = true;
 
   linear_allocator_t(uint8_t *in_buffer, uint32_t in_buffer_size) {
     init(in_buffer, in_buffer_size);
@@ -222,7 +203,7 @@ struct linear_allocator_t {
       auto *buf = alloc(in_data_size);
       return buf;
     } else {
-      // DEBUG_LOG("alloc: %p", freed_blk->data_size());
+      DEBUG_LOG("alloc: %p", freed_blk->data_size());
       freed_blk->mark_used();
       status();
       return freed_blk->data;
@@ -238,7 +219,7 @@ struct linear_allocator_t {
       DEBUG_LOG("free: invalid magic %p", block->magic);
       return;
     }
-    // DEBUG_LOG("free: %p", block->data_size());
+    DEBUG_LOG("free: %p", block->data_size());
 
     block->free();
     is_free_blocks_merged = false;
@@ -246,7 +227,6 @@ struct linear_allocator_t {
   }
 
   void status() {
-    return;
     uint32_t used_data_size = 0;
     uint32_t used_block_count = 0;
     uint32_t freed_data_size = 0;
@@ -264,7 +244,7 @@ struct linear_allocator_t {
       cursor += block->block_size();
     }
     DEBUG_LOG("status: used_data_size=%p, used_block_count=%p, freed_data_size=%p, freed_block_count=%p",
-              used_data_size, used_block_count, freed_data_size, freed_block_count);
+                   used_data_size, used_block_count, freed_data_size, freed_block_count);
   }
 };
 

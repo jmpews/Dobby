@@ -1,4 +1,3 @@
-#if defined(__arm64__) || defined(__aarch64__)
 #if defined(__WIN32__) || defined(__APPLE__)
 #define cdecl(s) _##s
 #else
@@ -38,4 +37,3 @@ closure_bridge_addr:
 
 .globl cdecl(closure_trampoline_asm_end)
 cdecl(closure_trampoline_asm_end):
-#endif

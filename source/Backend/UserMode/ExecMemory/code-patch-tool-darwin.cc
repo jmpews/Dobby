@@ -73,7 +73,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
   int orig_max_prot = 0;
   int share_mode = 0;
   int is_enable_remap = -1;
-  if (0 && is_enable_remap == -1) {
+  if (is_enable_remap == -1) {
     auto get_region_info = [&](addr_t region_start) -> void {
       vm_region_submap_info_64 region_submap_info;
       mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
@@ -101,7 +101,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
       DEBUG_LOG("code patch %p won't use remap", address);
     }
   }
-  if (0 && is_enable_remap == 1) {
+  if (is_enable_remap == 1) {
     addr_t remap_dummy_page = 0;
     {
       kr = mach_vm_allocate(self_task, (mach_vm_address_t *)&remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
@@ -125,6 +125,7 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
     kr = mach_vm_deallocate(self_task, remap_dummy_page, page_size);
     KERN_RETURN_ERROR(kr, -1);
   } else {
+
     if (0) {
       {
         auto kr = mach_vm_allocate(self_task, &remap_dummy_page, page_size, VM_FLAGS_ANYWHERE);
@@ -146,21 +147,21 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
       memcpy((void *)(remap_dummy_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
     }
 
-    static __typeof(vm_protect) *vm_protect_fn = nullptr;
-    if (vm_protect_fn == nullptr) {
-      vm_protect_fn = (__typeof(vm_protect) *)DobbySymbolResolver("dyld", "vm_protect");
-      if (vm_protect_fn == nullptr) {
-        vm_protect_fn = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
+    static __typeof(vm_protect) *vm_protect_impl = nullptr;
+    if (vm_protect_impl == nullptr) {
+      vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("dyld", "vm_protect");
+      if (vm_protect_impl == nullptr) {
+        vm_protect_impl = (__typeof(vm_protect) *)DobbySymbolResolver("libsystem_kernel.dylib", "_vm_protect");
       }
-      pac_sign(vm_protect_fn);
+      vm_protect_impl = (__typeof(vm_protect) *)pac_sign((void *)vm_protect_impl);
     }
     {
-      kr = vm_protect_fn(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
       KERN_RETURN_ERROR(kr, -1);
 
       memcpy((void *)(patch_page + ((uint64_t)address - remap_dest_page)), buffer, buffer_size);
 
-      kr = vm_protect_fn(self_task, remap_dest_page, page_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
+      kr = vm_protect_impl(self_task, remap_dest_page, page_size, false, orig_prot);
       KERN_RETURN_ERROR(kr, -1);
     }
   }

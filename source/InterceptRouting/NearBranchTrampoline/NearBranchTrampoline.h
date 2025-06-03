@@ -2,12 +2,12 @@
 
 #include "dobby/dobby_internal.h"
 
-#include "InterceptRouting/RoutingPlugin.h"
+#include "source/InterceptRouting/RoutingPlugin.h"
 
 class NearBranchTrampolinePlugin : public RoutingPluginInterface {};
 
-inline bool g_enable_near_trampoline = false;
+inline bool enable_near_trampoline = 0;
 
 PUBLIC extern "C" inline void dobby_set_near_trampoline(bool enable) {
-  g_enable_near_trampoline = enable;
+  enable_near_trampoline = enable;
 }

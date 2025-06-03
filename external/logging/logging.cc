@@ -37,11 +37,6 @@
 
 #pragma clang diagnostic ignored "-Wformat"
 
-Logger gLogger{};
-Logger *Logger::Shared() {
-  return &gLogger;
-}
-
 void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
   if (level < log_level_)
     return;
@@ -53,19 +48,13 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
   }
 
   if (enable_time_tag_) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    time_t now = tv.tv_sec;
+    time_t now = time(NULL);
     struct tm *tm = localtime(&now);
-    snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer),
-             "%04d-%02d-%02d %02d:%02d:%02d.%d ", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
-             tm->tm_min, tm->tm_sec, tv.tv_usec / 1000);
+    snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%04d-%02d-%02d %02d:%02d:%02d ",
+             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
   }
 
   snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer), "%s\n", in_fmt);
-
-  char out_buffer[0x4000] = {0};
-  vsnprintf(out_buffer, sizeof(out_buffer) - 1, fmt_buffer, ap);
 
   if (enable_syslog_) {
 #if defined(__APPLE__)
@@ -74,10 +63,10 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
     if (!os_log_with_args)
       os_log_with_args = (__typeof(os_log_with_args))dlsym((void *)-2, "os_log_with_args");
     // os_log_with_args(&_os_log_default, 0x10, fmt_buffer, ap, (void *)&os_log_with_args);
-    syslog(LOG_ALERT, out_buffer);
+    vsyslog(LOG_ALERT, fmt_buffer, ap);
 
     static int _logDescriptor = 0;
-    if (0 && _logDescriptor == 0) {
+    if (_logDescriptor == 0) {
       _logDescriptor = socket(AF_UNIX, SOCK_DGRAM, 0);
       if (_logDescriptor != -1) {
         fcntl(_logDescriptor, F_SETFD, FD_CLOEXEC);
@@ -92,30 +81,30 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
       }
     }
     if (_logDescriptor > 0) {
-      dprintf(_logDescriptor, out_buffer);
+      vdprintf(_logDescriptor, fmt_buffer, ap);
     }
 #elif defined(_POSIX_VERSION)
-    syslog(LOG_ERR, out_buffer);
+    vsyslog(LOG_ERR, fmt_buffer, ap);
 #endif
   }
 
   if (log_file_ != nullptr) {
+    char buffer[0x4000] = {0};
+    vsnprintf(buffer, sizeof(buffer) - 1, fmt_buffer, ap);
 #if defined(USER_CXX_FILESTREAM)
-    log_file_stream_->write(out_buffer, strlen(out_buffer));
+    log_file_stream_->write(buffer, strlen(buffer));
     log_file_stream_->flush();
 #else
-    if (log_file_stream_) {
-      fwrite(out_buffer, strlen(out_buffer), 1, log_file_stream_);
-      fflush(log_file_stream_);
-    }
+    fwrite(buffer, strlen(buffer), 1, log_file_stream_);
+    fflush(log_file_stream_);
 #endif
   }
 
   if (1 || !enable_syslog_ && log_file_ == nullptr) {
 #if defined(__ANDROID__)
-    __android_log_print(ANDROID_LOG_INFO, NULL, out_buffer);
+    __android_log_vprint(ANDROID_LOG_INFO, NULL, fmt_buffer, ap);
 #else
-    printf(out_buffer);
+    vprintf(fmt_buffer, ap);
 #endif
   }
 }

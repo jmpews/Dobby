@@ -72,7 +72,7 @@ struct InterceptRouting {
       plugin->GenerateTrampolineBuffer(this, from, to);
     }
 
-    if (g_enable_near_trampoline) {
+    if (enable_near_trampoline) {
       near_trampoline = GenerateNearTrampolineBuffer(from, to);
     }
 
@@ -110,6 +110,7 @@ struct InterceptRouting {
 
   void BackupOriginCode() {
     __FUNC_CALL_TRACE__();
-    entry->backup_orig_code();
+    entry->origin_code_buffer = (uint8_t *)operator new(entry->patched.size);
+    memcpy(entry->origin_code_buffer, (void *)entry->addr, entry->patched.size);
   }
 };

@@ -25,17 +25,19 @@
 #include <mach/semaphore.h>
 #include <mach/task.h>
 #include <mach/vm_statistics.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 #include "UnifiedInterface/platform-darwin/mach_vm.h"
-#include "PlatformUtil/ProcessRuntime.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 static bool memory_region_comparator(MemRegion a, MemRegion b) {
-  return (a.addr() < b.addr());
+  return (a.start < b.start);
 }
 
 stl::vector<MemRegion> *regions;
 
-const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+const stl::vector<MemRegion> &ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (regions == nullptr) {
     regions = new stl::vector<MemRegion>();
   }
@@ -62,20 +64,20 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
     if (region_submap_info.is_submap) {
       depth++;
     } else {
-      MemoryPermission perm = kNoAccess;
-      auto prot = region_submap_info.protection;
-      if (prot & VM_PROT_READ) {
-        perm = (MemoryPermission)(perm | kRead);
+      MemoryPermission permission;
+      if ((region_submap_info.protection & PROT_READ) && (region_submap_info.protection & PROT_WRITE)) {
+        permission = MemoryPermission::kReadWrite;
+      } else if ((region_submap_info.protection & PROT_READ) == region_submap_info.protection) {
+        permission = MemoryPermission::kRead;
+      } else if ((region_submap_info.protection & PROT_READ) && (region_submap_info.protection & PROT_EXEC)) {
+        permission = MemoryPermission::kReadExecute;
+      } else {
+        permission = MemoryPermission::kNoAccess;
       }
-      if (prot & VM_PROT_WRITE) {
-        perm = (MemoryPermission)(perm | kWrite);
-      }
-      if (prot & VM_PROT_EXECUTE) {
-        perm = (MemoryPermission)(perm | kExecute);
-      }
-      // INFO_LOG("%p --- %p --- %p --- %d", addr, addr + size, size, region_submap_info.protection);
-
-      MemRegion region = MemRegion(addr, size, perm);
+#if 0
+      DEBUG_LOG("%p --- %p", addr, addr + size);
+#endif
+      MemRegion region = MemRegion(addr, size, permission);
       regions->push_back(region);
       addr += size;
     }
@@ -88,7 +90,7 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
 
 static stl::vector<RuntimeModule> *modules;
 
-const stl::vector<RuntimeModule> &ProcessRuntime::getModuleMap() {
+const stl::vector<RuntimeModule> &ProcessRuntimeUtility::GetProcessModuleMap() {
   if (modules == nullptr) {
     modules = new stl::vector<RuntimeModule>();
   }
@@ -130,8 +132,8 @@ const stl::vector<RuntimeModule> &ProcessRuntime::getModuleMap() {
   return *modules;
 }
 
-RuntimeModule ProcessRuntime::getModule(const char *name) {
-  auto modules = getModuleMap();
+RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
+  auto modules = GetProcessModuleMap();
   for (auto module : modules) {
     if (strstr(module.path, name) != 0) {
       return module;

@@ -38,6 +38,11 @@ public:
   bool enable_syslog_;
 
   Logger() {
+    log_tag_ = nullptr;
+    log_file_ = nullptr;
+    log_level_ = LOG_LEVEL_DEBUG;
+    enable_time_tag_ = false;
+    enable_syslog_ = false;
   }
 
   Logger(const char *tag, const char *file, LogLevel level, bool enable_time_tag, bool enable_syslog) {
@@ -131,6 +136,11 @@ public:
   }
 };
 
+inline static Logger gLogger;
+inline Logger *Logger::Shared() {
+  return &gLogger;
+}
+
 #endif
 
 #ifdef __cplusplus
@@ -150,19 +160,12 @@ void logger_set_options(void *logger, const char *tag, const char *file, LogLeve
                         bool enable_syslog);
 void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
 
-#if defined(LOG_LEVEL)
-#else
-#define LOG_LEVEL LOG_LEVEL_DEBUG
-#endif
-
 #ifdef __cplusplus
 }
 #endif
 
 #define LOG(level, fmt, ...)                                                                                           \
   do {                                                                                                                 \
-    if (LOG_LEVEL > level)                                                                                             \
-      break;                                                                                                           \
     if (LOG_TAG)                                                                                                       \
       LOG_FUNCTION_IMPL(NULL, level, "[%s] " fmt, LOG_TAG, ##__VA_ARGS__);                                             \
     else                                                                                                               \
@@ -186,23 +189,15 @@ void logger_log_impl(void *logger, LogLevel level, const char *fmt, ...);
 
 #define ERROR_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s] " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
+    LOG(LOG_LEVEL_ERROR, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
 #define FATAL_LOG(fmt, ...)                                                                                            \
   do {                                                                                                                 \
-    LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s] " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
-    *(uint64_t *)0x41414141 = 0x41414141;                                                                              \
+    LOG(LOG_LEVEL_FATAL, "[!] [%s:%d:%s]" fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__);                           \
   } while (0)
 
-#if defined(NO_FUNC_CALL_TRACE)
-#define __FUNC_CALL_TRACE__()
-#else
-#define __FUNC_CALL_TRACE__()                                                                                          \
-  do {                                                                                                                 \
-    DEBUG_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__);                                                     \
-  } while (0)
-#endif
+#define __FUNC_CALL_TRACE__() INFO_LOG("[+] call -> %s:%d", __PRETTY_FUNCTION__, __LINE__)
 
 #define UNIMPLEMENTED() FATAL_LOG("%s\n", "unimplemented code!!!")
 #define UNREACHABLE() FATAL_LOG("%s\n", "unreachable code!!!")

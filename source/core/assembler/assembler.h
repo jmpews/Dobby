@@ -3,12 +3,17 @@
 #include "dobby/common.h"
 #include "pseudo_label.h"
 
+class CodeMemBuffer;
+
 namespace zz {
+
 struct ExternalReference {
   void *address;
 
   explicit ExternalReference(void *address) : address(address) {
+#if defined(__APPLE__) && __arm64e__
     address = pac_strip(address);
+#endif
   }
 };
 
@@ -21,7 +26,8 @@ struct AssemblerBase {
     this->fixed_addr = fixed_addr;
   }
 
-  ~AssemblerBase() = default;
+  ~AssemblerBase() {
+  }
 
   size_t pc_offset() {
     return code_buffer_.size();

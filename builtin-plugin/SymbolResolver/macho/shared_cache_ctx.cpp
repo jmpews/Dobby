@@ -6,7 +6,7 @@
 
 #include "logging/logging.h"
 
-#include "common/mmap_file_util.h"
+#include "mmap_file_util.h"
 
 typedef uintptr_t addr_t;
 
@@ -63,7 +63,7 @@ int shared_cache_load_symbols(shared_cache_ctx_t *ctx) {
     localSymbolsOffset = ctx->mmap_shared_cache->localSymbolsOffset;
   } else {
     // iphoneos < 15.0, which has no .symbols file
-    auto mmapSharedCacheMng = new MmapFileManager(shared_cache_path);
+    auto mmapSharedCacheMng = new MmapFileManager(shared_cache_symbols_path);
 
     auto runtime_shared_cache = ctx->runtime_shared_cache;
     uint64_t mmap_length = runtime_shared_cache->localSymbolsSize;

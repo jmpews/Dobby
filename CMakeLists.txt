@@ -112,6 +112,7 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   # codegen
   source/core/codegen/codegen-arm.cc
   source/core/codegen/codegen-ia32.cc
+  source/core/codegen/codegen-x64.cc
 
   # memory kit
 
@@ -155,8 +156,6 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
   source/TrampolineBridge/ClosureTrampolineBridge/x64/helper_x64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_bridge_x64.cc
   source/TrampolineBridge/ClosureTrampolineBridge/x64/ClosureTrampolineX64.cc
-  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_bridge_x64.asm
-  source/TrampolineBridge/ClosureTrampolineBridge/x64/closure_trampoline_x64.asm
 
   # plugin register
 
@@ -167,7 +166,7 @@ set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
 
 if (SYSTEM.Darwin AND NOT DOBBY_BUILD_KERNEL_MODE)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
+    source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntimeUtility.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
@@ -177,7 +176,7 @@ if (SYSTEM.Darwin AND NOT DOBBY_BUILD_KERNEL_MODE)
 
 elseif (SYSTEM.Linux OR SYSTEM.Android)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
+    source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntimeUtility.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 
@@ -186,7 +185,7 @@ elseif (SYSTEM.Linux OR SYSTEM.Android)
     )
 elseif (SYSTEM.Windows)
   set(dobby.SOURCE_FILE_LIST ${dobby.SOURCE_FILE_LIST}
-    source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntime.cc
+    source/Backend/UserMode/PlatformUtil/Windows/ProcessRuntimeUtility.cc
 
     source/Backend/UserMode/UnifiedInterface/platform-windows.cc
 

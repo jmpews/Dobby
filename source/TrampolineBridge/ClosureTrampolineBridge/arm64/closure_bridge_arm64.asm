@@ -1,4 +1,3 @@
-#if defined(__arm64__) || defined(__aarch64__)
 #if defined(__WIN32__) || defined(__APPLE__)
 #define cdecl(s) _##s
 #else
@@ -95,4 +94,3 @@ cdecl(closure_bridge_asm_end):
 .align 8
 common_closure_bridge_handler_addr:
 .quad cdecl(common_closure_bridge_handler)
-#endif

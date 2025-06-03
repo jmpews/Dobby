@@ -13,19 +13,19 @@
 
 using namespace zz::x86;
 
-CodeMemBuffer *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
+CodeBufferBase *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
   TurboAssembler turbo_assembler_((void *)from);
 #define _ turbo_assembler_.
 
   CodeGen codegen(&turbo_assembler_);
   codegen.JmpNear((uint32_t)to);
 
-  CodeMemBuffer *result = NULL;
+  CodeBufferBase *result = NULL;
   result = turbo_assembler_.code_buffer()->Copy();
   return result;
 }
 
-CodeMemBuffer *GenerateNearTrampolineBuffer(addr_t src, addr_t dst) {
+CodeBufferBase *GenerateNearTrampolineBuffer(InterceptRouting *routing, addr_t src, addr_t dst) {
   DEBUG_LOG("x86 near branch trampoline enable default");
   return NULL;
 }

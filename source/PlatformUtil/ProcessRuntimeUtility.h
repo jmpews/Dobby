@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MemoryAllocator/MemoryAllocator.h"
+#include "MemoryAllocator//MemoryAllocator.h"
 #include "PlatformUnifiedInterface/platform.h"
 
 struct RuntimeModule {
@@ -18,11 +18,11 @@ struct MemRegion : MemRange {
   }
 };
 
-class ProcessRuntime {
+class ProcessRuntimeUtility {
 public:
-  static const stl::vector<MemRegion> &getMemoryLayout();
+  static const stl::vector<MemRegion> &GetProcessMemoryLayout();
 
-  static const stl::vector<RuntimeModule> &getModuleMap();
+  static const stl::vector<RuntimeModule> &GetProcessModuleMap();
 
-  static RuntimeModule getModule(const char *name);
+  static RuntimeModule GetProcessModule(const char *name);
 };

@@ -16,21 +16,11 @@ __attribute__((constructor)) static void ctor() {
 }
 
 PUBLIC int DobbyDestroy(void *address) {
-  __FUNC_CALL_TRACE__();
-  if (!address) {
-    ERROR_LOG("address is 0x0");
-    return -1;
-  }
-
-  features::arm_thumb_fix_addr(address);
-  features::apple::arm64e_pac_strip(address);
-
+  features::arm_thumb_fix_addr((uintptr_t &)address);
   auto entry = gInterceptor.find((addr_t)address);
   if (entry) {
+    DobbyCodePatch(address, entry->origin_code_buffer, entry->patched.size);
     gInterceptor.remove((addr_t)address);
-    entry->restore_orig_code();
-    // FIXME: delete entry safely
-    // delete entry;
     return 0;
   }
 
@@ -43,11 +33,11 @@ PUBLIC void dobby_set_options(bool enable_near_trampoline, dobby_alloc_near_code
 }
 
 PUBLIC uintptr_t placeholder() {
-  uintptr_t x = 0;
+  uintptr_t x;
   x += (uintptr_t)&DobbyHook;
   x += (uintptr_t)&DobbyInstrument;
   x += (uintptr_t)&dobby_set_near_trampoline;
   x += (uintptr_t)&common_closure_bridge_handler;
   x += (uintptr_t)&dobby_register_alloc_near_code_callback;
-  return x;
+  return 0;
 }

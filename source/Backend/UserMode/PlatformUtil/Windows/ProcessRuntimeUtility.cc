@@ -1,10 +1,13 @@
-#include "PlatformUtil/ProcessRuntime.h"
+#include "PlatformUtil/ProcessRuntimeUtility.h"
 
 #include <vector>
 
 #include <windows.h>
 
 #define LINE_MAX 2048
+
+// ================================================================
+// GetProcessMemoryLayout
 
 static bool memory_region_comparator(MemRange a, MemRange b) {
   return (a.address > b.address);
@@ -13,7 +16,7 @@ static bool memory_region_comparator(MemRange a, MemRange b) {
 // https://gist.github.com/jedwardsol/9d4fe1fd806043a5767affbd200088ca
 
 stl::vector<MemRange> ProcessMemoryLayout;
-stl::vector<MemRange> ProcessRuntime::getMemoryLayout() {
+stl::vector<MemRange> ProcessRuntimeUtility::GetProcessMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -55,17 +58,20 @@ stl::vector<MemRange> ProcessRuntime::getMemoryLayout() {
   return ProcessMemoryLayout;
 }
 
+// ================================================================
+// GetProcessModuleMap
+
 stl::vector<RuntimeModule> ProcessModuleMap;
 
-stl::vector<RuntimeModule> ProcessRuntime::getModuleMap() {
+stl::vector<RuntimeModule> ProcessRuntimeUtility::GetProcessModuleMap() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
   return ProcessModuleMap;
 }
 
-RuntimeModule ProcessRuntime::getModule(const char *name) {
-  stl::vector<RuntimeModule> ProcessModuleMap = getModuleMap();
+RuntimeModule ProcessRuntimeUtility::GetProcessModule(const char *name) {
+  stl::vector<RuntimeModule> ProcessModuleMap = GetProcessModuleMap();
   for (auto module : ProcessModuleMap) {
     if (strstr(module.path, name) != 0) {
       return module;

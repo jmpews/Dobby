@@ -1,5 +1,4 @@
 #pragma once
-
 #include "core/codegen/codegen.h"
 #include "core/assembler/assembler.h"
 #include "core/assembler/assembler-arm64.h"
@@ -7,7 +6,8 @@
 namespace zz {
 namespace arm64 {
 
-struct CodeGen : CodeGenBase {
+class CodeGen : public CodeGenBase {
+public:
   CodeGen(TurboAssembler *turbo_assembler) : CodeGenBase(turbo_assembler) {
   }
   void LiteralLdrBranch(uint64_t address) {
