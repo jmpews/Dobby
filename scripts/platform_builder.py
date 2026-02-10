@@ -101,7 +101,7 @@ class AndroidPlatformBuilder(PlatformBuilder):
         ]
 
 class DarwinPlatformBuilder(PlatformBuilder):
-    def __init__(self, project_dir, library_build_type, platform, arch):
+    def __init__(self, project_dir, library_build_type, platform, arch, macos_target="10.13"):
         super().__init__(project_dir, library_build_type, platform, arch)
         self.shared_output_name = "libdobby.dylib"
         self.static_output_name = "libdobby.a"
@@ -112,14 +112,22 @@ class DarwinPlatformBuilder(PlatformBuilder):
         ]
 
         if platform == "macos":
-            self.cmake_args += ["-DCMAKE_SYSTEM_NAME=Darwin"]
+            self.cmake_args += [
+                "-DCMAKE_SYSTEM_NAME=Darwin",
+                f"-DCMAKE_OSX_DEPLOYMENT_TARGET={macos_target}"
+            ]
             sdk_name = "macosx"
         else:
             self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3"]
             sdk_name = "iphoneos"
 
-        sdk_path = subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-path"], text=True).strip()
-        self.cmake_args += [f"-DCMAKE_OSX_SYSROOT={sdk_path}"]
+        try:
+            sdk_path = subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-path"], text=True).strip()
+            self.cmake_args += [f"-DCMAKE_OSX_SYSROOT={sdk_path}"]
+        except subprocess.CalledProcessError:
+            logging.error(f"Failed to find SDK for {sdk_name}. Make sure Xcode Command Line Tools are installed.")
+            sys.exit(-1)
+
 
     @classmethod
     def lipo_create_fat(cls, project_dir: Path, platform, output_name):
