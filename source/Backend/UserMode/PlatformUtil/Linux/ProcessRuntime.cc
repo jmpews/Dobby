@@ -11,10 +11,12 @@
 #include <vector>
 #include <algorithm>
 
+#ifndef LINE_MAX
 #define LINE_MAX 2048
+#endif
 
 static bool memory_region_comparator(MemRange a, MemRange b) {
-  return (a.start < b.start);
+  return (a.start() < b.start());
 }
 
 stl::vector<MemRegion> regions;

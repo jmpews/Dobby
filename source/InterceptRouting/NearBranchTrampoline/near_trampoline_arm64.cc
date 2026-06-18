@@ -12,7 +12,7 @@
 
 using namespace zz::arm64;
 
-#define assert(x)                                                                                                      \
+#define DOBBY_NEAR_ASSERT(x)                                                                                           \
   if (!(x)) {                                                                                                          \
     *(int *)0x41414141 = 0;                                                                                            \
   }
@@ -30,7 +30,7 @@ static Trampoline *GenerateFastForwardTrampoline(addr_t src, addr_t dst) {
   // [ldr + br + #label]
   auto forward_tramp_insns_needed = 4 * 4;
   auto blk = gNearMemoryAllocator.allocNearCodeBlock(forward_tramp_insns_needed, src, ARM64_B_XXX_RANGE);
-  assert(blk.addr() % 4 == 0 && "address must be aligned to 4 bytes");
+  DOBBY_NEAR_ASSERT(blk.addr() % 4 == 0 && "address must be aligned to 4 bytes");
   if (!blk.addr()) {
     ERROR_LOG("search near code block failed");
     return {};

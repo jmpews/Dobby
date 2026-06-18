@@ -8,6 +8,7 @@
 #include <time.h>
 
 #if defined(__linux__) || defined(__APPLE__)
+#include <sys/time.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <errno.h>
@@ -25,6 +26,7 @@
 #endif
 
 #if defined(_WIN32)
+#include <windows.h>
 #define PUBLIC
 #else
 #define PUBLIC __attribute__((visibility("default")))
@@ -54,7 +56,16 @@ void Logger::logv(LogLevel level, const char *in_fmt, va_list ap) {
 
   if (enable_time_tag_) {
     struct timeval tv;
+#if defined(_WIN32)
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    ULONGLONG t = ((ULONGLONG)ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+    t -= 116444736000000000ULL; // epoch difference: 1601->1970
+    tv.tv_sec  = (long)(t / 10000000ULL);
+    tv.tv_usec = (long)((t % 10000000ULL) / 10);
+#else
     gettimeofday(&tv, NULL);
+#endif
     time_t now = tv.tv_sec;
     struct tm *tm = localtime(&now);
     snprintf(fmt_buffer + strlen(fmt_buffer), sizeof(fmt_buffer) - strlen(fmt_buffer),

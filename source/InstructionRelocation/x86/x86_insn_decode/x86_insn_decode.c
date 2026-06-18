@@ -447,7 +447,9 @@ static void x86_insn_decode_opcode(x86_insn_reader_t *rd, x86_insn_decode_t *ins
 
   // check sse group
   if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_SSE_GROUP_START) {
-    UNIMPLEMENTED();
+    insn->primary_opcode = opcode;
+    insn->insn_spec = insn_spec;
+    return;
   }
 
   if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_GROUP_START &&

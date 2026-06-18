@@ -1,5 +1,5 @@
 #if defined(__x86_64__)
-#if defined(__WIN32__) || defined(__APPLE__)
+#if defined(__APPLE__) || (defined(__WIN32__) && !defined(__x86_64__))
 #define cdecl(s) _##s
 #else
 #define cdecl(s) s
