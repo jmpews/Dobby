@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #endif
 
 #if defined(__APPLE__)

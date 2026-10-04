@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __has_feature
+#define __has_feature(feature) 0
+#endif
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <stddef.h>
