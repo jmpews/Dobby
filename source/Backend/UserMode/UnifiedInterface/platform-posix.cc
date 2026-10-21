@@ -132,12 +132,22 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
   int prot = GetProtectionFromMemoryPermission(access);
 
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+  // Never use MAP_FIXED here: it silently replaces whatever is already mapped at the address (another library's
+  // code, a JIT's reserved region, ...). Without it the address is only a hint, so check that it was honoured.
+#if defined(MAP_FIXED_NOREPLACE)
   if (fixed_address != nullptr) {
-    flags = flags | MAP_FIXED;
+    flags = flags | MAP_FIXED_NOREPLACE;
   }
+#endif
   void *result = mmap(fixed_address, size, prot, flags, kMmapFd, kMmapFdOffset);
   if (result == MAP_FAILED)
     return nullptr;
+
+  // Kernels before Linux 4.17 ignore MAP_FIXED_NOREPLACE and may map somewhere else.
+  if (fixed_address != nullptr && result != fixed_address) {
+    munmap(result, size);
+    return nullptr;
+  }
 
   return result;
 }
