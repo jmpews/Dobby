@@ -102,7 +102,9 @@ struct NearMemoryAllocator {
       {
         auto page = OSMemory::Allocate(OSMemory::PageSize(), kNoAccess, unused_page);
         if (page != unused_page) {
-          FATAL_LOG("allocate unused page failed");
+          // Mapped since the memory layout was read (e.g. by another thread); try the next gap.
+          DEBUG_LOG("step-2 unused page %p is no longer free", unused_page);
+          continue;
         }
         OSMemory::SetPermission(unused_page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite);
         DEBUG_LOG("step-2 unused page: %p", unused_page);
