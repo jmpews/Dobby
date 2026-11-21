@@ -431,10 +431,115 @@ void x86_insn_decode_modrm_sib(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x
   }
 }
 
+static const x86_insn_spec_t x86_insn_vex_0f38_spec = op2(vex_0f38, Gx, Ex);
+static const x86_insn_spec_t x86_insn_vex_0f3a_spec = op3(vex_0f3a, Gx, Ex, Ib);
+
+static const x86_insn_spec_t *x86_insn_vex_opcode_spec(uint8_t map, uint8_t opcode) {
+  if (map == 1)
+    return &x86_opcode_map_two_byte[opcode];
+  if (map == 3)
+    return &x86_insn_vex_0f3a_spec;
+  return &x86_insn_vex_0f38_spec;
+}
+
+static void x86_insn_set_vex_rex(x86_insn_decode_t *insn, uint8_t pp, uint8_t rex_w, uint8_t rex_r, uint8_t rex_x,
+                                 uint8_t rex_b) {
+  static const x86_insn_prefix_t pp_prefix[4] = {0, INSN_PREFIX_OPERAND_SIZE, INSN_PREFIX_REPE, INSN_PREFIX_REPNE};
+  insn->prefix |= pp_prefix[pp & 3];
+  insn->rex = (uint8_t)(0x40 | (rex_w << 3) | (rex_r << 2) | (rex_x << 1) | rex_b);
+  if (rex_w)
+    insn->flags |= X86_INSN_DECODE_FLAG_OPERAND_SIZE_64;
+}
+
+static int x86_insn_is_vex_prefix(int mode, uint8_t modrm_byte) {
+  return mode == 64 || (modrm_byte & 0xc0) == 0xc0;
+}
+
+static void x86_insn_set_opcode_spec(x86_insn_reader_t *rd, x86_insn_decode_t *insn, const x86_insn_spec_t *insn_spec) {
+  insn->insn_spec = *insn_spec;
+
+  // check sse group
+  if (X86_INSN_FLAG_GET_GROUP(insn_spec->flags) > X86_INSN_SSE_GROUP_START)
+    return;
+
+  if (X86_INSN_FLAG_GET_GROUP(insn_spec->flags) > X86_INSN_GROUP_START &&
+      X86_INSN_FLAG_GET_GROUP(insn_spec->flags) < X86_INSN_SSE_GROUP_START) {
+    // get group index
+    int group_ndx = X86_INSN_FLAG_GET_GROUP(insn_spec->flags);
+
+    // get gp insn index in group
+    x86_insn_modrm_t modrm;
+    modrm.byte = peek_byte(rd);
+    int insn_ndx = modrm.reg;
+
+    // get insn in group
+    x86_insn_spec_t *group_insn = &x86_insn_modrm_reg_groups[group_ndx].insns[insn_ndx];
+
+    // update the insn spec
+    insn->insn_spec.name = group_insn->name;
+    insn->insn_spec.flags = group_insn->flags;
+  }
+}
+
+static void x86_insn_decode_vex_rex(uint8_t vex1, uint8_t vex2, uint8_t *rex_w, uint8_t *rex_r, uint8_t *rex_x,
+                                    uint8_t *rex_b, uint8_t *pp) {
+  *rex_r = (uint8_t)((~vex1 >> 7) & 1);
+  *rex_x = (uint8_t)((~vex1 >> 6) & 1);
+  *rex_b = (uint8_t)((~vex1 >> 5) & 1);
+  *rex_w = (uint8_t)(vex2 >> 7);
+  *pp = (uint8_t)(vex2 & 3);
+}
+
+static int x86_insn_decode_vex_evex(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x86_options_t *conf) {
+  const uint8_t *buffer_cursor = rd->buffer_cursor;
+  uint8_t c = buffer_cursor[0];
+
+  if ((c & 0xfe) != 0xc4 && c != 0x62)
+    return 0;
+
+  uint8_t map, pp, rex_w, rex_r, rex_x, rex_b, opcode, prefix_len;
+
+  if (c == 0xc5) { // 2 byte VEX
+    if (!x86_insn_is_vex_prefix(conf->mode, buffer_cursor[1]))
+      return 0;
+    map = 1;
+    rex_r = (uint8_t)((~buffer_cursor[1] >> 7) & 1);
+    rex_x = rex_b = rex_w = 0;
+    pp = (uint8_t)(buffer_cursor[1] & 3);
+    opcode = buffer_cursor[2];
+    prefix_len = 2;
+  } else if (c == 0xc4) { // 3 byte VEX
+    if (!x86_insn_is_vex_prefix(conf->mode, buffer_cursor[1]))
+      return 0;
+    map = (uint8_t)(buffer_cursor[1] & 0x1f);
+    x86_insn_decode_vex_rex(buffer_cursor[1], buffer_cursor[2], &rex_w, &rex_r, &rex_x, &rex_b, &pp);
+    opcode = buffer_cursor[3];
+    prefix_len = 3;
+  } else { // EVEX
+    if ((buffer_cursor[1] & 0x0c) != 0 || ((buffer_cursor[2] >> 2) & 1) == 0)
+      return 0;
+    if (!x86_insn_is_vex_prefix(conf->mode, buffer_cursor[1]))
+      return 0;
+    map = (uint8_t)(buffer_cursor[1] & 3);
+    x86_insn_decode_vex_rex(buffer_cursor[1], buffer_cursor[2], &rex_w, &rex_r, &rex_x, &rex_b, &pp);
+    opcode = buffer_cursor[4];
+    prefix_len = 4;
+  }
+
+  rd->buffer_cursor = buffer_cursor + prefix_len + 1;
+  x86_insn_set_vex_rex(insn, pp, rex_w, rex_r, rex_x, rex_b);
+  insn->primary_opcode = opcode;
+  x86_insn_set_opcode_spec(rd, insn, x86_insn_vex_opcode_spec(map, opcode));
+  return 1;
+}
+
 /* Decodes the opcode of an instruction and returns its encoding
  * specification.
  */
 static void x86_insn_decode_opcode(x86_insn_reader_t *rd, x86_insn_decode_t *insn, x86_options_t *conf) {
+  if (x86_insn_decode_vex_evex(rd, insn, conf))
+    return;
+
   uint8_t opcode = read_byte(rd);
 
   x86_insn_spec_t insn_spec;
@@ -445,34 +550,8 @@ static void x86_insn_decode_opcode(x86_insn_reader_t *rd, x86_insn_decode_t *ins
     insn_spec = x86_opcode_map_one_byte[opcode];
   }
 
-  // check sse group
-  if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_SSE_GROUP_START) {
-    insn->primary_opcode = opcode;
-    insn->insn_spec = insn_spec;
-    return;
-  }
-
-  if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_GROUP_START &&
-      X86_INSN_FLAG_GET_GROUP(insn_spec.flags) < X86_INSN_SSE_GROUP_START) {
-    // get group index
-    int group_ndx = X86_INSN_FLAG_GET_GROUP(insn_spec.flags);
-
-    // get gp insn index in group
-    x86_insn_modrm_t modrm;
-    modrm.byte = peek_byte(rd);
-    int insn_ndx = modrm.reg;
-
-    // get insn in group
-    x86_insn_spec_t *group_insn = NULL;
-    group_insn = &x86_insn_modrm_reg_groups[group_ndx].insns[insn_ndx];
-
-    // update the insn spec
-    insn_spec.name = group_insn->name;
-    insn_spec.flags = group_insn->flags;
-  }
-
   insn->primary_opcode = opcode;
-  insn->insn_spec = insn_spec;
+  x86_insn_set_opcode_spec(rd, insn, &insn_spec);
 }
 
 uint8_t x86_insn_imm_bits(x86_insn_spec_t *insn, uint8_t operand_bits) {
