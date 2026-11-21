@@ -4,6 +4,7 @@
 #include "PlatformUnifiedInterface/platform.h"
 
 struct RuntimeModule {
+  void *load_address;
   void *base;
   char path[1024];
 };

@@ -17,7 +17,7 @@ PUBLIC void *DobbySymbolResolver(const char *image_name, const char *symbol_name
   void *result = NULL;
 
   HMODULE hMod = LoadLibraryExA(image_name, NULL, DONT_RESOLVE_DLL_REFERENCES);
-  result = GetProcAddress(hMod, symbol_name_pattern);
+  result = (void*)GetProcAddress(hMod, symbol_name_pattern);
   if (result)
     return result;
 

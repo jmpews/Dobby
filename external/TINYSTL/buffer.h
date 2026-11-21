@@ -136,19 +136,21 @@ namespace tinystl {
 	template<typename T, typename Alloc>
 	static inline void buffer_destroy(buffer<T, Alloc>* b) {
 		buffer_destroy_range(b->first, b->last);
-		Alloc::static_deallocate(b->first, (size_t)((char*)b->capacity - (char*)b->first));
+		if (b->first != nullptr)
+			Alloc::static_deallocate(b->first, (size_t)((char*)b->capacity - (char*)b->first));
 	}
 
 	template<typename T, typename Alloc>
 	static inline void buffer_reserve(buffer<T, Alloc>* b, size_t capacity) {
-		if (b->first + capacity <= b->capacity)
+		if (b->first != nullptr && b->first + capacity <= b->capacity)
 			return;
 
 		typedef T* pointer;
 		const size_t size = (size_t)(b->last - b->first);
 		pointer newfirst = (pointer)Alloc::static_allocate(sizeof(T) * capacity);
 		buffer_move_urange(newfirst, b->first, b->last);
-		Alloc::static_deallocate(b->first, sizeof(T) * capacity);
+		if (b->first != nullptr)
+			Alloc::static_deallocate(b->first, (size_t)((char*)b->capacity - (char*)b->first));
 
 		b->first = newfirst;
 		b->last = newfirst + size;
@@ -203,7 +205,7 @@ namespace tinystl {
 	static inline T* buffer_insert_common(buffer<T, Alloc>* b, T* where, size_t count) {
 		const size_t offset = (size_t)(where - b->first);
 		const size_t newsize = (size_t)((b->last - b->first) + count);
-		if (b->first + newsize > b->capacity)
+		if (b->first == nullptr || b->first + newsize > b->capacity)
 			buffer_reserve(b, (newsize * 3) / 2);
 
 		where = b->first + offset;

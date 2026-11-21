@@ -16,12 +16,12 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size) 
   void *addressPageAlign = (void *)ALIGN(address, page_size);
 
   if (!VirtualProtect(addressPageAlign, page_size, PAGE_EXECUTE_READWRITE, &oldProtect))
-    return kMemoryOperationError;
+    return -1;
 
   memcpy(address, buffer, buffer_size);
 
   if (!VirtualProtect(addressPageAlign, page_size, oldProtect, &oldProtect))
-    return kMemoryOperationError;
+    return -1;
 
   return 0;
 }

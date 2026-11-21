@@ -34,8 +34,10 @@ static x86_insn_spec_t x86_opcode_map_two_byte[256] = {
     op0(nop),
     op0(nop),
     op0(nop),
-    op0(nop),
-    op0(nop),
+    /* 0x1E: ENDBR32/64 (F3 0F 1E /FA|/FB) */
+    op1(nop, Ev),
+    /* 0x1F */
+    op1(nop, Ev),
 
     /* 0x20 */
     op2(mov, Rv, Cv),

@@ -7,13 +7,13 @@
 #define LINE_MAX 2048
 
 static bool memory_region_comparator(MemRange a, MemRange b) {
-  return (a.address > b.address);
+  return (a.addr() > b.addr());
 }
 
 // https://gist.github.com/jedwardsol/9d4fe1fd806043a5767affbd200088ca
 
-stl::vector<MemRange> ProcessMemoryLayout;
-stl::vector<MemRange> ProcessRuntime::getMemoryLayout() {
+stl::vector<MemRegion> ProcessMemoryLayout;
+const stl::vector<MemRegion>& ProcessRuntime::getMemoryLayout() {
   if (!ProcessMemoryLayout.empty()) {
     ProcessMemoryLayout.clear();
   }
@@ -50,16 +50,16 @@ stl::vector<MemRange> ProcessRuntime::getMemoryLayout() {
       break;
     }
 
-    ProcessMemoryLayout.push_back(MemRange{(void *)region.BaseAddress, region.RegionSize, permission});
+    ProcessMemoryLayout.push_back(MemRegion{(addr_t)region.BaseAddress, region.RegionSize, (int)permission});
   }
   return ProcessMemoryLayout;
 }
 
 stl::vector<RuntimeModule> ProcessModuleMap;
 
-stl::vector<RuntimeModule> ProcessRuntime::getModuleMap() {
-  if (!ProcessMemoryLayout.empty()) {
-    ProcessMemoryLayout.clear();
+const stl::vector<RuntimeModule>& ProcessRuntime::getModuleMap() {
+  if (!ProcessModuleMap.empty()) {
+    ProcessModuleMap.clear();
   }
   return ProcessModuleMap;
 }
